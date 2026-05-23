@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { API_PREFIX } from '../config/constants';
 import { healthRouter } from './health.routes';
 import { productsRouter } from './products.routes';
+import { inventoryRouter } from './inventory.routes';
 
 /**
  * Root API router — aggregates all sub-routers.
@@ -18,6 +19,7 @@ const apiRouter = Router();
 // Mount sub-routers
 apiRouter.use(`${API_PREFIX}/health`, healthRouter);
 apiRouter.use(`${API_PREFIX}/products`, productsRouter);
+apiRouter.use(`${API_PREFIX}/inventory`, inventoryRouter);
 
 // Future routes will be mounted here (Phase 2+):
 // apiRouter.use(`${API_PREFIX}/auth`,       authRouter);
