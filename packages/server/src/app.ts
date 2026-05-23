@@ -2,7 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
-import { env, isDev } from './config/env';
+import { isDev } from './config/env';
 import { requestLogger } from './middleware/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiRouter } from './routes';
@@ -30,9 +30,11 @@ export function createApp(): express.Application {
   // helmet sets secure HTTP headers (CSP, HSTS, X-Frame-Options, etc.)
   // In dev, CSP is relaxed to allow Vite's HMR websocket
   app.use(
-    helmet({
-      contentSecurityPolicy: isDev ? false : undefined,
-    }),
+    helmet(
+      isDev
+        ? { contentSecurityPolicy: false }
+        : {}
+    ),
   );
 
   // ── CORS ──────────────────────────────────────────────────────────────────

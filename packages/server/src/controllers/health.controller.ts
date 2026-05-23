@@ -14,7 +14,7 @@ import { HTTP_STATUS } from '../config/constants';
  * Returns a 200 with system status info when healthy,
  * or a 503 with error details when the DB is unreachable.
  */
-export async function getHealth(req: Request, res: Response): Promise<void> {
+export async function getHealth(_req: Request, res: Response): Promise<void> {
   const startTime = Date.now();
 
   // Check database connectivity

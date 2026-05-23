@@ -1,6 +1,7 @@
 import knex, { type Knex } from 'knex';
 import { env } from './env';
 import { logger } from '../middleware/logger';
+import path from 'path';
 
 /**
  * Knex database configuration.
@@ -30,6 +31,14 @@ const knexConfig: Knex.Config = {
     idleTimeoutMillis: 30_000,
     // Kill connections that take more than 10 seconds to acquire
     acquireTimeoutMillis: 10_000,
+  },
+  migrations: {
+    directory: path.resolve(__dirname, '../../migrations'),
+    extension: 'ts',
+  },
+  seeds: {
+    directory: path.resolve(__dirname, '../../seeds'),
+    extension: 'ts',
   },
   // Use snake_case for all column/table names
   wrapIdentifier: (value, origImpl) => origImpl(value),
