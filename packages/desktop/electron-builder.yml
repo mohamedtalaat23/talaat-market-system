@@ -1,0 +1,75 @@
+appId: com.talaat.market
+productName: Talaat Market
+copyright: Copyright © 2026 Talaat Market
+
+# Files to include in the package
+files:
+  - dist/**/*
+  - node_modules/**/*
+  - package.json
+
+# Include the built client and server from the monorepo
+extraResources:
+  - from: "../client/dist"
+    to: "client/dist"
+  - from: "../server/dist"
+    to: "server/dist"
+  - from: "../server/node_modules"
+    to: "server/node_modules"
+
+# Build output directory
+directories:
+  output: release
+  buildResources: resources
+
+# ── Windows ──────────────────────────────────────────────────────
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icon.ico
+  # Request admin rights for first install (needed for PostgreSQL setup)
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  installerHeaderIcon: resources/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Talaat Market
+  menuCategory: Business
+
+# ── Linux ─────────────────────────────────────────────────────────
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+  icon: resources/icon.png
+  category: Office
+  description: Supermarket Management System
+  maintainer: Talaat Market <admin@talaatmarket.local>
+
+deb:
+  depends:
+    - "postgresql-client"
+  afterInstall: scripts/postinstall.sh
+
+# ── macOS (future) ────────────────────────────────────────────────
+# mac:
+#   target: dmg
+#   icon: resources/icon.icns
+#   category: public.app-category.business
+
+# ── Auto-updater (Phase 7) ────────────────────────────────────────
+# publish:
+#   provider: generic
+#   url: https://updates.talaatmarket.local

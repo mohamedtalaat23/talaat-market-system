@@ -1,0 +1,201 @@
+/* ============================================================
+ * Talaat Market — Global Styles
+ *
+ * Applied to the entire application after variables and reset.
+ * Contains: base typography, body defaults, scrollbar styling,
+ * and utility classes used across all components.
+ * ============================================================ */
+
+/* ── Base ────────────────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  line-height: var(--leading-normal);
+  /* Prevent text selection during rapid interactions (POS use) */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs and content areas */
+input,
+textarea,
+[contenteditable],
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ── Custom Scrollbar (Webkit) ───────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-neutral-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-600);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-500);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neutral-600) var(--color-neutral-900);
+}
+
+/* ── Typography ─────────────────────────────────────────────── */
+
+h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); }
+h2 { font-size: var(--text-2xl); font-weight: var(--font-semibold); }
+h3 { font-size: var(--text-xl);  font-weight: var(--font-semibold); }
+h4 { font-size: var(--text-lg);  font-weight: var(--font-medium); }
+h5 { font-size: var(--text-base);font-weight: var(--font-medium); }
+h6 { font-size: var(--text-sm);  font-weight: var(--font-medium); }
+
+/* ── Utility Classes ─────────────────────────────────────────── */
+
+/* Visually hide but keep accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Truncate text with ellipsis */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Currency / number display (monospace for alignment) */
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Price display — prominent and monospace */
+.price {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.price--large {
+  font-size: var(--text-2xl);
+}
+
+.price--success {
+  color: var(--color-success-400);
+}
+
+.price--danger {
+  color: var(--color-danger-400);
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.badge--success {
+  background-color: rgb(16 185 129 / 0.15);
+  color: var(--color-success-400);
+}
+
+.badge--warning {
+  background-color: rgb(245 158 11 / 0.15);
+  color: var(--color-warning-400);
+}
+
+.badge--danger {
+  background-color: rgb(244 63 94 / 0.15);
+  color: var(--color-danger-400);
+}
+
+.badge--neutral {
+  background-color: rgb(100 116 139 / 0.15);
+  color: var(--color-neutral-400);
+}
+
+/* Card component base */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--card-padding);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Section divider */
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  border: none;
+  margin: var(--space-4) 0;
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-fade-in   { animation: fadeIn 200ms ease forwards; }
+.animate-slide-in  { animation: slideInLeft 200ms ease forwards; }
+.animate-pulse     { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.animate-spin      { animation: spin 1s linear infinite; }
+
+/* ── Print styles ───────────────────────────────────────────── */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

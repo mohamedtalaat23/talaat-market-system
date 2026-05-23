@@ -1,0 +1,26 @@
+{
+  "name": "@talaat-market/desktop",
+  "version": "1.0.0",
+  "description": "Talaat Market — Electron Desktop Shell",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && electron .",
+    "build": "tsc --project tsconfig.json && electron-builder",
+    "build:win": "tsc --project tsconfig.json && electron-builder --win",
+    "build:linux": "tsc --project tsconfig.json && electron-builder --linux",
+    "typecheck": "tsc --noEmit",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "electron-store": "^10.0.0",
+    "get-port": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0",
+    "wait-on": "^8.0.0"
+  }
+}

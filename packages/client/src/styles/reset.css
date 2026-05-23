@@ -1,0 +1,130 @@
+/* ============================================================
+ * Talaat Market — CSS Reset
+ *
+ * Modern, minimal reset inspired by Josh Comeau's CSS Reset.
+ * Normalizes browser defaults while preserving useful behaviors.
+ * ============================================================ */
+
+/* Box model */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent font size inflation on mobile */
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  /* Smooth scrolling, but respect user preferences */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Body */
+body {
+  min-height: 100vh;
+  line-height: var(--leading-normal, 1.5);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Images & media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Form elements inherit font */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* No default text decoration on links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Consistent list styles */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Avoid overflow on headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+  font-weight: var(--font-semibold, 600);
+}
+
+/* Paragraph */
+p {
+  overflow-wrap: break-word;
+}
+
+/* Remove all button styles — apply explicitly */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Table reset */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Fieldset */
+fieldset {
+  border: none;
+}
+
+/* Focus outline — visible but styled */
+:focus-visible {
+  outline: 2px solid var(--border-focus, #6366f1);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Root mounting point */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}

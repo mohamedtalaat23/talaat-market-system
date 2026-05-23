@@ -1,0 +1,58 @@
+# Talaat Market System
+
+# Dependencies
+node_modules/
+packages/*/node_modules/
+
+# Build outputs
+dist/
+packages/*/dist/
+packages/desktop/out/
+packages/desktop/release/
+
+# Environment files
+.env
+.env.local
+.env.production
+packages/**/.env
+packages/**/.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript build info
+*.tsbuildinfo
+packages/*/*.tsbuildinfo
+
+# Coverage
+coverage/
+packages/*/coverage/
+
+# Electron packaged output
+packages/desktop/dist/
+
+# Database backups (store externally)
+backups/
+*.dump
+*.sql.gz
