@@ -10,7 +10,24 @@ import { type Knex } from 'knex';
  * 3. CHECK Constraints: Enforces data integrity at the database layer (e.g. non-negative inventory).
  */
 export async function up(knex: Knex): Promise<void> {
-  // 1. Create helper function for automatically updating updated_at columns
+  // 1. Try to create the pg_trgm extension safely.
+  // We do this first so it is available when compiling indexes.
+  try {
+    await knex.raw('CREATE EXTENSION IF NOT EXISTS "pg_trgm";');
+  } catch (err) {
+    // If the database user is not a superuser, CREATE EXTENSION will fail.
+    // We check if it was pre-installed (e.g. by setup-db.sh running under postgres user).
+    const checkExt = await knex.raw("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm';");
+    if (checkExt.rows.length === 0) {
+      console.warn(
+        '⚠️ Warning: "pg_trgm" extension could not be automatically created and is not installed.\n' +
+        '   Fuzzy search on product names might be degraded. If query errors occur, ask a database superuser to run:\n' +
+        '   CREATE EXTENSION pg_trgm;'
+      );
+    }
+  }
+
+  // 2. Create helper function for automatically updating updated_at columns
   await knex.raw(`
     CREATE OR REPLACE FUNCTION update_updated_at_column()
     RETURNS TRIGGER AS $$
@@ -156,13 +173,16 @@ export async function up(knex: Knex): Promise<void> {
     table.index(['category_id'], 'idx_products_category_id');
   });
 
-  // Try creating pg_trgm GIN index for fast product fuzzy search
-  // If the extension pg_trgm is not active/available, it will log a warning but won't break
-  try {
+  // 10. Try creating pg_trgm GIN index for fast product fuzzy search.
+  // We check if the pg_trgm extension is active before creating GIN indexes to prevent SQL errors.
+  const checkExt = await knex.raw("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm';");
+  const hasPgTrgm = checkExt.rows.length > 0;
+
+  if (hasPgTrgm) {
     await knex.raw('CREATE INDEX idx_products_name_trgm ON products USING GIN (name gin_trgm_ops);');
     await knex.raw('CREATE INDEX idx_products_name_ar_trgm ON products USING GIN (name_ar gin_trgm_ops);');
-  } catch (err) {
-    console.warn('⚠️ GIN pg_trgm indexes could not be created. Ensure pg_trgm extension is loaded.');
+  } else {
+    console.warn('⚠️ Skipping creation of GIN trgm indexes on product names because the "pg_trgm" extension is not installed.');
   }
 
   await knex.schema.alterTable('sales', (table) => {
