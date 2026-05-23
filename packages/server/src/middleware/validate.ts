@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { AnyZodObject } from 'zod';
+import type { ZodTypeAny } from 'zod';
 
 /**
  * Express Request Validation Middleware
@@ -9,9 +9,9 @@ import type { AnyZodObject } from 'zod';
  * to the global Express error handler.
  */
 export function validate(schemas: {
-  body?: AnyZodObject;
-  query?: AnyZodObject;
-  params?: AnyZodObject;
+  body?: ZodTypeAny;
+  query?: ZodTypeAny;
+  params?: ZodTypeAny;
 }) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
