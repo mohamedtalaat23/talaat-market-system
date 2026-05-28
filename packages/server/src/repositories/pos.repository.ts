@@ -207,14 +207,22 @@ export class POSRepository {
       }
 
       // 4. Process items and inventory
-      const insertedItems = [];
+      const productIds = payload.items.map((item) => item.product_id);
+      const products = await trx('products')
+        .whereIn('id', productIds)
+        .select('id', 'cost_price', 'name', 'barcode');
+
+      const productMap = new Map(products.map((p) => [p.id, p]));
+
+      const saleItemsToInsert = [];
+
       for (const item of payload.items) {
-        const product = await trx('products').where('id', item.product_id).select('cost_price', 'name', 'barcode').first();
+        const product = productMap.get(item.product_id);
         if (!product) throw new Error(`Product ${item.product_id} not found`);
 
         const lineTotal = (item.unit_price * item.quantity) - item.discount;
-        
-        const [saleItem] = await trx('sale_items').insert({
+
+        saleItemsToInsert.push({
           sale_id: sale.id,
           product_id: item.product_id,
           product_name: product.name,
@@ -223,10 +231,8 @@ export class POSRepository {
           unit_price: item.unit_price,
           discount: item.discount,
           line_total: lineTotal,
-          cost_at_sale: product.cost_price || 0
-        }).returning('*');
-        
-        insertedItems.push(saleItem);
+          cost_at_sale: product.cost_price || 0,
+        });
 
         const [inv] = await trx('inventory')
           .where('product_id', item.product_id)
@@ -237,6 +243,8 @@ export class POSRepository {
           throw new Error(`Insufficient inventory for product ID ${item.product_id}. Checkout aborted.`);
         }
       }
+
+      const insertedItems = await trx('sale_items').insert(saleItemsToInsert).returning('*');
 
       return { ...sale, items: insertedItems };
     });
