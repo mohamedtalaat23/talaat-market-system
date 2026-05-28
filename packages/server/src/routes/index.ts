@@ -5,6 +5,7 @@ import { productsRouter } from './products.routes';
 import { inventoryRouter } from './inventory.routes';
 import { authRouter } from './auth.routes';
 import { employeeRouter } from './employee.routes';
+import posRouter from './pos.routes';
 
 /**
  * Root API router — aggregates all sub-routers.
@@ -16,6 +17,12 @@ import { employeeRouter } from './employee.routes';
  * The prefix ensures all API routes are namespaced under /api/v1/
  * which makes it easy to version the API in the future.
  */
+import { categoryRouter } from './category.routes';
+import { dashboardRouter } from './dashboard.routes';
+import { reportsRouter } from './reports.routes';
+
+import { settingsRouter } from './settings.routes';
+
 const apiRouter = Router();
 
 // Mount sub-routers
@@ -24,6 +31,11 @@ apiRouter.use(`${API_PREFIX}/products`, productsRouter);
 apiRouter.use(`${API_PREFIX}/inventory`, inventoryRouter);
 apiRouter.use(`${API_PREFIX}/auth`, authRouter);
 apiRouter.use(`${API_PREFIX}/employees`, employeeRouter);
+apiRouter.use(`${API_PREFIX}/categories`, categoryRouter);
+apiRouter.use(`${API_PREFIX}/pos`, posRouter);
+apiRouter.use(`${API_PREFIX}/dashboard`, dashboardRouter);
+apiRouter.use(`${API_PREFIX}/reports`, reportsRouter);
+apiRouter.use(`${API_PREFIX}/settings`, settingsRouter);
 
 // Future routes will be mounted here (Phase 2+):
 // apiRouter.use(`${API_PREFIX}/auth`,       authRouter);
@@ -36,7 +48,6 @@ apiRouter.use(`${API_PREFIX}/employees`, employeeRouter);
 // apiRouter.use(`${API_PREFIX}/customers`,  customersRouter);
 // apiRouter.use(`${API_PREFIX}/employees`,  employeesRouter);
 // apiRouter.use(`${API_PREFIX}/reports`,    reportsRouter);
-// apiRouter.use(`${API_PREFIX}/settings`,   settingsRouter);
 // apiRouter.use(`${API_PREFIX}/backup`,     backupRouter);
 
 export { apiRouter };

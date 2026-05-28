@@ -19,10 +19,10 @@ export function validate(schemas: {
         req.body = await schemas.body.parseAsync(req.body);
       }
       if (schemas.query) {
-        req.query = await schemas.query.parseAsync(req.query) as any;
+        req.query = await schemas.query.parseAsync(req.query) as unknown as import('qs').ParsedQs;
       }
       if (schemas.params) {
-        req.params = await schemas.params.parseAsync(req.params) as any;
+        req.params = await schemas.params.parseAsync(req.params) as unknown as import('express-serve-static-core').ParamsDictionary;
       }
       next();
     } catch (error) {

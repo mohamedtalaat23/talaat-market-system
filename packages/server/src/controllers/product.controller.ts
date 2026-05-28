@@ -13,7 +13,7 @@ export async function getProducts(
   next: NextFunction
 ): Promise<void> {
   try {
-    const filters = req.query as any;
+    const filters = req.query as unknown as Parameters<typeof productService.getProducts>[0];
     const result = await productService.getProducts(filters);
     res.status(HTTP_STATUS.OK).json({
       success: true,

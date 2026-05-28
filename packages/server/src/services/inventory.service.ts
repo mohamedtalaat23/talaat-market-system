@@ -113,7 +113,8 @@ export class InventoryService {
     productId: number,
     adjustmentType: 'stock_addition' | 'stock_removal' | 'damaged' | 'expired' | 'manual_correction',
     quantityChange: number,
-    notes?: string | null
+    notes?: string | null,
+    createdBy: number | null = null
   ): Promise<InventoryItem> {
     logger.info('Performing relative stock adjustment', {
       productId,
@@ -159,6 +160,7 @@ export class InventoryService {
           old_quantity: oldQuantity,
           new_quantity: newQuantity,
           notes: notes || `Stock adjustment: ${adjustmentType}`,
+          created_by: createdBy,
         },
         trx
       );
@@ -177,6 +179,28 @@ export class InventoryService {
       }
       return updated;
     });
+  }
+
+  /**
+   * Fetch paginated stock adjustments log.
+   */
+  async getAdjustments(filters: { page: number; limit: number; product_id?: number | undefined }) {
+    logger.debug('Fetching stock adjustments history with filters', { filters });
+
+    const [items, total] = await Promise.all([
+      inventoryRepository.findAdjustments(filters),
+      inventoryRepository.countAdjustments(filters),
+    ]);
+
+    return {
+      items,
+      meta: {
+        total,
+        page: filters.page,
+        limit: filters.limit,
+        totalPages: Math.ceil(total / filters.limit),
+      },
+    };
   }
 }
 

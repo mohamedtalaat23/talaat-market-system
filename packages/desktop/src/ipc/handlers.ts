@@ -1,4 +1,4 @@
-import { type IpcMain, dialog, app } from 'electron';
+import { type IpcMain, dialog, app, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
 
 /**
@@ -27,16 +27,37 @@ export function registerIpcHandlers(
 
   // ── Printing (Phase 6: Hardware) ─────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.PRINT_RECEIPT, async (_event, data: unknown) => {
-    // TODO (Phase 6): Implement receipt printing via node-thermal-printer
-    console.log('[IPC] print-receipt called with:', data);
-    return { success: true, message: 'Printing not yet implemented (Phase 6)' };
+  ipcMain.handle(IPC_CHANNELS.PRINT_RECEIPT, async (_event, data: { html: string }) => {
+    console.log('[IPC] print-receipt called with pre-rendered html');
+    return new Promise((resolve, reject) => {
+      // Create a hidden window for printing
+      const printWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true
+        }
+      });
+
+      printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(data.html)}`);
+
+      printWindow.webContents.on('did-finish-load', () => {
+        printWindow.webContents.print({ silent: true, printBackground: true }, (success: boolean, failureReason: string) => {
+          printWindow.close();
+          if (success) {
+            resolve({ success: true });
+          } else {
+            console.error('[IPC] Print failed:', failureReason);
+            reject(new Error(`Printing failed: ${failureReason}`));
+          }
+        });
+      });
+    });
   });
 
   ipcMain.handle(IPC_CHANNELS.OPEN_CASH_DRAWER, async () => {
-    // TODO (Phase 6): Send ESC/POS cash drawer kick command
     console.log('[IPC] open-cash-drawer called');
-    return { success: true, message: 'Cash drawer not yet implemented (Phase 6)' };
+    return { success: true, message: 'Cash drawer not yet implemented' };
   });
 
   // ── Backup (Phase 5) ──────────────────────────────────────────────────────
@@ -56,8 +77,8 @@ export function registerIpcHandlers(
   // ── File Dialogs ──────────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.SELECT_DIRECTORY, async (event) => {
-    const win = event.sender.getOwnerBrowserWindow();
-    const result = await dialog.showOpenDialog(win ?? app.focusedWindow() ?? undefined!, {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const result = await dialog.showOpenDialog(win ?? BrowserWindow.getFocusedWindow() ?? undefined!, {
       properties: ['openDirectory', 'createDirectory'],
       title: 'Select Backup Directory',
     });
@@ -67,8 +88,8 @@ export function registerIpcHandlers(
   ipcMain.handle(
     IPC_CHANNELS.SELECT_FILE,
     async (event, filters: Electron.FileFilter[]) => {
-      const win = event.sender.getOwnerBrowserWindow();
-      const result = await dialog.showOpenDialog(win ?? app.focusedWindow() ?? undefined!, {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      const result = await dialog.showOpenDialog(win ?? BrowserWindow.getFocusedWindow() ?? undefined!, {
         properties: ['openFile'],
         filters: filters ?? [],
         title: 'Select File',
@@ -80,11 +101,11 @@ export function registerIpcHandlers(
   // ── Window Management ─────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.MINIMIZE_WINDOW, (event) => {
-    event.sender.getOwnerBrowserWindow()?.minimize();
+    BrowserWindow.fromWebContents(event.sender)?.minimize();
   });
 
   ipcMain.handle(IPC_CHANNELS.MAXIMIZE_WINDOW, (event) => {
-    const win = event.sender.getOwnerBrowserWindow();
+    const win = BrowserWindow.fromWebContents(event.sender);
     if (win?.isMaximized()) {
       win.unmaximize();
     } else {
@@ -93,6 +114,6 @@ export function registerIpcHandlers(
   });
 
   ipcMain.handle(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
-    event.sender.getOwnerBrowserWindow()?.close();
+    BrowserWindow.fromWebContents(event.sender)?.close();
   });
 }

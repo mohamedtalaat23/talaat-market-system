@@ -13,7 +13,7 @@ export async function getInventory(
   next: NextFunction
 ): Promise<void> {
   try {
-    const filters = req.query as any;
+    const filters = req.query as unknown as Parameters<typeof inventoryService.getInventory>[0];
     const result = await inventoryService.getInventory(filters);
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -83,15 +83,49 @@ export async function adjustInventory(
 ): Promise<void> {
   try {
     const { product_id, adjustment_type, quantity_change, notes } = req.body;
+    const createdBy = (req as any).user?.id ?? null;
+
     const item = await inventoryService.adjustStock(
       product_id,
       adjustment_type,
       quantity_change,
-      notes
+      notes,
+      createdBy
     );
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: item,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /inventory/adjustments
+ * 
+ * Fetches log of stock adjustments.
+ */
+export async function getAdjustments(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const productId = req.query.product_id ? Number(req.query.product_id) : undefined;
+
+    const result = await inventoryService.getAdjustments({
+      page,
+      limit,
+      product_id: productId,
+    });
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: result.items,
+      meta: result.meta,
     });
   } catch (error) {
     next(error);

@@ -1,10 +1,29 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
+import { useAuthStore } from '@/stores/authStore';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { PlaceholderPage } from '@/components/ui/PlaceholderPage';
-import { Dashboard } from '@/features/dashboard/Dashboard';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { ProductsPage } from '@/features/products/ProductsPage';
+import { InventoryPage } from '@/features/inventory/InventoryPage';
+import { EmployeesPage } from '@/features/employees/EmployeesPage';
+import { POSPage } from '@/features/pos/POSPage';
+import { ReportsLayout } from '@/features/reports/ReportsLayout';
+import { ShiftReconciliationScreen } from '@/features/reports/screens/ShiftReconciliationScreen';
+import { ShiftDetailScreen } from '@/features/reports/screens/ShiftDetailScreen';
+import { WeeklyReportScreen } from '@/features/reports/screens/WeeklyReportScreen';
+import { OverrideAuditScreen } from '@/features/reports/screens/OverrideAuditScreen';
+import { Spinner } from '@/components/ui/Spinner';
+import { SettingsLayout } from '@/features/settings/SettingsLayout';
+import { GeneralSettingsScreen } from '@/features/settings/screens/GeneralSettingsScreen';
+import { ReceiptSettingsScreen } from '@/features/settings/screens/ReceiptSettingsScreen';
+import { RegistersScreen } from '@/features/settings/screens/RegistersScreen';
 
 /**
  * TanStack Query client configuration.
@@ -12,7 +31,6 @@ import { Dashboard } from '@/features/dashboard/Dashboard';
  * - staleTime: 30s — data is considered fresh for 30 seconds before background refetch
  * - retry: 1 — retry failed requests once before showing an error
  * - refetchOnWindowFocus: false — don't refetch when the Electron window gains focus
- *   (this is a desktop app, not a browser tab)
  */
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,168 +49,181 @@ const queryClient = new QueryClient({
  * Layout route wrapper — renders AppLayout with an Outlet for child routes.
  */
 function AppLayoutRoute() {
-  return (
-    <AppLayout>
-      <Outlet />
-    </AppLayout>
-  );
+  return <AppLayout />;
 }
 
 /**
  * App root component.
  *
- * Provides:
- *   - BrowserRouter
- *   - QueryClientProvider (TanStack Query)
- *   - Toaster (react-hot-toast notifications)
- *   - Route definitions
- *
- * Authentication guard (Phase 3) will wrap the AppLayoutRoute.
- * For now, all routes are accessible without login.
+ * Configures the router, TanStack Query, Error Boundaries,
+ * and handles session validation on application startup.
  */
 export function App() {
+  const { initializeAuth, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-neutral-950 text-foreground">
+        <Spinner size="lg" />
+        <span className="mt-4 text-sm text-neutral-400 font-mono">Loading Talaat Market System...</span>
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {/* All app routes share the AppLayout wrapper */}
-          <Route element={<AppLayoutRoute />}>
-            <Route index element={<Dashboard />} />
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Routes>
+            {/* Public route */}
+            <Route path="login" element={<LoginPage />} />
 
-            {/* Phase 2: POS */}
+            {/* Point of Sale (POS) - Cashier, Manager, Admin allowed - Full screen shell */}
             <Route
               path="pos"
               element={
-                <PlaceholderPage
-                  title="Point of Sale"
-                  description="The full-featured POS terminal with barcode scanning, cart management, and payment processing."
-                  phase="Phase 2"
-                />
+                <ProtectedRoute>
+                  <POSPage />
+                </ProtectedRoute>
               }
             />
 
-            {/* Phase 3: Products */}
+            {/* Authenticated layout shell */}
             <Route
-              path="products/*"
               element={
-                <PlaceholderPage
-                  title="Product Management"
-                  description="Add, edit, and manage your product catalog with barcodes, pricing, and categories."
-                  phase="Phase 3"
-                />
+                <ProtectedRoute>
+                  <AppLayoutRoute />
+                </ProtectedRoute>
               }
-            />
+            >
+              {/* Dashboard */}
+              <Route index element={<DashboardPage />} />
 
-            {/* Phase 3: Inventory */}
-            <Route
-              path="inventory/*"
-              element={
-                <PlaceholderPage
-                  title="Inventory Management"
-                  description="Track stock levels, set alerts, adjust inventory, and manage stock counts."
-                  phase="Phase 3"
-                />
-              }
-            />
+              {/* Products Catalog - Managers and Admin allowed */}
+              <Route
+                path="products/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <ProductsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Phase 3: Suppliers */}
-            <Route
-              path="suppliers/*"
-              element={
-                <PlaceholderPage
-                  title="Suppliers"
-                  description="Manage your supplier directory, contact information, and payment terms."
-                  phase="Phase 3"
-                />
-              }
-            />
+              {/* Inventory Management - Managers and Admin allowed */}
+              <Route
+                path="inventory/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <InventoryPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Phase 3: Purchases */}
-            <Route
-              path="purchases/*"
-              element={
-                <PlaceholderPage
-                  title="Purchase Orders"
-                  description="Create and manage purchase orders, receive goods, and update inventory automatically."
-                  phase="Phase 3"
-                />
-              }
-            />
+              {/* Employees - Admin allowed only */}
+              <Route
+                path="employees/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <EmployeesPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Phase 5: Customers */}
-            <Route
-              path="customers/*"
-              element={
-                <PlaceholderPage
-                  title="Customer Management"
-                  description="Track customer information, purchase history, and loyalty points."
-                  phase="Phase 5"
-                />
-              }
-            />
+              {/* Other Features - simple placeholders for now */}
+              <Route
+                path="suppliers/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <PlaceholderPage
+                      title="Suppliers"
+                      description="Manage your supplier directory, contact information, and payment terms."
+                      phase="Phase 3"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="purchases/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <PlaceholderPage
+                      title="Purchase Orders"
+                      description="Create and manage purchase orders, receive goods, and update inventory automatically."
+                      phase="Phase 3"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="customers/*"
+                element={
+                  <PlaceholderPage
+                    title="Customer Management"
+                    description="Track customer information, purchase history, and loyalty points."
+                    phase="Phase 5"
+                  />
+                }
+              />
+              <Route
+                path="reports/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <ReportsLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="shifts" replace />} />
+                <Route path="shifts" element={<ShiftReconciliationScreen />} />
+                <Route path="shifts/:id" element={<ShiftDetailScreen />} />
+                <Route path="weekly" element={<WeeklyReportScreen />} />
+                <Route path="overrides" element={<OverrideAuditScreen />} />
+              </Route>
+              <Route
+                path="settings/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <SettingsLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="general" replace />} />
+                <Route path="general" element={<GeneralSettingsScreen />} />
+                <Route path="receipts" element={<ReceiptSettingsScreen />} />
+                <Route path="registers" element={<RegistersScreen />} />
+              </Route>
 
-            {/* Phase 5: Employees */}
-            <Route
-              path="employees/*"
-              element={
-                <PlaceholderPage
-                  title="Employee Management"
-                  description="Manage employee accounts, roles, and access permissions."
-                  phase="Phase 5"
-                />
-              }
-            />
+              {/* 404 fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ErrorBoundary>
 
-            {/* Phase 4: Reports */}
-            <Route
-              path="reports/*"
-              element={
-                <PlaceholderPage
-                  title="Reports & Analytics"
-                  description="Daily sales, inventory reports, profit & loss, top products, and cashier performance."
-                  phase="Phase 4"
-                />
-              }
-            />
-
-            {/* Phase 5: Settings */}
-            <Route
-              path="settings/*"
-              element={
-                <PlaceholderPage
-                  title="Settings"
-                  description="Configure store info, receipt layout, backup schedule, and system preferences."
-                  phase="Phase 5"
-                />
-              }
-            />
-
-            {/* 404 fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-
-      {/* Toast notifications — top-right, non-blocking for cashier workflow */}
+      {/* Toast notifications */}
       <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#1e293b',
-            color: '#f1f5f9',
-            border: '1px solid #334155',
+            background: '#171717',
+            color: '#f5f5f5',
+            border: '1px solid #262626',
             borderRadius: '8px',
             fontSize: '14px',
           },
           success: {
-            iconTheme: { primary: '#10b981', secondary: '#1e293b' },
+            iconTheme: { primary: '#10b981', secondary: '#171717' },
           },
           error: {
-            iconTheme: { primary: '#f43f5e', secondary: '#1e293b' },
+            iconTheme: { primary: '#f43f5e', secondary: '#171717' },
           },
         }}
       />
     </QueryClientProvider>
   );
 }
+export default App;

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/inventory.controller';
 import { validate } from '../middleware/validate';
+import { requireAuth } from '../middleware/auth';
 import {
   updateInventorySchema,
   adjustInventorySchema,
@@ -10,11 +11,20 @@ import {
 
 const inventoryRouter = Router();
 
+// Secure all inventory routes with JWT authentication
+inventoryRouter.use(requireAuth);
+
 // GET /inventory - List stock levels with search and filters
 inventoryRouter.get(
   '/',
   validate({ query: inventoryQuerySchema }),
   controller.getInventory
+);
+
+// GET /inventory/adjustments - Get history of stock adjustments
+inventoryRouter.get(
+  '/adjustments',
+  controller.getAdjustments
 );
 
 // GET /inventory/:productId - Get stock details for a product

@@ -156,6 +156,53 @@ export class InventoryRepository {
   }
 
   /**
+   * Retrieve active adjustments logs with sorting and pagination.
+   */
+  async findAdjustments(filters: { page: number; limit: number; product_id?: number | undefined }): Promise<InventoryAdjustment[]> {
+    const query = db('inventory_adjustments')
+      .join('products', 'products.id', 'inventory_adjustments.product_id')
+      .leftJoin('employees', 'employees.id', 'inventory_adjustments.created_by')
+      .select(
+        'inventory_adjustments.*',
+        'products.name as product_name',
+        'products.barcode as product_barcode',
+        'products.unit as product_unit',
+        'employees.full_name as creator_name'
+      );
+
+    if (filters.product_id) {
+      query.where('inventory_adjustments.product_id', filters.product_id);
+    }
+
+    query.orderBy('inventory_adjustments.created_at', 'desc');
+
+    const offset = (filters.page - 1) * filters.limit;
+    query.limit(filters.limit).offset(offset);
+
+    const rows = await query;
+    return rows.map((row) => ({
+      ...row,
+      quantity_change: Number(row.quantity_change),
+      old_quantity: Number(row.old_quantity),
+      new_quantity: Number(row.new_quantity),
+    }));
+  }
+
+  /**
+   * Count total adjustments matching filters.
+   */
+  async countAdjustments(filters: { product_id?: number | undefined }): Promise<number> {
+    const query = db('inventory_adjustments').count({ count: 'id' });
+
+    if (filters.product_id) {
+      query.where('product_id', filters.product_id);
+    }
+
+    const result = await query.first();
+    return Number(result?.count ?? 0);
+  }
+
+  /**
    * Helper to map row values to correct JavaScript types.
    */
   private mapInventoryRow(row: any): InventoryItem {
@@ -167,6 +214,22 @@ export class InventoryRepository {
       product_selling_price: Number(row.product_selling_price),
     };
   }
+}
+
+export interface InventoryAdjustment {
+  id: number;
+  product_id: number;
+  product_name: string;
+  product_barcode: string | null;
+  product_unit: string;
+  adjustment_type: 'stock_addition' | 'stock_removal' | 'damaged' | 'expired' | 'manual_correction';
+  quantity_change: number;
+  old_quantity: number;
+  new_quantity: number;
+  notes: string | null;
+  created_by: number | null;
+  creator_name: string | null;
+  created_at: Date;
 }
 
 // Single instance export (minimalist/no DI)

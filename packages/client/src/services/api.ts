@@ -73,9 +73,9 @@ apiClient.interceptors.response.use(
       const enrichedError = new Error(
         responseData?.error?.message ?? error.message,
       );
-      (enrichedError as Error & { code?: string; details?: unknown }).code =
+      (enrichedError as any).code =
         responseData?.error?.code;
-      (enrichedError as Error & { code?: string; details?: unknown }).details =
+      (enrichedError as any).details =
         responseData?.error?.details;
 
       return Promise.reject(enrichedError);

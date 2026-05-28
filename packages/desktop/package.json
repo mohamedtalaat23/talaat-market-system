@@ -13,8 +13,7 @@
     "pack": "electron-builder --dir"
   },
   "dependencies": {
-    "electron-store": "^10.0.0",
-    "get-port": "^7.1.0"
+    "electron-store": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

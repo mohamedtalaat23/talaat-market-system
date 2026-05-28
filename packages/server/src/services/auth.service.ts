@@ -41,12 +41,12 @@ export class AuthService {
     let isMatch = false;
 
     if (password) {
-      isMatch = bcrypt.compareSync(password, user.password_hash);
+      isMatch = await bcrypt.compare(password, user.password_hash);
     } else if (pin) {
       if (!user.pin_hash) {
         throw new AuthenticationError('PIN quick-login is not configured for this user');
       }
-      isMatch = bcrypt.compareSync(pin, user.pin_hash);
+      isMatch = await bcrypt.compare(pin, user.pin_hash);
     }
 
     if (!isMatch) {

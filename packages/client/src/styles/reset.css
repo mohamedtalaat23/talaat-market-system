@@ -55,12 +55,13 @@ svg {
   max-width: 100%;
 }
 
-/* Form elements inherit font */
+/* Form elements inherit font and color */
 input,
 button,
 textarea,
 select {
   font: inherit;
+  color: inherit;
 }
 
 /* No default text decoration on links */

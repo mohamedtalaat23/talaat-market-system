@@ -13,7 +13,7 @@ export async function getEmployees(
   next: NextFunction
 ): Promise<void> {
   try {
-    const filters = req.query as any;
+    const filters = req.query as unknown as Parameters<typeof employeeService.getEmployees>[0];
     const result = await employeeService.getEmployees(filters);
     res.status(HTTP_STATUS.OK).json({
       success: true,

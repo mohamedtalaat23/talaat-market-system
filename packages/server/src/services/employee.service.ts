@@ -62,10 +62,10 @@ export class EmployeeService {
     }
 
     // 2. Hash password and PIN (if provided) using cost factor 12
-    const password_hash = bcrypt.hashSync(data.password, BCRYPT_ROUNDS);
+    const password_hash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
     let pin_hash: string | null = null;
     if (data.pin) {
-      pin_hash = bcrypt.hashSync(data.pin, BCRYPT_ROUNDS);
+      pin_hash = await bcrypt.hash(data.pin, BCRYPT_ROUNDS);
     }
 
     // 3. Insert into repository
@@ -106,13 +106,13 @@ export class EmployeeService {
 
     // Hash password if modified
     if (data.password) {
-      updates.password_hash = bcrypt.hashSync(data.password, BCRYPT_ROUNDS);
+      updates.password_hash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
       delete updates.password;
     }
 
     // Hash PIN if modified
     if (data.pin) {
-      updates.pin_hash = bcrypt.hashSync(data.pin, BCRYPT_ROUNDS);
+      updates.pin_hash = await bcrypt.hash(data.pin, BCRYPT_ROUNDS);
       delete updates.pin;
     } else if (data.pin === null) {
       updates.pin_hash = null;

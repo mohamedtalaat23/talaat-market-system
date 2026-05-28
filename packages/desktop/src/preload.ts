@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(IPC_CHANNELS.GET_APP_VERSION) as Promise<string>,
 
   // Printing (Phase 6)
-  printReceipt: (data: unknown): Promise<void> =>
+  printReceipt: (data: { html: string }): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.PRINT_RECEIPT, data) as Promise<void>,
 
   openCashDrawer: (): Promise<void> =>
