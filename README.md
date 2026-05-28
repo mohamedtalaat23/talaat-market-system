@@ -1,6 +1,6 @@
 # 🏪 Talaat Market System
 
-> نظام إدارة السوبر ماركت — A production-grade supermarket management system
+> نظام إدارة السوبر ماركت — A production-grade supermarket management system designed for family-run retail stores in Egypt.
 
 [![Node.js](https://img.shields.io/badge/Node.js-v20+-green)](https://nodejs.org)
 [![Electron](https://img.shields.io/badge/Electron-v32-blue)](https://electronjs.org)
@@ -12,9 +12,23 @@
 
 ## Overview
 
-Talaat Market is a fully offline, locally-run supermarket management system designed for small family supermarkets. Built for daily use with speed, reliability, and simplicity as core priorities.
+Talaat Market is a fully offline, high-performance retail POS and ERP system engineered specifically for family supermarkets. Designed for intense daily retail work, it combines keyboard-first speed and native hardware interfaces with robust PostgreSQL database transactions and strict administrative audits.
 
-**Stack:** Electron · React · Express.js · PostgreSQL · TypeScript
+**Architecture Philosophy:** 
+- **Local-First & Offline Resilient**: Runs entirely on localhost or a local LAN, protecting operations against internet drops.
+- **Decoupled Workspaces**: Utilizes `npm Workspaces` to separate the React client, Express API server, and Electron native desktop shell.
+
+---
+
+## Core Features
+
+- **🛒 Keyboard-First POS Checkout**: Under 1.5-second checkout transactions. Monitors physical USB barcode scanners using capture-phase keyboard timings (<30ms burst detection) to read barcodes even if fields are unfocused.
+- **👥 Customer Credit Profiles**: Signed accounts balances tracking credit debt (negative balance) and deposits (positive store credit), with chronological double-entry transaction histories and F7 customer selections.
+- **🔑 PIN Override Protections**: Restricted areas and cashier locks. Delicate POS activities (discounts, reprints, voids) trigger a prompt requesting a Manager's 4-digit bcrypt-hashed PIN.
+- **🖨️ Silent Thermal Receipt Printing**: Generates 80mm receipts utilizing Electron's native print API or an iframe fallback, featuring a reprint audit counter to prevent cashier fraud.
+- **📊 Financial Analytics & Reports**: Multi-screen `/reports` dashboard tracking closed cashier shifts (starting cash vs ending cash variance), override audits, and printable weekly sales metrics.
+- **⚙️ Store Configuration & Registers**: Global control of currency, tax rates, thermal printer templates, and physical registers to lay the groundwork for a LAN multi-terminal model.
+- **🔋 Idempotent Checkout**: Client-side transaction UUID keys protect database actions against double-billing and inventory duplicates.
 
 ---
 
@@ -36,8 +50,8 @@ Before setting up the project, ensure you have:
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd "talaat-market"
+git clone git@github.com:mohamedtalaat23/talaat-market-system.git
+cd "Talaat Market System"
 ```
 
 ### 2. Install dependencies
@@ -46,7 +60,7 @@ cd "talaat-market"
 npm install
 ```
 
-This installs dependencies for all three packages (client, server, desktop) via npm workspaces.
+This installs dependencies for all three packages (`client`, `server`, `desktop`) in one command via npm workspaces.
 
 ### 3. Set up environment
 
@@ -62,9 +76,10 @@ DB_NAME=talaat_market
 DB_USER=talaat_user
 DB_PASSWORD=your_secure_password
 SESSION_SECRET=a_very_long_random_string_at_least_32_chars
+JWT_SECRET=your_jwt_signing_token_secret
 ```
 
-Generate a secure session secret:
+Generate a secure session/JWT secret:
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
@@ -77,7 +92,7 @@ chmod +x scripts/setup-db.sh
 ./scripts/setup-db.sh
 ```
 
-> **Windows users:** Use PowerShell with psql directly — see [Windows setup](#windows-setup).
+> **Windows users:** Create the user and database manually using `psql` or pgAdmin — see [Windows setup](#windows-setup).
 
 ### 5. Run database migrations
 
@@ -91,10 +106,10 @@ npm run migrate --workspace=packages/server
 npm run dev
 ```
 
-This starts all three services concurrently:
+This starts all three packages concurrently:
 - 🟢 **Server** — Express API on `http://localhost:3001`
-- 🔵 **Client** — Vite dev server on `http://localhost:5173`
-- 🟡 **Electron** — Desktop window (waits for server + client to be ready)
+- 🔵 **Client** — Vite React dev server on `http://localhost:5173`
+- 🟡 **Electron** — Desktop shell (waits for server + client to be ready)
 
 ---
 
@@ -112,38 +127,28 @@ talaat-market/
 │   ├── client/                   # React frontend (Vite)
 │   │   ├── src/
 │   │   │   ├── main.tsx          # React entry point
-│   │   │   ├── App.tsx           # Router + providers
-│   │   │   ├── components/
-│   │   │   │   ├── layout/       # AppLayout, sidebar, header
-│   │   │   │   └── ui/           # Reusable UI components
-│   │   │   ├── features/         # Feature modules (POS, inventory, etc.)
-│   │   │   ├── services/         # API client (Axios)
-│   │   │   ├── stores/           # Zustand stores (global state)
-│   │   │   ├── styles/           # CSS design system
-│   │   │   └── types/            # TypeScript types
-│   │   ├── vite.config.ts        # Vite bundler configuration
-│   │   └── index.html            # HTML entry point
+│   │   │   ├── App.tsx           # Router + query client
+│   │   │   ├── components/       # Common Layout (AppLayout) & UI Kits
+│   │   │   ├── features/         # Feature domains (POS, inventory, customers)
+│   │   │   ├── services/         # Axios API client wrapper
+│   │   │   ├── stores/           # Zustand stores (usePOSStore, authStore)
+│   │   │   └── styles/           # Vanilla CSS + Tailwind theme setup
 │   │
 │   ├── server/                   # Express.js API
 │   │   ├── src/
 │   │   │   ├── index.ts          # Server entry point
-│   │   │   ├── app.ts            # Express app factory
-│   │   │   ├── config/           # env, database, constants
-│   │   │   ├── middleware/       # logger, errorHandler
-│   │   │   ├── routes/           # Route definitions
-│   │   │   ├── controllers/      # Request handlers (thin)
-│   │   │   ├── services/         # Business logic
-│   │   │   └── repositories/     # Database queries (Knex)
-│   │   └── migrations/           # Knex database migrations
+│   │   │   ├── config/           # Database configurations & env validations
+│   │   │   ├── middleware/       # RBAC & unified error-boundary mapping
+│   │   │   ├── routes/           # Routing groups namespaced under /api/v1
+│   │   │   ├── controllers/      # Request handlers (Zod parsing)
+│   │   │   └── repositories/     # Data layers (raw Knex SQL operations)
+│   │   └── migrations/           # Knex SQL Schema migration history
 │   │
-│   └── desktop/                  # Electron shell
+│   └── desktop/                  # Electron desktop wrapper
 │       ├── src/
-│       │   ├── main.ts           # Electron main process
+│       │   ├── main.ts           # Electron main process (lifecycle & server spawn)
 │       │   ├── preload.ts        # IPC bridge (contextBridge)
-│       │   ├── server-manager.ts # Express fork manager
-│       │   └── ipc/              # IPC channels + handlers
-│       ├── resources/            # App icons
-│       └── electron-builder.yml  # Packaging configuration
+│       │   └── server-manager.ts # ESM-compliant background server launcher
 │
 └── scripts/
     └── setup-db.sh               # Database creation script
@@ -156,97 +161,69 @@ talaat-market/
 ### Development
 
 ```bash
-# Start everything (recommended)
+# Start everything concurrently
 npm run dev
 
-# Start individual services
+# Start individual packages
 npm run dev:server    # Express API only
 npm run dev:client    # Vite dev server only
 npm run dev:desktop   # Electron only (requires server + client running)
 ```
 
-### Code Quality
+### Code Quality & Validation
 
 ```bash
 # TypeScript type checking
 npm run typecheck
 
-# ESLint
+# Lint files
 npm run lint
-npm run lint:fix
 
-# Prettier formatting
+# Format codebase
 npm run format
-npm run format:check
 ```
 
-### Building
+### Building & Packaging
 
 ```bash
 # Build all packages for production
 npm run build
 
-# Build individual packages
-npm run build:server
-npm run build:client
-npm run build:desktop
-```
-
-### Database
-
-```bash
-# Run pending migrations
-npm run migrate --workspace=packages/server
-
-# Roll back last migration
-npm run migrate:rollback --workspace=packages/server
+# Package Electron app
+npm run package --workspace=packages/desktop
 ```
 
 ---
 
-## Architecture
-
-### System Overview
+## System Architecture
 
 ```
 Electron (Main Process)
-    ├── Forks Express.js server (production)
-    ├── Creates BrowserWindow → loads React app
-    └── IPC bridge via preload.ts
+    ├── Spawns Express.js background server
+    ├── Creates secure sandboxed window
+    └── Intercepts Electron IPC channels (printing, OS metrics)
 
-React (Renderer)
+React Client (Renderer)
     ├── Communicates with Express via HTTP REST
-    ├── State: Zustand (UI) + TanStack Query (server data)
-    └── Hardware access via window.electronAPI (IPC)
+    ├── State: Zustand (Local Persistent Cart) + TanStack Query (Server Cache)
+    └── Binds global hotkeys:
+          - F1 / Space : Checkout Pay
+          - F3 : Cart Discounts
+          - F4 : Cart Hold / Resume
+          - F5 : Product Catalog Lookup
+          - F6 : Receipt Transaction Search
+          - F7 : Link Customer Account
+          - F8 : Void Transaction
+          - F12: Exit POS (Manager only)
 
-Express.js
-    ├── REST API on localhost:PORT
-    ├── Knex.js → PostgreSQL
-    └── Session management
+Express.js Server
+    ├── REST API on localhost:3001
+    ├── Session authentication and Stateless JWT RBAC
+    └── Zod validator parameters
 
-PostgreSQL (Local)
-    └── All business data
+PostgreSQL
+    └── Double-entry ledger tables & checks (inventory.quantity >= 0)
 ```
-
-### Data Flow
-
-```
-User Action → React Component
-           → Zustand (local state) or TanStack Query mutation
-           → Axios → Express API (localhost)
-           → Zod validation → Controller → Service → Repository
-           → Knex → PostgreSQL
-           ← Response → Update UI
-```
-
-### Security Model
-
-- `contextIsolation: true` — renderer cannot access Node.js globals
-- `nodeIntegration: false` — no Node APIs in the browser context
-- `contextBridge` — narrow, typed API exposed to renderer
-- Session-based auth (Phase 3) — no JWT complexity
-- Zod validation on all API inputs
-- bcrypt for password/PIN hashing
 
 ---
 
@@ -255,8 +232,8 @@ User Action → React Component
 ### Ubuntu / Debian
 
 ```bash
-sudo apt-get update
-sudo apt-get install postgresql postgresql-client
+sudo apt update
+sudo apt install postgresql postgresql-client
 
 # Start PostgreSQL service
 sudo systemctl start postgresql
@@ -266,7 +243,7 @@ sudo systemctl enable postgresql
 ./scripts/setup-db.sh
 ```
 
-### Fedora / RHEL / CentOS
+### Fedora / RHEL
 
 ```bash
 sudo dnf install postgresql postgresql-server
@@ -281,10 +258,8 @@ sudo systemctl enable postgresql
 
 1. Download PostgreSQL from [postgresql.org/download/windows](https://www.postgresql.org/download/windows/)
 2. Run the installer (remember your `postgres` superuser password)
-3. Add PostgreSQL `bin` directory to your PATH:
-   ```
-   C:\Program Files\PostgreSQL\16\bin
-   ```
+3. Add PostgreSQL `bin` directory to your System PATH:
+   `C:\Program Files\PostgreSQL\<version>\bin`
 4. Open PowerShell as Administrator:
    ```powershell
    psql -U postgres -c "CREATE USER talaat_user WITH PASSWORD 'your_password';"
@@ -294,61 +269,22 @@ sudo systemctl enable postgresql
 
 ---
 
-## Environment Variables
+## Development Phases & Status
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `NODE_ENV` | No | `development` | Environment: development \| production \| test |
-| `SERVER_PORT` | No | `3001` | Express API port |
-| `DB_HOST` | No | `localhost` | PostgreSQL host |
-| `DB_PORT` | No | `5432` | PostgreSQL port |
-| `DB_NAME` | **Yes** | — | Database name |
-| `DB_USER` | **Yes** | — | Database user |
-| `DB_PASSWORD` | **Yes** | — | Database password |
-| `SESSION_SECRET` | **Yes** | — | Session encryption secret (min 32 chars) |
-| `LOG_LEVEL` | No | `info` | Log level: error \| warn \| info \| debug |
-| `BACKUP_DIR` | No | `~/TalaatMarket/backups` | Backup storage directory |
-
----
-
-## Development Phases
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| **Phase 1** | Foundation (monorepo, scaffold, DB connection) | ✅ **Current** |
-| **Phase 2** | POS system (barcode scanning, cart, payment) | 🔲 Planned |
-| **Phase 3** | Inventory & Suppliers (stock, purchase orders) | 🔲 Planned |
-| **Phase 4** | Reports & Dashboard (KPIs, charts) | 🔲 Planned |
-| **Phase 5** | Polish (customers, employees, settings, backup) | 🔲 Planned |
-| **Phase 6** | Hardware (receipt printer, cash drawer) + packaging | 🔲 Planned |
-| **Phase 7** | LAN multi-terminal, Arabic UI, loyalty points | 🔲 Future |
-
----
-
-## Contributing & Coding Conventions
-
-- **TypeScript strict mode** everywhere — no `any`, no `!` non-null assertions
-- **Feature folders**: each domain (POS, inventory, etc.) is self-contained under `features/`
-- **Naming**: PascalCase components, camelCase functions, UPPER_SNAKE_CASE constants
-- **Database**: All SQL in Repository classes, business logic in Services, no SQL in Controllers
-- **Commits**: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` prefixes
-- **No magic numbers**: All constants defined in `constants.ts`
-
----
-
-## API Documentation
-
-Base URL (development): `http://localhost:3001/api/v1`
-
-### Currently Available
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/health` | Server health check with DB status |
-
-### Planned (Phase 2+)
-
-See [`docs/api.md`](docs/api.md) for the full planned API specification.
+| Phase | Feature Description | Status |
+|-------|---------------------|--------|
+| **Phase 1** | Project scaffolding, DB migration schema, & basic layouts | ✅ Complete |
+| **Phase 2** | Keyboard-driven POS checkout, barcode scan parser, Zustand cart | ✅ Complete |
+| **Phase 3** | Suspended carts (Hold/Resume) and persistent local storage | ✅ Complete |
+| **Phase 4** | Manager override locks and cash calculators | ✅ Complete |
+| **Phase 5** | Cashier enclosures, lock-in routing rules | ✅ Complete |
+| **Phase 6** | Silent 80mm receipt printing and secure shift audits | ✅ Complete |
+| **Phase 7** | Real-Time Inventory & Adjustment Logs | ✅ Complete |
+| **Phase 8** | Shift variance reconciliation and weekly profit reports | ✅ Complete |
+| **Phase 9** | Global Settings dashboard & Registers management for LAN | ✅ Complete |
+| **Phase 10**| Customer Credit accounts, ledger auditing, POS F7 link | ✅ Complete |
+| **Phase 11**| Native USB ESC/POS direct printing (bypassing OS drivers) | 🔲 Planned |
+| **Phase 12**| Multi-terminal LAN synchronization (Outage buffers) | 🔲 Planned |
 
 ---
 

@@ -159,6 +159,9 @@ export function POSKeyboardHandler() {
         case 'F6':
           openModal('pos_transaction_search');
           break;
+        case 'F7':
+          openModal('pos_customer_select');
+          break;
         case 'F8':
           openModal('pos_manager_override', { action: 'void_transaction' });
           break;

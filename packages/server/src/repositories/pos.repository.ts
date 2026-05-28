@@ -10,10 +10,11 @@ export interface CheckoutItem {
 export interface CheckoutPayload {
   shift_id: number;
   register_id: number;
-  payment_method: 'cash' | 'card' | 'split';
+  payment_method: 'cash' | 'card' | 'split' | 'debt';
   cash_received?: number | undefined;
   idempotency_key: string;
   global_discount?: number | undefined;
+  customer_id?: number | undefined;
   items: CheckoutItem[];
 }
 
@@ -117,6 +118,10 @@ export class POSRepository {
     }
 
     return await db.transaction(async (trx) => {
+      if (payload.payment_method === 'debt' && !payload.customer_id) {
+        throw new Error('A customer must be selected to checkout using the debt payment method.');
+      }
+
       // 1. Calculate totals
       let subtotal = 0;
       let discountAmount = 0;
@@ -154,8 +159,32 @@ export class POSRepository {
         status: 'completed',
         print_status: 'pending_print', // Decoupled from physical printing
         print_count: 0,
-        idempotency_key: payload.idempotency_key
+        idempotency_key: payload.idempotency_key,
+        customer_id: payload.customer_id || null
       }).returning('*');
+
+      // If customer is buying on credit (debt), adjust their balance and insert ledger record
+      if (payload.payment_method === 'debt' && payload.customer_id) {
+        const customer = await trx('customers').where('id', payload.customer_id).whereNull('deleted_at').first();
+        if (!customer) {
+          throw new Error('Selected customer not found or has been deleted.');
+        }
+
+        await trx('customer_transactions').insert({
+          customer_id: payload.customer_id,
+          transaction_type: 'sale',
+          amount: -total,
+          reference_id: receiptNumber,
+          notes: `POS credit sale checkout: ${receiptNumber}`,
+          created_by: cashierId,
+          created_at: trx.fn.now()
+        });
+
+        await trx('customers')
+          .where('id', payload.customer_id)
+          .decrement('balance', total)
+          .update({ updated_at: trx.fn.now() });
+      }
 
       // 4. Process items and inventory
       const insertedItems = [];

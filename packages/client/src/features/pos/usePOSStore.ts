@@ -24,7 +24,7 @@ export interface HeldCart {
 
 export interface POSState {
   cart: POSCartItem[];
-  paymentMethod: 'cash' | 'card' | 'split';
+  paymentMethod: 'cash' | 'card' | 'split' | 'debt';
   cashReceived: number;
   activeItemIndex: number;
   globalDiscount: number;
@@ -33,6 +33,7 @@ export interface POSState {
   registerId: number;
   autoPrintReceipts: boolean;
   lastSaleId: number | null;
+  selectedCustomer: any | null;
   
   // Actions
   addItem: (item: Omit<POSCartItem, 'cart_id'>) => void;
@@ -40,7 +41,7 @@ export interface POSState {
   updateItemDiscount: (cartId: string, discount: number) => void;
   removeItem: (cartId: string) => void;
   clearCart: () => void;
-  setPaymentMethod: (method: 'cash' | 'card' | 'split') => void;
+  setPaymentMethod: (method: 'cash' | 'card' | 'split' | 'debt') => void;
   setCashReceived: (amount: number) => void;
   setActiveItemIndex: (index: number) => void;
   setGlobalDiscount: (discount: number) => void;
@@ -51,6 +52,7 @@ export interface POSState {
   setRegisterId: (id: number) => void;
   setAutoPrintReceipts: (auto: boolean) => void;
   setLastSaleId: (id: number | null) => void;
+  selectCustomer: (customer: any | null) => void;
 }
 
 export const usePOSStore = create<POSState>()(
@@ -66,6 +68,7 @@ export const usePOSStore = create<POSState>()(
       registerId: 1, // Default local register ID
       autoPrintReceipts: true,
       lastSaleId: null,
+      selectedCustomer: null,
       
       addItem: (item) => set((state) => {
         const existingIndex = state.cart.findIndex(i => i.product_id === item.product_id && i.unit_price === item.unit_price && i.discount === 0);
@@ -100,7 +103,7 @@ export const usePOSStore = create<POSState>()(
         };
       }),
       
-      clearCart: () => set({ cart: [], cashReceived: 0, paymentMethod: 'cash', activeItemIndex: 0, globalDiscount: 0 }),
+      clearCart: () => set({ cart: [], cashReceived: 0, paymentMethod: 'cash', activeItemIndex: 0, globalDiscount: 0, selectedCustomer: null }),
       
       setPaymentMethod: (method) => set({ paymentMethod: method }),
       setCashReceived: (amount) => set({ cashReceived: amount }),
@@ -148,6 +151,7 @@ export const usePOSStore = create<POSState>()(
       setRegisterId: (id) => set({ registerId: id }),
       setAutoPrintReceipts: (auto) => set({ autoPrintReceipts: auto }),
       setLastSaleId: (id) => set({ lastSaleId: id }),
+      selectCustomer: (customer) => set({ selectedCustomer: customer }),
     }),
     {
       name: 'talaat-pos-cart-storage',

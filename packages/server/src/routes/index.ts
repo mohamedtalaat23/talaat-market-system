@@ -22,6 +22,7 @@ import { dashboardRouter } from './dashboard.routes';
 import { reportsRouter } from './reports.routes';
 
 import { settingsRouter } from './settings.routes';
+import { customerRouter } from './customer.routes';
 
 const apiRouter = Router();
 
@@ -36,6 +37,7 @@ apiRouter.use(`${API_PREFIX}/pos`, posRouter);
 apiRouter.use(`${API_PREFIX}/dashboard`, dashboardRouter);
 apiRouter.use(`${API_PREFIX}/reports`, reportsRouter);
 apiRouter.use(`${API_PREFIX}/settings`, settingsRouter);
+apiRouter.use(`${API_PREFIX}/customers`, customerRouter);
 
 // Future routes will be mounted here (Phase 2+):
 // apiRouter.use(`${API_PREFIX}/auth`,       authRouter);

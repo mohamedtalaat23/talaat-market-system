@@ -11,10 +11,11 @@ const reprintSchema = z.object({
 const checkoutSchema = z.object({
   shift_id: z.number(),
   register_id: z.number(),
-  payment_method: z.enum(['cash', 'card', 'split']),
+  payment_method: z.enum(['cash', 'card', 'split', 'debt']),
   cash_received: z.number().optional(),
   idempotency_key: z.string(),
   global_discount: z.number().min(0).optional(),
+  customer_id: z.number().optional(),
   items: z.array(z.object({
     product_id: z.number(),
     quantity: z.number().positive(),

@@ -24,6 +24,8 @@ import { SettingsLayout } from '@/features/settings/SettingsLayout';
 import { GeneralSettingsScreen } from '@/features/settings/screens/GeneralSettingsScreen';
 import { ReceiptSettingsScreen } from '@/features/settings/screens/ReceiptSettingsScreen';
 import { RegistersScreen } from '@/features/settings/screens/RegistersScreen';
+import { CustomersPage } from '@/features/customers/CustomersPage';
+import { CustomerDetailScreen } from '@/features/customers/screens/CustomerDetailScreen';
 
 /**
  * TanStack Query client configuration.
@@ -158,16 +160,8 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="customers/*"
-                element={
-                  <PlaceholderPage
-                    title="Customer Management"
-                    description="Track customer information, purchase history, and loyalty points."
-                    phase="Phase 5"
-                  />
-                }
-              />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="customers/:id" element={<CustomerDetailScreen />} />
               <Route
                 path="reports/*"
                 element={

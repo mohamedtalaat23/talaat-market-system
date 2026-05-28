@@ -15,6 +15,8 @@ import { NoShiftOverlay } from './components/NoShiftOverlay';
 import { OpenShiftModal } from './components/OpenShiftModal';
 import { CloseShiftModal } from './components/CloseShiftModal';
 import TransactionSearchModal from './components/TransactionSearchModal';
+import { CustomerSelectModal } from './components/CustomerSelectModal';
+import { useModalStore } from '@/stores/modalStore';
 
 export function POSPage() {
   // Use stable selectors for performance
@@ -22,6 +24,8 @@ export function POSPage() {
   const paymentMethod = usePOSStore((state) => state.paymentMethod);
   const cashReceived = usePOSStore((state) => state.cashReceived);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
+  const activeModals = useModalStore((state) => state.activeModals);
+  const closeModal = useModalStore((state) => state.closeModal);
 
   useEffect(() => {
     // Fetch active shift on mount
@@ -73,6 +77,10 @@ export function POSPage() {
       <DiscountModal />
       <SuspendedCartsModal />
       <ReceiptPreviewModal />
+      <CustomerSelectModal
+        isOpen={activeModals.pos_customer_select}
+        onClose={() => closeModal('pos_customer_select')}
+      />
     </div>
   );
 }

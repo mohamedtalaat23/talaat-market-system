@@ -20,6 +20,7 @@ export function PaymentModal() {
   const globalDiscount = usePOSStore((state) => state.globalDiscount);
   const setLastSaleId = usePOSStore((state) => state.setLastSaleId);
   const autoPrintReceipts = usePOSStore((state) => state.autoPrintReceipts);
+  const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
   
   const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
   const itemDiscounts = cart.reduce((sum, item) => sum + item.discount, 0);
@@ -52,7 +53,7 @@ export function PaymentModal() {
   
   // Validation for checkout
   const isValidAmount = paymentMethod !== 'cash' || cashReceived >= total;
-  const canCheckout = cart.length > 0 && isValidAmount && !isSubmitting;
+  const canCheckout = cart.length > 0 && isValidAmount && !isSubmitting && (paymentMethod !== 'debt' || !!selectedCustomer);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +70,7 @@ export function PaymentModal() {
         cash_received: paymentMethod === 'cash' ? cashReceived : undefined,
         idempotency_key,
         global_discount: globalDiscount,
+        customer_id: selectedCustomer?.id || undefined,
         items: cart.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity,
@@ -154,22 +156,40 @@ export function PaymentModal() {
 
           {/* Right Column: Payment Form */}
           <form onSubmit={handleCheckout} className="space-y-6">
-            <div className="flex space-x-3">
+            <div className="flex space-x-2">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cash')}
-                className={`flex-1 py-4 rounded border flex items-center justify-center space-x-2 transition-colors ${paymentMethod === 'cash' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
               >
-                <Banknote size={24} />
-                <span className="font-bold text-lg">Cash</span>
+                <Banknote size={20} />
+                <span className="font-bold text-base">Cash</span>
               </button>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`flex-1 py-4 rounded border flex items-center justify-center space-x-2 transition-colors ${paymentMethod === 'card' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
               >
-                <CreditCard size={24} />
-                <span className="font-bold text-lg">Card</span>
+                <CreditCard size={20} />
+                <span className="font-bold text-base">Card</span>
+              </button>
+              <button
+                type="button"
+                disabled={!selectedCustomer}
+                onClick={() => setPaymentMethod('debt')}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${
+                  paymentMethod === 'debt'
+                    ? 'bg-rose-600/20 border-rose-500 text-rose-400'
+                    : selectedCustomer
+                    ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
+                    : 'bg-slate-900 border-slate-850 text-slate-600 cursor-not-allowed border-dashed'
+                }`}
+                title={selectedCustomer ? 'Charge to customer account' : 'Select customer (F7) to use debt'}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-bold text-base">Debt</span>
               </button>
             </div>
 
@@ -195,6 +215,16 @@ export function PaymentModal() {
                 <div className={`p-4 rounded border ${changeDue > 0 ? 'bg-blue-900/20 border-blue-800 text-blue-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
                   <div className="text-sm font-medium mb-1">Change Due</div>
                   <div className="text-4xl font-bold tracking-tight">EGP {changeDue.toFixed(2)}</div>
+                </div>
+              </div>
+            )}
+            {paymentMethod === 'debt' && selectedCustomer && (
+              <div className="space-y-4">
+                <div className="p-4 rounded border bg-rose-950/20 border-rose-900/30 text-rose-300">
+                  <div className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-1">Buy on Credit (Debt Account)</div>
+                  <p className="text-xs leading-relaxed text-slate-300">
+                    The total sum of <strong className="text-rose-400 font-mono">EGP {total.toFixed(2)}</strong> will be charged to the account of <strong className="text-white">{selectedCustomer.name}</strong>. Their new outstanding balance will be <strong className="text-rose-400 font-mono">EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}</strong>.
+                  </p>
                 </div>
               </div>
             )}
