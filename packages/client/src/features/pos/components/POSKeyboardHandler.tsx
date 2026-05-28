@@ -134,12 +134,15 @@ export function POSKeyboardHandler() {
       }
 
       const cartLength = state.cart.length;
+      const isInput = e.target instanceof HTMLInputElement || 
+                      e.target instanceof HTMLTextAreaElement || 
+                      (e.target instanceof HTMLElement && e.target.isContentEditable);
 
       switch (e.key) {
         case 'F1':
         case ' ':
           // Only capture Spacebar if not typing in an input field
-          if (e.target === document.body) {
+          if (!isInput) {
              e.preventDefault();
              openModal('pos_payment');
           }
@@ -173,26 +176,26 @@ export function POSKeyboardHandler() {
           }
           break;
         case 'ArrowUp':
-          if (cartLength > 0 && e.target === document.body) {
+          if (cartLength > 0 && !isInput) {
             e.preventDefault();
             state.setActiveItemIndex(Math.max(0, state.activeItemIndex - 1));
           }
           break;
         case 'ArrowDown':
-          if (cartLength > 0 && e.target === document.body) {
+          if (cartLength > 0 && !isInput) {
             e.preventDefault();
             state.setActiveItemIndex(Math.min(cartLength - 1, state.activeItemIndex + 1));
           }
           break;
         case 'Delete':
-          if (cartLength > 0 && e.target === document.body) {
+          if (cartLength > 0 && !isInput) {
             e.preventDefault();
             const activeItem = state.cart[state.activeItemIndex];
             if (activeItem) state.removeItem(activeItem.cart_id);
           }
           break;
         case 'Enter':
-          if (cartLength > 0 && e.target === document.body) {
+          if (cartLength > 0 && !isInput) {
             e.preventDefault();
             const activeItem = state.cart[state.activeItemIndex];
             if (activeItem) {

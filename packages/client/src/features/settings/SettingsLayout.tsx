@@ -1,10 +1,12 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Store, Receipt, MonitorSpeaker } from 'lucide-react';
+import { Store, Receipt, MonitorSpeaker, Printer, Wifi } from 'lucide-react';
 
 const TABS = [
   { path: 'general', label: 'General Settings', icon: Store },
   { path: 'receipts', label: 'Receipt Template', icon: Receipt },
   { path: 'registers', label: 'Terminals & Registers', icon: MonitorSpeaker },
+  { path: 'printers', label: 'Hardware Printers', icon: Printer },
+  { path: 'lan', label: 'LAN & Sync', icon: Wifi },
 ];
 
 export function SettingsLayout() {

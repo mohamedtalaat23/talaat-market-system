@@ -32,6 +32,34 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openCashDrawer: (): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.OPEN_CASH_DRAWER) as Promise<void>,
 
+  // Native ESC/POS Hardware printing (Phase 12)
+  enqueuePrintJob: (receipt: any): Promise<{ success: boolean; jobId: string }> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENQUEUE_PRINT_JOB, receipt) as Promise<{ success: boolean; jobId: string }>,
+
+  getPrintJobs: (): Promise<any[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_PRINT_JOBS) as Promise<any[]>,
+
+  retryPrintJob: (jobId: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.RETRY_PRINT_JOB, jobId) as Promise<boolean>,
+
+  clearPrintQueue: (): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CLEAR_PRINT_QUEUE) as Promise<void>,
+
+  getPrinterStatus: (): Promise<any> =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_PRINTER_STATUS) as Promise<any>,
+
+  getPrinterConfig: (): Promise<any> =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_PRINTER_CONFIG) as Promise<any>,
+
+  updatePrinterConfig: (config: any): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_PRINTER_CONFIG, config) as Promise<boolean>,
+
+  discoverPrinters: (): Promise<string[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DISCOVER_PRINTERS) as Promise<string[]>,
+
+  testPrinter: (config: any): Promise<{ success: boolean; message: string }> =>
+    ipcRenderer.invoke(IPC_CHANNELS.TEST_PRINTER, config) as Promise<{ success: boolean; message: string }>,
+
   // Backup (Phase 5)
   createBackup: (backupPath: string): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.CREATE_BACKUP, backupPath) as Promise<void>,

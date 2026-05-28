@@ -21,34 +21,39 @@ export interface Product {
   category_name_ar?: string | null;
   inventory_quantity?: number;
   inventory_reserved_quantity?: number;
+  supplier_id?: number | null;
+  supplier_name?: string | null;
+  supplier_code?: string | null;
 }
 
 export interface CreateProductInput {
-  barcode?: string | null;
+  barcode?: string | null | undefined;
   name: string;
-  name_ar?: string | null;
-  description?: string | null;
-  category_id?: number | null;
-  unit?: string;
+  name_ar?: string | null | undefined;
+  description?: string | null | undefined;
+  category_id?: number | null | undefined;
+  unit?: string | undefined;
   cost_price: number;
   selling_price: number;
-  min_stock_level?: number;
-  max_stock_level?: number;
-  is_active?: boolean;
+  min_stock_level?: number | undefined;
+  max_stock_level?: number | undefined;
+  is_active?: boolean | undefined;
+  supplier_id?: number | null | undefined;
 }
 
 export interface UpdateProductInput {
-  barcode?: string | null;
-  name?: string;
-  name_ar?: string | null;
-  description?: string | null;
-  category_id?: number | null;
-  unit?: string;
-  cost_price?: number;
-  selling_price?: number;
-  min_stock_level?: number;
-  max_stock_level?: number;
-  is_active?: boolean;
+  barcode?: string | null | undefined;
+  name?: string | undefined;
+  name_ar?: string | null | undefined;
+  description?: string | null | undefined;
+  category_id?: number | null | undefined;
+  unit?: string | undefined;
+  cost_price?: number | undefined;
+  selling_price?: number | undefined;
+  min_stock_level?: number | undefined;
+  max_stock_level?: number | undefined;
+  is_active?: boolean | undefined;
+  supplier_id?: number | null | undefined;
 }
 
 export interface ProductFilters {
@@ -66,12 +71,15 @@ export class ProductRepository {
     return db('products')
       .leftJoin('categories', 'categories.id', 'products.category_id')
       .leftJoin('inventory', 'inventory.product_id', 'products.id')
+      .leftJoin('suppliers', 'suppliers.id', 'products.supplier_id')
       .select(
         'products.*',
         'categories.name as category_name',
         'categories.name_ar as category_name_ar',
         'inventory.quantity as inventory_quantity',
-        'inventory.reserved_quantity as inventory_reserved_quantity'
+        'inventory.reserved_quantity as inventory_reserved_quantity',
+        'suppliers.name as supplier_name',
+        'suppliers.supplier_code as supplier_code'
       )
       .whereNull('products.deleted_at'); // Filter out soft-deleted products
   }

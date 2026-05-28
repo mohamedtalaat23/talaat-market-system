@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import { useLANStore } from '@/features/pos/stores/useLANStore';
 
 /**
  * Configure API client with baseURL and standard headers.
@@ -16,6 +17,14 @@ export const apiClient = axios.create({
 // Request interceptor to dynamically inject the JWT token from the Zustand store
 apiClient.interceptors.request.use(
   (config) => {
+    // Dynamically swap baseURL if operating as a LAN Client Terminal
+    const { mode, hostAddress } = useLANStore.getState();
+    if (mode === 'client' && hostAddress) {
+      config.baseURL = `${hostAddress.replace(/\/$/, '')}/api/v1`;
+    } else {
+      config.baseURL = '/api/v1';
+    }
+
     // Get token directly from the Zustand store state
     const token = useAuthStore.getState().token;
     

@@ -15,6 +15,15 @@ export const IPC_CHANNELS = {
   // Printing
   PRINT_RECEIPT: 'printer:print-receipt',
   OPEN_CASH_DRAWER: 'printer:open-cash-drawer',
+  ENQUEUE_PRINT_JOB: 'printer:enqueue-job',
+  GET_PRINT_JOBS: 'printer:get-queue',
+  RETRY_PRINT_JOB: 'printer:retry-job',
+  CLEAR_PRINT_QUEUE: 'printer:clear-queue',
+  GET_PRINTER_STATUS: 'printer:get-status',
+  GET_PRINTER_CONFIG: 'printer:get-config',
+  UPDATE_PRINTER_CONFIG: 'printer:update-config',
+  DISCOVER_PRINTERS: 'printer:discover',
+  TEST_PRINTER: 'printer:test-print',
 
   // Backup
   CREATE_BACKUP: 'backup:create',

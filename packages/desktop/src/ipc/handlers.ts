@@ -1,5 +1,8 @@
 import { type IpcMain, dialog, app, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
+import { printQueue } from './print-queue';
+import { MockPrinterAdapter, UsbPrinterAdapter } from './printer-adapters';
+import type { Receipt, PrinterConfig } from './printing-types';
 
 /**
  * IPC handler registration.
@@ -58,6 +61,55 @@ export function registerIpcHandlers(
   ipcMain.handle(IPC_CHANNELS.OPEN_CASH_DRAWER, async () => {
     console.log('[IPC] open-cash-drawer called');
     return { success: true, message: 'Cash drawer not yet implemented' };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.ENQUEUE_PRINT_JOB, async (_event, receipt: Receipt) => {
+    console.log('[IPC] enqueue-job called for receipt:', receipt.receiptNumber);
+    const job = printQueue.enqueue(receipt);
+    return { success: true, jobId: job.id };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_PRINT_JOBS, async () => {
+    return printQueue.getJobs();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.RETRY_PRINT_JOB, async (_event, jobId: string) => {
+    console.log('[IPC] retry-job called for:', jobId);
+    return printQueue.retryJob(jobId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CLEAR_PRINT_QUEUE, async () => {
+    printQueue.clearQueue();
+    return { success: true };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_PRINTER_STATUS, async () => {
+    const config = printQueue.getConfig();
+    let adapter;
+    if (config.type === 'mock') {
+      adapter = new MockPrinterAdapter();
+    } else {
+      adapter = new UsbPrinterAdapter(config.devicePath);
+    }
+    return adapter.getStatus();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_PRINTER_CONFIG, async () => {
+    return printQueue.getConfig();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.UPDATE_PRINTER_CONFIG, async (_event, config: PrinterConfig) => {
+    printQueue.updateConfig(config);
+    return true;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DISCOVER_PRINTERS, async () => {
+    return UsbPrinterAdapter.discover();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.TEST_PRINTER, async (_event, config: PrinterConfig) => {
+    console.log('[IPC] test-printer called with config:', config);
+    return printQueue.testPrinter(config);
   });
 
   // ── Backup (Phase 5) ──────────────────────────────────────────────────────

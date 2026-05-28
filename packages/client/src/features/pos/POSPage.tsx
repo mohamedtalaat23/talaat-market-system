@@ -17,6 +17,7 @@ import { CloseShiftModal } from './components/CloseShiftModal';
 import TransactionSearchModal from './components/TransactionSearchModal';
 import { CustomerSelectModal } from './components/CustomerSelectModal';
 import { useModalStore } from '@/stores/modalStore';
+import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 
 export function POSPage() {
   // Use stable selectors for performance
@@ -54,12 +55,13 @@ export function POSPage() {
         </div>
 
         {/* Right Panel: Summary & Actions (30% approximation) */}
-        <div className="w-4/12 flex flex-col bg-slate-900 p-4 space-y-4">
+        <div className="w-4/12 flex flex-col bg-slate-900 p-4 space-y-4 justify-between h-full overflow-y-auto">
           <POSSummary 
             cart={cart}
             paymentMethod={paymentMethod}
             cashReceived={cashReceived}
           />
+          <PrintQueueMonitor />
         </div>
       </div>
 

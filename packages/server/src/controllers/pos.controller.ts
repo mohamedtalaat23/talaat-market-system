@@ -13,6 +13,8 @@ const checkoutSchema = z.object({
   register_id: z.number(),
   payment_method: z.enum(['cash', 'card', 'split', 'debt']),
   cash_received: z.number().optional(),
+  cash_amount: z.number().optional(),
+  card_amount: z.number().optional(),
   idempotency_key: z.string(),
   global_discount: z.number().min(0).optional(),
   customer_id: z.number().optional(),

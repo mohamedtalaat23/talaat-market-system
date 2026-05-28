@@ -20,6 +20,9 @@ export interface Product {
   category_name_ar?: string | null;
   inventory_quantity?: number;
   inventory_reserved_quantity?: number;
+  supplier_id?: number | null;
+  supplier_name?: string | null;
+  supplier_code?: string | null;
 }
 
 export interface Category {
@@ -61,6 +64,7 @@ export interface CreateProductInput {
   max_stock_level: number;
   is_active: boolean;
   initial_quantity: number;
+  supplier_id?: number | null;
 }
 
 export interface UpdateProductInput {
@@ -75,6 +79,7 @@ export interface UpdateProductInput {
   min_stock_level?: number;
   max_stock_level?: number;
   is_active?: boolean;
+  supplier_id?: number | null;
 }
 
 /**

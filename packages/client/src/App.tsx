@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 import { useAuthStore } from '@/stores/authStore';
+import { LANSyncManager } from '@/features/pos/components/LANSyncManager';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
@@ -24,8 +25,12 @@ import { SettingsLayout } from '@/features/settings/SettingsLayout';
 import { GeneralSettingsScreen } from '@/features/settings/screens/GeneralSettingsScreen';
 import { ReceiptSettingsScreen } from '@/features/settings/screens/ReceiptSettingsScreen';
 import { RegistersScreen } from '@/features/settings/screens/RegistersScreen';
+import { PrinterSettingsScreen } from '@/features/settings/screens/PrinterSettingsScreen';
+import { LANSettingsScreen } from '@/features/settings/screens/LANSettingsScreen';
 import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CustomerDetailScreen } from '@/features/customers/screens/CustomerDetailScreen';
+import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
+import { SupplierDetailScreen } from '@/features/suppliers/screens/SupplierDetailScreen';
 
 /**
  * TanStack Query client configuration.
@@ -137,14 +142,18 @@ export function App() {
 
               {/* Other Features - simple placeholders for now */}
               <Route
-                path="suppliers/*"
+                path="suppliers"
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <PlaceholderPage
-                      title="Suppliers"
-                      description="Manage your supplier directory, contact information, and payment terms."
-                      phase="Phase 3"
-                    />
+                    <SuppliersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="suppliers/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <SupplierDetailScreen />
                   </ProtectedRoute>
                 }
               />
@@ -188,6 +197,8 @@ export function App() {
                 <Route path="general" element={<GeneralSettingsScreen />} />
                 <Route path="receipts" element={<ReceiptSettingsScreen />} />
                 <Route path="registers" element={<RegistersScreen />} />
+                <Route path="printers" element={<PrinterSettingsScreen />} />
+                <Route path="lan" element={<LANSettingsScreen />} />
               </Route>
 
               {/* 404 fallback */}
@@ -195,6 +206,7 @@ export function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        <LANSyncManager />
       </ErrorBoundary>
 
       {/* Toast notifications */}

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { customerRepository } from '../repositories/customer.repository';
+import { posRepository } from '../repositories/pos.repository';
 import { logger } from '../middleware/logger';
 
 const createCustomerSchema = z.object({
@@ -25,6 +26,7 @@ const updateCustomerSchema = z.object({
 const recordPaymentSchema = z.object({
   amount: z.number().positive('Payment amount must be greater than zero'),
   notes: z.string().nullable().optional(),
+  payment_method: z.enum(['cash', 'card']).optional().default('cash'),
 });
 
 export class CustomerController {
@@ -172,8 +174,11 @@ export class CustomerController {
         return;
       }
 
-      const { amount, notes } = recordPaymentSchema.parse(req.body);
+      const { amount, notes, payment_method } = recordPaymentSchema.parse(req.body);
       const userId = (req as any).user?.id || null;
+
+      // Query the active cashier shift to link repayment cash to the drawer
+      const activeShift = userId ? await posRepository.getCurrentShift(userId) : null;
 
       // When recording a payment, the customer is paying the store, so they add credit/reduce debt.
       // This means we increment their balance (amount is positive).
@@ -183,7 +188,10 @@ export class CustomerController {
         'payment',
         null,
         notes || 'Manual customer account payment',
-        userId
+        userId,
+        activeShift?.id || null,
+        activeShift?.register_id || null,
+        payment_method
       );
 
       res.json({

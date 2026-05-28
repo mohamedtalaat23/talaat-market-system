@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCategories, type Product } from '../hooks/useProductQueries';
+import { useSuppliers } from '@/features/suppliers/hooks/useSupplierQueries';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
@@ -36,6 +37,15 @@ export function ProductForm({
   const [maxStockLevel, setMaxStockLevel] = useState(initialData?.max_stock_level ? String(initialData.max_stock_level) : '0');
   const [initialQuantity, setInitialQuantity] = useState('0');
   const [isActive, setIsActive] = useState<boolean>(initialData ? initialData.is_active : true);
+  const [supplierId, setSupplierId] = useState<string>(
+    initialData?.supplier_id ? String(initialData.supplier_id) : ''
+  );
+  const [supplierSearch, setSupplierSearch] = useState('');
+
+  // Fetch active/inactive suppliers to assign
+  const { data: suppliersData } = useSuppliers(supplierSearch || undefined, 1, 100);
+  const suppliers = suppliersData?.items || [];
+  const selectedSupplier = suppliers.find((s) => String(s.id) === supplierId);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -71,6 +81,7 @@ export function ProductForm({
       min_stock_level: parseFloat(minStockLevel) || 0,
       max_stock_level: parseFloat(maxStockLevel) || 0,
       is_active: isActive,
+      supplier_id: supplierId ? parseInt(supplierId, 10) : null,
     };
 
     if (mode === 'create') {
@@ -154,6 +165,45 @@ export function ProductForm({
                 </option>
               ))}
             </select>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="supplierId" className="text-xs font-semibold text-neutral-300">
+            Primary Supplier
+          </label>
+          <div className="flex space-x-2">
+            <select
+              id="supplierId"
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value)}
+              disabled={isLoading}
+              className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            >
+              <option value="">No Supplier Assigned</option>
+              {suppliers.map((sup) => (
+                <option
+                  key={sup.id}
+                  value={sup.id}
+                  disabled={sup.status === 'suspended'}
+                >
+                  {sup.name} ({sup.supplier_code}){sup.status === 'suspended' ? ' [Suspended]' : sup.status === 'inactive' ? ' [Inactive]' : ''}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={supplierSearch}
+              onChange={(e) => setSupplierSearch(e.target.value)}
+              className="w-1/3 h-10 rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-xs text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              title="Filter suppliers by name or code"
+            />
+          </div>
+          {selectedSupplier && selectedSupplier.status === 'inactive' && (
+            <p className="text-[10px] text-amber-500 font-medium mt-1">
+              ⚠️ Inactive supplier chosen.
+            </p>
           )}
         </div>
 

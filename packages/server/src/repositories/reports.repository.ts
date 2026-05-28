@@ -93,6 +93,8 @@ export class ReportsRepository {
         'sales.discount_amount',
         'sales.global_discount',
         'sales.cash_received',
+        'sales.cash_amount',
+        'sales.card_amount',
         'sales.change_given',
         'sales.status',
         'sales.print_count',
@@ -107,6 +109,8 @@ export class ReportsRepository {
       discount_amount: Number(t.discount_amount),
       global_discount: Number(t.global_discount),
       cash_received: t.cash_received !== null ? Number(t.cash_received) : null,
+      cash_amount: t.cash_amount !== null ? Number(t.cash_amount) : null,
+      card_amount: t.card_amount !== null ? Number(t.card_amount) : null,
       change_given: Number(t.change_given),
     }));
 
@@ -133,9 +137,31 @@ export class ReportsRepository {
       if (t.status !== 'voided') {
         totalRevenue += t.total;
         totalDiscounts += (t.discount_amount + t.global_discount);
-        if (t.payment_method === 'cash') cashSalesTotal += t.total;
-        if (t.payment_method === 'card') cardSalesTotal += t.total;
+        if (t.payment_method === 'cash') {
+          cashSalesTotal += t.total;
+        } else if (t.payment_method === 'card') {
+          cardSalesTotal += t.total;
+        } else if (t.payment_method === 'split') {
+          cashSalesTotal += Number(t.cash_amount || 0);
+          cardSalesTotal += Number(t.card_amount || 0);
+        }
       }
+    }
+
+    // Query customer payments associated with this active shift to balance cash count
+    const customerPayments = await db('customer_transactions')
+      .where('shift_id', id)
+      .andWhere('transaction_type', 'payment')
+      .select('amount', 'payment_method');
+
+    for (const p of customerPayments) {
+      const amt = Number(p.amount);
+      if (p.payment_method === 'cash') {
+        cashSalesTotal += amt;
+      } else if (p.payment_method === 'card') {
+        cardSalesTotal += amt;
+      }
+      totalRevenue += amt;
     }
 
     return {

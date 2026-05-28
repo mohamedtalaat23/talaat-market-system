@@ -24,6 +24,9 @@ export interface CustomerTransaction {
   notes: string | null;
   created_by: number | null;
   created_at: Date;
+  shift_id?: number | null;
+  register_id?: number | null;
+  payment_method?: 'cash' | 'card';
   // Joined field
   created_by_name?: string | null;
 }
@@ -172,6 +175,9 @@ export class CustomerRepository {
     referenceId: string | null,
     notes: string | null,
     userId: number | null,
+    shiftId?: number | null,
+    registerId?: number | null,
+    paymentMethod?: 'cash' | 'card' | null,
     externalTrx?: Knex.Transaction
   ): Promise<Customer> {
     const exec = async (trx: Knex.Transaction) => {
@@ -189,6 +195,9 @@ export class CustomerRepository {
         reference_id: referenceId,
         notes: notes,
         created_by: userId,
+        shift_id: shiftId || null,
+        register_id: registerId || null,
+        payment_method: paymentMethod || 'cash',
         created_at: trx.fn.now()
       });
 

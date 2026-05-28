@@ -12,6 +12,8 @@ export interface CheckoutPayload {
   register_id: number;
   payment_method: 'cash' | 'card' | 'split' | 'debt';
   cash_received?: number | undefined;
+  cash_amount?: number | undefined;
+  card_amount?: number | undefined;
   idempotency_key: string;
   global_discount?: number | undefined;
   customer_id?: number | undefined;
@@ -80,11 +82,27 @@ export class POSRepository {
         cashSales += Number(sale.total);
       } else if (sale.payment_method === 'card') {
         cardSales += Number(sale.total);
+      } else if (sale.payment_method === 'split') {
+        cashSales += Number(sale.cash_amount || 0);
+        cardSales += Number(sale.card_amount || 0);
       }
       totalDiscounts += Number(sale.discount_amount) + Number(sale.global_discount);
       
       if (sale.print_status === 'pending_print') {
         pendingPrints++;
+      }
+    }
+
+    // Query customer payments associated with this active shift to balance cash count
+    const customerPayments = await db('customer_transactions')
+      .where('shift_id', shiftId)
+      .andWhere('transaction_type', 'payment');
+
+    for (const payment of customerPayments) {
+      if (payment.payment_method === 'cash') {
+        cashSales += Number(payment.amount);
+      } else if (payment.payment_method === 'card') {
+        cardSales += Number(payment.amount);
       }
     }
 
@@ -155,6 +173,8 @@ export class POSRepository {
         tax_amount: taxAmount,
         total,
         cash_received: payload.cash_received || null,
+        cash_amount: payload.payment_method === 'split' ? (payload.cash_amount || null) : null,
+        card_amount: payload.payment_method === 'split' ? (payload.card_amount || null) : null,
         change_given: changeGiven,
         status: 'completed',
         print_status: 'pending_print', // Decoupled from physical printing

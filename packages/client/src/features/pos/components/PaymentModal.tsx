@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { X, CreditCard, Banknote, CheckCircle2 } from 'lucide-react';
+import { X, CreditCard, Banknote, CheckCircle2, Monitor } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { usePOSStore } from '../usePOSStore';
 import { apiClient } from '@/services/api-client';
 import { printerService } from '../services/printer.service';
+import { useAuthStore } from '@/stores/authStore';
+import { useLANStore } from '../stores/useLANStore';
 import toast from 'react-hot-toast';
 
 export function PaymentModal() {
@@ -28,14 +30,30 @@ export function PaymentModal() {
 
   const [cashReceivedStr, setCashReceivedStr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cashPortionStr, setCashPortionStr] = useState('');
+  const [cardPortionStr, setCardPortionStr] = useState('');
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   // Focus and reset state when opened
   useEffect(() => {
     if (isOpen) {
       setCashReceivedStr('');
+      setCashPortionStr(String(Math.floor(total / 2)));
+      setCardPortionStr(String(total - Math.floor(total / 2)));
     }
-  }, [isOpen]);
+  }, [isOpen, total]);
+
+  const handleCashPortionChange = (val: string) => {
+    setCashPortionStr(val);
+    const num = parseFloat(val) || 0;
+    setCardPortionStr(String(Math.max(0, total - num)));
+  };
+
+  const handleCardPortionChange = (val: string) => {
+    setCardPortionStr(val);
+    const num = parseFloat(val) || 0;
+    setCashPortionStr(String(Math.max(0, total - num)));
+  };
 
   // Close modal on Escape
   useEffect(() => {
@@ -61,6 +79,129 @@ export function PaymentModal() {
 
     setIsSubmitting(true);
     const idempotency_key = crypto.randomUUID();
+    const { mode, status, addOfflineSale, setStatus } = useLANStore.getState();
+
+    const updateLocalShiftTally = (saleDataId: number) => {
+      const activeShift = usePOSStore.getState().activeShift;
+      if (activeShift) {
+        let cashSalesAdd = 0;
+        let cardSalesAdd = 0;
+        if (paymentMethod === 'cash') cashSalesAdd = total;
+        if (paymentMethod === 'card') cardSalesAdd = total;
+        if (paymentMethod === 'split') {
+          cashSalesAdd = parseFloat(cashPortionStr) || 0;
+          cardSalesAdd = parseFloat(cardPortionStr) || 0;
+        }
+
+        const updatedShift = {
+          ...activeShift,
+          cash_sales: Number(activeShift.cash_sales || 0) + cashSalesAdd,
+          card_sales: Number(activeShift.card_sales || 0) + cardSalesAdd,
+          total_discounts: Number(activeShift.total_discounts || 0) + itemDiscounts + globalDiscount
+        };
+        usePOSStore.getState().setActiveShift(updatedShift);
+      }
+    };
+
+    const executeOfflineCheckout = () => {
+      const activeShift = usePOSStore.getState().activeShift;
+      const shiftId = activeShift?.id || 1;
+      const registerId = usePOSStore.getState().registerId || 1;
+      const cashierName = useAuthStore.getState().user?.full_name || useAuthStore.getState().user?.username || 'Cashier';
+      
+      const offlineUuid = crypto.randomUUID();
+      const receiptNumber = `STR01-REG${String(registerId).padStart(2, '0')}-OFF-${offlineUuid.slice(0, 8).toUpperCase()}`;
+      const saleId = Math.floor(Math.random() * -1000000); // Unique negative ID for offline sale representation
+
+      const saleItems = cart.map((item, index) => ({
+        id: Math.floor(Math.random() * -1000000) - index,
+        sale_id: saleId,
+        product_id: item.product_id,
+        product_name: item.name,
+        name_ar: item.name_ar,
+        barcode: item.barcode,
+        quantity: item.quantity,
+        unit: item.unit,
+        unit_price: item.unit_price,
+        discount: item.discount,
+        line_total: (item.quantity * item.unit_price) - item.discount
+      }));
+
+      const payload = {
+        shift_id: shiftId,
+        register_id: registerId,
+        payment_method: paymentMethod,
+        cash_received: paymentMethod === 'cash' ? cashReceived : undefined,
+        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || 0) : undefined,
+        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || 0) : undefined,
+        idempotency_key,
+        global_discount: globalDiscount,
+        customer_id: selectedCustomer?.id || undefined,
+        items: cart.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          discount: item.discount
+        }))
+      };
+
+      const saleData = {
+        id: saleId,
+        receipt_number: receiptNumber,
+        cashier_name: cashierName,
+        items: saleItems,
+        subtotal,
+        discount_amount: itemDiscounts,
+        global_discount: globalDiscount,
+        tax_amount: 0,
+        total,
+        cash_received: paymentMethod === 'cash' ? cashReceived : null,
+        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || null) : null,
+        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || null) : null,
+        change_given: changeDue > 0 ? changeDue : 0,
+        payment_method: paymentMethod,
+        created_at: new Date().toISOString(),
+        is_offline: true,
+        print_count: 0
+      };
+
+      // Spool locally to offline queue
+      addOfflineSale({
+        id: offlineUuid,
+        idempotency_key,
+        payload,
+        saleData,
+        timestamp: new Date().toISOString()
+      });
+
+      // Update running shift tally locally
+      updateLocalShiftTally(saleId);
+
+      toast.success('Offline checkout stored in local register queue', { icon: '💾', duration: 4000 });
+      clearCart();
+      closeModal();
+      setLastSaleId(saleId);
+
+      if (autoPrintReceipts) {
+        toast.promise(
+          printerService.printReceipt(saleData),
+          {
+            loading: 'Printing offline receipt...',
+            success: 'Receipt printed successfully!',
+            error: 'Failed to print receipt',
+          }
+        );
+      } else {
+        openModalAction('pos_receipt_preview', { sale: saleData });
+      }
+    };
+
+    // Resilient offline/timeout bypass
+    if (mode === 'client' && status === 'offline') {
+      executeOfflineCheckout();
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const payload = {
@@ -68,6 +209,8 @@ export function PaymentModal() {
         register_id: usePOSStore.getState().registerId,
         payment_method: paymentMethod,
         cash_received: paymentMethod === 'cash' ? cashReceived : undefined,
+        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || 0) : undefined,
+        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || 0) : undefined,
         idempotency_key,
         global_discount: globalDiscount,
         customer_id: selectedCustomer?.id || undefined,
@@ -88,11 +231,16 @@ export function PaymentModal() {
       const saleData = response.data.data;
       setLastSaleId(saleData.id);
 
+      // Update running shift tally locally
+      updateLocalShiftTally(saleData.id);
+
       if (autoPrintReceipts) {
         toast.promise(
           printerService.printReceipt(saleData).then(() => {
-            // Decoupled status update
-            return apiClient.post(`/pos/receipts/${saleData.id}/print`);
+            // Decoupled status update - only post if online and ID is positive
+            if (saleData.id > 0 && status === 'online') {
+              return apiClient.post(`/pos/receipts/${saleData.id}/print`);
+            }
           }),
           {
             loading: 'Printing receipt...',
@@ -104,7 +252,15 @@ export function PaymentModal() {
         openModalAction('pos_receipt_preview', { sale: saleData });
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Checkout failed. Network error.');
+      const isNetworkError = !error.response || error.message?.includes('Network Error') || error.status === undefined || error.status >= 500;
+      
+      if (mode === 'client' && isNetworkError) {
+        toast.error('Network connection to Master server failed. Routing to offline buffer...', { duration: 4000 });
+        setStatus('offline');
+        executeOfflineCheckout();
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Checkout failed.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -175,6 +331,14 @@ export function PaymentModal() {
               </button>
               <button
                 type="button"
+                onClick={() => setPaymentMethod('split')}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-amber-600/20 border-amber-500 text-amber-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+              >
+                <Monitor size={20} />
+                <span className="font-bold text-base">Split</span>
+              </button>
+              <button
+                type="button"
                 disabled={!selectedCustomer}
                 onClick={() => setPaymentMethod('debt')}
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${
@@ -218,6 +382,44 @@ export function PaymentModal() {
                 </div>
               </div>
             )}
+
+            {paymentMethod === 'split' && (
+              <div className="space-y-4 bg-slate-950/60 p-4 border border-slate-800/80 rounded-lg">
+                <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Split Allocation (EGP)</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="cash-portion" className="block text-xs font-semibold text-slate-400 mb-1">Cash Portion</label>
+                    <input
+                      id="cash-portion"
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"
+                      value={cashPortionStr}
+                      onChange={(e) => handleCashPortionChange(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="card-portion" className="block text-xs font-semibold text-slate-400 mb-1">Card Portion</label>
+                    <input
+                      id="card-portion"
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"
+                      value={cardPortionStr}
+                      onChange={(e) => handleCardPortionChange(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-slate-500 text-center pt-2">
+                  Verify Cash portion ({Number(cashPortionStr || 0).toFixed(2)}) + Card portion ({Number(cardPortionStr || 0).toFixed(2)}) equals total ({total.toFixed(2)})
+                </div>
+              </div>
+            )}
+
             {paymentMethod === 'debt' && selectedCustomer && (
               <div className="space-y-4">
                 <div className="p-4 rounded border bg-rose-950/20 border-rose-900/30 text-rose-300">

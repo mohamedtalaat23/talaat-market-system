@@ -5,6 +5,7 @@ import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import { Lock, X, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useLANStore } from '../stores/useLANStore';
 
 export function CloseShiftModal() {
   const { activeModals, closeModal, openModal, modalPayloads } = useModalStore();
@@ -38,6 +39,29 @@ export function CloseShiftModal() {
   const fetchSummary = async () => {
     setIsLoading(true);
     try {
+      const { status } = useLANStore.getState();
+      
+      // Resilient offline calculations using active shift running tallies
+      if (status === 'offline') {
+        const localSummary = {
+          shift_id: activeShift.id,
+          starting_cash: Number(activeShift.starting_cash || 0),
+          cash_sales: Number(activeShift.cash_sales || 0),
+          card_sales: Number(activeShift.card_sales || 0),
+          total_discounts: Number(activeShift.total_discounts || 0),
+          expected_cash: Number(activeShift.starting_cash || 0) + Number(activeShift.cash_sales || 0),
+          pending_prints: 0
+        };
+        setSummary(localSummary);
+        
+        const myHeldCarts = heldCarts.filter(c => c.cashier_id === user?.id);
+        if (myHeldCarts.length > 0) {
+          setNeedsOverride(true);
+        }
+        setIsLoading(false);
+        return;
+      }
+
       const response = await apiClient.get<{ success: boolean; data: any }>(`/pos/shifts/${activeShift.id}/summary`);
       if (response.data?.success) {
         const data = response.data.data;
@@ -77,6 +101,28 @@ export function CloseShiftModal() {
     }
 
     setIsSubmitting(true);
+    const { status, mode, setStatus, addOfflineShiftClosure } = useLANStore.getState();
+
+    // Resilient offline close shift buffering
+    if (status === 'offline') {
+      addOfflineShiftClosure({
+        id: crypto.randomUUID(),
+        payload: {
+          shift_id: activeShift.id,
+          ending_cash: cash,
+          expected_cash: summary?.expected_cash || 0,
+          notes: 'Offline cashier shift closure'
+        },
+        timestamp: new Date().toISOString()
+      });
+      
+      toast.success('Shift closed locally. Synching in background...', { icon: '💾', duration: 4000 });
+      setActiveShift(null);
+      closeModal('pos_close_shift');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const response = await apiClient.post<{ success: boolean; data: any }>('/pos/shifts/close', {
         shift_id: activeShift.id,
@@ -91,7 +137,26 @@ export function CloseShiftModal() {
         closeModal('pos_close_shift');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to close shift');
+      const isNetworkError = !error.response || error.message?.includes('Network Error') || error.status === undefined || error.status >= 500;
+      
+      if (mode === 'client' && isNetworkError) {
+        toast.error('Network connection to Master server failed. Routing to local shift buffer...', { duration: 4000 });
+        setStatus('offline');
+        addOfflineShiftClosure({
+          id: crypto.randomUUID(),
+          payload: {
+            shift_id: activeShift.id,
+            ending_cash: cash,
+            expected_cash: summary?.expected_cash || 0,
+            notes: 'Offline shift closure fallback'
+          },
+          timestamp: new Date().toISOString()
+        });
+        setActiveShift(null);
+        closeModal('pos_close_shift');
+      } else {
+        toast.error(error.message || 'Failed to close shift');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -140,19 +205,19 @@ export function CloseShiftModal() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
                   <p className="text-sm text-slate-400">Starting Cash</p>
-                  <p className="text-xl font-bold font-mono">£{summary.starting_cash.toFixed(2)}</p>
+                  <p className="text-xl font-bold font-mono">EGP {summary.starting_cash.toFixed(2)}</p>
                 </div>
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
                   <p className="text-sm text-slate-400">Cash Sales</p>
-                  <p className="text-xl font-bold text-emerald-400 font-mono">+£{summary.cash_sales.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-emerald-400 font-mono">+EGP {summary.cash_sales.toFixed(2)}</p>
                 </div>
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
                   <p className="text-sm text-slate-400">Card Sales</p>
-                  <p className="text-xl font-bold text-blue-400 font-mono">£{summary.card_sales.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-blue-400 font-mono">EGP {summary.card_sales.toFixed(2)}</p>
                 </div>
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
                   <p className="text-sm text-slate-400">Expected Cash in Drawer</p>
-                  <p className="text-2xl font-bold text-white font-mono">£{summary.expected_cash.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white font-mono">EGP {summary.expected_cash.toFixed(2)}</p>
                 </div>
               </div>
 
@@ -166,7 +231,7 @@ export function CloseShiftModal() {
                   )}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">£</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">EGP</span>
                   <input 
                     type="number"
                     min="0"

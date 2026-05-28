@@ -73,10 +73,17 @@ export function ProductTable({
                       )}
                     </td>
                     <td className="p-4">
-                      <span className="flex items-center space-x-1 text-xs text-neutral-300">
-                        <span className="text-primary/75 font-bold mr-0.5">#</span>
-                        <span>{product.category_name || 'Uncategorized'}</span>
-                      </span>
+                      <div className="flex flex-col space-y-1">
+                        <span className="flex items-center space-x-1 text-xs text-neutral-300">
+                          <span className="text-primary/75 font-bold mr-0.5">#</span>
+                          <span>{product.category_name || 'Uncategorized'}</span>
+                        </span>
+                        {product.supplier_name && (
+                          <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[120px]" title={`${product.supplier_name} (${product.supplier_code})`}>
+                            Sup: {product.supplier_name}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-right font-mono text-neutral-400">
                       EGP {product.cost_price.toFixed(2)}

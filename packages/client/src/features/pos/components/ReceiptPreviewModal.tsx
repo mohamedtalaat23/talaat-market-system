@@ -4,6 +4,7 @@ import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { apiClient } from '@/services/api-client';
 import { printerService } from '../services/printer.service';
+import { useLANStore } from '../stores/useLANStore';
 import toast from 'react-hot-toast';
 
 export function ReceiptPreviewModal() {
@@ -20,8 +21,12 @@ export function ReceiptPreviewModal() {
     try {
       await printerService.printReceipt(sale);
       
-      // Mark as printed on the backend
-      await apiClient.post(`/pos/receipts/${sale.id}/print`);
+      const { status } = useLANStore.getState();
+      // Mark as printed on the backend - only post if online and ID is positive
+      if (sale.id > 0 && status === 'online') {
+        await apiClient.post(`/pos/receipts/${sale.id}/print`);
+      }
+      
       toast.success('Receipt printed successfully');
       closeModal();
     } catch (error) {

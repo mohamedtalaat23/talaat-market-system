@@ -283,8 +283,9 @@ sudo systemctl enable postgresql
 | **Phase 8** | Shift variance reconciliation and weekly profit reports | ✅ Complete |
 | **Phase 9** | Global Settings dashboard & Registers management for LAN | ✅ Complete |
 | **Phase 10**| Customer Credit accounts, ledger auditing, POS F7 link | ✅ Complete |
-| **Phase 11**| Native USB ESC/POS direct printing (bypassing OS drivers) | 🔲 Planned |
-| **Phase 12**| Multi-terminal LAN synchronization (Outage buffers) | 🔲 Planned |
+| **Phase 11**| Suppliers Directory & Catalog Management | ✅ Complete |
+| **Phase 12**| Native USB ESC/POS direct printing (bypassing OS drivers) | ✅ Complete |
+| **Phase 13**| Multi-terminal LAN synchronization (Outage buffers) | 🔲 Planned |
 
 ---
 

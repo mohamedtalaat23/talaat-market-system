@@ -2,6 +2,7 @@ import { db } from '../config/database';
 import { productRepository, type Product, type ProductFilters } from '../repositories/product.repository';
 import { NotFoundError, ConflictError } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
+import { supplierService } from './supplier.service';
 
 export interface PaginatedProducts {
   items: Product[];
@@ -71,6 +72,11 @@ export class ProductService {
     
     logger.info('Creating new product', { name: productData.name, barcode: productData.barcode });
 
+    // Validate supplier status if provided
+    if (productData.supplier_id) {
+      await supplierService.validateSupplierAssignment(productData.supplier_id);
+    }
+
     // Validate barcode uniqueness if provided
     if (productData.barcode) {
       const existingProduct = await productRepository.findByBarcode(productData.barcode);
@@ -105,6 +111,11 @@ export class ProductService {
     const existingProduct = await productRepository.findById(id);
     if (!existingProduct) {
       throw new NotFoundError('Product', id);
+    }
+
+    // Validate supplier status if provided
+    if (data.supplier_id) {
+      await supplierService.validateSupplierAssignment(data.supplier_id);
     }
 
     // Check barcode uniqueness if changed
