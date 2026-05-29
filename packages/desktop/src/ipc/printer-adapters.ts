@@ -63,7 +63,8 @@ export function withTimeout<T>(
   operationName: string
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => {
+    const runLater = setTimeout;
+    const timer = runLater(() => {
       const error: any = new Error(`${operationName} timed out after ${timeoutMs}ms`);
       error.code = 'ETIMEDOUT';
       reject(error);

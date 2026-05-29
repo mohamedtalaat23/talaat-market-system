@@ -169,13 +169,28 @@ export const usePOSStore = create<POSState>()(
         const heldCart = state.heldCarts.find(h => h.hold_id === holdId);
         if (!heldCart) return state;
         
+        let newHeldCarts = state.heldCarts.filter(h => h.hold_id !== holdId);
+        
+        // Auto-shelve the current active cart to prevent data loss
+        if (state.cart.length > 0) {
+          const autoHeldCart: HeldCart = {
+            hold_id: crypto.randomUUID(),
+            cashier_id: heldCart.cashier_id,
+            timestamp: new Date().toISOString(),
+            cart: [...state.cart],
+            globalDiscount: state.globalDiscount,
+          };
+          newHeldCarts = [...newHeldCarts, autoHeldCart];
+          toast.success('Active cart suspended to held queue to prevent data loss', { icon: '📥', duration: 4000 });
+        }
+        
         return {
           cart: heldCart.cart,
           globalDiscount: heldCart.globalDiscount,
           activeItemIndex: 0,
           cashReceived: 0,
           paymentMethod: 'cash',
-          heldCarts: state.heldCarts.filter(h => h.hold_id !== holdId)
+          heldCarts: newHeldCarts
         };
       }),
 

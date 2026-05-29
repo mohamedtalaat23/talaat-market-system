@@ -181,8 +181,12 @@ export class CustomerRepository {
     externalTrx?: Knex.Transaction
   ): Promise<Customer> {
     const exec = async (trx: Knex.Transaction) => {
-      // 1. Double check customer exists
-      const customer = await trx('customers').where('id', customerId).whereNull('deleted_at').first();
+      // 1. Double check customer exists with row-locking
+      const customer = await trx('customers')
+        .where('id', customerId)
+        .whereNull('deleted_at')
+        .forUpdate()
+        .first();
       if (!customer) {
         throw new Error(`Customer with ID ${customerId} not found or deleted.`);
       }

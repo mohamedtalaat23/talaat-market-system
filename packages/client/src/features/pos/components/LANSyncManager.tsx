@@ -89,6 +89,9 @@ export function LANSyncManager() {
 
         for (const sale of salesToFlush) {
           try {
+            // Throttled delay of 500ms to pace network requests
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            
             // Post the transaction to the host master server
             await apiClient.post('/pos/checkout', sale.payload);
             
@@ -146,6 +149,9 @@ export function LANSyncManager() {
 
         for (const closure of closuresToFlush) {
           try {
+            // Throttled delay of 500ms to pace network requests
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            
             await apiClient.post('/pos/shifts/close', closure.payload);
             removeOfflineShiftClosure(closure.id);
             successfulSyncs++;

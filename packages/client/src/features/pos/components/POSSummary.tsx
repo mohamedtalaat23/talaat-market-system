@@ -2,6 +2,7 @@ import React from 'react';
 import type { POSCartItem } from '../usePOSStore';
 import { usePOSStore } from '../usePOSStore';
 import { useModalStore } from '@/stores/modalStore';
+import { bankersRound } from '@/utils/currency';
 
 interface POSSummaryProps {
   cart: POSCartItem[];
@@ -13,10 +14,14 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   const openModal = useModalStore((state) => state.openModal);
   const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
   const selectCustomer = usePOSStore((state) => state.selectCustomer);
+  const globalDiscount = usePOSStore((state) => state.globalDiscount);
   
-  const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  const discount = cart.reduce((sum, item) => sum + item.discount, 0);
-  const total = subtotal - discount;
+  const rawSubtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  const rawDiscount = cart.reduce((sum, item) => sum + item.discount, 0);
+  
+  const subtotal = bankersRound(rawSubtotal);
+  const discount = bankersRound(rawDiscount);
+  const total = bankersRound(subtotal - discount - globalDiscount);
 
   return (
     <div className="flex flex-col h-full justify-between font-sans">
@@ -80,10 +85,22 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             <span>Subtotal</span>
             <span>EGP {subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-emerald-400 mb-2">
-            <span>Discount</span>
-            <span>- EGP {discount.toFixed(2)}</span>
-          </div>
+          {(discount > 0 || globalDiscount > 0) && (
+            <div className="flex flex-col space-y-1 mb-2 text-sm text-emerald-400">
+              {discount > 0 && (
+                <div className="flex justify-between">
+                  <span>Item Discounts</span>
+                  <span>- EGP {discount.toFixed(2)}</span>
+                </div>
+              )}
+              {globalDiscount > 0 && (
+                <div className="flex justify-between">
+                  <span>Global Discount</span>
+                  <span>- EGP {globalDiscount.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          )}
           <div className="w-full h-px bg-slate-700 my-4"></div>
           <div className="flex justify-between text-white text-3xl font-bold tracking-tight">
             <span>Total</span>

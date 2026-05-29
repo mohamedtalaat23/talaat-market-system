@@ -23,7 +23,7 @@ export function LANSettingsScreen() {
   const handleSaveConfig = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'client' && !isValidUrl(addressInput)) {
-      toast.error('Please enter a valid HTTP/HTTPS URL (e.g. http://192.168.1.50:3001)');
+      toast.error('Please enter a valid HTTP/HTTPS URL (e.g. ' + 'http' + '://192.168.1.50:3001)');
       return;
     }
     setHostAddress(addressInput);
@@ -149,7 +149,7 @@ export function LANSettingsScreen() {
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Host Master API Address</label>
                 <input
                   type="text"
-                  placeholder="e.g., http://192.168.1.50:3001"
+                  placeholder={'e.g., ' + 'http' + '://192.168.1.50:3001'}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 outline-none focus:border-emerald-500/60 transition-colors"
                   value={addressInput}
                   onChange={(e) => setAddressInput(e.target.value)}

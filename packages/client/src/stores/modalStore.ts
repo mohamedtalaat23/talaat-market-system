@@ -16,7 +16,8 @@ export type ModalType =
   | 'pos_open_shift'
   | 'pos_close_shift'
   | 'pos_transaction_search'
-  | 'pos_customer_select';
+  | 'pos_customer_select'
+  | 'pos_quantity';
 
 interface ModalState {
   activeModals: Record<ModalType, boolean>;
@@ -48,6 +49,7 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_close_shift: false,
     pos_transaction_search: false,
     pos_customer_select: false,
+    pos_quantity: false,
   },
   modalPayloads: {
     product_form: null,
@@ -66,6 +68,7 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_close_shift: null,
     pos_transaction_search: null,
     pos_customer_select: null,
+    pos_quantity: null,
   },
 
   openModal: (type, payload = null) =>
@@ -100,6 +103,7 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_close_shift: false,
         pos_transaction_search: false,
         pos_customer_select: false,
+        pos_quantity: false,
       },
       modalPayloads: {
         product_form: null,
@@ -118,6 +122,7 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_close_shift: null,
         pos_transaction_search: null,
         pos_customer_select: null,
+        pos_quantity: null,
       },
     }),
 }));

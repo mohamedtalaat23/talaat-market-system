@@ -29,10 +29,8 @@ export const POSCartList = React.memo(() => {
     }
   };
 
-  const handleIncrease = (cartId: string, currentQuantity: number, maxQuantity: number) => {
-    if (currentQuantity < maxQuantity) {
-      updateQuantity(cartId, currentQuantity + 1);
-    }
+  const handleIncrease = (cartId: string, currentQuantity: number) => {
+    updateQuantity(cartId, currentQuantity + 1);
   };
 
   return (
@@ -73,9 +71,8 @@ export const POSCartList = React.memo(() => {
                       {item.quantity}
                     </span>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); handleIncrease(item.cart_id, item.quantity, item.inventory_quantity); }}
-                      disabled={item.quantity >= item.inventory_quantity}
-                      className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-30"
+                      onClick={(e) => { e.stopPropagation(); handleIncrease(item.cart_id, item.quantity); }}
+                      className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-700 active:bg-slate-600 transition-colors"
                     >
                       <Plus size={16} />
                     </button>

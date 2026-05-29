@@ -25,6 +25,11 @@ employeeRouter.get(
   validate({ query: employeeQuerySchema }),
   controller.getEmployees
 );
+// GET /employees/managers - Retrieve active managers and admins (Authenticated only)
+employeeRouter.get(
+  '/managers',
+  controller.getActiveManagers
+);
 
 // GET /employees/:id - Retrieve employee profile detail (Admin & Manager only)
 employeeRouter.get(
@@ -56,6 +61,12 @@ employeeRouter.delete(
   requireRoles('admin'),
   validate({ params: employeeIdParamSchema }),
   controller.deleteEmployee
+);
+
+// POST /employees/verify-pin - Verify a manager PIN securely (Authenticated only)
+employeeRouter.post(
+  '/verify-pin',
+  controller.verifyManagerPin
 );
 
 export { employeeRouter };

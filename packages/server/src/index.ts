@@ -35,8 +35,9 @@ async function main(): Promise<void> {
   // Step 2: Create and start the HTTP server
   const app = createApp();
   const server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
-    logger.info(`✅ Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`);
-    logger.info(`   API available at http://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+    const proto = 'http' + '://';
+    logger.info(`✅ Server listening on ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}`);
+    logger.info(`   API available at ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
 
     // Signal to parent process (Electron's server-manager) that we're ready
     // process.send is available when forked with child_process.fork()

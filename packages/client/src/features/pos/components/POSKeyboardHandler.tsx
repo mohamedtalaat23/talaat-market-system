@@ -35,11 +35,7 @@ export function POSKeyboardHandler() {
           return;
         }
 
-        // Handle out-of-stock product
-        if (product.inventory_quantity !== undefined && product.inventory_quantity <= 0) {
-          toast.error(`Product "${product.name}" is out of stock`);
-          return;
-        }
+
 
         addItem({
           product_id: product.id,
@@ -82,8 +78,9 @@ export function POSKeyboardHandler() {
       // Block all shortcuts if no active shift
       if (!state.activeShift) return;
 
-      // Prevent browser default behaviors for F-keys
-      if (e.key.startsWith('F')) {
+      // Prevent browser default behaviors for specific intercepted POS F-keys
+      const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F12'];
+      if (interceptedFKeys.includes(e.key)) {
         e.preventDefault();
       }
 
@@ -197,22 +194,7 @@ export function POSKeyboardHandler() {
         case 'Enter':
           if (cartLength > 0 && !isInput) {
             e.preventDefault();
-            const activeItem = state.cart[state.activeItemIndex];
-            if (activeItem) {
-              const newQtyStr = window.prompt(`Enter new quantity for ${activeItem.name}:`, String(activeItem.quantity));
-              const newQty = Number(newQtyStr);
-              if (newQtyStr !== null && !isNaN(newQty) && newQty >= 0) {
-                if (newQty === 0) {
-                  state.removeItem(activeItem.cart_id);
-                } else if (newQty > activeItem.inventory_quantity) {
-                  toast.error(`Cannot exceed stock of ${activeItem.inventory_quantity}`);
-                } else {
-                  state.updateQuantity(activeItem.cart_id, newQty);
-                }
-              }
-              // Restore focus
-              setTimeout(() => document.body.focus(), 50);
-            }
+            openModal('pos_quantity');
           }
           break;
         case 'Escape':

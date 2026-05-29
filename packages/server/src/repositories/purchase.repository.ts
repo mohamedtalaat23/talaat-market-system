@@ -1,4 +1,5 @@
 import { db } from '../config/database';
+import { bankersRound } from '../utils/currency';
 
 export interface PurchaseOrderItem {
   id?: number;
@@ -160,7 +161,7 @@ export class PurchaseRepository {
    */
   async create(input: CreatePOInput, creatorId: number): Promise<PurchaseOrder> {
     return await db.transaction(async (trx) => {
-      // 1. Calculate subtotal & grand total
+      // 1. Calculate subtotal & grand total with decimal rounding
       let subtotal = 0;
       const discount = input.discount_amount || 0;
       const tax = input.tax_amount || 0;
@@ -168,7 +169,8 @@ export class PurchaseRepository {
       for (const item of input.items) {
         subtotal += item.ordered_quantity * item.unit_cost;
       }
-      const total = subtotal - discount + tax;
+      subtotal = bankersRound(subtotal);
+      const total = bankersRound(subtotal - discount + tax);
 
       // 2. Generate custom PO Number
       const { rows } = await trx.raw(`SELECT nextval('purchase_order_number_seq') as seq`);
@@ -216,7 +218,7 @@ export class PurchaseRepository {
       const po = await trx('purchase_orders').where({ id, status: 'draft' }).first();
       if (!po) throw new Error('Purchase order not found or is no longer a draft');
 
-      // 1. Recalculate totals
+      // 1. Recalculate totals with decimal rounding
       let subtotal = 0;
       const discount = input.discount_amount || 0;
       const tax = input.tax_amount || 0;
@@ -224,7 +226,8 @@ export class PurchaseRepository {
       for (const item of input.items) {
         subtotal += item.ordered_quantity * item.unit_cost;
       }
-      const total = subtotal - discount + tax;
+      subtotal = bankersRound(subtotal);
+      const total = bankersRound(subtotal - discount + tax);
 
       // 2. Update Header
       const [updatedPo] = await trx('purchase_orders')
@@ -318,25 +321,38 @@ export class PurchaseRepository {
         const addStock = item.received_quantity;
         const itemCost = Number(line.unit_cost);
 
-        // C. AVCO cost price weighted average recalculation
+        // C. AVCO cost price weighted average recalculation with clean rounding
         let finalCostPrice = itemCost;
         if (currentStock > 0 && (currentStock + addStock) > 0) {
           finalCostPrice = ((currentStock * currentCost) + (addStock * itemCost)) / (currentStock + addStock);
         }
+        finalCostPrice = bankersRound(finalCostPrice);
 
-        // D. Increment physical inventory quantity
-        if (!inv) {
-          await trx('inventory').insert({
-            product_id: item.product_id,
-            quantity: addStock,
-            reserved_quantity: 0,
-            updated_at: trx.fn.now()
-          });
-        } else {
-          await trx('inventory')
-            .where('product_id', item.product_id)
-            .increment('quantity', addStock)
-            .update({ updated_at: trx.fn.now() });
+        // D. Increment physical inventory quantity with concurrent insert protection
+        try {
+          if (!inv) {
+            await trx('inventory').insert({
+              product_id: item.product_id,
+              quantity: addStock,
+              reserved_quantity: 0,
+              updated_at: trx.fn.now()
+            });
+          } else {
+            await trx('inventory')
+              .where('product_id', item.product_id)
+              .increment('quantity', addStock)
+              .update({ updated_at: trx.fn.now() });
+          }
+        } catch (err: any) {
+          if (err.code === '23505') {
+            // Already inserted concurrently. Increment instead.
+            await trx('inventory')
+              .where('product_id', item.product_id)
+              .increment('quantity', addStock)
+              .update({ updated_at: trx.fn.now() });
+          } else {
+            throw err;
+          }
         }
 
         // E. Log adjustment record

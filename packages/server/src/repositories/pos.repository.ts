@@ -29,6 +29,7 @@ export interface CheckoutPayload {
   global_discount?: number | undefined;
   customer_id?: number | undefined;
   manager_pin?: string | undefined;
+  manager_id?: number | undefined;
   items: CheckoutItem[];
 }
 
@@ -146,10 +147,11 @@ export class POSRepository {
       return { ...existing, items: existingItems };
     }
 
-    return await db.transaction(async (trx) => {
-      if (payload.payment_method === 'debt' && !payload.customer_id) {
-        throw new Error('A customer must be selected to checkout using the debt payment method.');
-      }
+    try {
+      return await db.transaction(async (trx) => {
+        if (payload.payment_method === 'debt' && !payload.customer_id) {
+          throw new Error('A customer must be selected to checkout using the debt payment method.');
+        }
 
       // 1. Calculate totals
       let subtotal = 0;
@@ -266,10 +268,21 @@ export class POSRepository {
         }
       }
 
-      const insertedItems = await trx('sale_items').insert(saleItemsToInsert).returning('*');
+        const insertedItems = await trx('sale_items').insert(saleItemsToInsert).returning('*');
 
-      return { ...sale, items: insertedItems };
-    });
+        return { ...sale, items: insertedItems };
+      });
+    } catch (error: any) {
+      if (error.code === '23505' && error.message?.includes('idempotency_key')) {
+        // Race condition: another request just inserted this idempotency key.
+        const existing = await db('sales').where('idempotency_key', payload.idempotency_key).first();
+        if (existing) {
+          const existingItems = await db('sale_items').where('sale_id', existing.id);
+          return { ...existing, items: existingItems };
+        }
+      }
+      throw error;
+    }
   }
 
   /**

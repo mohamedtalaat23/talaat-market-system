@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import type { PrintJob, PrinterStatus } from '@/types';
 import toast from 'react-hot-toast';
-import { Printer, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Printer, CheckCircle2, RefreshCw, Settings, Save, Zap } from 'lucide-react';
 
 export function PrintQueueMonitor() {
   const [isElectron, setIsElectron] = useState(false);
   const [jobs, setJobs] = useState<PrintJob[]>([]);
   const [status, setStatus] = useState<PrinterStatus | null>(null);
+  
+  // Dashboard & Re-routing States
+  const [showSettings, setShowSettings] = useState(false);
+  const [printerConfig, setPrinterConfig] = useState<any>({ type: 'mock', devicePath: '/dev/usb/lp0', paperWidth: 80 });
+  const [discoveredPorts, setDiscoveredPorts] = useState<string[]>([]);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (window.electronAPI) {
@@ -18,6 +25,7 @@ export function PrintQueueMonitor() {
       }, 3000);
 
       fetchQueueAndStatus();
+      loadPrinterSettings();
 
       return () => clearInterval(interval);
     }
@@ -32,6 +40,18 @@ export function PrintQueueMonitor() {
       setStatus(currentStatus);
     } catch (err) {
       console.error('[PrintQueueMonitor] Error polling queue state:', err);
+    }
+  };
+
+  const loadPrinterSettings = async () => {
+    if (!window.electronAPI) return;
+    try {
+      const cfg = await window.electronAPI.getPrinterConfig();
+      const ports = await window.electronAPI.discoverPrinters();
+      setPrinterConfig(cfg);
+      setDiscoveredPorts(ports);
+    } catch (err) {
+      console.error('[PrintQueueMonitor] Failed to load printer settings:', err);
     }
   };
 
@@ -63,6 +83,43 @@ export function PrintQueueMonitor() {
     }
   };
 
+  const handleTestPrinter = async () => {
+    if (!window.electronAPI) return;
+    setIsTesting(true);
+    const toastId = toast.loading('Sending test print command...');
+    try {
+      const res = (await window.electronAPI.testPrinter(printerConfig)) as unknown as { success: boolean; message: string };
+      setIsTesting(false);
+      if (res.success) {
+        toast.success('Test print sent successfully!', { id: toastId });
+      } else {
+        toast.error(`Test print failed: ${res.message}`, { id: toastId, duration: 5000 });
+      }
+    } catch (err: any) {
+      setIsTesting(false);
+      toast.error(err.message || 'Test print timed out', { id: toastId });
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    if (!window.electronAPI) return;
+    setIsSaving(true);
+    try {
+      const success = await window.electronAPI.updatePrinterConfig(printerConfig);
+      setIsSaving(false);
+      if (success) {
+        toast.success('Printer configuration saved & active', { icon: '💾' });
+        setShowSettings(false);
+        fetchQueueAndStatus();
+      } else {
+        toast.error('Failed to save printer configuration');
+      }
+    } catch (err: any) {
+      setIsSaving(false);
+      toast.error(err.message || 'Failed to save config');
+    }
+  };
+
   if (!isElectron) return null;
 
   // Filter queue jobs to active tasks (pending, processing, failed, retrying)
@@ -78,17 +135,113 @@ export function PrintQueueMonitor() {
           <Printer size={13} className="text-slate-500" />
           <span>Receipt Printer Queue</span>
         </span>
-        {jobs.length > 0 && (
+        <div className="flex items-center space-x-3">
           <button
             type="button"
-            onClick={handleClearQueue}
-            className="text-[9px] font-semibold text-slate-500 hover:text-slate-300 hover:underline transition-colors"
-            title="Clear Queue History"
+            onClick={() => {
+              setShowSettings(!showSettings);
+              if (!showSettings) loadPrinterSettings();
+            }}
+            className={`p-1 rounded hover:bg-slate-800 transition-colors ${showSettings ? 'text-emerald-400 bg-slate-800/40' : 'text-slate-500 hover:text-slate-300'}`}
+            title="Printer Settings & Port Re-routing"
           >
-            Clear History
+            <Settings size={13} />
           </button>
-        )}
+          {jobs.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearQueue}
+              className="text-[9px] font-semibold text-slate-500 hover:text-slate-300 hover:underline transition-colors"
+              title="Clear Queue History"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Collapsible Printer Settings & Re-routing Board */}
+      {showSettings && (
+        <div className="bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 space-y-3 animate-fade-in text-[11px]">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+            Device Routing & Configuration
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[9px] text-slate-400 font-semibold mb-1">Printer Type</label>
+              <select
+                className="w-full bg-slate-900 border border-slate-850 rounded px-2 py-1.5 text-white focus:outline-none focus:border-emerald-500"
+                value={printerConfig.type}
+                onChange={(e) => setPrinterConfig({ ...printerConfig, type: e.target.value })}
+              >
+                <option value="mock">Virtual Mock Log</option>
+                <option value="usb">Native USB Terminal</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[9px] text-slate-400 font-semibold mb-1">Paper Width</label>
+              <select
+                className="w-full bg-slate-900 border border-slate-850 rounded px-2 py-1.5 text-white focus:outline-none focus:border-emerald-500"
+                value={printerConfig.paperWidth}
+                onChange={(e) => setPrinterConfig({ ...printerConfig, paperWidth: Number(e.target.value) })}
+              >
+                <option value={80}>80 mm (Standard)</option>
+                <option value={58}>58 mm (Narrow)</option>
+              </select>
+            </div>
+          </div>
+
+          {printerConfig.type === 'usb' && (
+            <div>
+              <label className="block text-[9px] text-slate-400 font-semibold mb-1">Device Path / Port</label>
+              <input
+                type="text"
+                className="w-full bg-slate-900 border border-slate-850 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-emerald-500 mb-1.5"
+                value={printerConfig.devicePath}
+                onChange={(e) => setPrinterConfig({ ...printerConfig, devicePath: e.target.value })}
+                placeholder="/dev/usb/lp0"
+                list="discovered-ports"
+              />
+              <datalist id="discovered-ports">
+                {discoveredPorts.map((port) => (
+                  <option key={port} value={port} />
+                ))}
+              </datalist>
+              {discoveredPorts.length > 0 ? (
+                <div className="text-[9px] text-emerald-400 italic">
+                  Discovered Ports: {discoveredPorts.join(', ')}
+                </div>
+              ) : (
+                <div className="text-[9px] text-slate-500 italic">
+                  No USB printers discovered dynamically. Enter path manually.
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex space-x-2 pt-1">
+            <button
+              type="button"
+              disabled={isTesting}
+              onClick={handleTestPrinter}
+              className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-750 disabled:opacity-50 text-slate-300 rounded font-semibold transition-colors flex items-center justify-center space-x-1"
+            >
+              <Zap size={10} className="text-amber-400" />
+              <span>Test Print</span>
+            </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={handleSaveConfig}
+              className="flex-1 py-1.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white rounded font-semibold transition-colors flex items-center justify-center space-x-1"
+            >
+              <Save size={10} />
+              <span>Save & Route</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Diagnostics / Printer status */}
       {status && (
@@ -154,4 +307,5 @@ export function PrintQueueMonitor() {
     </div>
   );
 }
+
 export default PrintQueueMonitor;

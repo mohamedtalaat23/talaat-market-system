@@ -4,6 +4,8 @@ import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import toast from 'react-hot-toast';
 import { usePOSStore } from '../usePOSStore';
+import { useManagers } from '@/features/employees/hooks/useEmployeeQueries';
+import { apiClient } from '@/services/api-client';
 
 export function ManagerOverrideModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_manager_override);
@@ -11,18 +13,30 @@ export function ManagerOverrideModal() {
   const closeModalAction = useModalStore((state) => state.closeModal);
   const closeModal = () => closeModalAction('pos_manager_override');
   
+  const { data: managers = [] } = useManagers();
+  const [selectedManagerId, setSelectedManagerId] = useState<number | ''>('');
   const [pin, setPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
+  // Set default manager when loaded
+  useEffect(() => {
+    if (isOpen && managers.length > 0) {
+      const firstManager = managers[0];
+      if (firstManager) {
+        setSelectedManagerId(firstManager.id);
+      }
+    }
+  }, [isOpen, managers]);
+
   // Close modal on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape' && !isSubmitting) closeModal();
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, isSubmitting]);
 
   if (!isOpen) return null;
 
@@ -39,13 +53,17 @@ export function ManagerOverrideModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pin.trim()) return;
+    if (!pin.trim() || selectedManagerId === '') return;
 
     setIsSubmitting(true);
-    // Phase 4 simulation: Real implementation validates PIN with API
-    setTimeout(() => {
+    try {
+      const response = await apiClient.post('/employees/verify-pin', {
+        manager_id: selectedManagerId,
+        pin
+      });
+
       setIsSubmitting(false);
-      if (pin === '1234') { // Dummy PIN
+      if (response.data?.success) {
         toast.success('Manager override approved');
         const state = usePOSStore.getState();
 
@@ -72,7 +90,11 @@ export function ManagerOverrideModal() {
         toast.error('Invalid Manager PIN');
         setPin('');
       }
-    }, 500);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      toast.error(err.response?.data?.message || err.message || 'Verification failed');
+      setPin('');
+    }
   };
 
   return (
@@ -101,8 +123,29 @@ export function ManagerOverrideModal() {
         </button>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {managers.length > 0 && (
+            <div>
+              <label htmlFor="manager-select" className="block text-sm font-medium text-slate-350 mb-1">
+                Authorize As
+              </label>
+              <select
+                id="manager-select"
+                disabled={isSubmitting}
+                className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-red-500 text-sm font-semibold"
+                value={selectedManagerId}
+                onChange={(e) => setSelectedManagerId(Number(e.target.value))}
+              >
+                {managers.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.full_name} ({m.role.toUpperCase()})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label htmlFor="pin-input" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="pin-input" className="block text-sm font-medium text-slate-305 mb-1">
               Enter Manager PIN
             </label>
             <input
@@ -110,7 +153,7 @@ export function ManagerOverrideModal() {
               autoFocus
               type="password"
               inputMode="numeric"
-              maxLength={4}
+              maxLength={6}
               disabled={isSubmitting}
               className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-center text-3xl tracking-[1em] text-white placeholder-slate-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
               value={pin}

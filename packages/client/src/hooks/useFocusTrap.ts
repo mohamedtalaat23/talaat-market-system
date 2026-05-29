@@ -48,8 +48,8 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
     // Store the element that triggered the modal to restore focus later
     const previousActiveElement = document.activeElement as HTMLElement;
 
-    // Focus the first appropriate element inside the modal with a small micro-task delay
-    const timer = setTimeout(() => {
+    // Focus the first appropriate element inside the modal after standard render layout cycle
+    const animId = requestAnimationFrame(() => {
       const freshFocusable = getFocusableElements();
       if (freshFocusable.length > 0) {
         // Prefer focusing the first input element for form usability
@@ -60,7 +60,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
           freshFocusable[0]?.focus();
         }
       }
-    }, 50);
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
@@ -89,7 +89,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      clearTimeout(timer);
+      cancelAnimationFrame(animId);
       window.removeEventListener('keydown', handleKeyDown);
       // Restore focus to the element that triggered the dialog
       if (previousActiveElement && typeof previousActiveElement.focus === 'function') {

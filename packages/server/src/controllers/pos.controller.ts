@@ -19,6 +19,7 @@ const checkoutSchema = z.object({
   global_discount: z.number().min(0).optional(),
   customer_id: z.number().optional(),
   manager_pin: z.string().optional(),
+  manager_id: z.number().optional(),
   items: z.array(z.object({
     product_id: z.number(),
     quantity: z.number().positive(),
@@ -37,18 +38,34 @@ export class POSController {
 
       // If a manager PIN is supplied, authenticate it against active managers/admins
       if (payload.manager_pin) {
-        const managers = await db('employees')
-          .whereIn('role', ['manager', 'admin'])
-          .where('is_active', true)
-          .whereNull('deleted_at');
-        
         let pinValid = false;
-        for (const m of managers) {
-          if (m.pin_hash) {
-            const isValid = await bcrypt.compare(String(payload.manager_pin), m.pin_hash);
-            if (isValid) {
-              pinValid = true;
-              break;
+
+        if (payload.manager_id) {
+          // Precise optimization: query by manager_id for a single bcrypt compare
+          const manager = await db('employees')
+            .where('id', payload.manager_id)
+            .whereIn('role', ['manager', 'admin'])
+            .where('is_active', true)
+            .whereNull('deleted_at')
+            .first();
+
+          if (manager && manager.pin_hash) {
+            pinValid = await bcrypt.compare(String(payload.manager_pin), manager.pin_hash);
+          }
+        } else {
+          // Fallback legacy loop check (in case client is offline and doesn't have manager list)
+          const managers = await db('employees')
+            .whereIn('role', ['manager', 'admin'])
+            .where('is_active', true)
+            .whereNull('deleted_at');
+          
+          for (const m of managers) {
+            if (m.pin_hash) {
+              const isValid = await bcrypt.compare(String(payload.manager_pin), m.pin_hash);
+              if (isValid) {
+                pinValid = true;
+                break;
+              }
             }
           }
         }

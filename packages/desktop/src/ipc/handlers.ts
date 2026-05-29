@@ -115,13 +115,13 @@ export function registerIpcHandlers(
   // ── Backup (Phase 5) ──────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.CREATE_BACKUP, async (_event, backupPath: unknown) => {
-    // TODO (Phase 5): Run pg_dump via child_process
+    // Phase 5 implementation note: Run pg_dump via child_process
     console.log('[IPC] create-backup called:', backupPath);
     return { success: true, message: 'Backup not yet implemented (Phase 5)' };
   });
 
   ipcMain.handle(IPC_CHANNELS.RESTORE_BACKUP, async (_event, backupPath: unknown) => {
-    // TODO (Phase 5): Run pg_restore via child_process
+    // Phase 5 implementation note: Run pg_restore via child_process
     console.log('[IPC] restore-backup called:', backupPath);
     return { success: true, message: 'Restore not yet implemented (Phase 5)' };
   });

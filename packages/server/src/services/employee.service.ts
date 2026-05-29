@@ -147,6 +147,14 @@ export class EmployeeService {
     await employeeRepository.softDelete(id);
     logger.info('Employee account soft deleted successfully', { id });
   }
+
+  /**
+   * Get all active managers/admins.
+   */
+  async getActiveManagers(): Promise<Employee[]> {
+    logger.debug('Fetching list of active managers/admins');
+    return employeeRepository.findActiveManagers();
+  }
 }
 
 // Single instance export (minimalist/no DI)

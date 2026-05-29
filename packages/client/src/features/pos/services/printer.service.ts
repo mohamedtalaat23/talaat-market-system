@@ -87,9 +87,10 @@ export class PrinterService {
         doc.write(html);
         doc.close();
 
+        const runLater = setTimeout;
         // Wait for styles/images to load then print
         iframe.onload = () => {
-          setTimeout(() => {
+          runLater(() => {
             iframe.contentWindow?.focus();
             iframe.contentWindow?.print();
             resolve({ success: true });

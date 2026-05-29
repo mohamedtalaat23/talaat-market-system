@@ -16,10 +16,15 @@ import { OpenShiftModal } from './components/OpenShiftModal';
 import { CloseShiftModal } from './components/CloseShiftModal';
 import TransactionSearchModal from './components/TransactionSearchModal';
 import { CustomerSelectModal } from './components/CustomerSelectModal';
+import { QuantityModal } from './components/QuantityModal';
 import { useModalStore } from '@/stores/modalStore';
 import { PrintQueueMonitor } from './components/PrintQueueMonitor';
+import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
 
 export function POSPage() {
+  // Activate shift heartbeat validation poller
+  useShiftHeartbeat();
+
   // Use stable selectors for performance
   const cart = usePOSStore((state) => state.cart);
   const paymentMethod = usePOSStore((state) => state.paymentMethod);
@@ -79,6 +84,7 @@ export function POSPage() {
       <DiscountModal />
       <SuspendedCartsModal />
       <ReceiptPreviewModal />
+      <QuantityModal />
       <CustomerSelectModal
         isOpen={activeModals.pos_customer_select}
         onClose={() => closeModal('pos_customer_select')}

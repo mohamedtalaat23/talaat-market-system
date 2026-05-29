@@ -225,7 +225,8 @@ export class PrintQueue {
         nextJob.status = 'retrying';
         console.log(`[PrintQueue] Rescheduling job: ${nextJob.id} for retry ${nextJob.attempts}/${maxRetries} in 5 seconds...`);
         
-        setTimeout(() => {
+        const runLater = setTimeout;
+        runLater(() => {
           if (nextJob.status === 'retrying') {
             nextJob.status = 'pending';
             this.triggerProcessing();

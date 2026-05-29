@@ -184,6 +184,18 @@ export class EmployeeRepository {
       .where('id', id)
       .update({ last_login: new Date() });
   }
+
+  /**
+   * Find all active managers and admins. Excludes hashes.
+   */
+  async findActiveManagers(): Promise<Employee[]> {
+    return db('employees')
+      .select('id', 'full_name', 'username', 'role')
+      .whereIn('role', ['manager', 'admin'])
+      .where('is_active', true)
+      .whereNull('deleted_at')
+      .orderBy('full_name', 'asc');
+  }
 }
 
 // Single instance export (minimalist/no DI)

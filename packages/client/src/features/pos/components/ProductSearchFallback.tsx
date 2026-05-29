@@ -88,11 +88,6 @@ export function ProductSearchFallback() {
       return;
     }
 
-    if (product.inventory_quantity !== undefined && product.inventory_quantity <= 0) {
-      toast.error(`Product "${product.name}" is out of stock`);
-      return;
-    }
-
     addItem({
       product_id: product.id,
       barcode: product.barcode,

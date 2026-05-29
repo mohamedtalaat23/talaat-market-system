@@ -85,20 +85,27 @@ export class ProductService {
       }
     }
 
-    // Execute product and inventory creation inside a transaction
-    return db.transaction(async (trx) => {
-      const product = await productRepository.create(productData, trx);
-      await productRepository.createInventory(product.id, initial_quantity, trx);
-      
-      logger.info('Product created successfully with inventory', { id: product.id });
-      
-      // Fetch fully populated product with inventory joined
-      const populatedProduct = await productRepository.findById(product.id);
-      if (!populatedProduct) {
-        throw new Error('Failed to retrieve newly created product');
+    // Execute product and inventory creation inside a transaction with conflict interception
+    try {
+      return await db.transaction(async (trx) => {
+        const product = await productRepository.create(productData, trx);
+        await productRepository.createInventory(product.id, initial_quantity, trx);
+        
+        logger.info('Product created successfully with inventory', { id: product.id });
+        
+        // Fetch fully populated product with inventory joined
+        const populatedProduct = await productRepository.findById(product.id);
+        if (!populatedProduct) {
+          throw new Error('Failed to retrieve newly created product');
+        }
+        return populatedProduct;
+      });
+    } catch (error: any) {
+      if (error.code === '23505' && error.message?.includes('barcode')) {
+        throw new ConflictError('A product with this barcode already exists', { barcode: productData.barcode });
       }
-      return populatedProduct;
-    });
+      throw error;
+    }
   }
 
   /**

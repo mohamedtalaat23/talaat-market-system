@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, CreditCard, Banknote, CheckCircle2, Monitor } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -8,6 +8,7 @@ import { printerService } from '../services/printer.service';
 import { useAuthStore } from '@/stores/authStore';
 import { useLANStore } from '../stores/useLANStore';
 import toast from 'react-hot-toast';
+import { bankersRound } from '@/utils/currency';
 
 export function PaymentModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_payment);
@@ -24,15 +25,19 @@ export function PaymentModal() {
   const autoPrintReceipts = usePOSStore((state) => state.autoPrintReceipts);
   const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
   
-  const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  const itemDiscounts = cart.reduce((sum, item) => sum + item.discount, 0);
-  const total = subtotal - itemDiscounts - globalDiscount;
+  const rawSubtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  const rawDiscount = cart.reduce((sum, item) => sum + item.discount, 0);
+  
+  const subtotal = bankersRound(rawSubtotal);
+  const itemDiscounts = bankersRound(rawDiscount);
+  const total = bankersRound(subtotal - itemDiscounts - globalDiscount);
 
   const [cashReceivedStr, setCashReceivedStr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cashPortionStr, setCashPortionStr] = useState('');
   const [cardPortionStr, setCardPortionStr] = useState('');
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
+  const idempotencyKeyRef = useRef<string>('');
 
   // Focus and reset state when opened
   useEffect(() => {
@@ -40,6 +45,7 @@ export function PaymentModal() {
       setCashReceivedStr('');
       setCashPortionStr(String(Math.floor(total / 2)));
       setCardPortionStr(String(total - Math.floor(total / 2)));
+      idempotencyKeyRef.current = crypto.randomUUID();
     }
   }, [isOpen, total]);
 
@@ -78,7 +84,7 @@ export function PaymentModal() {
     if (!canCheckout) return;
 
     setIsSubmitting(true);
-    const idempotency_key = crypto.randomUUID();
+    const idempotency_key = idempotencyKeyRef.current || crypto.randomUUID(); // Fallback if ref is somehow empty
     const { mode, status, addOfflineSale, setStatus } = useLANStore.getState();
 
     const updateLocalShiftTally = (saleDataId: number) => {

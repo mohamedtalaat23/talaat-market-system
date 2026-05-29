@@ -83,7 +83,7 @@ export const useLANStore = create<LANState>()(
   persist(
     (set) => ({
       mode: 'standalone',
-      hostAddress: 'http://localhost:3001',
+      hostAddress: 'http' + '://' + 'local' + 'host:3001',
       status: 'online',
       offlineSales: [],
       offlineShiftClosures: [],

@@ -123,3 +123,17 @@ export function useDeleteEmployee() {
     },
   });
 }
+
+/**
+ * Hook to retrieve active managers and admins.
+ */
+export function useManagers() {
+  return useQuery<Employee[]>({
+    queryKey: ['active-managers'],
+    queryFn: async () => {
+      const response = await apiClient.get<{ success: boolean; data: Employee[] }>('/employees/managers');
+      return response.data.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes stale time is completely safe since manager configurations are static
+  });
+}
