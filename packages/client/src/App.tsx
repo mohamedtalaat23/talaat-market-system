@@ -8,7 +8,6 @@ import { LANSyncManager } from '@/features/pos/components/LANSyncManager';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
-import { PlaceholderPage } from '@/components/ui/PlaceholderPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProductsPage } from '@/features/products/ProductsPage';
@@ -31,6 +30,8 @@ import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CustomerDetailScreen } from '@/features/customers/screens/CustomerDetailScreen';
 import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { SupplierDetailScreen } from '@/features/suppliers/screens/SupplierDetailScreen';
+import { PurchasesPage } from '@/features/purchases/PurchasesPage';
+import { PurchaseOrderDetailScreen } from '@/features/purchases/PurchaseOrderDetailScreen';
 
 /**
  * TanStack Query client configuration.
@@ -158,14 +159,18 @@ export function App() {
                 }
               />
               <Route
-                path="purchases/*"
+                path="purchases"
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <PlaceholderPage
-                      title="Purchase Orders"
-                      description="Create and manage purchase orders, receive goods, and update inventory automatically."
-                      phase="Phase 3"
-                    />
+                    <PurchasesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="purchases/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                    <PurchaseOrderDetailScreen />
                   </ProtectedRoute>
                 }
               />
