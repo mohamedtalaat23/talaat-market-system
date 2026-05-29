@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/product.controller';
 import { validate } from '../middleware/validate';
+import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   createProductSchema,
   updateProductSchema,
@@ -10,6 +11,9 @@ import {
 } from '../validators/product.validator';
 
 const productsRouter = Router();
+
+// Apply rate limiting
+productsRouter.use(standardRateLimiter);
 
 // GET /products - List products with filters and search
 productsRouter.get(

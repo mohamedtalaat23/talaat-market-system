@@ -26,15 +26,26 @@ import { apiRouter } from './routes';
 export function createApp(): express.Application {
   const app = express();
 
-  // ── Security Headers ──────────────────────────────────────────────────────
-  // helmet sets secure HTTP headers (CSP, HSTS, X-Frame-Options, etc.)
-  // In dev, CSP is relaxed to allow Vite's HMR websocket
   app.use(
-    helmet(
-      isDev
-        ? { contentSecurityPolicy: false }
-        : {}
-    ),
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "blob:"],
+          connectSrc: [
+            "'self'",
+            "ws://localhost:5173",
+            "http://localhost:5173",
+            "ws://127.0.0.1:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3001",
+            "http://127.0.0.1:3001",
+          ],
+        },
+      },
+    }),
   );
 
   // ── CORS ──────────────────────────────────────────────────────────────────

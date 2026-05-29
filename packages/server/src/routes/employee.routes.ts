@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as controller from '../controllers/employee.controller';
 import { validate } from '../middleware/validate';
 import { requireAuth, requireRoles } from '../middleware/auth';
+import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   createEmployeeSchema,
   updateEmployeeSchema,
@@ -10,6 +11,9 @@ import {
 } from '../validators/employee.validator';
 
 const employeeRouter = Router();
+
+// Apply rate limiting
+employeeRouter.use(standardRateLimiter);
 
 // Apply requireAuth middleware to ALL employee routes
 employeeRouter.use(requireAuth);

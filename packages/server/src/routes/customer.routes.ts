@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { customerController } from '../controllers/customer.controller';
 import { requireAuth, requireRoles } from '../middleware/auth';
+import { standardRateLimiter } from '../middleware/rateLimit';
 
 const customerRouter = Router();
+
+// Apply rate limiting
+customerRouter.use(standardRateLimiter);
 
 // Require authentication for all customer endpoints
 customerRouter.use(requireAuth);

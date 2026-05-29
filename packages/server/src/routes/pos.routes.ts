@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { posController } from '../controllers/pos.controller';
 import { requireAuth } from '../middleware/auth';
+import { standardRateLimiter } from '../middleware/rateLimit';
 
 const router = Router();
+
+// Apply rate limiting
+router.use(standardRateLimiter);
 
 // All POS routes require authentication
 router.use(requireAuth);

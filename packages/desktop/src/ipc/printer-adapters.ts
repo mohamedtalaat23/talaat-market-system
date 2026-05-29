@@ -51,8 +51,7 @@ export class MockPrinterAdapter implements PrinterAdapter {
       .replace(/\x1b\x45[\x00-\x01]/g, '') // Bold on/off
       .replace(/\x1d\x21[\x00-\xff]/g, '') // Size changes
       .replace(/\x1d\x56\x42\x00/g, '\n[PAPER CUT]\n') // Paper cut marker
-      .replace(/\x1b\x70\x00\x19\xfa/g, '[CASH DRAWER KICK]\n') // Drawer kick
-      .replace(/\x0a/g, '\n'); // Normal line feeds
+      .replace(/\x1b\x70\x00\x19\xfa/g, '[CASH DRAWER KICK]\n'); // Drawer kick
 
     const logEntry = `\n================================================\n[PRINT JOB LOGGED: ${new Date().toISOString()}]\n================================================\n${cleanText}\n`;
 

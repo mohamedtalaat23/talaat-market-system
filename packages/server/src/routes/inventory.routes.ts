@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as controller from '../controllers/inventory.controller';
 import { validate } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
+import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   updateInventorySchema,
   adjustInventorySchema,
@@ -10,6 +11,9 @@ import {
 } from '../validators/inventory.validator';
 
 const inventoryRouter = Router();
+
+// Apply rate limiting
+inventoryRouter.use(standardRateLimiter);
 
 // Secure all inventory routes with JWT authentication
 inventoryRouter.use(requireAuth);
