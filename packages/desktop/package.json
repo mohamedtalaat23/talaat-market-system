@@ -5,7 +5,7 @@
   "private": true,
   "main": "dist/main.js",
   "scripts": {
-    "dev": "wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && electron .",
+    "dev": "wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && NODE_ENV=development electron .",
     "build": "tsc --project tsconfig.json && electron-builder",
     "build:win": "tsc --project tsconfig.json && electron-builder --win",
     "build:linux": "tsc --project tsconfig.json && electron-builder --linux",
