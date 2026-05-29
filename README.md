@@ -28,7 +28,8 @@ Talaat Market is a fully offline, high-performance retail POS and ERP system eng
 - **🖨️ Silent Thermal Receipt Printing**: Generates 80mm receipts utilizing Electron's native print API or an iframe fallback, featuring a reprint audit counter to prevent cashier fraud.
 - **📊 Financial Analytics & Reports**: Multi-screen `/reports` dashboard tracking closed cashier shifts (starting cash vs ending cash variance), override audits, and printable weekly sales metrics.
 - **⚙️ Store Configuration & Registers**: Global control of currency, tax rates, thermal printer templates, and physical registers to lay the groundwork for a LAN multi-terminal model.
-- **🔋 Idempotent Checkout**: Client-side transaction UUID keys protect database actions against double-billing and inventory duplicates.
+- 🔋 **Idempotent Checkout**: Client-side transaction UUID keys protect database actions against double-billing and inventory duplicates.
+- 📦 **Purchase Orders & AVCO Costing**: Logistics control from draft POs to manager placement and physical receipt. Dynamically recalculates product cost price using the Weighted Average Cost (AVCO) formula on stock receipt.
 
 ---
 
@@ -285,7 +286,8 @@ sudo systemctl enable postgresql
 | **Phase 10**| Customer Credit accounts, ledger auditing, POS F7 link | ✅ Complete |
 | **Phase 11**| Suppliers Directory & Catalog Management | ✅ Complete |
 | **Phase 12**| Native USB ESC/POS direct printing (bypassing OS drivers) | ✅ Complete |
-| **Phase 13**| Multi-terminal LAN synchronization (Outage buffers) | 🔲 Planned |
+| **Phase 13**| Multi-terminal LAN synchronization (Outage buffers) | ✅ Complete |
+| **Phase 14**| Purchase Orders & Supplier Stock Influx | ✅ Complete |
 
 ---
 
