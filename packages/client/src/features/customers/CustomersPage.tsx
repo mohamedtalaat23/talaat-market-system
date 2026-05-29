@@ -180,7 +180,7 @@ export function CustomersPage() {
                             : 'text-neutral-400'
                         }
                       >
-                        {customer.balance.toFixed(2)} EGP
+                        {Number(customer.balance).toFixed(2)} EGP
                       </span>
                     </td>
 

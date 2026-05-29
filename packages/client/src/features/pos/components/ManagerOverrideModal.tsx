@@ -11,7 +11,12 @@ export function ManagerOverrideModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_manager_override);
   const payload = useModalStore((state) => state.modalPayloads.pos_manager_override);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('pos_manager_override');
+  const closeModal = () => {
+    closeModalAction('pos_manager_override');
+    if (payload?.onCancel) {
+      payload.onCancel();
+    }
+  };
   
   const { data: managers = [] } = useManagers();
   const [selectedManagerId, setSelectedManagerId] = useState<number | ''>('');
@@ -46,7 +51,9 @@ export function ManagerOverrideModal() {
     price_override: 'Manual Price Override',
     cross_cashier_resume: 'Resume Another Cashier\'s Cart',
     force_close_shift: 'Force Close Shift (Discrepancy/Pending)',
-    reprint_receipt: 'Reprint Past Receipt'
+    reprint_receipt: 'Reprint Past Receipt',
+    enter_pos: 'Access Point of Sale Screen',
+    exit_pos: 'Exit Point of Sale to Dashboard'
   };
 
   const actionName = actionMap[payload?.action] || 'Restricted Action';
@@ -85,7 +92,7 @@ export function ManagerOverrideModal() {
         }
 
         setPin('');
-        closeModal();
+        closeModalAction('pos_manager_override');
       } else {
         toast.error('Invalid Manager PIN');
         setPin('');

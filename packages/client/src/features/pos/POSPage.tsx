@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePOSStore } from './usePOSStore';
 import { apiClient } from '@/services/api-client';
 import { POSCartList } from './components/POSCartList';
@@ -22,6 +23,19 @@ import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
 
 export function POSPage() {
+  const navigate = useNavigate();
+  const openModal = useModalStore((state) => state.openModal);
+
+  // Trigger Manager PIN override popup on mount before unlocking page
+  useEffect(() => {
+    openModal('pos_manager_override', {
+      action: 'enter_pos',
+      onCancel: () => {
+        navigate('/');
+      }
+    });
+  }, [openModal, navigate]);
+
   // Activate shift heartbeat validation poller
   useShiftHeartbeat();
 

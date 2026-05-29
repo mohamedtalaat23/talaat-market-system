@@ -1,11 +1,13 @@
 import { LockKeyhole } from 'lucide-react';
 import { usePOSStore } from '../usePOSStore';
 import { useModalStore } from '@/stores/modalStore';
+import { useNavigate } from 'react-router-dom';
 
 export function NoShiftOverlay() {
   const activeShift = usePOSStore((state) => state.activeShift);
   const registerId = usePOSStore((state) => state.registerId);
   const { openModal } = useModalStore();
+  const navigate = useNavigate();
 
   if (activeShift) return null;
 
@@ -23,12 +25,21 @@ export function NoShiftOverlay() {
           </p>
         </div>
 
-        <button 
-          onClick={() => openModal('pos_open_shift')}
-          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
-        >
-          Open Shift
-        </button>
+        <div className="w-full space-y-3">
+          <button 
+            onClick={() => openModal('pos_open_shift')}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+          >
+            Open Shift
+          </button>
+          
+          <button 
+            onClick={() => openModal('pos_manager_override', { action: 'exit_pos', onSuccess: () => navigate('/') })}
+            className="w-full bg-transparent border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold py-3 rounded-lg transition-all active:scale-95"
+          >
+            Exit to Dashboard
+          </button>
+        </div>
 
         <p className="text-xs text-slate-500">
           Supermarket Management System &bull; Talaat Market

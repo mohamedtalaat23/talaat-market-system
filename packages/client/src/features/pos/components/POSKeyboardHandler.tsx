@@ -75,8 +75,12 @@ export function POSKeyboardHandler() {
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = usePOSStore.getState();
       
-      // Block all shortcuts if no active shift
-      if (!state.activeShift) return;
+      // Block all shortcuts if a modal is open to prevent background actions and payload overwrites
+      const activeModals = useModalStore.getState().activeModals;
+      if (Object.values(activeModals).some(isOpen => isOpen)) return;
+
+      // Block all shortcuts if no active shift, EXCEPT F12 (Exit POS)
+      if (!state.activeShift && e.key !== 'F12') return;
 
       // Prevent browser default behaviors for specific intercepted POS F-keys
       const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F12'];
@@ -166,11 +170,10 @@ export function POSKeyboardHandler() {
           openModal('pos_manager_override', { action: 'void_transaction' });
           break;
         case 'F12':
-          if (canExit) {
-            navigate('/');
-          } else {
-            toast.error('Only administrators or managers can exit POS');
-          }
+          openModal('pos_manager_override', {
+            action: 'exit_pos',
+            onSuccess: () => navigate('/')
+          });
           break;
         case 'ArrowUp':
           if (cartLength > 0 && !isInput) {

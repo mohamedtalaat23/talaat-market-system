@@ -177,7 +177,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                             : 'text-neutral-400'
                         }`}
                       >
-                        {cust.balance.toFixed(2)} EGP
+                        {Number(cust.balance).toFixed(2)} EGP
                       </div>
                       <div className="text-[10px] text-neutral-500 mt-0.5">
                         {cust.balance < 0 ? 'Debt' : cust.balance > 0 ? 'Credit' : 'Settle'}

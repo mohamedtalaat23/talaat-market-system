@@ -123,7 +123,7 @@ export function CustomerDetailScreen() {
                       : 'text-neutral-300'
                   }`}
                 >
-                  {customer.balance.toFixed(2)} EGP
+                  {Number(customer.balance).toFixed(2)} EGP
                 </div>
                 <div className="text-xs text-neutral-500 mt-1 font-sans">
                   {customer.balance < 0
@@ -234,7 +234,7 @@ export function CustomerDetailScreen() {
                         <td className="px-6 py-4 text-xs font-mono font-semibold">
                           <span className={tx.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}>
                             {tx.amount < 0 ? '' : '+'}
-                            {tx.amount.toFixed(2)} EGP
+                            {Number(tx.amount).toFixed(2)} EGP
                           </span>
                         </td>
 

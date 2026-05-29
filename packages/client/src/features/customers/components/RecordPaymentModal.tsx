@@ -48,8 +48,9 @@ export function RecordPaymentModal({
     );
   };
 
+  const numericBalance = Number(currentBalance) || 0;
   const parsedAmount = parseFloat(amount) || 0;
-  const projectedBalance = currentBalance + parsedAmount;
+  const projectedBalance = numericBalance + parsedAmount;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -79,16 +80,16 @@ export function RecordPaymentModal({
               <span className="text-neutral-400">Current Balance:</span>
               <span
                 className={`font-semibold font-mono ${
-                  currentBalance < 0
+                  numericBalance < 0
                     ? 'text-rose-500'
-                    : currentBalance > 0
+                    : numericBalance > 0
                     ? 'text-emerald-500'
                     : 'text-neutral-300'
                 }`}
               >
-                {currentBalance.toFixed(2)} EGP
-                {currentBalance < 0 && ' (Debt)'}
-                {currentBalance > 0 && ' (Credit)'}
+                {numericBalance.toFixed(2)} EGP
+                {numericBalance < 0 && ' (Debt)'}
+                {numericBalance > 0 && ' (Credit)'}
               </span>
             </div>
           </div>

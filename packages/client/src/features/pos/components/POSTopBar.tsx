@@ -9,7 +9,6 @@ import { usePOSStore } from '../usePOSStore';
 export function POSTopBar() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const canExit = user?.role === 'admin' || user?.role === 'manager';
   const { openModal } = useModalStore();
   const activeShift = usePOSStore((state) => state.activeShift);
   const autoPrintReceipts = usePOSStore((state) => state.autoPrintReceipts);
@@ -18,16 +17,19 @@ export function POSTopBar() {
   return (
     <div className="h-14 flex items-center justify-between px-6 bg-slate-900 border-b border-slate-800">
       <div className="flex items-center space-x-4">
-        {canExit && (
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-xs font-medium border border-slate-700 hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-500"
-            title="Back to Dashboard (F12)"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Dashboard</span>
-          </button>
-        )}
+        <button
+          onClick={() => {
+            openModal('pos_manager_override', {
+              action: 'exit_pos',
+              onSuccess: () => navigate('/')
+            });
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-xs font-medium border border-slate-700 hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          title="Back to Dashboard (F12)"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Dashboard</span>
+        </button>
         <span className="font-bold text-xl tracking-tight text-white">Talaat POS</span>
         {activeShift ? (
           <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
