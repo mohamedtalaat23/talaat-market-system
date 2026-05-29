@@ -271,13 +271,13 @@ export async function seed(knex: Knex): Promise<void> {
 
   const insertedProducts = await knex('products').insert(productsToSeed).returning('*');
 
-  // Helper map to find product by barcode/PLU
-  const productMap: Record<string, typeof insertedProducts[0]> = {};
-  for (const prod of insertedProducts) {
+  // Helper map to find product by barcode/PLU in a single-pass reduce
+  const productMap = insertedProducts.reduce<Record<string, typeof insertedProducts[0]>>((acc, prod) => {
     if (prod.barcode) {
-      productMap[prod.barcode] = prod;
+      acc[prod.barcode] = prod;
     }
-  }
+    return acc;
+  }, {});
 
   // 5. Seed Inventory matching product list
   const inventories = insertedProducts.map((prod) => {

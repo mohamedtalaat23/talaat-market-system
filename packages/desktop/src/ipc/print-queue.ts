@@ -199,8 +199,13 @@ export class PrintQueue {
       nextJob.error = null;
       console.log(`[PrintQueue] Printed successfully: Job ${nextJob.id}`);
       
+      // Defer O(n) queue cleanup to a non-blocking macrotask
       if (this.queue.length > 50) {
-        this.queue = this.queue.filter(j => j.status !== 'completed' || Date.now() - new Date(j.createdAt).getTime() < 3600000);
+        setImmediate(() => {
+          this.queue = this.queue.filter(
+            (j) => j.status !== 'completed' || Date.now() - new Date(j.createdAt).getTime() < 3600000
+          );
+        });
       }
 
       this.isProcessing = false;

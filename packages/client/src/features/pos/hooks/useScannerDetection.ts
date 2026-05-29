@@ -17,9 +17,15 @@ export function useScannerDetection({
   const lastKeyTimeRef = useRef<number>(0);
   const scanCooldownRef = useRef<number>(0); // Cooldown to throttle consecutive scans
 
+  // 1. Maintain a stable callback ref that updates on every render
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Prevent standard functional keyboard shortcuts from entering scanner buffer
+      // Prevent standard functional keyboard shortcuts from entering scanner buffer
       if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
       }
@@ -54,7 +60,7 @@ export function useScannerDetection({
           // 4. Rate limiting: prevent UI freezing by throttling rapid consecutive scans (e.g. 150ms cooldown)
           if (currentTime - scanCooldownRef.current > 150) {
             scanCooldownRef.current = currentTime;
-            onScan(scannedCode);
+            onScanRef.current(scannedCode);
           } else {
             console.warn('[Scanner] Scan ignored due to rate limiting cooldown.');
           }
@@ -90,5 +96,5 @@ export function useScannerDetection({
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [onScan, timeThreshold, minBarcodeLength, maxBarcodeLength]);
+  }, [timeThreshold, minBarcodeLength, maxBarcodeLength]); // stable onScan callback excluded from dependencies
 }
