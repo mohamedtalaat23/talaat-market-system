@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import toast from 'react-hot-toast';
 
 export interface POSCartItem {
   cart_id: string; // unique ID for the cart row
@@ -76,20 +77,55 @@ export const usePOSStore = create<POSState>()(
           const existingItem = state.cart[existingIndex];
           if (!existingItem) return state;
 
+          const nextQuantity = existingItem.quantity + item.quantity;
+
+          // Non-blocking warning toast if the new total exceeds recorded stock boundaries
+          if (nextQuantity > item.inventory_quantity) {
+            toast.dismiss();
+            toast.error(`Warning: Cart quantity (${nextQuantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
+              icon: '⚠️',
+              duration: 4000
+            });
+          }
+
           const newCart = [...state.cart];
           newCart[existingIndex] = {
             ...existingItem,
-            quantity: existingItem.quantity + item.quantity
+            quantity: nextQuantity
           };
           return { cart: newCart, activeItemIndex: existingIndex };
         }
+
+        // Check stock boundaries for new item insertion
+        if (item.quantity > item.inventory_quantity) {
+          toast.dismiss();
+          toast.error(`Warning: Cart quantity (${item.quantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
+            icon: '⚠️',
+            duration: 4000
+          });
+        }
+
         const newCart = [...state.cart, { ...item, cart_id: crypto.randomUUID() }];
         return { cart: newCart, activeItemIndex: newCart.length - 1 };
       }),
       
-      updateQuantity: (cartId, quantity) => set((state) => ({
-        cart: state.cart.map(item => item.cart_id === cartId ? { ...item, quantity } : item)
-      })),
+      updateQuantity: (cartId, quantity) => set((state) => {
+        const newCart = state.cart.map(item => {
+          if (item.cart_id === cartId) {
+            // Trigger non-blocking warning toast on manually updated quantity overstock
+            if (quantity > item.inventory_quantity) {
+              toast.dismiss();
+              toast.error(`Warning: Cart quantity (${quantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
+                icon: '⚠️',
+                duration: 4000
+              });
+            }
+            return { ...item, quantity };
+          }
+          return item;
+        });
+        return { cart: newCart };
+      }),
 
       updateItemDiscount: (cartId, discount) => set((state) => ({
         cart: state.cart.map(item => item.cart_id === cartId ? { ...item, discount } : item)

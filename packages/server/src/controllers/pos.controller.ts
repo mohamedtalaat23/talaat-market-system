@@ -18,6 +18,7 @@ const checkoutSchema = z.object({
   idempotency_key: z.string(),
   global_discount: z.number().min(0).optional(),
   customer_id: z.number().optional(),
+  manager_pin: z.string().optional(),
   items: z.array(z.object({
     product_id: z.number(),
     quantity: z.number().positive(),
@@ -32,13 +33,50 @@ export class POSController {
       const payload = checkoutSchema.parse(req.body);
       const cashierId = (req as any).user.id; 
 
-      const sale = await posRepository.checkout(payload, cashierId);
+      let bypassInventoryCheck = false;
+
+      // If a manager PIN is supplied, authenticate it against active managers/admins
+      if (payload.manager_pin) {
+        const managers = await db('employees')
+          .whereIn('role', ['manager', 'admin'])
+          .where('is_active', true)
+          .whereNull('deleted_at');
+        
+        let pinValid = false;
+        for (const m of managers) {
+          if (m.pin_hash) {
+            const isValid = await bcrypt.compare(String(payload.manager_pin), m.pin_hash);
+            if (isValid) {
+              pinValid = true;
+              break;
+            }
+          }
+        }
+        
+        if (!pinValid) {
+          return res.status(403).json({ success: false, message: 'Invalid manager PIN.' });
+        }
+        bypassInventoryCheck = true;
+      }
+
+      const sale = await posRepository.checkout(payload, cashierId, bypassInventoryCheck);
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ success: false, message: 'Invalid payload', errors: error.errors });
       }
-      return res.status(400).json({ success: false, message: error.message || 'Checkout failed' });
+
+      // Bubble up the specific inventory underflow error code to trigger the frontend Modal
+      if (error.code === 'INVENTORY_UNDERFLOW' || error.name === 'InventoryUnderflowError') {
+        return res.status(400).json({
+          success: false,
+          code: 'INVENTORY_UNDERFLOW',
+          product_id: error.product_id,
+          message: error.message || 'Inventory underflow.'
+        });
+      }
+
+      return res.status(400).json({ success: false, message: error.message || 'Checkout failed.' });
     }
   }
 
@@ -112,7 +150,6 @@ export class POSController {
         return res.status(403).json({ success: false, message: 'Manager authorization required' });
       }
 
-      // Fetch manager's pin_hash from employees table
       const manager = await db('employees').where('id', managerId).first();
       if (!manager?.pin_hash) {
         return res.status(403).json({ success: false, message: 'Manager PIN not configured' });
@@ -132,6 +169,7 @@ export class POSController {
       return res.status(400).json({ success: false, message: error.message });
     }
   }
+
   searchSales = async (req: Request, res: Response) => {
     try {
       const query = (req.query.q as string) || '';

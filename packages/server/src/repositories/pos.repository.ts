@@ -1,5 +1,16 @@
 import { db } from '../config/database';
 
+export class InventoryUnderflowError extends Error {
+  public code = 'INVENTORY_UNDERFLOW';
+  public product_id: number;
+
+  constructor(productId: number, message: string) {
+    super(message);
+    this.name = 'InventoryUnderflowError';
+    this.product_id = productId;
+  }
+}
+
 export interface CheckoutItem {
   product_id: number;
   quantity: number;
@@ -17,6 +28,7 @@ export interface CheckoutPayload {
   idempotency_key: string;
   global_discount?: number | undefined;
   customer_id?: number | undefined;
+  manager_pin?: string | undefined;
   items: CheckoutItem[];
 }
 
@@ -67,7 +79,7 @@ export class POSRepository {
   async getShiftSummary(shiftId: number) {
     const shift = await db('cashier_shifts').where('id', shiftId).first();
     if (!shift) throw new Error('Shift not found');
-
+ 
     const sales = await db('sales')
       .where('shift_id', shiftId)
       .andWhere('status', 'completed');
@@ -93,7 +105,6 @@ export class POSRepository {
       }
     }
 
-    // Query customer payments associated with this active shift to balance cash count
     const customerPayments = await db('customer_transactions')
       .where('shift_id', shiftId)
       .andWhere('transaction_type', 'payment');
@@ -123,7 +134,7 @@ export class POSRepository {
   /**
    * Atomic Checkout Transaction
    */
-  async checkout(payload: CheckoutPayload, cashierId: number) {
+  async checkout(payload: CheckoutPayload, cashierId: number, bypassInventoryCheck: boolean = false) {
     if (!payload.shift_id) {
       throw new Error('Active shift is required for checkout.');
     }
@@ -132,7 +143,7 @@ export class POSRepository {
     const existing = await db('sales').where('idempotency_key', payload.idempotency_key).first();
     if (existing) {
       const existingItems = await db('sale_items').where('sale_id', existing.id);
-      return { ...existing, items: existingItems }; // Already processed
+      return { ...existing, items: existingItems };
     }
 
     return await db.transaction(async (trx) => {
@@ -149,7 +160,7 @@ export class POSRepository {
         subtotal += item.unit_price * item.quantity;
         discountAmount += item.discount;
       }
-      const taxAmount = 0; // Assuming 0 for now
+      const taxAmount = 0;
       const total = subtotal - discountAmount - globalDiscount + taxAmount;
 
       // 2. Generate Receipt Number using sequence
@@ -177,13 +188,12 @@ export class POSRepository {
         card_amount: payload.payment_method === 'split' ? (payload.card_amount || null) : null,
         change_given: changeGiven,
         status: 'completed',
-        print_status: 'pending_print', // Decoupled from physical printing
+        print_status: 'pending_print',
         print_count: 0,
         idempotency_key: payload.idempotency_key,
         customer_id: payload.customer_id || null
       }).returning('*');
 
-      // If customer is buying on credit (debt), adjust their balance and insert ledger record
       if (payload.payment_method === 'debt' && payload.customer_id) {
         const customer = await trx('customers').where('id', payload.customer_id).whereNull('deleted_at').first();
         if (!customer) {
@@ -213,7 +223,6 @@ export class POSRepository {
         .select('id', 'cost_price', 'name', 'barcode');
 
       const productMap = new Map(products.map((p) => [p.id, p]));
-
       const saleItemsToInsert = [];
 
       for (const item of payload.items) {
@@ -234,13 +243,26 @@ export class POSRepository {
           cost_at_sale: product.cost_price || 0,
         });
 
-        const [inv] = await trx('inventory')
-          .where('product_id', item.product_id)
-          .decrement('quantity', item.quantity)
-          .returning('quantity');
+        let affectedRows = 0;
 
-        if (!inv || Number(inv.quantity) < 0) {
-          throw new Error(`Insufficient inventory for product ID ${item.product_id}. Checkout aborted.`);
+        if (bypassInventoryCheck) {
+          // Bypasses the inventory check constraint logic, allowing stock count to temporarily go negative
+          affectedRows = await trx('inventory')
+            .where('product_id', item.product_id)
+            .decrement('quantity', item.quantity);
+        } else {
+          // Enforces strict inventory underflow guard using atomic condition checks
+          affectedRows = await trx('inventory')
+            .where('product_id', item.product_id)
+            .andWhere('quantity', '>=', item.quantity)
+            .decrement('quantity', item.quantity);
+        }
+
+        if (affectedRows === 0) {
+          throw new InventoryUnderflowError(
+            item.product_id,
+            `Insufficient inventory or inventory record missing for product ID ${item.product_id}. Checkout aborted.`
+          );
         }
       }
 
@@ -266,7 +288,7 @@ export class POSRepository {
   }
 
   /**
-   * Reprint an old receipt (manager override logic handled in controller)
+   * Reprint an old receipt
    */
   async reprintReceipt(saleId: number, managerId: number) {
     return db.transaction(async (trx) => {
@@ -293,6 +315,7 @@ export class POSRepository {
       return { ...sale, items };
     });
   }
+
   /**
    * Search for sales by receipt number or date
    */
@@ -309,7 +332,6 @@ export class POSRepository {
 
     const sales = await q;
 
-    // Fetch items for the matching sales
     if (sales.length > 0) {
       const saleIds = sales.map(s => s.id);
       const items = await db('sale_items').whereIn('sale_id', saleIds);

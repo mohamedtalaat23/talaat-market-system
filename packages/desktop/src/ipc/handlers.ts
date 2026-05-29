@@ -60,7 +60,7 @@ export function registerIpcHandlers(
 
   ipcMain.handle(IPC_CHANNELS.OPEN_CASH_DRAWER, async () => {
     console.log('[IPC] open-cash-drawer called');
-    return { success: true, message: 'Cash drawer not yet implemented' };
+    return printQueue.kickDrawer();
   });
 
   ipcMain.handle(IPC_CHANNELS.ENQUEUE_PRINT_JOB, async (_event, receipt: Receipt) => {

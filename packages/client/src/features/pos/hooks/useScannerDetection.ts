@@ -2,55 +2,93 @@ import { useEffect, useRef } from 'react';
 
 interface UseScannerDetectionProps {
   onScan: (barcode: string) => void;
-  timeThreshold?: number; // max ms between keystrokes to be considered a scanner
+  timeThreshold?: number; // max ms between keystrokes to be considered a scanner (e.g. 30ms)
+  minBarcodeLength?: number;
+  maxBarcodeLength?: number;
 }
 
-export function useScannerDetection({ onScan, timeThreshold = 30 }: UseScannerDetectionProps) {
+export function useScannerDetection({
+  onScan,
+  timeThreshold = 30,
+  minBarcodeLength = 3,
+  maxBarcodeLength = 50,
+}: UseScannerDetectionProps) {
   const bufferRef = useRef<string>('');
   const lastKeyTimeRef = useRef<number>(0);
+  const scanCooldownRef = useRef<number>(0); // Cooldown to throttle consecutive scans
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore key events if the user is typing in a real input/textarea,
-      // UNLESS we want to capture scans globally anyway. 
-      // Typically, in a POS, if they scan, it should always trigger a scan
-      // even if they are focused in an input. But we should be careful.
-      // We will capture globally unless the input specifically stops propagation.
-
-      const currentTime = Date.now();
-      const timeDiff = currentTime - lastKeyTimeRef.current;
-
-      // If the time between keystrokes is larger than the threshold,
-      // it means a human is typing, so we reset the buffer.
-      if (timeDiff > timeThreshold) {
-        bufferRef.current = '';
-      }
-
-      if (e.key === 'Enter' && bufferRef.current.length > 0) {
-        // Scanner finished scanning
-        const scannedCode = bufferRef.current;
-        bufferRef.current = '';
-        
-        // Prevent form submissions or other Enter behaviors
-        e.preventDefault();
-        
-        // Trigger callback
-        onScan(scannedCode);
+      // 1. Prevent standard functional keyboard shortcuts from entering scanner buffer
+      if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
       }
 
-      // If it's a printable character, add it to the buffer
-      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        bufferRef.current += e.key;
+      // Ignore standard non-printable keys (except Enter)
+      if (e.key.length > 1 && e.key !== 'Enter') {
+        return;
+      }
+
+      const currentTime = performance.now();
+      const timeDiff = currentTime - lastKeyTimeRef.current;
+
+      // 2. Human typing filter:
+      // If the time between keystrokes is larger than the threshold,
+      // it means a human is typing, so we reset the buffer.
+      // Exception: the first character in the buffer will have a large timeDiff,
+      // so we only reset the buffer if the buffer already has characters.
+      if (bufferRef.current.length > 0 && timeDiff > timeThreshold) {
+        bufferRef.current = '';
+      }
+
+      // 3. Enter key marks scanner input completion
+      if (e.key === 'Enter') {
+        const scannedCode = bufferRef.current.trim();
+        bufferRef.current = '';
+
+        if (scannedCode.length >= minBarcodeLength && scannedCode.length <= maxBarcodeLength) {
+          // Prevent default form submission / action
+          e.preventDefault();
+          e.stopPropagation();
+
+          // 4. Rate limiting: prevent UI freezing by throttling rapid consecutive scans (e.g. 150ms cooldown)
+          if (currentTime - scanCooldownRef.current > 150) {
+            scanCooldownRef.current = currentTime;
+            onScan(scannedCode);
+          } else {
+            console.warn('[Scanner] Scan ignored due to rate limiting cooldown.');
+          }
+        }
+        return;
+      }
+
+      // 4. Flood Guard (corrupt input stream prevention)
+      // If characters arrive with literally 0ms or sub-millisecond gaps (e.g., < 1ms),
+      // it is a corrupt input flood or machine issue, so we drop it.
+      if (bufferRef.current.length > 0 && timeDiff < 1) {
+        bufferRef.current = '';
+        lastKeyTimeRef.current = currentTime;
+        return;
+      }
+
+      // 5. Append printable character to buffer if within length bounds
+      if (e.key.length === 1) {
+        if (bufferRef.current.length < maxBarcodeLength) {
+          bufferRef.current += e.key;
+        } else {
+          // Wiped due to overflow (prevent continuous corrupted buffer memory leaks)
+          bufferRef.current = '';
+        }
       }
 
       lastKeyTimeRef.current = currentTime;
     };
 
-    window.addEventListener('keydown', handleKeyDown, true); // use capture phase to intercept before inputs
+    // Use capture phase to intercept scanner keystrokes before any browser input handles them
+    window.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [onScan, timeThreshold]);
+  }, [onScan, timeThreshold, minBarcodeLength, maxBarcodeLength]);
 }
