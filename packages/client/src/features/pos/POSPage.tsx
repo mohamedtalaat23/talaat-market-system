@@ -61,7 +61,7 @@ export function POSPage() {
       }
     };
     fetchShift();
-  }, [setActiveShift]);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-200 overflow-hidden select-none">

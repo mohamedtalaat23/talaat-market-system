@@ -1,33 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
 import { customerRepository } from '../repositories/customer.repository';
 import { posRepository } from '../repositories/pos.repository';
 import { logger } from '../middleware/logger';
-
-const createCustomerSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(150),
-  phone: z.string().nullable().optional(),
-  email: z.string().email('Invalid email format').or(z.literal('')).nullable().optional(),
-  address: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
-  balance: z.number().optional(),
-  loyalty_points: z.number().int().min(0).optional(),
-});
-
-const updateCustomerSchema = z.object({
-  name: z.string().min(1).max(150).optional(),
-  phone: z.string().nullable().optional(),
-  email: z.string().email('Invalid email format').or(z.literal('')).nullable().optional(),
-  address: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
-  loyalty_points: z.number().int().min(0).optional(),
-});
-
-const recordPaymentSchema = z.object({
-  amount: z.number().positive('Payment amount must be greater than zero'),
-  notes: z.string().nullable().optional(),
-  payment_method: z.enum(['cash', 'card']).optional().default('cash'),
-});
+import { HTTP_STATUS } from '../config/constants';
 
 export class CustomerController {
   /**
@@ -36,10 +11,22 @@ export class CustomerController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const search = (req.query.q as string) || undefined;
-      const customers = await customerRepository.findAll(search);
-      res.json({
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      const offset = (page - 1) * limit;
+
+      const { data: customers, total } = await customerRepository.findAll(search, limit, offset);
+      
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
         status: 'success',
         data: customers,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        }
       });
     } catch (error) {
       logger.error('Error listing customers:', error);
@@ -53,20 +40,15 @@ export class CustomerController {
   async getDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      if (isNaN(id)) {
-        res.status(400).json({ status: 'error', message: 'Invalid customer ID' });
-        return;
-      }
-
       const customer = await customerRepository.findById(id);
       if (!customer) {
-        res.status(404).json({ status: 'error', message: 'Customer not found' });
+        res.status(HTTP_STATUS.NOT_FOUND).json({ status: 'error', message: 'Customer not found' });
         return;
       }
 
       const ledger = await customerRepository.getTransactionLedger(id);
 
-      res.json({
+      res.status(HTTP_STATUS.OK).json({
         status: 'success',
         data: {
           ...customer,
@@ -84,23 +66,19 @@ export class CustomerController {
    */
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const payload = createCustomerSchema.parse(req.body);
+      const payload = req.body;
       const userId = (req as any).user?.id || null;
 
       const customer = await customerRepository.create(payload, userId);
 
-      res.status(201).json({
+      res.status(HTTP_STATUS.CREATED).json({
         status: 'success',
         data: customer,
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Validation failed', errors: error.errors });
-        return;
-      }
       // Handle unique phone constraint violation
       if (error instanceof Error && error.message.includes('unique constraint')) {
-        res.status(400).json({ status: 'error', message: 'A customer with this phone number already exists' });
+        res.status(HTTP_STATUS.BAD_REQUEST).json({ status: 'error', message: 'A customer with this phone number already exists' });
         return;
       }
       logger.error('Error creating customer:', error);
@@ -114,25 +92,16 @@ export class CustomerController {
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      if (isNaN(id)) {
-        res.status(400).json({ status: 'error', message: 'Invalid customer ID' });
-        return;
-      }
-
-      const payload = updateCustomerSchema.parse(req.body);
+      const payload = req.body;
       const customer = await customerRepository.update(id, payload);
 
-      res.json({
+      res.status(HTTP_STATUS.OK).json({
         status: 'success',
         data: customer,
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Validation failed', errors: error.errors });
-        return;
-      }
       if (error instanceof Error && error.message.includes('unique constraint')) {
-        res.status(400).json({ status: 'error', message: 'A customer with this phone number already exists' });
+        res.status(HTTP_STATUS.BAD_REQUEST).json({ status: 'error', message: 'A customer with this phone number already exists' });
         return;
       }
       logger.error('Error updating customer:', error);
@@ -146,14 +115,9 @@ export class CustomerController {
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      if (isNaN(id)) {
-        res.status(400).json({ status: 'error', message: 'Invalid customer ID' });
-        return;
-      }
-
       await customerRepository.softDelete(id);
 
-      res.json({
+      res.status(HTTP_STATUS.OK).json({
         status: 'success',
         message: 'Customer deleted successfully',
       });
@@ -169,12 +133,7 @@ export class CustomerController {
   async recordPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      if (isNaN(id)) {
-        res.status(400).json({ status: 'error', message: 'Invalid customer ID' });
-        return;
-      }
-
-      const { amount, notes, payment_method } = recordPaymentSchema.parse(req.body);
+      const { amount, notes, payment_method } = req.body;
       const userId = (req as any).user?.id || null;
 
       // Query the active cashier shift to link repayment cash to the drawer
@@ -194,15 +153,11 @@ export class CustomerController {
         payment_method
       );
 
-      res.json({
+      res.status(HTTP_STATUS.OK).json({
         status: 'success',
         data: updatedCustomer,
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Validation failed', errors: error.errors });
-        return;
-      }
       logger.error('Error recording customer payment:', error);
       next(error);
     }

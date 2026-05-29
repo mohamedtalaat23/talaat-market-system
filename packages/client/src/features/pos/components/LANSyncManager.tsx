@@ -29,6 +29,11 @@ export function LANSyncManager() {
     }
 
     const checkConnection = async () => {
+      // Pause polling if the document is not visible
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
       try {
         // Query the `/health` endpoint of the master host
         const controller = new AbortController();
@@ -65,8 +70,8 @@ export function LANSyncManager() {
     // Initial check
     checkConnection();
 
-    // Check every 10 seconds
-    const interval = setInterval(checkConnection, 10000);
+    // Check every 30 seconds
+    const interval = setInterval(checkConnection, 30000);
     return () => clearInterval(interval);
   }, [mode, status, hostAddress, setStatus]);
 

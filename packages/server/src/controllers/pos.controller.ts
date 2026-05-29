@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { posRepository } from '../repositories/pos.repository';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
 import { db } from '../config/database';
+import { pinService } from '../services/pin.service';
 
 const reprintSchema = z.object({
   manager_pin: z.string().min(4).max(6)
@@ -36,42 +36,15 @@ export class POSController {
 
       let bypassInventoryCheck = false;
 
-      // If a manager PIN is supplied, authenticate it against active managers/admins
+      // If a manager PIN is supplied, authenticate it securely with lockout protection
       if (payload.manager_pin) {
-        let pinValid = false;
-
-        if (payload.manager_id) {
-          // Precise optimization: query by manager_id for a single bcrypt compare
-          const manager = await db('employees')
-            .where('id', payload.manager_id)
-            .whereIn('role', ['manager', 'admin'])
-            .where('is_active', true)
-            .whereNull('deleted_at')
-            .first();
-
-          if (manager && manager.pin_hash) {
-            pinValid = await bcrypt.compare(String(payload.manager_pin), manager.pin_hash);
-          }
-        } else {
-          // Fallback legacy loop check (in case client is offline and doesn't have manager list)
-          const managers = await db('employees')
-            .whereIn('role', ['manager', 'admin'])
-            .where('is_active', true)
-            .whereNull('deleted_at');
-          
-          for (const m of managers) {
-            if (m.pin_hash) {
-              const isValid = await bcrypt.compare(String(payload.manager_pin), m.pin_hash);
-              if (isValid) {
-                pinValid = true;
-                break;
-              }
-            }
-          }
+        if (!payload.manager_id) {
+          return res.status(400).json({ success: false, message: 'Manager ID is required for PIN authorization override.' });
         }
-        
-        if (!pinValid) {
-          return res.status(403).json({ success: false, message: 'Invalid manager PIN.' });
+
+        const verification = await pinService.verifyPin(Number(payload.manager_id), String(payload.manager_pin));
+        if (!verification.success) {
+          return res.status(403).json({ success: false, message: verification.message });
         }
         bypassInventoryCheck = true;
       }
@@ -138,6 +111,22 @@ export class POSController {
   getShiftSummary = async (req: Request, res: Response) => {
     try {
       const shiftId = Number(req.params.id);
+      const user = (req as any).user;
+
+      // Scoping: fetch the shift record first to verify employee identity
+      const shift = await db('cashier_shifts').where('id', shiftId).first();
+      if (!shift) {
+        return res.status(404).json({ success: false, message: 'Shift not found.' });
+      }
+
+      // Cashiers can only view their own shift summaries
+      if (user.role === 'cashier' && shift.employee_id !== user.id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You are only authorized to query your own shift summary.'
+        });
+      }
+
       const summary = await posRepository.getShiftSummary(shiftId);
       return res.status(200).json({ success: true, data: summary });
     } catch (error: any) {
@@ -167,14 +156,9 @@ export class POSController {
         return res.status(403).json({ success: false, message: 'Manager authorization required' });
       }
 
-      const manager = await db('employees').where('id', managerId).first();
-      if (!manager?.pin_hash) {
-        return res.status(403).json({ success: false, message: 'Manager PIN not configured' });
-      }
-
-      const pinValid = await bcrypt.compare(String(manager_pin), manager.pin_hash);
-      if (!pinValid) {
-        return res.status(403).json({ success: false, message: 'Invalid PIN' });
+      const verification = await pinService.verifyPin(managerId, manager_pin);
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
       }
 
       const sale = await posRepository.reprintReceipt(saleId, managerId);
@@ -212,3 +196,4 @@ export class POSController {
 }
 
 export const posController = new POSController();
+

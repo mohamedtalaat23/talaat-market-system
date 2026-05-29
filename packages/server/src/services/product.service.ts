@@ -94,7 +94,7 @@ export class ProductService {
         logger.info('Product created successfully with inventory', { id: product.id });
         
         // Fetch fully populated product with inventory joined
-        const populatedProduct = await productRepository.findById(product.id);
+        const populatedProduct = await productRepository.findById(product.id, trx);
         if (!populatedProduct) {
           throw new Error('Failed to retrieve newly created product');
         }

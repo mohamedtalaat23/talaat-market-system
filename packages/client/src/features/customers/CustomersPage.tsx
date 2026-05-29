@@ -5,26 +5,33 @@ import { CustomerFormModal } from './components/CustomerFormModal';
 import { RecordPaymentModal } from './components/RecordPaymentModal';
 import { useAuthStore } from '@/stores/authStore';
 import { Spinner } from '@/components/ui/Spinner';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export function CustomersPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentCustomer, setPaymentCustomer] = useState<Customer | null>(null);
 
-  const { data: customers, isLoading } = useCustomers(search);
+  const debouncedSearch = useDebounce(search, 300);
+  const { data: response, isLoading } = useCustomers({ page, limit: 10, search: debouncedSearch });
+  const customers = response?.data || [];
+  const meta = response?.meta;
   const deleteCustomer = useDeleteCustomer();
   const currentUserRole = useAuthStore((state) => state.user?.role);
 
   // Derived KPI Stats
-  const totalCustomers = customers?.length || 0;
+  const totalCustomers = meta?.total || 0;
+  // NOTE: In a real scenario, total credit and debt should be fetched from the backend 
+  // since this is now paginated and we only have the current page's balances.
   const totalDebt = customers
-    ?.filter((c) => c.balance < 0)
+    .filter((c) => c.balance < 0)
     .reduce((sum, c) => sum + Math.abs(Number(c.balance)), 0) || 0;
   const totalCredit = customers
-    ?.filter((c) => c.balance > 0)
+    .filter((c) => c.balance > 0)
     .reduce((sum, c) => sum + Number(c.balance), 0) || 0;
 
   const handleEdit = (customer: Customer) => {
@@ -112,7 +119,10 @@ export function CustomersPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); // Reset page on search
+            }}
             placeholder="Search by name or phone number..."
             className="w-full rounded-lg border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
           />
@@ -230,6 +240,34 @@ export function CustomersPage() {
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 bg-neutral-900/40 p-4 rounded-lg border border-neutral-800">
+          <div className="text-sm text-neutral-400">
+            Showing <span className="font-semibold text-neutral-200">{customers.length}</span> of <span className="font-semibold text-neutral-200">{meta.total}</span> customers
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors text-sm font-medium border border-neutral-700"
+            >
+              Previous
+            </button>
+            <span className="flex items-center px-4 text-sm font-medium text-neutral-300">
+              Page {page} of {meta.totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+              disabled={page === meta.totalPages}
+              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors text-sm font-medium border border-neutral-700"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Form Dialog */}
       <CustomerFormModal

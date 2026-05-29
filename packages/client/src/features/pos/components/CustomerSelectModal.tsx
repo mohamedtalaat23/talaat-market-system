@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useCustomers, useCreateCustomer } from '@/features/customers/hooks/useCustomerQueries';
 import { usePOSStore } from '../usePOSStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface CustomerSelectModalProps {
   isOpen: boolean;
@@ -14,7 +15,9 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
 
-  const { data: customers, isLoading } = useCustomers(search);
+  const debouncedSearch = useDebounce(search, 300);
+  const { data: response, isLoading } = useCustomers({ page: 1, limit: 10, search: debouncedSearch });
+  const customers = response?.data || [];
   const createCustomer = useCreateCustomer();
   const selectCustomer = usePOSStore((state) => state.selectCustomer);
 

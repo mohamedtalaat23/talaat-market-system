@@ -17,7 +17,8 @@ body {
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   color: var(--text-primary);
-  background-color: var(--bg-app);
+  background: radial-gradient(circle at top center, var(--color-neutral-900) 0%, var(--bg-app) 100%);
+  background-attachment: fixed;
   line-height: var(--leading-normal);
   /* Prevent text selection during rapid interactions (POS use) */
   -webkit-user-select: none;

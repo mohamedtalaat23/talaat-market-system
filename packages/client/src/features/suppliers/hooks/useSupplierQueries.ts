@@ -1,6 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/services/api-client';
-import toast from 'react-hot-toast';
+import {
+  useGenericListQuery,
+  useGenericDetailQuery,
+  useGenericCreateMutation,
+  useGenericUpdateMutation,
+  useGenericDeleteMutation,
+} from '@/hooks/useGenericCrud';
 
 export interface Supplier {
   id: number;
@@ -44,16 +48,6 @@ export interface SupplierDetail extends Supplier {
   catalog: SupplierProduct[];
 }
 
-export interface PaginatedSuppliersResponse {
-  items: Supplier[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
 export interface CreateSupplierPayload {
   supplier_code?: string | null;
   name: string;
@@ -76,89 +70,58 @@ export interface UpdateSupplierPayload {
   status?: 'active' | 'inactive' | 'suspended';
 }
 
+/**
+ * Fetch paginated list of suppliers using the generic list query.
+ */
 export function useSuppliers(search?: string, page = 1, limit = 10) {
-  return useQuery({
-    queryKey: ['suppliers', search, page, limit],
-    queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedSuppliersResponse>('/suppliers', {
-        params: { search: search || undefined, page, limit },
-      });
-      return data;
-    },
-  });
+  const filters: Record<string, any> = { page, limit };
+  if (search) {
+    filters.search = search;
+  }
+  return useGenericListQuery<Supplier, Record<string, any>>('suppliers', '/suppliers', filters);
 }
 
+/**
+ * Fetch detailed supplier profile using the generic detail query.
+ */
 export function useSupplierDetail(id: number) {
-  return useQuery({
-    queryKey: ['supplier', id],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ status: string; data: SupplierDetail }>(`/suppliers/${id}`);
-      return data.data;
-    },
-    enabled: !isNaN(id) && id > 0,
-  });
+  return useGenericDetailQuery<SupplierDetail>('supplier', '/suppliers', id);
 }
 
+/**
+ * Register a new supplier using the generic create mutation.
+ */
 export function useCreateSupplier() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: CreateSupplierPayload) => {
-      const { data } = await apiClient.post<{ status: string; data: Supplier }>('/suppliers', payload);
-      return data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Supplier profile registered');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to register supplier';
-      toast.error(message);
-    },
-  });
+  return useGenericCreateMutation<CreateSupplierPayload, Supplier>(
+    'suppliers',
+    '/suppliers',
+    'Supplier profile registered'
+  );
 }
 
+/**
+ * Update an existing supplier using the generic update mutation.
+ * Adapts call properties for drop-in signature backward compatibility.
+ */
 export function useUpdateSupplier(id: number) {
-  const queryClient = useQueryClient();
+  const mutation = useGenericUpdateMutation<UpdateSupplierPayload, Supplier>(
+    'suppliers',
+    '/suppliers',
+    'Supplier profile updated'
+  );
 
-  return useMutation({
-    mutationFn: async (payload: UpdateSupplierPayload) => {
-      const { data } = await apiClient.put<{ status: string; data: Supplier }>(`/suppliers/${id}`, payload);
-      return data.data;
-    },
-    onSuccess: (updatedSupplier) => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      queryClient.setQueryData(['supplier', id], (oldData: any) => {
-        if (!oldData) return undefined;
-        return {
-          ...oldData,
-          ...updatedSupplier,
-        };
-      });
-      toast.success('Supplier profile updated');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to update supplier profile';
-      toast.error(message);
-    },
-  });
+  return {
+    ...mutation,
+    mutate: (payload: UpdateSupplierPayload, options?: any) =>
+      mutation.mutate({ id, payload }, options),
+    mutateAsync: (payload: UpdateSupplierPayload, options?: any) =>
+      mutation.mutateAsync({ id, payload }, options),
+  };
 }
 
+/**
+ * Soft delete a supplier using the generic delete mutation.
+ */
 export function useDeleteSupplier() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const { data } = await apiClient.delete<{ status: string; message: string }>(`/suppliers/${id}`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Supplier profile deleted successfully');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to delete supplier profile';
-      toast.error(message);
-    },
-  });
+  return useGenericDeleteMutation('suppliers', '/suppliers', 'Supplier profile deleted successfully');
 }

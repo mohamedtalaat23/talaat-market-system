@@ -1,10 +1,55 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, memo } from 'react';
 import { X, Clock, User as UserIcon } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { usePOSStore } from '../usePOSStore';
 import { useAuthStore } from '@/stores/authStore';
 import toast from 'react-hot-toast';
+
+interface SuspendedCartItemProps {
+  cart: any; // Using any or specific type if available
+  onDiscard: (holdId: string, cashierId: number) => void;
+  onResume: (holdId: string, cashierId: number) => void;
+}
+
+const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItemProps) => {
+  const { total } = useMemo(() => {
+    const sub = cart.cart.reduce((sum: number, item: any) => sum + (item.quantity * item.unit_price) - item.discount, 0);
+    return { total: sub - cart.globalDiscount };
+  }, [cart]);
+
+  return (
+    <div className="bg-slate-800/50 rounded border border-slate-700 p-4 flex justify-between items-center">
+      <div>
+        <div className="flex items-center space-x-2 text-sm text-slate-400 mb-1">
+          <Clock size={14} />
+          <span>{new Date(cart.timestamp).toLocaleTimeString()}</span>
+          <span className="px-2 text-slate-600">|</span>
+          <UserIcon size={14} />
+          <span>Cashier ID: {cart.cashier_id}</span>
+        </div>
+        <div className="font-bold text-white text-lg">
+          {cart.cart.length} items <span className="text-slate-500 font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="flex space-x-2">
+        <button
+          onClick={() => onDiscard(cart.hold_id, cart.cashier_id)}
+          className="px-4 py-2 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors"
+        >
+          Discard
+        </button>
+        <button
+          onClick={() => onResume(cart.hold_id, cart.cashier_id)}
+          className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded transition-colors"
+        >
+          Resume
+        </button>
+      </div>
+    </div>
+  );
+});
 
 export function SuspendedCartsModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_suspended_carts);
@@ -89,42 +134,14 @@ export function SuspendedCartsModal() {
               <p>No suspended carts found.</p>
             </div>
           ) : (
-            heldCarts.map((cart) => {
-              const subtotal = cart.cart.reduce((sum, item) => sum + (item.quantity * item.unit_price) - item.discount, 0);
-              const total = subtotal - cart.globalDiscount;
-
-              return (
-                <div key={cart.hold_id} className="bg-slate-800/50 rounded border border-slate-700 p-4 flex justify-between items-center">
-                  <div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-400 mb-1">
-                      <Clock size={14} />
-                      <span>{new Date(cart.timestamp).toLocaleTimeString()}</span>
-                      <span className="px-2 text-slate-600">|</span>
-                      <UserIcon size={14} />
-                      <span>Cashier ID: {cart.cashier_id}</span>
-                    </div>
-                    <div className="font-bold text-white text-lg">
-                      {cart.cart.length} items <span className="text-slate-500 font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleDiscard(cart.hold_id, cart.cashier_id)}
-                      className="px-4 py-2 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors"
-                    >
-                      Discard
-                    </button>
-                    <button
-                      onClick={() => handleResume(cart.hold_id, cart.cashier_id)}
-                      className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded transition-colors"
-                    >
-                      Resume
-                    </button>
-                  </div>
-                </div>
-              );
-            })
+            heldCarts.map((cart) => (
+              <SuspendedCartItem 
+                key={cart.hold_id} 
+                cart={cart} 
+                onDiscard={handleDiscard} 
+                onResume={handleResume} 
+              />
+            ))
           )}
         </div>
       </div>

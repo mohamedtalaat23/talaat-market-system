@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCreateCustomer, useUpdateCustomer, Customer } from '../hooks/useCustomerQueries';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
 
 interface CustomerFormModalProps {
   isOpen: boolean;
@@ -15,11 +17,15 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
   const [notes, setNotes] = useState('');
   const [balance, setBalance] = useState('');
   const [loyaltyPoints, setLoyaltyPoints] = useState('0');
+  
+  // Custom validation error state mapping field names to message strings
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer(customer?.id || 0);
 
   useEffect(() => {
+    setErrors({});
     if (customer) {
       setName(customer.name || '');
       setPhone(customer.phone || '');
@@ -42,16 +48,61 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    setErrors({});
+
+    // Client-side defensive Zod schema validation
+    const customerSchema = z.object({
+      name: z.string().trim().min(1, 'Full name is required').max(150, 'Name must be under 150 characters'),
+      phone: z
+        .string()
+        .trim()
+        .regex(/^[0-9+-\s]*$/, 'Invalid phone number format')
+        .max(20, 'Phone must be under 20 characters')
+        .optional()
+        .or(z.literal('')),
+      email: z.string().trim().email('Invalid email address format').optional().or(z.literal('')),
+      address: z.string().trim().max(255, 'Address must be under 255 characters').optional().or(z.literal('')),
+      notes: z.string().trim().max(1000, 'Notes must be under 1000 characters').optional().or(z.literal('')),
+      loyalty_points: z.coerce
+        .number()
+        .int('Loyalty points must be an integer')
+        .nonnegative('Loyalty points must be non-negative')
+        .default(0),
+      balance: z.coerce.number().optional(),
+    });
+
+    const validationResult = customerSchema.safeParse({
+      name,
+      phone,
+      email,
+      address,
+      notes,
+      loyalty_points: loyaltyPoints === '' ? 0 : Number(loyaltyPoints),
+      balance: balance === '' ? undefined : Number(balance),
+    });
+
+    if (!validationResult.success) {
+      const fieldErrors: Record<string, string> = {};
+      validationResult.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      toast.error('Validation failed. Please correct the fields.');
+      return;
+    }
+
+    const data = validationResult.data;
 
     const payload = {
-      name: name.trim(),
-      phone: phone.trim() || null,
-      email: email.trim() || null,
-      address: address.trim() || null,
-      notes: notes.trim() || null,
-      loyalty_points: parseInt(loyaltyPoints) || 0,
-      ...(!customer && balance ? { balance: parseFloat(balance) || 0 } : {}),
+      name: data.name,
+      phone: data.phone || null,
+      email: data.email || null,
+      address: data.address || null,
+      notes: data.notes || null,
+      loyalty_points: data.loyalty_points,
+      ...(!customer && data.balance !== undefined ? { balance: data.balance } : {}),
     };
 
     if (customer) {
@@ -101,8 +152,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter customer's full name"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.name && <p className="text-xs text-rose-500 mt-0.5">{errors.name}</p>}
             </div>
 
             {/* Phone */}
@@ -113,20 +167,26 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 01012345678"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.phone ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.phone && <p className="text-xs text-rose-500 mt-0.5">{errors.phone}</p>}
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Email Address</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="customer@domain.com"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.email ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.email && <p className="text-xs text-rose-500 mt-0.5">{errors.email}</p>}
             </div>
 
             {/* Address */}
@@ -137,8 +197,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter street, city details"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.address ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.address && <p className="text-xs text-rose-500 mt-0.5">{errors.address}</p>}
             </div>
 
             {/* Initial Balance - Only for NEW customers */}
@@ -153,8 +216,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                   value={balance}
                   onChange={(e) => setBalance(e.target.value)}
                   placeholder="0.00 (Debt: -50, Credit: 50)"
-                  className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                  className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                    errors.balance ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                  }`}
                 />
+                {errors.balance && <p className="text-xs text-rose-500 mt-0.5">{errors.balance}</p>}
               </div>
             )}
 
@@ -167,8 +233,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={loyaltyPoints}
                 onChange={(e) => setLoyaltyPoints(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.loyalty_points ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.loyalty_points && <p className="text-xs text-rose-500 mt-0.5">{errors.loyalty_points}</p>}
             </div>
 
             {/* Notes */}
@@ -179,8 +248,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add special instructions, credit limits, or notes..."
                 rows={3}
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors resize-none ${
+                  errors.notes ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                }`}
               />
+              {errors.notes && <p className="text-xs text-rose-500 mt-0.5">{errors.notes}</p>}
             </div>
           </div>
 

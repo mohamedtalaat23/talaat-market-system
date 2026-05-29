@@ -52,9 +52,9 @@ export interface UpdateCustomerInput {
 
 export class CustomerRepository {
   /**
-   * List all customers (excluding soft-deleted ones by default) with optional text search.
+   * List all customers (excluding soft-deleted ones by default) with optional text search and pagination.
    */
-  async findAll(search?: string, limit = 50, offset = 0): Promise<Customer[]> {
+  async findAll(search?: string, limit = 50, offset = 0): Promise<{ data: Customer[], total: number }> {
     let query = db('customers').whereNull('deleted_at');
 
     if (search) {
@@ -65,10 +65,13 @@ export class CustomerRepository {
       });
     }
 
-    return query
-      .orderBy('name', 'asc')
-      .limit(limit)
-      .offset(offset);
+    const countQuery = query.clone().clearSelect().count('* as count').first();
+    const dataQuery = query.orderBy('name', 'asc').limit(limit).offset(offset);
+
+    const [countResult, data] = await Promise.all([countQuery, dataQuery]);
+    const total = countResult ? Number(countResult.count) : 0;
+
+    return { data, total };
   }
 
   /**

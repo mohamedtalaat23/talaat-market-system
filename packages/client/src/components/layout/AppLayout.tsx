@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -21,6 +22,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
+import { GlobalErrorBoundary } from '@/components/ui/GlobalErrorBoundary';
 
 const NAV_ITEMS = [
   { label: 'Dashboard',      path: '/',           icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
@@ -35,7 +37,9 @@ const NAV_ITEMS = [
   { label: 'Settings',       path: '/settings',   icon: Settings,        roles: ['admin'] },
 ] as const;
 
-export function AppLayout() {
+import React from 'react';
+
+export const AppLayout = React.memo(() => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -189,10 +193,24 @@ export function AppLayout() {
           id="main-content"
           tabIndex={-1}
         >
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              <GlobalErrorBoundary>
+                <Outlet />
+              </GlobalErrorBoundary>
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
   );
-}
+});
+
 export default AppLayout;

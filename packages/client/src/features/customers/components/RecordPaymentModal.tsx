@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRecordPayment } from '../hooks/useCustomerQueries';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
 
 interface RecordPaymentModalProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ export function RecordPaymentModal({
 }: RecordPaymentModalProps) {
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const recordPayment = useRecordPayment(customerId);
 
@@ -25,6 +28,7 @@ export function RecordPaymentModal({
     if (isOpen) {
       setAmount('');
       setNotes('');
+      setError(null);
     }
   }, [isOpen]);
 
@@ -32,13 +36,33 @@ export function RecordPaymentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+    setError(null);
+
+    const paymentSchema = z.object({
+      amount: z.coerce
+        .number({ invalid_type_error: 'Amount must be a number' })
+        .positive('Payment amount must be greater than zero'),
+      notes: z.string().trim().max(255, 'Notes must be under 255 characters').optional().or(z.literal('')),
+    });
+
+    const validationResult = paymentSchema.safeParse({
+      amount: amount === '' ? undefined : Number(amount),
+      notes,
+    });
+
+    if (!validationResult.success) {
+      const errMessage = validationResult.error.errors[0]?.message || 'Invalid payment details';
+      setError(errMessage);
+      toast.error(errMessage);
+      return;
+    }
+
+    const data = validationResult.data;
 
     recordPayment.mutate(
       {
-        amount: parsedAmount,
-        notes: notes.trim() || 'Manual customer account payment',
+        amount: data.amount,
+        notes: data.notes || 'Manual customer account payment',
       },
       {
         onSuccess: () => {
@@ -108,8 +132,11 @@ export function RecordPaymentModal({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount customer is paying"
-              className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors font-mono"
+              className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors font-mono ${
+                error ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+              }`}
             />
+            {error && <p className="text-xs text-rose-500 mt-0.5">{error}</p>}
           </div>
 
           {/* Note input */}

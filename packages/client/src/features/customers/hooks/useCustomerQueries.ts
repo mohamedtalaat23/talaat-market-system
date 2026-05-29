@@ -1,6 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
+import {
+  useGenericListQuery,
+  useGenericDetailQuery,
+  useGenericCreateMutation,
+  useGenericUpdateMutation,
+  useGenericDeleteMutation,
+} from '@/hooks/useGenericCrud';
 
 export interface Customer {
   id: number;
@@ -42,6 +49,12 @@ export interface CreateCustomerPayload {
   loyalty_points?: number;
 }
 
+export interface CustomerFilters {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
 export interface UpdateCustomerPayload {
   name?: string;
   phone?: string | null;
@@ -56,93 +69,70 @@ export interface RecordPaymentPayload {
   notes?: string | null;
 }
 
-export function useCustomers(search?: string) {
-  return useQuery({
-    queryKey: ['customers', search],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ status: string; data: Customer[] }>('/customers', {
-        params: { q: search || undefined },
-      });
-      return data.data;
-    },
-  });
+/**
+ * Fetch paginated list of customers using the generic list query.
+ */
+export function useCustomers(filters: CustomerFilters) {
+  // Map our frontend filters.search property to backend q property
+  const mappedFilters: Record<string, any> = {
+    page: filters.page,
+    limit: filters.limit,
+  };
+  if (filters.search) {
+    mappedFilters.q = filters.search;
+  }
+
+  return useGenericListQuery<Customer, Record<string, any>>('customers', '/customers', mappedFilters);
 }
 
+/**
+ * Fetch customer detailed transaction history ledger using the generic detail query.
+ */
 export function useCustomerDetail(id: number) {
-  return useQuery({
-    queryKey: ['customer', id],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ status: string; data: CustomerDetail }>(`/customers/${id}`);
-      return data.data;
-    },
-    enabled: !isNaN(id) && id > 0,
-  });
+  return useGenericDetailQuery<CustomerDetail>('customer', '/customers', id);
 }
 
+/**
+ * Create a new customer profile using the generic create mutation.
+ */
 export function useCreateCustomer() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: CreateCustomerPayload) => {
-      const { data } = await apiClient.post<{ status: string; data: Customer }>('/customers', payload);
-      return data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer profile registered');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to register customer';
-      toast.error(message);
-    },
-  });
+  return useGenericCreateMutation<CreateCustomerPayload, Customer>(
+    'customers',
+    '/customers',
+    'Customer profile registered'
+  );
 }
 
+/**
+ * Update an existing customer using the generic update mutation.
+ * Adapts call properties for drop-in signature backward compatibility.
+ */
 export function useUpdateCustomer(id: number) {
-  const queryClient = useQueryClient();
+  const mutation = useGenericUpdateMutation<UpdateCustomerPayload, Customer>(
+    'customers',
+    '/customers',
+    'Customer profile updated'
+  );
 
-  return useMutation({
-    mutationFn: async (payload: UpdateCustomerPayload) => {
-      const { data } = await apiClient.put<{ status: string; data: Customer }>(`/customers/${id}`, payload);
-      return data.data;
-    },
-    onSuccess: (updatedCustomer) => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      queryClient.setQueryData(['customer', id], (oldData: any) => {
-        if (!oldData) return undefined;
-        return {
-          ...oldData,
-          ...updatedCustomer,
-        };
-      });
-      toast.success('Customer profile updated');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to update customer profile';
-      toast.error(message);
-    },
-  });
+  return {
+    ...mutation,
+    mutate: (payload: UpdateCustomerPayload, options?: any) =>
+      mutation.mutate({ id, payload }, options),
+    mutateAsync: (payload: UpdateCustomerPayload, options?: any) =>
+      mutation.mutateAsync({ id, payload }, options),
+  };
 }
 
+/**
+ * Soft delete a customer profile using the generic delete mutation.
+ */
 export function useDeleteCustomer() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const { data } = await apiClient.delete<{ status: string; message: string }>(`/customers/${id}`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer profile deleted');
-    },
-    onError: (error: any) => {
-      const message = error.message || 'Failed to delete customer profile';
-      toast.error(message);
-    },
-  });
+  return useGenericDeleteMutation('customers', '/customers', 'Customer profile deleted');
 }
 
+/**
+ * Custom specialized customer repayment mutation.
+ */
 export function useRecordPayment(customerId: number) {
   const queryClient = useQueryClient();
 

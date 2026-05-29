@@ -6,7 +6,9 @@ import { ArrowLeft, LogOut, Printer, ToggleLeft, ToggleRight } from 'lucide-reac
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 
-export function POSTopBar() {
+import React from 'react';
+
+export const POSTopBar = React.memo(function POSTopBar() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const { openModal } = useModalStore();
@@ -81,5 +83,5 @@ export function POSTopBar() {
       </div>
     </div>
   );
-}
+});
 

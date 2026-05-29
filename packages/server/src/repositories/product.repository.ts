@@ -162,8 +162,12 @@ export class ProductRepository {
   /**
    * Find product by ID.
    */
-  async findById(id: number): Promise<Product | null> {
-    const row = await this.baseQuery.where('products.id', id).first();
+  async findById(id: number, trx?: Knex.Transaction): Promise<Product | null> {
+    let query = this.baseQuery.where('products.id', id);
+    if (trx) {
+      query = query.transacting(trx);
+    }
+    const row = await query.first();
     if (!row) return null;
     return this.mapProductRow(row);
   }

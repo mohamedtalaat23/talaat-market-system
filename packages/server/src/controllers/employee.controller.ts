@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { employeeService } from '../services/employee.service';
 import { HTTP_STATUS } from '../config/constants';
-import { db } from '../config/database';
-import bcrypt from 'bcryptjs';
+import { pinService } from '../services/pin.service';
 
 /**
  * GET /employees
@@ -138,7 +137,7 @@ export async function getActiveManagers(
 /**
  * POST /employees/verify-pin
  * 
- * Verifies a manager's PIN securely using single-record bcrypt lookup.
+ * Verifies a manager's PIN securely using single-record bcrypt lookup and lockout check.
  */
 export async function verifyManagerPin(
   req: Request,
@@ -152,21 +151,10 @@ export async function verifyManagerPin(
       return;
     }
 
-    const employee = await db('employees')
-      .where('id', manager_id)
-      .whereIn('role', ['manager', 'admin'])
-      .where('is_active', true)
-      .whereNull('deleted_at')
-      .first();
+    const verification = await pinService.verifyPin(Number(manager_id), String(pin));
 
-    if (!employee || !employee.pin_hash) {
-      res.status(HTTP_STATUS.FORBIDDEN).json({ success: false, message: 'Manager not found or PIN not configured' });
-      return;
-    }
-
-    const pinValid = await bcrypt.compare(String(pin), employee.pin_hash);
-    if (!pinValid) {
-      res.status(HTTP_STATUS.FORBIDDEN).json({ success: false, message: 'Invalid manager PIN' });
+    if (!verification.success) {
+      res.status(HTTP_STATUS.FORBIDDEN).json({ success: false, message: verification.message });
       return;
     }
 
@@ -175,3 +163,4 @@ export async function verifyManagerPin(
     next(error);
   }
 }
+

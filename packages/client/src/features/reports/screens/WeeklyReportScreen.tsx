@@ -5,8 +5,12 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
-import { Printer } from 'lucide-react';
+import { Printer, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar
+} from 'recharts';
 
 export function WeeklyReportScreen() {
   const [weekStart, setWeekStart] = useState(() => {
@@ -96,6 +100,60 @@ export function WeeklyReportScreen() {
           <div className="p-6 text-center text-destructive">Failed to load weekly report.</div>
         ) : (
           <>
+            {/* Daily Revenue Chart */}
+            <Card className="no-print">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <span>Revenue Trend</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.data.days} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--color-primary-500)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-800)" vertical={false} />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="var(--color-neutral-500)" 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickFormatter={(val) => val.substring(5)}
+                      />
+                      <YAxis 
+                        stroke="var(--color-neutral-500)" 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickFormatter={(val) => `$${val}`}
+                      />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
+                        itemStyle={{ color: 'var(--color-primary-400)', fontWeight: 'bold' }}
+                        labelStyle={{ color: 'var(--color-neutral-400)', marginBottom: '4px' }}
+                        formatter={(value: number) => [formatCurrency(value), 'Net Revenue']}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="net_revenue" 
+                        stroke="var(--color-primary-500)" 
+                        strokeWidth={3}
+                        fillOpacity={1} 
+                        fill="url(#colorRevenue)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Daily Summary */}
             <Card>
               <CardHeader>
@@ -151,26 +209,53 @@ export function WeeklyReportScreen() {
                 {data.data.top_products.length === 0 ? (
                   <div className="text-center py-6 text-neutral-500 italic">No products sold this week</div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-16 text-center">Rank</TableHead>
-                        <TableHead>Product Name</TableHead>
-                        <TableHead className="text-right">Units Sold</TableHead>
-                        <TableHead className="text-right">Revenue</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.data.top_products.map((prod, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="text-center font-bold text-neutral-400">#{index + 1}</TableCell>
-                          <TableCell className="font-medium">{prod.product_name}</TableCell>
-                          <TableCell className="text-right">{prod.total_quantity_sold}</TableCell>
-                          <TableCell className="text-right font-mono">{formatCurrency(prod.total_revenue)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-16 text-center">Rank</TableHead>
+                            <TableHead>Product Name</TableHead>
+                            <TableHead className="text-right">Units Sold</TableHead>
+                            <TableHead className="text-right">Revenue</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {data.data.top_products.map((prod, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="text-center font-bold text-neutral-400">#{index + 1}</TableCell>
+                              <TableCell className="font-medium">{prod.product_name}</TableCell>
+                              <TableCell className="text-right">{prod.total_quantity_sold}</TableCell>
+                              <TableCell className="text-right font-mono">{formatCurrency(prod.total_revenue)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <div className="h-[300px] no-print">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data.data.top_products} layout="vertical" margin={{ top: 0, right: 0, left: 30, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-800)" horizontal={false} />
+                          <XAxis type="number" hide />
+                          <YAxis 
+                            type="category" 
+                            dataKey="product_name" 
+                            width={120} 
+                            stroke="var(--color-neutral-400)" 
+                            fontSize={12} 
+                            tickLine={false} 
+                            axisLine={false} 
+                          />
+                          <Tooltip 
+                            cursor={{fill: 'var(--color-neutral-800)'}}
+                            contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
+                            formatter={(value: number) => [value, 'Units Sold']}
+                          />
+                          <Bar dataKey="total_quantity_sold" fill="var(--color-primary-500)" radius={[0, 4, 4, 0]} barSize={20} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
