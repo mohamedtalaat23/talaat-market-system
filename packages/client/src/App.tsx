@@ -22,6 +22,7 @@ import { OverrideAuditScreen } from '@/features/reports/screens/OverrideAuditScr
 import { Spinner } from '@/components/ui/Spinner';
 import { SettingsLayout } from '@/features/settings/SettingsLayout';
 import { GeneralSettingsScreen } from '@/features/settings/screens/GeneralSettingsScreen';
+import { POSPreferencesScreen } from '@/features/settings/screens/POSPreferencesScreen';
 import { ReceiptSettingsScreen } from '@/features/settings/screens/ReceiptSettingsScreen';
 import { RegistersScreen } from '@/features/settings/screens/RegistersScreen';
 import { PrinterSettingsScreen } from '@/features/settings/screens/PrinterSettingsScreen';
@@ -200,6 +201,7 @@ export function App() {
               >
                 <Route index element={<Navigate to="general" replace />} />
                 <Route path="general" element={<GeneralSettingsScreen />} />
+                <Route path="pos" element={<POSPreferencesScreen />} />
                 <Route path="receipts" element={<ReceiptSettingsScreen />} />
                 <Route path="registers" element={<RegistersScreen />} />
                 <Route path="printers" element={<PrinterSettingsScreen />} />

@@ -1,14 +1,14 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Store, Receipt, MonitorSpeaker, Printer, Wifi } from 'lucide-react';
+import { Store, Receipt, MonitorSpeaker, Printer, Wifi, SlidersHorizontal } from 'lucide-react';
 
 const TABS = [
   { path: 'general', label: 'General Settings', icon: Store },
+  { path: 'pos', label: 'POS Preferences', icon: SlidersHorizontal },
   { path: 'receipts', label: 'Receipt Template', icon: Receipt },
   { path: 'registers', label: 'Terminals & Registers', icon: MonitorSpeaker },
   { path: 'printers', label: 'Hardware Printers', icon: Printer },
   { path: 'lan', label: 'LAN & Sync', icon: Wifi },
 ];
-
 export function SettingsLayout() {
   return (
     <div className="flex h-full gap-6">

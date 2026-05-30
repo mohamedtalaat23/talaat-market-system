@@ -37,6 +37,13 @@ export class AuthService {
       throw new AuthenticationError('This user account has been disabled');
     }
 
+    // 2.5 Check if account is locked
+    if (user.locked_until && new Date() < new Date(user.locked_until)) {
+      const remainingMinutes = Math.ceil((new Date(user.locked_until).getTime() - new Date().getTime()) / 60000);
+      logger.warn('Login blocked: Account is locked due to too many failed attempts', { username });
+      throw new AuthenticationError(`Account is locked due to too many failed attempts. Please try again in ${remainingMinutes} minutes.`);
+    }
+
     // 3. Verify credentials
     let isMatch = false;
 
@@ -51,11 +58,28 @@ export class AuthService {
 
     if (!isMatch) {
       logger.warn('Login failed: Invalid credentials provided', { username });
+      
+      const MAX_ATTEMPTS = 5;
+      const LOCKOUT_DURATION_MINUTES = 15;
+      const newAttempts = user.failed_login_attempts + 1;
+
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
+        await employeeRepository.lockAccount(user.id, lockoutUntil);
+        logger.warn('Account locked due to max failed attempts', { username, lockoutUntil });
+        throw new AuthenticationError(`Account locked due to too many failed attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`);
+      } else {
+        await employeeRepository.incrementFailedLoginAttempts(user.id);
+      }
+
       throw new AuthenticationError('Invalid username or credentials');
     }
 
-    // 4. Update last login timestamp
+    // 4. Update last login timestamp and reset failed attempts
     await employeeRepository.updateLastLogin(user.id);
+    if (user.failed_login_attempts > 0 || user.locked_until !== null) {
+      await employeeRepository.resetFailedLoginAttempts(user.id);
+    }
 
     // 5. Generate signed JWT token with minimal payload
     const token = jwt.sign(

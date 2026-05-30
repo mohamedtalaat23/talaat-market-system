@@ -21,6 +21,8 @@ export interface EmployeeAuthDetails {
   role: string;
   is_active: boolean;
   deleted_at: Date | null;
+  failed_login_attempts: number;
+  locked_until: Date | null;
 }
 
 export interface CreateEmployeeInput {
@@ -137,7 +139,7 @@ export class EmployeeRepository {
    */
   async getPasswordAndPinHash(username: string): Promise<EmployeeAuthDetails | null> {
     const row = await db('employees')
-      .select('id', 'username', 'password_hash', 'pin_hash', 'role', 'is_active', 'deleted_at')
+      .select('id', 'username', 'password_hash', 'pin_hash', 'role', 'is_active', 'deleted_at', 'failed_login_attempts', 'locked_until')
       .where('username', username)
       .first();
 
@@ -183,6 +185,39 @@ export class EmployeeRepository {
     await queryBuilder
       .where('id', id)
       .update({ last_login: new Date() });
+  }
+
+  /**
+   * Increment failed login attempts.
+   */
+  async incrementFailedLoginAttempts(id: number, trx?: Knex.Transaction): Promise<void> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    await queryBuilder
+      .where('id', id)
+      .increment('failed_login_attempts', 1);
+  }
+
+  /**
+   * Lock the employee account until the specified time.
+   */
+  async lockAccount(id: number, until: Date, trx?: Knex.Transaction): Promise<void> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    await queryBuilder
+      .where('id', id)
+      .update({ locked_until: until });
+  }
+
+  /**
+   * Reset failed login attempts and clear lock.
+   */
+  async resetFailedLoginAttempts(id: number, trx?: Knex.Transaction): Promise<void> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    await queryBuilder
+      .where('id', id)
+      .update({
+        failed_login_attempts: 0,
+        locked_until: null,
+      });
   }
 
   /**

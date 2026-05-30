@@ -10,6 +10,9 @@ export function ReceiptSettingsScreen() {
     receipt_header_text: '',
     receipt_footer_text: '',
     auto_print: false,
+    show_cashier_name: true,
+    show_tax_breakdown: false,
+    include_store_contact: true,
   });
 
   useEffect(() => {
@@ -18,6 +21,9 @@ export function ReceiptSettingsScreen() {
         receipt_header_text: settings.receipt_header_text || '',
         receipt_footer_text: settings.receipt_footer_text || '',
         auto_print: String(settings.auto_print) === 'true',
+        show_cashier_name: settings.show_cashier_name !== undefined ? String(settings.show_cashier_name) === 'true' : true,
+        show_tax_breakdown: settings.show_tax_breakdown !== undefined ? String(settings.show_tax_breakdown) === 'true' : false,
+        include_store_contact: settings.include_store_contact !== undefined ? String(settings.include_store_contact) === 'true' : true,
       });
     }
   }, [settings]);
@@ -55,18 +61,64 @@ export function ReceiptSettingsScreen() {
           <p className="text-xs text-neutral-500 mt-1">Printed at the bottom of every receipt.</p>
         </div>
 
-        <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
-          <input
-            type="checkbox"
-            id="auto_print"
-            className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
-            checked={form.auto_print}
-            onChange={(e) => setForm({ ...form, auto_print: e.target.checked })}
-          />
-          <label htmlFor="auto_print" className="text-sm font-medium select-none cursor-pointer">
-            Enable Auto-Print
-            <span className="block text-xs text-neutral-500 font-normal mt-0.5">Skip the preview dialog and print receipts immediately after checkout.</span>
-          </label>
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider mb-2">Printing Options</h4>
+          
+          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+            <input
+              type="checkbox"
+              id="auto_print"
+              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              checked={form.auto_print}
+              onChange={(e) => setForm({ ...form, auto_print: e.target.checked })}
+            />
+            <label htmlFor="auto_print" className="text-sm font-medium select-none cursor-pointer w-full">
+              Enable Auto-Print
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Skip the preview dialog and print receipts immediately after checkout.</span>
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+            <input
+              type="checkbox"
+              id="show_cashier_name"
+              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              checked={form.show_cashier_name}
+              onChange={(e) => setForm({ ...form, show_cashier_name: e.target.checked })}
+            />
+            <label htmlFor="show_cashier_name" className="text-sm font-medium select-none cursor-pointer w-full">
+              Show Cashier Name
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Print the name of the cashier who processed the transaction.</span>
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+            <input
+              type="checkbox"
+              id="show_tax_breakdown"
+              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              checked={form.show_tax_breakdown}
+              onChange={(e) => setForm({ ...form, show_tax_breakdown: e.target.checked })}
+            />
+            <label htmlFor="show_tax_breakdown" className="text-sm font-medium select-none cursor-pointer w-full">
+              Show Tax Breakdown
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Display a detailed breakdown of tax amounts at the bottom of the receipt.</span>
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+            <input
+              type="checkbox"
+              id="include_store_contact"
+              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              checked={form.include_store_contact}
+              onChange={(e) => setForm({ ...form, include_store_contact: e.target.checked })}
+            />
+            <label htmlFor="include_store_contact" className="text-sm font-medium select-none cursor-pointer w-full">
+              Include Store Contact Info
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Automatically append the Store Address and Phone Number from General Settings.</span>
+            </label>
+          </div>
         </div>
 
         <div className="pt-4 border-t border-border">

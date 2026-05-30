@@ -5,7 +5,7 @@ import { apiClient } from '@/services/api-client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
-import { Store, User, Lock, AlertCircle } from 'lucide-react';
+import { Store, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface LoginResponse {
@@ -26,6 +26,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement>(null);
   const { login, isAuthenticated } = useAuthStore();
@@ -57,6 +58,9 @@ export function LoginPage() {
     setError(null);
 
     try {
+      // Artificial delay to prevent timing attacks and show loading state cleanly
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       const response = await apiClient.post<LoginResponse>('/auth/login', {
         username,
         password,
@@ -140,14 +144,26 @@ export function LoginPage() {
                 </span>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="pl-10"
+                  className="pl-10 pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500 hover:text-neutral-300 focus:outline-none focus:text-neutral-300 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
           </CardContent>
