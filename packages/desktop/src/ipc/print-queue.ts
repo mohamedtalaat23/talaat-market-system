@@ -35,7 +35,11 @@ export class PrintQueue {
   }
 
   public getJobs(): PrintJob[] {
-    return this.queue;
+    // Return only non-completed jobs or jobs completed within the last 5 minutes
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    return this.queue.filter(
+      (j) => j.status !== 'completed' || new Date(j.createdAt).getTime() > fiveMinutesAgo
+    );
   }
 
   public clearQueue(): void {
@@ -199,13 +203,12 @@ export class PrintQueue {
       nextJob.error = null;
       console.log(`[PrintQueue] Printed successfully: Job ${nextJob.id}`);
       
-      // Defer O(n) queue cleanup to a non-blocking macrotask
-      if (this.queue.length > 50) {
-        setImmediate(() => {
-          this.queue = this.queue.filter(
-            (j) => j.status !== 'completed' || Date.now() - new Date(j.createdAt).getTime() < 3600000
-          );
-        });
+      // Immediately truncate completed jobs from the in-memory array, keeping only the last 10 completed jobs
+      const completedJobs = this.queue.filter((j) => j.status === 'completed');
+      if (completedJobs.length > 10) {
+        const jobsToRemove = completedJobs.slice(0, completedJobs.length - 10);
+        const idsToRemove = new Set(jobsToRemove.map((j) => j.id));
+        this.queue = this.queue.filter((j) => !idsToRemove.has(j.id));
       }
 
       this.isProcessing = false;

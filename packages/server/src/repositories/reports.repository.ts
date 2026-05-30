@@ -128,41 +128,31 @@ export class ReportsRepository {
       )
       .orderBy('mo.created_at', 'desc');
 
-    let totalRevenue = 0;
-    let totalDiscounts = 0;
-    let cashSalesTotal = 0;
-    let cardSalesTotal = 0;
+    const salesSummary = await db('sales')
+      .where('shift_id', id)
+      .andWhere('status', '!=', 'voided')
+      .select(
+        db.raw("COALESCE(SUM(total), 0) as total_revenue"),
+        db.raw("COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales_total"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales_total")
+      )
+      .first();
 
-    for (const t of transactions) {
-      if (t.status !== 'voided') {
-        totalRevenue += t.total;
-        totalDiscounts += (t.discount_amount + t.global_discount);
-        if (t.payment_method === 'cash') {
-          cashSalesTotal += t.total;
-        } else if (t.payment_method === 'card') {
-          cardSalesTotal += t.total;
-        } else if (t.payment_method === 'split') {
-          cashSalesTotal += Number(t.cash_amount || 0);
-          cardSalesTotal += Number(t.card_amount || 0);
-        }
-      }
-    }
-
-    // Query customer payments associated with this active shift to balance cash count
-    const customerPayments = await db('customer_transactions')
+    const paymentSummary = await db('customer_transactions')
       .where('shift_id', id)
       .andWhere('transaction_type', 'payment')
-      .select('amount', 'payment_method');
+      .select(
+        db.raw("COALESCE(SUM(amount), 0) as payment_amount"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END), 0) as cash_payments"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN amount ELSE 0 END), 0) as card_payments")
+      )
+      .first();
 
-    for (const p of customerPayments) {
-      const amt = Number(p.amount);
-      if (p.payment_method === 'cash') {
-        cashSalesTotal += amt;
-      } else if (p.payment_method === 'card') {
-        cardSalesTotal += amt;
-      }
-      totalRevenue += amt;
-    }
+    const totalRevenue = Number(salesSummary.total_revenue) + Number(paymentSummary.payment_amount);
+    const totalDiscounts = Number(salesSummary.total_discounts);
+    const cashSalesTotal = Number(salesSummary.cash_sales_total) + Number(paymentSummary.cash_payments);
+    const cardSalesTotal = Number(salesSummary.card_sales_total) + Number(paymentSummary.card_payments);
 
     return {
       shift,

@@ -49,14 +49,38 @@ export function createApp(): express.Application {
   );
 
   // ── CORS ──────────────────────────────────────────────────────────────────
-  // In production Electron mode, the renderer loads from file:// protocol.
-  // In dev mode, it loads from the Vite dev server (localhost:5173).
-  // We restrict origins tightly — this API should never be public.
+  // Allowed origins:
+  //   • Development:  Vite dev server on localhost:5173
+  //   • Production:  Electron renderer loads from file:// (origin is null/undefined)
+  //                  LAN client registers reach this server via http://192.168.x.x:3001
+  //                  All RFC 1918 private subnets are allowed — this API is LAN-only
+  //                  and never exposed to the public internet.
+  //
+  // Why not origin: false in production?
+  //   When a client-mode Electron window (file://) POSTs to http://192.168.x.x:3001,
+  //   the browser engine treats it as a cross-origin request. Without an
+  //   Access-Control-Allow-Origin header, the response is silently blocked.
+  const LAN_ORIGIN_REGEX =
+    /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+
   app.use(
     cors({
-      origin: isDev
-        ? ['http://localhost:5173', 'http://127.0.0.1:5173']
-        : false, // In prod, Electron renderer fetches same-origin (no CORS needed)
+      origin: (origin, callback) => {
+        // Allow requests with no origin: Electron file:// renderer and server-to-server calls
+        if (!origin) {
+          return callback(null, true);
+        }
+        // Allow Vite dev server in development
+        if (isDev && (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173')) {
+          return callback(null, true);
+        }
+        // Allow any RFC 1918 private LAN address (client registers)
+        if (LAN_ORIGIN_REGEX.test(origin)) {
+          return callback(null, true);
+        }
+        // Reject everything else
+        callback(new Error(`CORS: Origin '${origin}' is not allowed`));
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],

@@ -303,7 +303,13 @@ export class PurchaseRepository {
       const lines = await trx('purchase_order_items').where('purchase_order_id', id);
       const lineMap = new Map(lines.map((l) => [l.product_id, l]));
 
-      for (const item of receivedItems) {
+      // CRITICAL: Sort by product_id ASC before the inventory forUpdate() loop.
+      // Same lock-ordering principle as checkout: if two managers receive POs that
+      // share overlapping products, both transactions will acquire locks in the same
+      // ascending order, which makes a lock cycle impossible.
+      const sortedReceivedItems = [...receivedItems].sort((a, b) => a.product_id - b.product_id);
+
+      for (const item of sortedReceivedItems) {
         const line = lineMap.get(item.product_id);
         if (!line) throw new Error(`Product ${item.product_id} is not part of this purchase order`);
 

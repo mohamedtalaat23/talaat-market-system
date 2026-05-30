@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
 
 export type LANMode = 'standalone' | 'master' | 'client';
 export type LANStatus = 'online' | 'offline';
@@ -79,6 +79,77 @@ interface LANState {
   clearOfflineShiftClosures: () => void;
 }
 
+// Hydration fence: blocks destructive setItem() writes until getItem() completes.
+// Without this, any Zustand action that fires before hydration (e.g. the heartbeat
+// setting status to 'online') would trigger setItem() with offlineSales: [],
+// causing the diff logic to delete all real queued sales from electron-store.
+let isHydrated = false;
+
+// Custom asynchronous storage adapter to use Electron Store for durable offline sales queue
+const customElectronStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    const localData = localStorage.getItem(name);
+    const parsed = localData ? JSON.parse(localData) : { state: {} };
+
+    if (window.electronAPI?.getOfflineSales) {
+      try {
+        const offlineSales = await window.electronAPI.getOfflineSales();
+        isHydrated = true;
+        return JSON.stringify({
+          state: {
+            ...parsed.state,
+            offlineSales: offlineSales
+          }
+        });
+      } catch (error) {
+        console.error('[Store] Failed to load offline sales from Electron Store:', error);
+      }
+    }
+    isHydrated = true;
+    return localData;
+  },
+
+  setItem: async (name: string, value: string): Promise<void> => {
+    // Block writes until hydration completes to prevent wiping the durable queue
+    if (!isHydrated) {
+      return;
+    }
+
+    const parsed = JSON.parse(value);
+    const offlineSales = parsed.state?.offlineSales || [];
+
+    if (window.electronAPI?.getOfflineSales && window.electronAPI?.persistOfflineSale && window.electronAPI?.removeOfflineSale) {
+      try {
+        const currentStoreSales = await window.electronAPI.getOfflineSales();
+        const currentSalesMap = new Map(currentStoreSales.map((s: any) => [s.id, s]));
+
+        // Add or update active offline sales
+        for (const sale of offlineSales) {
+          const existing = currentSalesMap.get(sale.id);
+          if (!existing || JSON.stringify(existing) !== JSON.stringify(sale)) {
+            await window.electronAPI.persistOfflineSale(sale);
+          }
+          currentSalesMap.delete(sale.id);
+        }
+
+        // Delete removed sales from atomic storage
+        for (const removedId of currentSalesMap.keys()) {
+          await window.electronAPI.removeOfflineSale(removedId);
+        }
+      } catch (error) {
+        console.error('[Store] Failed to persist offline sales to Electron Store:', error);
+      }
+    }
+
+    // Persist all other settings to localStorage
+    localStorage.setItem(name, value);
+  },
+
+  removeItem: async (name: string): Promise<void> => {
+    localStorage.removeItem(name);
+  }
+};
+
 export const useLANStore = create<LANState>()(
   persist(
     (set) => ({
@@ -87,7 +158,7 @@ export const useLANStore = create<LANState>()(
       status: 'online',
       offlineSales: [],
       offlineShiftClosures: [],
-
+ 
       setMode: (mode) => set({ mode }),
       setHostAddress: (hostAddress) => set({ hostAddress }),
       setStatus: (status) => set({ status }),
@@ -108,7 +179,7 @@ export const useLANStore = create<LANState>()(
     }),
     {
       name: 'talaat-pos-lan-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => customElectronStorage),
       // Only persist configuration and buffered sales, status should reset or default on load
       partialize: (state) => ({
         mode: state.mode,

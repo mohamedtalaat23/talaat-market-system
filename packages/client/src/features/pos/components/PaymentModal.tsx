@@ -87,7 +87,7 @@ export function PaymentModal() {
     const idempotency_key = idempotencyKeyRef.current || crypto.randomUUID(); // Fallback if ref is somehow empty
     const { mode, status, addOfflineSale, setStatus } = useLANStore.getState();
 
-    const updateLocalShiftTally = (saleDataId: number) => {
+    const updateLocalShiftTally = (saleDataId: string) => {
       const activeShift = usePOSStore.getState().activeShift;
       if (activeShift) {
         let cashSalesAdd = 0;
@@ -117,10 +117,10 @@ export function PaymentModal() {
       
       const offlineUuid = crypto.randomUUID();
       const receiptNumber = `STR01-REG${String(registerId).padStart(2, '0')}-OFF-${offlineUuid.slice(0, 8).toUpperCase()}`;
-      const saleId = Math.floor(Math.random() * -1000000); // Unique negative ID for offline sale representation
+      const saleId = offlineUuid;
 
-      const saleItems = cart.map((item, index) => ({
-        id: Math.floor(Math.random() * -1000000) - index,
+      const saleItems = cart.map((item) => ({
+        id: crypto.randomUUID(),
         sale_id: saleId,
         product_id: item.product_id,
         product_name: item.name,
@@ -133,7 +133,12 @@ export function PaymentModal() {
         line_total: (item.quantity * item.unit_price) - item.discount
       }));
 
+      const offlineCreatedAt = new Date().toISOString();
+
       const payload = {
+        id: saleId,
+        receipt_number: receiptNumber,
+        created_at: offlineCreatedAt,
         shift_id: shiftId,
         register_id: registerId,
         payment_method: paymentMethod,
@@ -166,7 +171,7 @@ export function PaymentModal() {
         card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || null) : null,
         change_given: changeDue > 0 ? changeDue : 0,
         payment_method: paymentMethod,
-        created_at: new Date().toISOString(),
+        created_at: offlineCreatedAt,
         is_offline: true,
         print_count: 0
       };
@@ -177,7 +182,7 @@ export function PaymentModal() {
         idempotency_key,
         payload,
         saleData,
-        timestamp: new Date().toISOString()
+        timestamp: offlineCreatedAt
       });
 
       // Update running shift tally locally
@@ -210,7 +215,9 @@ export function PaymentModal() {
     }
 
     try {
+      const saleId = crypto.randomUUID();
       const payload = {
+        id: saleId,
         shift_id: usePOSStore.getState().activeShift?.id,
         register_id: usePOSStore.getState().registerId,
         payment_method: paymentMethod,
@@ -243,8 +250,8 @@ export function PaymentModal() {
       if (autoPrintReceipts) {
         toast.promise(
           printerService.printReceipt(saleData).then(() => {
-            // Decoupled status update - only post if online and ID is positive
-            if (saleData.id > 0 && status === 'online') {
+            // Decoupled status update - only post if online and not offline sale
+            if (saleData.id && !saleData.is_offline && status === 'online') {
               return apiClient.post(`/pos/receipts/${saleData.id}/print`);
             }
           }),

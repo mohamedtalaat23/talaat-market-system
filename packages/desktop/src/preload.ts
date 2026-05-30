@@ -83,4 +83,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   closeWindow: (): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.CLOSE_WINDOW) as Promise<void>,
+
+  // Durable Offline Storage (C-2)
+  persistOfflineSale: (sale: any): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.PERSIST_OFFLINE_SALE, sale) as Promise<void>,
+
+  getOfflineSales: (): Promise<any[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_OFFLINE_SALES) as Promise<any[]>,
+
+  removeOfflineSale: (id: string): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.REMOVE_OFFLINE_SALE, id) as Promise<void>,
 });

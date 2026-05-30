@@ -7,6 +7,8 @@ import {
   checkoutSchema,
   reprintSchema,
   posIdParamSchema,
+  receiptIdParamSchema,
+  syncOfflineSchema,
   salesQuerySchema,
   openShiftSchema,
   closeShiftSchema,
@@ -27,22 +29,28 @@ router.post(
   posController.checkout
 );
 
+router.post(
+  '/sync',
+  validate({ body: syncOfflineSchema }),
+  posController.syncOffline
+);
+
 // Print Recovery & Reprints
 router.post(
   '/receipts/:id/print',
-  validate({ params: posIdParamSchema }),
+  validate({ params: receiptIdParamSchema }),
   posController.markReceiptPrinted
 );
 
 router.post(
   '/receipts/:id/reprint',
-  validate({ params: posIdParamSchema, body: reprintSchema }),
+  validate({ params: receiptIdParamSchema, body: reprintSchema }),
   posController.reprintReceipt
 );
 
 router.get(
   '/receipts/:id',
-  validate({ params: posIdParamSchema }),
+  validate({ params: receiptIdParamSchema }),
   posController.getReceipt
 );
 

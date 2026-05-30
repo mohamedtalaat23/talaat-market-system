@@ -33,7 +33,7 @@ export interface POSState {
   activeShift: any | null; // Can type this properly later with a Shift interface
   registerId: number;
   autoPrintReceipts: boolean;
-  lastSaleId: number | null;
+  lastSaleId: string | null;
   selectedCustomer: any | null;
   
   // Actions
@@ -52,7 +52,7 @@ export interface POSState {
   setActiveShift: (shift: any | null) => void;
   setRegisterId: (id: number) => void;
   setAutoPrintReceipts: (auto: boolean) => void;
-  setLastSaleId: (id: number | null) => void;
+  setLastSaleId: (id: string | null) => void;
   selectCustomer: (customer: any | null) => void;
 }
 

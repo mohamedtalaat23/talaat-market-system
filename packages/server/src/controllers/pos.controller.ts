@@ -9,6 +9,9 @@ const reprintSchema = z.object({
 });
 
 const checkoutSchema = z.object({
+  id: z.string().uuid().optional(),
+  receipt_number: z.string().optional(),
+  created_at: z.string().optional(),
   shift_id: z.number(),
   register_id: z.number(),
   payment_method: z.enum(['cash', 'card', 'split', 'debt']),
@@ -136,7 +139,7 @@ export class POSController {
 
   markReceiptPrinted = async (req: Request, res: Response) => {
     try {
-      const saleId = Number(req.params.id);
+      const saleId = String(req.params.id);
       const sale = await posRepository.markReceiptPrinted(saleId);
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
@@ -146,7 +149,7 @@ export class POSController {
 
   reprintReceipt = async (req: Request, res: Response) => {
     try {
-      const saleId = Number(req.params.id);
+      const saleId = String(req.params.id);
       const managerId = (req as any).user.id;
       const managerRole = (req as any).user.role;
       
@@ -183,7 +186,7 @@ export class POSController {
 
   getReceipt = async (req: Request, res: Response) => {
     try {
-      const saleId = Number(req.params.id);
+      const saleId = String(req.params.id);
       const sale = await posRepository.getReceiptById(saleId);
       if (!sale) {
         return res.status(404).json({ success: false, message: 'Receipt not found' });
@@ -191,6 +194,24 @@ export class POSController {
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  syncOffline = async (req: Request, res: Response) => {
+    try {
+      const syncSchema = z.object({
+        transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty')
+      });
+      const { transactions } = syncSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const result = await posRepository.syncOffline(transactions, cashierId);
+      return res.status(200).json({ success: true, ...result });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: 'Invalid sync payload', errors: error.errors });
+      }
+      return res.status(400).json({ success: false, message: error.message || 'Offline sync failed' });
     }
   }
 }

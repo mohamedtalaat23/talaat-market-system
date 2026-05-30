@@ -3,6 +3,7 @@ import { IPC_CHANNELS } from './channels';
 import { printQueue } from './print-queue';
 import { MockPrinterAdapter, UsbPrinterAdapter } from './printer-adapters';
 import type { Receipt, PrinterConfig } from './printing-types';
+import Store from 'electron-store';
 
 /**
  * IPC handler registration.
@@ -42,11 +43,34 @@ export function registerIpcHandlers(
         }
       });
 
+      let isFinished = false;
+
+      // 15-second safety timeout to prevent memory leaks if printing hangs
+      const timeoutId = setTimeout(() => {
+        if (!isFinished) {
+          isFinished = true;
+          console.error('[IPC] Printing timed out after 15 seconds. Destroying window.');
+          try {
+            printWindow.destroy();
+          } catch (e) {
+            // Ignore if window was already destroyed
+          }
+          reject(new Error('Printing timed out. Hidden window destroyed to prevent leaks.'));
+        }
+      }, 15000);
+
       printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(data.html)}`);
 
       printWindow.webContents.on('did-finish-load', () => {
         printWindow.webContents.print({ silent: true, printBackground: true }, (success: boolean, failureReason: string) => {
-          printWindow.close();
+          if (isFinished) return;
+          isFinished = true;
+          clearTimeout(timeoutId);
+          try {
+            printWindow.destroy();
+          } catch (e) {
+            // Ignore if window was already destroyed
+          }
           if (success) {
             resolve({ success: true });
           } else {
@@ -54,6 +78,18 @@ export function registerIpcHandlers(
             reject(new Error(`Printing failed: ${failureReason}`));
           }
         });
+      });
+
+      printWindow.webContents.on('did-fail-load', () => {
+        if (isFinished) return;
+        isFinished = true;
+        clearTimeout(timeoutId);
+        try {
+          printWindow.destroy();
+        } catch (e) {
+          // Ignore if window was already destroyed
+        }
+        reject(new Error('Failed to load printing window context.'));
       });
     });
   });
@@ -167,5 +203,40 @@ export function registerIpcHandlers(
 
   ipcMain.handle(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
+  });
+
+  // ── Durable Offline Storage (C-2) ─────────────────────────────────────────
+
+  const offlineStore = new Store({
+    name: 'offline-sales-store',
+    defaults: {
+      offlineSales: []
+    }
+  }) as any;
+
+  ipcMain.handle(IPC_CHANNELS.PERSIST_OFFLINE_SALE, (_event, sale: any) => {
+    console.log('[IPC] persist-offline-sale called for ID:', sale.id);
+    const sales = offlineStore.get('offlineSales', []);
+    const existingIndex = sales.findIndex((s: any) => s.id === sale.id);
+    if (existingIndex >= 0) {
+      sales[existingIndex] = sale;
+    } else {
+      sales.push(sale);
+    }
+    offlineStore.set('offlineSales', sales);
+    return { success: true };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_OFFLINE_SALES, () => {
+    console.log('[IPC] get-offline-sales called');
+    return offlineStore.get('offlineSales', []);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.REMOVE_OFFLINE_SALE, (_event, id: string) => {
+    console.log('[IPC] remove-offline-sale called for ID:', id);
+    let sales = offlineStore.get('offlineSales', []);
+    sales = sales.filter((s: any) => s.id !== id);
+    offlineStore.set('offlineSales', sales);
+    return { success: true };
   });
 }

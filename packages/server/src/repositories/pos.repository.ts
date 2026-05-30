@@ -19,6 +19,9 @@ export interface CheckoutItem {
 }
 
 export interface CheckoutPayload {
+  id?: string | undefined;
+  receipt_number?: string | undefined;
+  created_at?: string | undefined;
   shift_id: number;
   register_id: number;
   payment_method: 'cash' | 'card' | 'split' | 'debt';
@@ -80,44 +83,31 @@ export class POSRepository {
   async getShiftSummary(shiftId: number) {
     const shift = await db('cashier_shifts').where('id', shiftId).first();
     if (!shift) throw new Error('Shift not found');
- 
-    const sales = await db('sales')
+
+    const salesSummary = await db('sales')
       .where('shift_id', shiftId)
-      .andWhere('status', 'completed');
+      .andWhere('status', 'completed')
+      .select(
+        db.raw("COUNT(id) as transaction_count"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales"),
+        db.raw("COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts"),
+        db.raw("COALESCE(SUM(CASE WHEN print_status = 'pending_print' THEN 1 ELSE 0 END), 0) as pending_prints")
+      )
+      .first();
 
-    let cashSales = 0;
-    let cardSales = 0;
-    let totalDiscounts = 0;
-    let pendingPrints = 0;
-
-    for (const sale of sales) {
-      if (sale.payment_method === 'cash') {
-        cashSales += Number(sale.total);
-      } else if (sale.payment_method === 'card') {
-        cardSales += Number(sale.total);
-      } else if (sale.payment_method === 'split') {
-        cashSales += Number(sale.cash_amount || 0);
-        cardSales += Number(sale.card_amount || 0);
-      }
-      totalDiscounts += Number(sale.discount_amount) + Number(sale.global_discount);
-      
-      if (sale.print_status === 'pending_print') {
-        pendingPrints++;
-      }
-    }
-
-    const customerPayments = await db('customer_transactions')
+    const paymentSummary = await db('customer_transactions')
       .where('shift_id', shiftId)
-      .andWhere('transaction_type', 'payment');
+      .andWhere('transaction_type', 'payment')
+      .select(
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END), 0) as cash_payments"),
+        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN amount ELSE 0 END), 0) as card_payments")
+      )
+      .first();
 
-    for (const payment of customerPayments) {
-      if (payment.payment_method === 'cash') {
-        cashSales += Number(payment.amount);
-      } else if (payment.payment_method === 'card') {
-        cardSales += Number(payment.amount);
-      }
-    }
-
+    const cashSales = Number(salesSummary.cash_sales) + Number(paymentSummary.cash_payments);
+    const cardSales = Number(salesSummary.card_sales) + Number(paymentSummary.card_payments);
+    const totalDiscounts = Number(salesSummary.total_discounts);
     const expectedCash = Number(shift.starting_cash) + cashSales;
 
     return {
@@ -127,8 +117,8 @@ export class POSRepository {
       card_sales: cardSales,
       total_discounts: totalDiscounts,
       expected_cash: expectedCash,
-      transaction_count: sales.length,
-      pending_prints: pendingPrints
+      transaction_count: Number(salesSummary.transaction_count),
+      pending_prints: Number(salesSummary.pending_prints)
     };
   }
 
@@ -140,15 +130,24 @@ export class POSRepository {
       throw new Error('Active shift is required for checkout.');
     }
 
-    // Return early if idempotency_key already exists to prevent duplicates
-    const existing = await db('sales').where('idempotency_key', payload.idempotency_key).first();
-    if (existing) {
-      const existingItems = await db('sale_items').where('sale_id', existing.id);
-      return { ...existing, items: existingItems };
-    }
-
     try {
       return await db.transaction(async (trx) => {
+        // 1. Acquire transaction-level advisory lock on the hashed idempotency key to strictly serialize concurrent checkout requests
+        const hashQuery = await trx.raw("SELECT hashtext(?) as hash", [payload.idempotency_key]);
+        const lockHash = hashQuery.rows[0].hash;
+        await trx.raw("SELECT pg_advisory_xact_lock(?)", [lockHash]);
+
+        // 2. Perform a strict row-level lock check inside the serialized transaction block
+        const existing = await trx('sales')
+          .where('idempotency_key', payload.idempotency_key)
+          .forUpdate()
+          .first();
+
+        if (existing) {
+          const existingItems = await trx('sale_items').where('sale_id', existing.id);
+          return { ...existing, items: existingItems };
+        }
+
         if (payload.payment_method === 'debt' && !payload.customer_id) {
           throw new Error('A customer must be selected to checkout using the debt payment method.');
         }
@@ -175,6 +174,7 @@ export class POSRepository {
       const changeGiven = payload.cash_received ? Math.max(0, payload.cash_received - total) : 0;
       
       const [sale] = await trx('sales').insert({
+        id: payload.id || trx.raw('gen_random_uuid()'),
         receipt_number: receiptNumber,
         cashier_id: cashierId,
         shift_id: payload.shift_id,
@@ -219,7 +219,17 @@ export class POSRepository {
       }
 
       // 4. Process items and inventory
-      const productIds = payload.items.map((item) => item.product_id);
+      //
+      // CRITICAL: Sort items by product_id ASC before acquiring any row-level locks.
+      //
+      // Without this sort, two concurrent transactions can deadlock:
+      //   Txn A: locks product_id=5, waits for product_id=8
+      //   Txn B: locks product_id=8, waits for product_id=5  ← cycle → deadlock
+      //
+      // With ascending sort, every transaction locks rows in the same order,
+      // so no cycle can form. This is standard lock-ordering deadlock prevention.
+      const sortedItems = [...payload.items].sort((a, b) => a.product_id - b.product_id);
+      const productIds = sortedItems.map((item) => item.product_id);
       const products = await trx('products')
         .whereIn('id', productIds)
         .select('id', 'cost_price', 'name', 'barcode');
@@ -227,7 +237,7 @@ export class POSRepository {
       const productMap = new Map(products.map((p) => [p.id, p]));
       const saleItemsToInsert = [];
 
-      for (const item of payload.items) {
+      for (const item of sortedItems) {
         const product = productMap.get(item.product_id);
         if (!product) throw new Error(`Product ${item.product_id} not found`);
 
@@ -286,9 +296,76 @@ export class POSRepository {
   }
 
   /**
+   * Idempotent, Fault-Isolated Batch Sync for Offline Transactions.
+   *
+   * Each sale is processed in its own transaction via checkout() so that
+   * a single poison sale (deleted customer, missing product) does not
+   * roll back the entire batch. The caller receives a breakdown of
+   * which IDs succeeded and which failed.
+   */
+  async syncOffline(payloads: CheckoutPayload[], cashierId: number) {
+    if (payloads.length === 0) {
+      return { synced: 0, syncedIds: [] as string[], failed: [] as { id: string; error: string }[] };
+    }
+
+    // 1. Preemptive Idempotency Check: skip sales that already exist in DB
+    const incomingIds = payloads.map((p) => p.id).filter(Boolean) as string[];
+    const incomingKeys = payloads.map((p) => p.idempotency_key).filter(Boolean);
+
+    const existingSales = await db('sales')
+      .where(function () {
+        if (incomingIds.length > 0) this.whereIn('id', incomingIds);
+        if (incomingKeys.length > 0) this.orWhereIn('idempotency_key', incomingKeys);
+      })
+      .select('id', 'idempotency_key');
+
+    const existingIdsSet = new Set(existingSales.map((s) => s.id));
+    const existingKeysSet = new Set(existingSales.map((s) => s.idempotency_key));
+
+    // Filter out already-synchronized sales completely before doing any operations
+    const salesToProcess = payloads.filter((p) => {
+      const hasId = p.id && existingIdsSet.has(p.id);
+      const hasKey = p.idempotency_key && existingKeysSet.has(p.idempotency_key);
+      return !hasId && !hasKey;
+    });
+
+    if (salesToProcess.length === 0) {
+      return { synced: 0, syncedIds: [] as string[], failed: [] as { id: string; error: string }[] };
+    }
+
+    // 2. Sort sales by their minimum product_id to maintain consistent lock ordering
+    const sortedSales = [...salesToProcess].sort((a, b) => {
+      const aMin = a.items.length > 0 ? Math.min(...a.items.map(i => i.product_id)) : 0;
+      const bMin = b.items.length > 0 ? Math.min(...b.items.map(i => i.product_id)) : 0;
+      return aMin - bMin;
+    });
+
+    // 3. Process each sale in its own isolated transaction
+    const syncedIds: string[] = [];
+    const failed: { id: string; error: string }[] = [];
+
+    for (const payload of sortedSales) {
+      const saleIdentifier = payload.id || payload.idempotency_key;
+      try {
+        // Offline sales bypass inventory underflow checks since the physical sale already happened
+        await this.checkout(payload, cashierId, true);
+        syncedIds.push(saleIdentifier);
+      } catch (error: any) {
+        console.error(`[SyncOffline] Failed to sync sale ${saleIdentifier}:`, error.message);
+        failed.push({
+          id: saleIdentifier,
+          error: error.message || 'Unknown sync error'
+        });
+      }
+    }
+
+    return { synced: syncedIds.length, syncedIds, failed };
+  }
+
+  /**
    * Mark receipt as printed successfully
    */
-  async markReceiptPrinted(saleId: number) {
+  async markReceiptPrinted(saleId: string) {
     const [sale] = await db('sales')
       .where('id', saleId)
       .update({
@@ -303,7 +380,7 @@ export class POSRepository {
   /**
    * Reprint an old receipt
    */
-  async reprintReceipt(saleId: number, managerId: number) {
+  async reprintReceipt(saleId: string, managerId: number) {
     return db.transaction(async (trx) => {
       const [sale] = await trx('sales')
         .where('id', saleId)
@@ -320,7 +397,7 @@ export class POSRepository {
         manager_id: managerId,
         cashier_id: sale.cashier_id,
         action_type: 'reprint_receipt',
-        reference_id: String(saleId),
+        reference_id: saleId,
         details: `Reprint #${sale.print_count} for receipt ${sale.receipt_number}`
       });
 
@@ -340,7 +417,12 @@ export class POSRepository {
       .limit(limit);
 
     if (query) {
-      q.where('receipt_number', 'ilike', `%${query}%`);
+      // Escape ILIKE wildcard characters (\, %, _) to avoid index-bypassing scans
+      const escapedQuery = query
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
+      q.where('receipt_number', 'ilike', `%${escapedQuery}%`);
     }
 
     const sales = await q;
@@ -353,7 +435,7 @@ export class POSRepository {
         if (!acc[item.sale_id]) acc[item.sale_id] = [];
         acc[item.sale_id].push(item);
         return acc;
-      }, {} as Record<number, any[]>);
+      }, {} as Record<string, any[]>);
 
       for (const sale of sales) {
         sale.items = itemsBySaleId[sale.id] || [];
@@ -366,7 +448,7 @@ export class POSRepository {
   /**
    * Get a single receipt by ID with all details
    */
-  async getReceiptById(saleId: number) {
+  async getReceiptById(saleId: string) {
     const sale = await db('sales')
       .select('sales.*', 'employees.username as cashier_name')
       .leftJoin('employees', 'sales.cashier_id', 'employees.id')

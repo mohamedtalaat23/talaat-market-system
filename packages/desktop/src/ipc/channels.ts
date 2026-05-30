@@ -38,6 +38,11 @@ export const IPC_CHANNELS = {
   MINIMIZE_WINDOW: 'window:minimize',
   MAXIMIZE_WINDOW: 'window:maximize',
   CLOSE_WINDOW: 'window:close',
+
+  // Durable Offline Storage (C-2)
+  PERSIST_OFFLINE_SALE: 'offline:persist-sale',
+  GET_OFFLINE_SALES: 'offline:get-sales',
+  REMOVE_OFFLINE_SALE: 'offline:remove-sale',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

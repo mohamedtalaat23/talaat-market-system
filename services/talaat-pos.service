@@ -1,0 +1,20 @@
+[Unit]
+Description=Talaat Market POS Backend Service
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=talaat
+Group=talaat
+WorkingDirectory=/home/talaat/Documents/Talaat Market System/packages/server
+EnvironmentFile=/home/talaat/Documents/Talaat Market System/.env.production
+ExecStart=/usr/bin/node /home/talaat/Documents/Talaat Market System/packages/server/dist/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=talaat-pos
+
+[Install]
+WantedBy=multi-user.target

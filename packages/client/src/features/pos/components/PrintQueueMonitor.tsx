@@ -21,7 +21,9 @@ export function PrintQueueMonitor() {
 
       // Poll queue & status every 3 seconds
       const interval = setInterval(() => {
-        fetchQueueAndStatus();
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+          fetchQueueAndStatus();
+        }
       }, 3000);
 
       fetchQueueAndStatus();

@@ -87,49 +87,60 @@ export function LANSyncManager() {
           position: 'top-right'
         });
 
-        // Loop over copies of offlineSales sequentially to ensure FIFO order
         const salesToFlush = [...offlineSales];
-        let successfulSyncs = 0;
-        let failedSyncs = 0;
+        const payloads = salesToFlush.map(sale => sale.payload);
 
-        for (const sale of salesToFlush) {
-          try {
-            // Throttled delay of 500ms to pace network requests
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            
-            // Post the transaction to the host master server
-            await apiClient.post('/pos/checkout', sale.payload);
-            
-            // Remove from store buffer on successful post
-            removeOfflineSale(sale.id);
-            successfulSyncs++;
-          } catch (error: any) {
-            console.error(`Failed to synchronize offline sale ${sale.id}:`, error);
-            failedSyncs++;
-            // Stop executing the queue if a network failure occurs, to preserve FIFO sequence
-            if (error.message?.includes('Network Error') || error.status === undefined) {
-              break;
+        try {
+          const response = await apiClient.post('/pos/sync', { transactions: payloads });
+          
+          if (response.data?.success) {
+            const syncedIdsFromServer: string[] = response.data.syncedIds || [];
+            const failedFromServer: { id: string; error: string }[] = response.data.failed || [];
+            const syncedSet = new Set(syncedIdsFromServer);
+
+            // Remove ONLY successfully synced sales from the offline store buffer
+            for (const sale of salesToFlush) {
+              if (syncedSet.has(sale.id) || syncedSet.has(sale.payload.idempotency_key)) {
+                removeOfflineSale(sale.id);
+              }
             }
+
+            if (failedFromServer.length > 0 && syncedIdsFromServer.length > 0) {
+              toast.error(`${syncedIdsFromServer.length} synced, ${failedFromServer.length} failed. Check server logs.`, {
+                id: toastId,
+                icon: '⚠️',
+                duration: 6000
+              });
+            } else if (failedFromServer.length > 0) {
+              toast.error(`${failedFromServer.length} transaction(s) failed to sync. Will retry.`, {
+                id: toastId,
+                icon: '⚠️',
+                duration: 5000
+              });
+            } else {
+              toast.success(`Successfully synchronized ${syncedIdsFromServer.length} transaction(s) to Master.`, {
+                id: toastId,
+                icon: '✅',
+                duration: 4000
+              });
+            }
+          } else {
+            toast.error('Offline synchronization failed.', {
+              id: toastId,
+              icon: '⚠️',
+              duration: 5000
+            });
           }
-        }
-
-        setIsFlushing(false);
-        flushInProgressRef.current = false;
-
-        if (successfulSyncs > 0) {
-          toast.success(`Successfully synchronized ${successfulSyncs} transaction(s) to Master.`, {
-            id: toastId,
-            icon: '✅',
-            duration: 4000
-          });
-        } else if (failedSyncs > 0) {
-          toast.error(`Sync paused. ${failedSyncs} transaction(s) pending connection verification.`, {
+        } catch (error: any) {
+          console.error('Failed to synchronize offline sales:', error);
+          toast.error(error.response?.data?.message || 'Sync failed. Will retry when connection stabilizes.', {
             id: toastId,
             icon: '⚠️',
             duration: 5000
           });
-        } else {
-          toast.dismiss(toastId);
+        } finally {
+          setIsFlushing(false);
+          flushInProgressRef.current = false;
         }
       };
 

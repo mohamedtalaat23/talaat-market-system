@@ -174,6 +174,13 @@ export interface ElectronAPI {
   updatePrinterConfig: (config: PrinterConfig) => Promise<boolean>;
   discoverPrinters: () => Promise<string[]>;
   testPrinter: (config: PrinterConfig) => Promise<PrinterStatus>;
+
+  // Durable Offline Storage (C-2)
+  // Uses a structural type instead of importing OfflineSale to avoid
+  // circular dependency between types/index.ts and the store module.
+  persistOfflineSale: (sale: { id: string; idempotency_key: string; payload: unknown; saleData: unknown; timestamp: string }) => Promise<void>;
+  getOfflineSales: () => Promise<{ id: string; idempotency_key: string; payload: unknown; saleData: unknown; timestamp: string }[]>;
+  removeOfflineSale: (id: string) => Promise<void>;
 }
 
 // Augment the global Window interface with the Electron API

@@ -5,6 +5,9 @@ export const reprintSchema = z.object({
 });
 
 export const checkoutSchema = z.object({
+  id: z.string().uuid('Invalid receipt UUID').optional(),
+  receipt_number: z.string().trim().optional(),
+  created_at: z.string().optional(), // Allow ISO date string
   shift_id: z.number().int().positive('Shift ID must be positive'),
   register_id: z.number().int().positive('Register ID must be positive'),
   payment_method: z.enum(['cash', 'card', 'split', 'debt']),
@@ -26,8 +29,16 @@ export const checkoutSchema = z.object({
   ).min(1, 'At least one item is required in the cart'),
 });
 
+export const syncOfflineSchema = z.object({
+  transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty')
+});
+
 export const posIdParamSchema = z.object({
   id: z.coerce.number().int().positive('Invalid identifier ID'),
+});
+
+export const receiptIdParamSchema = z.object({
+  id: z.string().uuid('Invalid receipt UUID'),
 });
 
 export const salesQuerySchema = z.object({
