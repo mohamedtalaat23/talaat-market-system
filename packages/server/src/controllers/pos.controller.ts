@@ -214,6 +214,28 @@ export class POSController {
       return res.status(400).json({ success: false, message: error.message || 'Offline sync failed' });
     }
   }
+
+  /**
+   * GET /pos/products/search?q=…&limit=…
+   *
+   * Lightweight POS product search that returns top-N matches without a
+   * COUNT(*) query. Designed for the cashier search fallback modal where
+   * every millisecond matters and the total count is not needed.
+   *
+   * The validator (posProductSearchQuerySchema) enforces:
+   *   - q: min 2 chars, max 100
+   *   - limit: int 1–50, defaults to 20
+   */
+  searchProducts = async (req: Request, res: Response) => {
+    try {
+      const search = req.query.q as string;
+      const limit = Number(req.query.limit) || 20;
+      const products = await posRepository.searchProducts(search, limit);
+      return res.status(200).json({ success: true, data: products });
+    } catch (error: any) {
+      return res.status(400).json({ success: false, message: error.message || 'Product search failed.' });
+    }
+  }
 }
 
 export const posController = new POSController();

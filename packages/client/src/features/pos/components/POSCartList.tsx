@@ -16,7 +16,7 @@ export const POSCartList = React.memo(() => {
     if (listRef.current && cart.length > 0) {
       const activeElement = listRef.current.children[activeItemIndex] as HTMLElement;
       if (activeElement) {
-        activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        activeElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
       }
     }
   }, [activeItemIndex, cart.length]);

@@ -6,7 +6,7 @@ import { usePOSStore } from '../usePOSStore';
 import toast from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
-import type { ProductsResponse, Product } from '@/features/products/hooks/useProductQueries';
+import type { Product } from '@/features/products/hooks/useProductQueries';
 
 export function ProductSearchFallback() {
   const isOpen = useModalStore((state) => state.activeModals.pos_product_search);
@@ -35,7 +35,9 @@ export function ProductSearchFallback() {
     }
   }, [isOpen, payload]);
 
-  // Debounce search requests to prevent excessive API hits
+  // Debounce search requests to prevent excessive API hits.
+  // 400 ms gives the cashier time to finish typing 2-3 characters
+  // before a query fires. Only triggers when at least 2 chars are present.
   useEffect(() => {
     if (!isOpen) return;
     if (payload?.initialSearch && searchTerm === payload.initialSearch) {
@@ -43,7 +45,7 @@ export function ProductSearchFallback() {
     }
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-    }, 250);
+    }, 400);
     return () => clearTimeout(handler);
   }, [searchTerm, isOpen, payload]);
 
@@ -59,14 +61,16 @@ export function ProductSearchFallback() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const showResults = debouncedSearch.trim().length > 0;
+  // Only show results when search term has at least 2 characters
+  const showResults = debouncedSearch.trim().length >= 2;
 
-  // React Query backend integration
-  const { data, isLoading } = useQuery<ProductsResponse>({
+  // Lightweight POS product search — hits /pos/products/search instead of
+  // /products, which skips the COUNT(*) query and returns top matches only.
+  const { data, isLoading } = useQuery<{ success: boolean; data: Product[] }>({
     queryKey: ['pos-product-search', debouncedSearch],
     queryFn: async () => {
-      const response = await apiClient.get<ProductsResponse>('/products', {
-        params: { page: 1, limit: 20, search: debouncedSearch },
+      const response = await apiClient.get<{ success: boolean; data: Product[] }>('/pos/products/search', {
+        params: { q: debouncedSearch, limit: 20 },
       });
       return response.data;
     },
@@ -181,7 +185,7 @@ export function ProductSearchFallback() {
                 </div>
               ) : !showResults ? (
                 <div className="p-3 text-slate-500 text-sm text-center mt-16">
-                  Start typing to search products by name, SKU, or barcode...
+                  Type at least 2 characters to search products by name, SKU, or barcode...
                 </div>
               ) : products.length === 0 ? (
                 <div className="p-3 text-red-400 text-sm text-center mt-16 font-mono">

@@ -1,4 +1,5 @@
 import { db } from '../config/database';
+import type { Product } from './product.repository';
 
 export class InventoryUnderflowError extends Error {
   public code = 'INVENTORY_UNDERFLOW';
@@ -461,6 +462,50 @@ export class POSRepository {
     sale.items = items;
 
     return sale;
+  }
+  /**
+   * Lightweight POS product search — returns top-N matches WITHOUT a COUNT(*) query.
+   *
+   * This is intentionally leaner than ProductRepository.findAll():
+   *   - No category/supplier join (not needed at POS point of scan)
+   *   - No total count query (cashier only needs the top results)
+   *   - Minimum 2-character query enforced upstream by the validator
+   *
+   * Use this endpoint for the POS search fallback modal while the cashier types.
+   * Use GET /products for the admin catalog with full pagination metadata.
+   */
+  async searchProducts(search: string, limit: number): Promise<Product[]> {
+    const searchPattern = `%${search}%`;
+    const rows = await db('products')
+      .leftJoin('inventory', 'inventory.product_id', 'products.id')
+      .leftJoin('categories', 'categories.id', 'products.category_id')
+      .select(
+        'products.*',
+        'categories.name as category_name',
+        'categories.name_ar as category_name_ar',
+        'inventory.quantity as inventory_quantity',
+        'inventory.reserved_quantity as inventory_reserved_quantity',
+      )
+      .whereNull('products.deleted_at')
+      .where('products.is_active', true)
+      .where((builder) => {
+        builder
+          .where('products.name', 'ILIKE', searchPattern)
+          .orWhere('products.name_ar', 'ILIKE', searchPattern)
+          .orWhere('products.barcode', 'ILIKE', searchPattern);
+      })
+      .orderBy('products.name', 'asc')
+      .limit(limit);
+
+    return rows.map((row) => ({
+      ...row,
+      cost_price: Number(row.cost_price),
+      selling_price: Number(row.selling_price),
+      min_stock_level: Number(row.min_stock_level),
+      max_stock_level: Number(row.max_stock_level),
+      inventory_quantity: row.inventory_quantity !== null ? Number(row.inventory_quantity) : undefined,
+      inventory_reserved_quantity: row.inventory_reserved_quantity !== null ? Number(row.inventory_reserved_quantity) : undefined,
+    })) as Product[];
   }
 }
 

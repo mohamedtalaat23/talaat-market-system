@@ -87,17 +87,35 @@ export class CustomerRepository {
   }
 
   /**
-   * Get full transaction ledger for a customer.
+   * Get paginated transaction ledger for a customer.
+   * Returns the page of transactions plus the total count for pagination controls.
+   * Maximum limit is capped at 100 server-side regardless of what the caller requests.
    */
-  async getTransactionLedger(customerId: number): Promise<CustomerTransaction[]> {
-    return db('customer_transactions')
+  async getTransactionLedger(
+    customerId: number,
+    page: number = 1,
+    limit: number = 50
+  ): Promise<{ data: CustomerTransaction[]; total: number }> {
+    const safeLimit = Math.min(limit, 100);
+    const offset = (page - 1) * safeLimit;
+
+    const baseQuery = db('customer_transactions')
       .leftJoin('employees', 'employees.id', 'customer_transactions.created_by')
       .select(
         'customer_transactions.*',
         'employees.full_name as created_by_name'
       )
-      .where('customer_id', customerId)
-      .orderBy('customer_transactions.created_at', 'desc');
+      .where('customer_id', customerId);
+
+    const [countResult, data] = await Promise.all([
+      baseQuery.clone().clearSelect().count({ count: 'customer_transactions.id' }).first(),
+      baseQuery.clone().orderBy('customer_transactions.created_at', 'desc').limit(safeLimit).offset(offset),
+    ]);
+
+    return {
+      data,
+      total: Number(countResult?.count ?? 0),
+    };
   }
 
   /**

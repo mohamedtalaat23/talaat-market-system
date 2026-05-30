@@ -11,7 +11,9 @@ export function CustomerDetailScreen() {
   const navigate = useNavigate();
   const id = Number(idParam);
 
-  const { data: customer, isLoading, error } = useCustomerDetail(id);
+  const [ledgerPage, setLedgerPage] = useState(1);
+
+  const { data: customer, isLoading, error } = useCustomerDetail(id, ledgerPage);
   const deleteCustomer = useDeleteCustomer();
   const currentUserRole = useAuthStore((state) => state.user?.role);
 
@@ -174,7 +176,7 @@ export function CustomerDetailScreen() {
             <div className="border-b border-neutral-800 bg-neutral-950 px-6 py-4 flex items-center justify-between">
               <h3 className="text-base font-semibold text-neutral-200">Account Transaction History</h3>
               <span className="text-xs font-mono text-neutral-500">
-                {customer.ledger?.length || 0} Transactions
+                {customer.ledger_meta?.total ?? 0} Transactions
               </span>
             </div>
 
@@ -256,6 +258,32 @@ export function CustomerDetailScreen() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Ledger Pagination Controls */}
+            {customer.ledger_meta && customer.ledger_meta.totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-800 bg-neutral-950/40">
+                <span className="text-xs font-mono text-neutral-500">
+                  Page {customer.ledger_meta.page} of {customer.ledger_meta.totalPages}
+                  {' • '}{customer.ledger_meta.total} total transactions
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLedgerPage((p) => Math.max(1, p - 1))}
+                    disabled={ledgerPage <= 1}
+                    className="rounded px-3 py-1.5 text-xs font-semibold bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    onClick={() => setLedgerPage((p) => Math.min(customer.ledger_meta.totalPages, p + 1))}
+                    disabled={ledgerPage >= customer.ledger_meta.totalPages}
+                    className="rounded px-3 py-1.5 text-xs font-semibold bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next →
+                  </button>
+                </div>
               </div>
             )}
           </div>

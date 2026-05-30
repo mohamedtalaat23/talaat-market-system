@@ -12,6 +12,7 @@ import {
   salesQuerySchema,
   openShiftSchema,
   closeShiftSchema,
+  posProductSearchQuerySchema,
 } from '../validators/pos.validator';
 
 const router = Router();
@@ -58,6 +59,13 @@ router.get(
   '/sales/search',
   validate({ query: salesQuerySchema }),
   posController.searchSales
+);
+
+// Lightweight POS product search (no COUNT(*) — for cashier search modal)
+router.get(
+  '/products/search',
+  validate({ query: posProductSearchQuerySchema }),
+  posController.searchProducts
 );
 
 // Shift Management

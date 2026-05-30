@@ -36,23 +36,36 @@ export class CustomerController {
 
   /**
    * Get specific customer detail and transaction history ledger.
+   * Supports pagination via ?ledger_page and ?ledger_limit query params.
+   * Defaults: page 1, limit 50. Server cap: 100 rows per page.
    */
   async getDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
+      const ledgerPage = Math.max(1, Number(req.query.ledger_page) || 1);
+      const ledgerLimit = Math.min(100, Math.max(1, Number(req.query.ledger_limit) || 50));
+
       const customer = await customerRepository.findById(id);
       if (!customer) {
         res.status(HTTP_STATUS.NOT_FOUND).json({ status: 'error', message: 'Customer not found' });
         return;
       }
 
-      const ledger = await customerRepository.getTransactionLedger(id);
+      const { data: ledger, total: ledgerTotal } = await customerRepository.getTransactionLedger(
+        id, ledgerPage, ledgerLimit
+      );
 
       res.status(HTTP_STATUS.OK).json({
         status: 'success',
         data: {
           ...customer,
           ledger,
+          ledger_meta: {
+            total: ledgerTotal,
+            page: ledgerPage,
+            limit: ledgerLimit,
+            totalPages: Math.ceil(ledgerTotal / ledgerLimit),
+          },
         },
       });
     } catch (error) {

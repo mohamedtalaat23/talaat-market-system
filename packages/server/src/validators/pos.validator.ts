@@ -44,6 +44,16 @@ export const receiptIdParamSchema = z.object({
 export const salesQuerySchema = z.object({
   q: z.string().trim().optional(),
 });
+
+/**
+ * Validator for the lightweight POS product search endpoint (GET /pos/products/search).
+ * Requires at least 2 characters to avoid trivially broad scans.
+ * Server-side limit is capped at 50 to prevent oversized payloads.
+ */
+export const posProductSearchQuerySchema = z.object({
+  q: z.string().trim().min(2, 'Search query must be at least 2 characters').max(100),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
 export const openShiftSchema = z.object({
   starting_cash: z.coerce.number().nonnegative('Starting cash must be non-negative').default(0),
   register_id: z.coerce.number().int().positive('Register ID must be positive').default(1),

@@ -41,6 +41,12 @@ export interface ShiftDetailOverride {
 export interface ShiftDetailResponse {
   shift: ShiftVarianceReport;
   transactions: ShiftDetailTransaction[];
+  transactions_meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
   overrides: ShiftDetailOverride[];
   summary: {
     transaction_count: number;
@@ -107,11 +113,18 @@ export function useShiftsList(filters: { page: number; limit: number; cashier_id
   });
 }
 
-export function useShiftDetail(id: number | undefined) {
+/**
+ * Fetch shift detail with paginated transaction list.
+ * @param id - Shift ID
+ * @param txPage - Which page of transactions to fetch (default 1, server default limit 100)
+ */
+export function useShiftDetail(id: number | undefined, txPage: number = 1) {
   return useQuery<{ success: boolean; data: ShiftDetailResponse }>({
-    queryKey: ['reports', 'shifts', id],
+    queryKey: ['reports', 'shifts', id, { txPage }],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/reports/shifts/${id}`);
+      const { data } = await apiClient.get(`/reports/shifts/${id}`, {
+        params: { tx_page: txPage },
+      });
       return data;
     },
     enabled: !!id,

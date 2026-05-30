@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { POSCartItem } from '../usePOSStore';
 import { usePOSStore } from '../usePOSStore';
 import { useModalStore } from '@/stores/modalStore';
@@ -16,8 +16,10 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   const selectCustomer = usePOSStore((state) => state.selectCustomer);
   const globalDiscount = usePOSStore((state) => state.globalDiscount);
   
-  const rawSubtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  const rawDiscount = cart.reduce((sum, item) => sum + item.discount, 0);
+  const { rawSubtotal, rawDiscount } = useMemo(() => ({
+    rawSubtotal: cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0),
+    rawDiscount: cart.reduce((sum, item) => sum + item.discount, 0),
+  }), [cart]);
   
   const subtotal = bankersRound(rawSubtotal);
   const discount = bankersRound(rawDiscount);

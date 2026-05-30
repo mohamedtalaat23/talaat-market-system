@@ -115,33 +115,10 @@ const customElectronStorage: StateStorage = {
       return;
     }
 
-    const parsed = JSON.parse(value);
-    const offlineSales = parsed.state?.offlineSales || [];
-
-    if (window.electronAPI?.getOfflineSales && window.electronAPI?.persistOfflineSale && window.electronAPI?.removeOfflineSale) {
-      try {
-        const currentStoreSales = await window.electronAPI.getOfflineSales();
-        const currentSalesMap = new Map(currentStoreSales.map((s: any) => [s.id, s]));
-
-        // Add or update active offline sales
-        for (const sale of offlineSales) {
-          const existing = currentSalesMap.get(sale.id);
-          if (!existing || JSON.stringify(existing) !== JSON.stringify(sale)) {
-            await window.electronAPI.persistOfflineSale(sale);
-          }
-          currentSalesMap.delete(sale.id);
-        }
-
-        // Delete removed sales from atomic storage
-        for (const removedId of currentSalesMap.keys()) {
-          await window.electronAPI.removeOfflineSale(removedId);
-        }
-      } catch (error) {
-        console.error('[Store] Failed to persist offline sales to Electron Store:', error);
-      }
-    }
-
-    // Persist all other settings to localStorage
+    // Persist all other settings (mode, hostAddress, etc.) to localStorage.
+    // Offline sales are now persisted/removed directly in addOfflineSale and
+    // removeOfflineSale actions to avoid the O(n) JSON.stringify full-diff that
+    // ran here on every state write.
     localStorage.setItem(name, value);
   },
 
@@ -162,12 +139,23 @@ export const useLANStore = create<LANState>()(
       setMode: (mode) => set({ mode }),
       setHostAddress: (hostAddress) => set({ hostAddress }),
       setStatus: (status) => set({ status }),
-      addOfflineSale: (sale) => set((state) => ({
-        offlineSales: [...state.offlineSales, sale]
-      })),
-      removeOfflineSale: (id) => set((state) => ({
-        offlineSales: state.offlineSales.filter((sale) => sale.id !== id)
-      })),
+      addOfflineSale: (sale) => {
+        // Persist the new sale directly to Electron store if available and hydrated.
+        // This avoids a full O(n) diff on every state write (the old setItem approach).
+        if (isHydrated && window.electronAPI?.persistOfflineSale) {
+          void window.electronAPI.persistOfflineSale(sale)
+            .catch((err: unknown) => console.error('[LAN] Failed to persist offline sale to Electron Store:', err));
+        }
+        set((state) => ({ offlineSales: [...state.offlineSales, sale] }));
+      },
+      removeOfflineSale: (id) => {
+        // Remove the sale directly from Electron store if available and hydrated.
+        if (isHydrated && window.electronAPI?.removeOfflineSale) {
+          void window.electronAPI.removeOfflineSale(id)
+            .catch((err: unknown) => console.error('[LAN] Failed to remove offline sale from Electron Store:', err));
+        }
+        set((state) => ({ offlineSales: state.offlineSales.filter((sale) => sale.id !== id) }));
+      },
       clearOfflineSales: () => set({ offlineSales: [] }),
       addOfflineShiftClosure: (closure) => set((state) => ({
         offlineShiftClosures: [...state.offlineShiftClosures, closure]

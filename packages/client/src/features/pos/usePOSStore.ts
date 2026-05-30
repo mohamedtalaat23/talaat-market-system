@@ -207,6 +207,22 @@ export const usePOSStore = create<POSState>()(
     {
       name: 'talaat-pos-cart-storage',
       storage: createJSONStorage(() => localStorage),
+      // Only persist state needed for crash/refresh recovery.
+      // Excludes transient session fields that should reset on reload:
+      //   - activeItemIndex: UI cursor position, safe to reset
+      //   - cashReceived: entry-in-progress, safe to reset
+      // lastSaleId is kept so Ctrl+P / Ctrl+R last-receipt shortcuts
+      // continue to work after an app refresh.
+      partialize: (state) => ({
+        cart: state.cart,
+        heldCarts: state.heldCarts,
+        activeShift: state.activeShift,
+        registerId: state.registerId,
+        autoPrintReceipts: state.autoPrintReceipts,
+        paymentMethod: state.paymentMethod,
+        selectedCustomer: state.selectedCustomer,
+        lastSaleId: state.lastSaleId,
+      }),
     }
   )
 );

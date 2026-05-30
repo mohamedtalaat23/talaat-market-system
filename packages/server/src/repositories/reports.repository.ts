@@ -60,8 +60,15 @@ export class ReportsRepository {
 
   /**
    * Endpoint 2: GET /reports/shifts/:id
+   * Supports transaction pagination via txPage/txLimit parameters.
+   * summary.transaction_count reflects the total shift transactions from the DB
+   * aggregate query, NOT the current page length, so the title "Transactions (N)"
+   * always shows the correct full count regardless of which page is loaded.
    */
-  async getShiftDetail(id: number) {
+  async getShiftDetail(id: number, txPage: number = 1, txLimit: number = 100) {
+    const safeTxLimit = Math.min(txLimit, 200);
+    const txOffset = (txPage - 1) * safeTxLimit;
+
     const shift = await db('cashier_shifts as cs')
       .join('employees as e', 'e.id', 'cs.employee_id')
       .leftJoin('registers as r', 'r.id', 'cs.register_id')
@@ -82,26 +89,39 @@ export class ReportsRepository {
     shift.ending_cash = shift.ending_cash !== null ? Number(shift.ending_cash) : null;
     shift.variance = shift.variance !== null ? Number(shift.variance) : null;
 
-    const transactionsRaw = await db('sales')
-      .join('employees', 'employees.id', 'sales.cashier_id')
-      .where('sales.shift_id', id)
-      .select(
-        'sales.id',
-        'sales.receipt_number',
-        'sales.total',
-        'sales.payment_method',
-        'sales.discount_amount',
-        'sales.global_discount',
-        'sales.cash_received',
-        'sales.cash_amount',
-        'sales.card_amount',
-        'sales.change_given',
-        'sales.status',
-        'sales.print_count',
-        'sales.created_at',
-        'employees.full_name as cashier_name'
-      )
-      .orderBy('sales.created_at', 'desc');
+    // Fetch total transaction count for this shift (for the title/summary).
+    // This count comes from the aggregate query below, NOT from transactions.length,
+    // so it remains accurate across pages.
+    const [transactionsRaw, txCountResult] = await Promise.all([
+      db('sales')
+        .join('employees', 'employees.id', 'sales.cashier_id')
+        .where('sales.shift_id', id)
+        .select(
+          'sales.id',
+          'sales.receipt_number',
+          'sales.total',
+          'sales.payment_method',
+          'sales.discount_amount',
+          'sales.global_discount',
+          'sales.cash_received',
+          'sales.cash_amount',
+          'sales.card_amount',
+          'sales.change_given',
+          'sales.status',
+          'sales.print_count',
+          'sales.created_at',
+          'employees.full_name as cashier_name'
+        )
+        .orderBy('sales.created_at', 'desc')
+        .limit(safeTxLimit)
+        .offset(txOffset),
+      db('sales')
+        .where('shift_id', id)
+        .count({ count: 'id' })
+        .first(),
+    ]);
+
+    const txTotal = Number(txCountResult?.count ?? 0);
 
     const transactions = transactionsRaw.map(t => ({
       ...t,
@@ -157,9 +177,17 @@ export class ReportsRepository {
     return {
       shift,
       transactions,
+      transactions_meta: {
+        total: txTotal,
+        page: txPage,
+        limit: safeTxLimit,
+        totalPages: Math.ceil(txTotal / safeTxLimit),
+      },
       overrides,
       summary: {
-        transaction_count: transactions.length,
+        // NOTE: transaction_count is the full shift total from the DB aggregate,
+        // not transactions.length (which is only the current page).
+        transaction_count: txTotal,
         total_revenue: totalRevenue,
         total_discounts: totalDiscounts,
         cash_sales_total: cashSalesTotal,

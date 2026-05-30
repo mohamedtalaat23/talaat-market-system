@@ -1,9 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import {
   useGenericListQuery,
-  useGenericDetailQuery,
   useGenericCreateMutation,
   useGenericUpdateMutation,
   useGenericDeleteMutation,
@@ -37,6 +36,12 @@ export interface CustomerTransaction {
 
 export interface CustomerDetail extends Customer {
   ledger: CustomerTransaction[];
+  ledger_meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateCustomerPayload {
@@ -86,10 +91,21 @@ export function useCustomers(filters: CustomerFilters) {
 }
 
 /**
- * Fetch customer detailed transaction history ledger using the generic detail query.
+ * Fetch customer detail with a paginated transaction ledger.
+ * @param id - Customer ID
+ * @param ledgerPage - Which page of ledger transactions to fetch (default 1)
  */
-export function useCustomerDetail(id: number) {
-  return useGenericDetailQuery<CustomerDetail>('customer', '/customers', id);
+export function useCustomerDetail(id: number, ledgerPage: number = 1) {
+  return useQuery<CustomerDetail>({
+    queryKey: ['customer', id, { ledgerPage }],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ status: string; data: CustomerDetail }>(`/customers/${id}`, {
+        params: { ledger_page: ledgerPage, ledger_limit: 50 },
+      });
+      return data.data;
+    },
+    enabled: !isNaN(id) && id > 0,
+  });
 }
 
 /**

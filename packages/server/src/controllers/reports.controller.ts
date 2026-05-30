@@ -27,7 +27,10 @@ export async function getShifts(req: Request, res: Response, next: NextFunction)
 export async function getShiftDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = Number(req.params.id);
-    const result = await reportsRepository.getShiftDetail(id);
+    const txPage = Math.max(1, Number(req.query.tx_page) || 1);
+    const txLimit = Math.min(200, Math.max(1, Number(req.query.tx_limit) || 100));
+
+    const result = await reportsRepository.getShiftDetail(id, txPage, txLimit);
 
     if (!result) {
       throw new NotFoundError('Closed shift not found', id);

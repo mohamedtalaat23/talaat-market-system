@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useShiftDetail } from '../hooks/useReportsQueries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
@@ -13,7 +14,9 @@ export function ShiftDetailScreen() {
   const navigate = useNavigate();
   const shiftId = Number(id);
 
-  const { data, isLoading, isError } = useShiftDetail(shiftId);
+  const [txPage, setTxPage] = useState(1);
+
+  const { data, isLoading, isError } = useShiftDetail(shiftId, txPage);
 
   if (isLoading) {
     return <div className="flex justify-center p-12"><Spinner size="lg" /></div>;
@@ -28,7 +31,7 @@ export function ShiftDetailScreen() {
     );
   }
 
-  const { shift, summary, transactions, overrides } = data.data;
+  const { shift, summary, transactions, overrides, transactions_meta } = data.data;
 
   const renderVarianceBadge = (variance: number | null) => {
     if (variance === null) return <Badge variant="secondary">N/A</Badge>;
@@ -200,6 +203,34 @@ export function ShiftDetailScreen() {
               )}
             </TableBody>
           </Table>
+
+          {/* Transaction Pagination Controls */}
+          {transactions_meta && transactions_meta.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-neutral-800 mt-2">
+              <span className="text-xs text-neutral-500 font-mono">
+                Page {transactions_meta.page} of {transactions_meta.totalPages}
+                {' • '}{transactions_meta.total} total transactions
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTxPage((p) => Math.max(1, p - 1))}
+                  disabled={txPage <= 1}
+                >
+                  ← Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTxPage((p) => Math.min(transactions_meta.totalPages, p + 1))}
+                  disabled={txPage >= transactions_meta.totalPages}
+                >
+                  Next →
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
