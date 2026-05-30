@@ -48,6 +48,11 @@ const envSchema = z.object({
 
   // Backup
   BACKUP_DIR: z.string().default('~/TalaatMarket/backups'),
+
+  // SSL Settings (LAN security)
+  SSL_ENABLED: z.preprocess((val) => val === 'true' || val === true, z.boolean()).default(false),
+  SSL_KEY_PATH: z.string().optional(),
+  SSL_CERT_PATH: z.string().optional(),
 });
 
 // Validate and parse environment variables

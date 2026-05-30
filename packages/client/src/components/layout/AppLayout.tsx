@@ -18,8 +18,12 @@ import {
   LogOut,
   Menu,
   Store,
+  Wifi,
+  WifiOff,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useLANStore } from '@/features/pos/stores/useLANStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import { GlobalErrorBoundary } from '@/components/ui/GlobalErrorBoundary';
@@ -44,6 +48,8 @@ export const AppLayout = React.memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { status: lanStatus, offlineSales } = useLANStore();
+  const hasOfflineSales = offlineSales.length > 0;
 
   // Redirect to login if user object is not available
   const handleLogout = async () => {
@@ -148,6 +154,30 @@ export const AppLayout = React.memo(() => {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* LAN Connection / Offline Sync Status */}
+            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-neutral-800/40 border border-neutral-700/50 backdrop-blur-sm select-none text-xs font-medium">
+              {lanStatus === 'online' ? (
+                <>
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <Wifi size={14} className="text-emerald-500" />
+                  <span className="text-neutral-300">LAN Online</span>
+                </>
+              ) : (
+                <>
+                  <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                  <WifiOff size={14} className="text-rose-500" />
+                  <span className="text-rose-400">LAN Offline</span>
+                </>
+              )}
+              {hasOfflineSales && (
+                <>
+                  <div className="h-3 w-[1px] bg-neutral-700 mx-1" />
+                  <RefreshCw size={12} className="text-amber-500 animate-spin" />
+                  <span className="text-amber-400 font-semibold">{offlineSales.length} Syncing</span>
+                </>
+              )}
+            </div>
+
             {/* Notifications */}
             <button
               className="relative p-1.5 rounded-full text-neutral-400 hover:text-foreground hover:bg-neutral-800/50 transition-colors"

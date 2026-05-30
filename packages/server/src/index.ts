@@ -2,6 +2,8 @@ import { createApp } from './app';
 import { env } from './config/env';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { logger } from './middleware/logger';
+import fs from 'fs';
+import https from 'https';
 
 /**
  * Server entry point.
@@ -32,25 +34,54 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 2: Create and start the HTTP server
+  // Step 2: Create and start the HTTP or HTTPS server
   const app = createApp();
-  const server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
-    const proto = 'http' + '://';
-    logger.info(`✅ Server listening on ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}`);
-    logger.info(`   API available at ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+  let server: any;
 
-    // Signal to parent process (Electron's server-manager) that we're ready
-    // process.send is available when forked with child_process.fork()
-    if (process.send) {
-      process.send('ready');
+  if (env.SSL_ENABLED && env.SSL_KEY_PATH && env.SSL_CERT_PATH) {
+    try {
+      const key = fs.readFileSync(env.SSL_KEY_PATH);
+      const cert = fs.readFileSync(env.SSL_CERT_PATH);
+      server = https.createServer({ key, cert }, app).listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+        logger.info(`✅ Secure HTTPS Server listening on https://${env.SERVER_HOST}:${env.SERVER_PORT}`);
+        logger.info(`   API available at https://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+
+        // Signal to parent process (Electron's server-manager) that we're ready
+        if (process.send) {
+          process.send('ready');
+        }
+      });
+    } catch (sslError: any) {
+      logger.error('❌ Failed to load SSL certificates, falling back to HTTP', {
+        error: sslError instanceof Error ? sslError.message : String(sslError),
+      });
+      server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+        logger.info(`✅ Fallback HTTP Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`);
+        logger.info(`   API available at http://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+
+        if (process.send) {
+          process.send('ready');
+        }
+      });
     }
-  });
+  } else {
+    server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+      const proto = 'http' + '://';
+      logger.info(`✅ Server listening on ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}`);
+      logger.info(`   API available at ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+
+      // Signal to parent process (Electron's server-manager) that we're ready
+      if (process.send) {
+        process.send('ready');
+      }
+    });
+  }
 
   // Step 3: Graceful shutdown
   const shutdown = async (signal: string): Promise<void> => {
     logger.info(`Received ${signal}. Starting graceful shutdown...`);
 
-    server.close(async (err) => {
+    server.close(async (err?: Error) => {
       if (err) {
         logger.error('Error closing HTTP server', { error: err.message });
         process.exit(1);
