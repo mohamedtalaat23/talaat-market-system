@@ -127,10 +127,22 @@ export class PostgresManager {
     this.configPath = path.join(userData, 'config.env');
     this.logPath = path.join(userData, 'postgres.log');
 
+    const existingConfig = readEnvFile(this.configPath);
+
+    // If external database hook is active, bypass local binary resolution and server startup
+    if (existingConfig['DB_EXTERNAL'] === 'true') {
+      logger.info('[PostgresManager] External database hook active. Skipping local PostgreSQL startup.');
+      return {
+        configPath: this.configPath,
+        env: {
+          TALAAT_CONFIG_PATH: this.configPath,
+        },
+      };
+    }
+
     const runtime = this.getRuntime();
     const firstRun = !fs.existsSync(path.join(this.dataDir, 'PG_VERSION'));
     const port = await findAvailablePort(55432);
-    const existingConfig = readEnvFile(this.configPath);
 
     if (!firstRun && !existingConfig['DB_PASSWORD']) {
       throw new Error(`Bundled database exists, but ${this.configPath} is missing DB_PASSWORD.`);

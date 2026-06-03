@@ -117,3 +117,33 @@ When releasing an update of the system:
 1. **Schema Migrations:** If the database schema has changed, Knex migrations run automatically in the background on startup (`database/migrate.js`).
 2. **Major PostgreSQL Version Upgrades:** If the bundled PG version upgrades (e.g., upgrading from Postgres 15 to Postgres 16), the database engine will refuse to run on the old data folder and crash on boot.
    * **Action Required:** Before deployment, export the database to a `.dump` file, clear `%APPDATA%\Talaat Market\postgres-data`, install the updated version, and restore the dump.
+
+---
+
+## 8. Multi-Register & External Database Configuration (Opt-Out Hook)
+
+In a multi-register supermarket setup, you will want all registers to share a single centralized database server rather than spawning their own isolated databases.
+
+The system includes a **DB_EXTERNAL** opt-out hook to bypass the local PostgreSQL runtime entirely and connect to an external server.
+
+### Setup Instructions for Client Registers:
+1. Ensure the primary database server is running PostgreSQL and accessible over the local network (LAN).
+2. Create or edit the configuration file manually on each register at:
+   ```text
+   %APPDATA%\Talaat Market\config.env
+   ```
+3. Populate the file with the network database details:
+   ```ini
+   DB_EXTERNAL="true"
+   DB_HOST="192.168.1.10"         # IP Address of your central server
+   DB_PORT="5432"                 # Postgres port on the server
+   DB_NAME="talaat_market"        # Shared database name
+   DB_USER="talaat_network_user"  # Database username
+   DB_PASSWORD="your_network_db_password"
+   
+   # Keep session and JWT keys matching across all registers
+   SESSION_SECRET="your_shared_session_secret_min_32_chars"
+   JWT_SECRET="your_shared_jwt_secret_min_32_chars"
+   ```
+4. Start the **Talaat Market System** application on the register.
+5. The application will detect `DB_EXTERNAL="true"`, skip local PG checks (even if PostgreSQL binaries are not bundled or present on the register), and connect directly to the shared network database.
