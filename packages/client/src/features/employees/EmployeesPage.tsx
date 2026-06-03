@@ -94,8 +94,8 @@ export function EmployeesPage() {
 
       {/* Staff lists card grids */}
       {isLoading && page === 1 ? (
-        <div className="flex h-40 w-full items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900/10">
-          <span className="text-sm text-neutral-400 font-mono">Fetching active access directory...</span>
+        <div className="flex h-40 w-full items-center justify-center rounded-lg border border-border bg-neutral-900/10">
+          <span className="text-sm text-secondary font-mono">Fetching active access directory...</span>
         </div>
       ) : (
         <EmployeeGrid

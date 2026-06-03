@@ -44,7 +44,7 @@ export function EmployeeFilterBar({
 
       <div className="flex flex-wrap items-center gap-2 select-none" role="group" aria-label="Staff Directory Filters">
         {/* Role filter selectors */}
-        <div className="flex space-x-1 border-r border-neutral-800 pr-2 mr-2" role="group" aria-label="Role Group">
+        <div className="flex space-x-1 border-r border-border pr-2 mr-2" role="group" aria-label="Role Group">
           <button
             onClick={() => onSelectRole(null)}
             className={`${FILTER_BUTTON_BASE} ${
@@ -108,7 +108,7 @@ export function EmployeeFilterBar({
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-xs text-neutral-400 hover:text-destructive shrink-0 font-semibold"
+            className="text-xs text-secondary hover:text-destructive shrink-0 font-semibold"
           >
             Clear Filters
           </Button>

@@ -22,11 +22,11 @@ export function ProductTable({
   hasFilters,
 }: ProductTableProps) {
   return (
-    <Card className="overflow-hidden border-neutral-800" role="region" aria-label="Product Catalog Table">
+    <Card className="overflow-hidden border-border" role="region" aria-label="Product Catalog Table">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-foreground" role="table">
           <caption className="sr-only">List of store products with names, prices, and stock indicators</caption>
-          <thead className="bg-neutral-900/60 border-b border-neutral-800 text-neutral-400 font-semibold select-none">
+          <thead className="bg-card-hover border-b border-border text-secondary font-semibold select-none">
             <tr>
               <th scope="col" className="p-4 font-medium">Product Name / Description</th>
               <th scope="col" className="p-4 font-medium">Barcode</th>
@@ -38,10 +38,10 @@ export function ProductTable({
               <th scope="col" className="p-4 font-medium text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-800 select-text">
+          <tbody className="divide-y divide-border select-text">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-neutral-400 font-medium">
+                <td colSpan={8} className="p-8 text-center text-secondary font-medium">
                   Refreshing products...
                 </td>
               </tr>
@@ -50,11 +50,11 @@ export function ProductTable({
                 const qty = product.inventory_quantity ?? 0;
                 const isLow = qty <= product.min_stock_level;
                 return (
-                  <tr key={product.id} className="hover:bg-neutral-900/40 transition-colors">
+                  <tr key={product.id} className="hover:bg-card-hover/40 transition-colors">
                     <td className="p-4">
                       <div className="font-semibold text-foreground leading-tight">{product.name}</div>
                       {product.name_ar && (
-                        <div className="text-xs text-neutral-400 font-arabic mt-0.5 text-right md:text-left select-all">
+                        <div className="text-xs text-secondary font-arabic mt-0.5 text-right md:text-left select-all">
                           {product.name_ar}
                         </div>
                       )}
@@ -62,7 +62,7 @@ export function ProductTable({
                         <div className="text-xs text-neutral-500 mt-1 truncate max-w-xs">{product.description}</div>
                       )}
                     </td>
-                    <td className="p-4 font-mono text-neutral-300">
+                    <td className="p-4 font-mono text-foreground">
                       {product.barcode ? (
                         <div className="flex items-center space-x-1.5 select-all">
                           <Barcode size={14} className="text-neutral-500" aria-hidden="true" />
@@ -74,7 +74,7 @@ export function ProductTable({
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col space-y-1">
-                        <span className="flex items-center space-x-1 text-xs text-neutral-300">
+                        <span className="flex items-center space-x-1 text-xs text-secondary">
                           <span className="text-primary/75 font-bold mr-0.5">#</span>
                           <span>{product.category_name || 'Uncategorized'}</span>
                         </span>
@@ -85,7 +85,7 @@ export function ProductTable({
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-right font-mono text-neutral-400">
+                    <td className="p-4 text-right font-mono text-secondary">
                       EGP {product.cost_price.toFixed(2)}
                     </td>
                     <td className="p-4 text-right font-mono font-bold text-foreground">
@@ -93,7 +93,7 @@ export function ProductTable({
                     </td>
                     <td className="p-4 text-right font-mono">
                       <div className="flex flex-col items-end">
-                        <span className={`font-semibold ${isLow ? 'text-destructive font-bold' : 'text-neutral-300'}`}>
+                        <span className={`font-semibold ${isLow ? 'text-destructive font-bold' : 'text-foreground'}`}>
                           {qty} {product.unit}
                         </span>
                         {isLow && (
@@ -113,7 +113,7 @@ export function ProductTable({
                       <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => onEdit(product)}
-                          className="rounded-md p-1.5 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           title="Edit details"
                           aria-label={`Edit details for ${product.name}`}
                         >
@@ -121,7 +121,7 @@ export function ProductTable({
                         </button>
                         <button
                           onClick={() => onDelete(product)}
-                          className="rounded-md p-1.5 text-neutral-400 hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="rounded-md p-1.5 text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           title="Soft delete product"
                           aria-label={`Delete ${product.name}`}
                         >
@@ -134,7 +134,7 @@ export function ProductTable({
               })
             ) : (
               <tr>
-                <td colSpan={8} className="p-12 text-center text-neutral-400 font-medium">
+                <td colSpan={8} className="p-12 text-center text-secondary font-medium">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <Barcode className="h-8 w-8 text-neutral-500 animate-pulse" aria-hidden="true" />
                     <span>No products found in the catalog.</span>

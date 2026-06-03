@@ -62,7 +62,7 @@ export function PurchasesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 border-neutral-700 uppercase">Draft</Badge>;
+        return <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 border-border uppercase">Draft</Badge>;
       case 'ordered':
         return <Badge variant="warning" className="bg-amber-950/40 text-amber-400 border-amber-800/50 uppercase">Ordered</Badge>;
       case 'received':
@@ -106,16 +106,16 @@ export function PurchasesPage() {
     >
       {/* KPI Stats Summaries */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Purchase Orders</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Total Purchase Orders</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-neutral-100">{meta.total}</span>
             <FileText className="h-4 w-4 text-neutral-500" />
           </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Draft POs</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Draft POs</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-neutral-300">
               {items.filter((po) => po.status === 'draft').length}
@@ -124,8 +124,8 @@ export function PurchasesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pending Deliveries</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Pending Deliveries</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-amber-500">
               {items.filter((po) => po.status === 'ordered').length}
@@ -134,8 +134,8 @@ export function PurchasesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Received Audited</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Received Audited</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-emerald-500">
               {items.filter((po) => po.status === 'received').length}
@@ -146,18 +146,18 @@ export function PurchasesPage() {
       </div>
 
       {/* Filters Area */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-xl border border-neutral-800 bg-neutral-900/20">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-xl border border-border bg-neutral-900/20">
         <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
           {/* Supplier Filter */}
           <div className="flex flex-col space-y-1 w-full sm:w-56">
-            <span className="text-xs font-semibold text-neutral-400">Supplier</span>
+            <span className="text-xs font-semibold text-secondary">Supplier</span>
             <select
               value={supplierFilter || ''}
               onChange={(e) => {
                 setSupplierFilter(e.target.value ? Number(e.target.value) : undefined);
                 setPage(1);
               }}
-              className="bg-neutral-900 text-neutral-200 border border-neutral-800 rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
+              className="bg-neutral-900 text-neutral-200 border border-border rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
             >
               <option value="">All Suppliers</option>
               {suppliers.map((s) => (
@@ -170,14 +170,14 @@ export function PurchasesPage() {
 
           {/* Status Filter */}
           <div className="flex flex-col space-y-1 w-full sm:w-44">
-            <span className="text-xs font-semibold text-neutral-400">Order Status</span>
+            <span className="text-xs font-semibold text-secondary">Order Status</span>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="bg-neutral-900 text-neutral-200 border border-neutral-800 rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
+              className="bg-neutral-900 text-neutral-200 border border-border rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
             >
               <option value="">All Statuses</option>
               <option value="draft">Draft</option>
@@ -190,11 +190,11 @@ export function PurchasesPage() {
       </div>
 
       {/* Main Grid/Table */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 overflow-hidden">
+      <div className="rounded-xl border border-border bg-neutral-900/30 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="border-b border-neutral-800 bg-neutral-900/60 text-neutral-400 font-semibold">
+              <tr className="border-b border-border bg-neutral-900/60 text-secondary font-semibold">
                 <th className="py-3 px-4">PO Number</th>
                 <th className="py-3 px-4">Supplier</th>
                 <th className="py-3 px-4">Order Date</th>
@@ -219,7 +219,7 @@ export function PurchasesPage() {
                       <div className="font-semibold">{po.supplier_name}</div>
                       <div className="text-xs text-neutral-500 font-mono">{po.supplier_code}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-mono text-neutral-400">
+                    <td className="py-3.5 px-4 text-xs font-mono text-secondary">
                       {formatDate(po.order_date)}
                     </td>
                     <td className="py-3.5 px-4">{getStatusBadge(po.status)}</td>
@@ -232,7 +232,7 @@ export function PurchasesPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => navigate(`/purchases/${po.id}`)}
-                          className="flex items-center space-x-1 text-neutral-400 hover:text-white"
+                          className="flex items-center space-x-1 text-secondary hover:text-white"
                         >
                           <Eye size={14} />
                           <span>View</span>

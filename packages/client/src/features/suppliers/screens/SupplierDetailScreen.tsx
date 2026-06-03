@@ -51,7 +51,7 @@ export function SupplierDetailScreen() {
     return (
       <div className="flex h-96 flex-col items-center justify-center font-sans text-neutral-100">
         <Spinner size="md" />
-        <span className="mt-3 text-sm text-neutral-400 font-mono">Loading supplier profile & catalog...</span>
+        <span className="mt-3 text-sm text-secondary font-mono">Loading supplier profile & catalog...</span>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function SupplierDetailScreen() {
         </p>
         <button
           onClick={() => navigate('/suppliers')}
-          className="mt-6 rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-neutral-700 hover:text-neutral-100 transition-colors"
+          className="mt-6 rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover hover:text-neutral-100 transition-colors"
         >
           Back to Suppliers Directory
         </button>
@@ -80,11 +80,11 @@ export function SupplierDetailScreen() {
   return (
     <div className="space-y-6 font-sans text-neutral-100 p-6 max-w-7xl mx-auto">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate('/suppliers')}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 transition-colors border border-neutral-800"
+            className="rounded-lg p-1.5 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors border border-border"
             title="Back to Directory"
           >
             <ArrowLeft size={18} />
@@ -135,8 +135,8 @@ export function SupplierDetailScreen() {
         {/* Left Side: Contact Information Summary */}
         <div className="space-y-6">
           {/* Supplier Stats summary */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-850 pb-2 flex items-center justify-between">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center justify-between">
               <span>Integration Status</span>
               <Archive size={14} className="text-neutral-500" />
             </h3>
@@ -147,7 +147,7 @@ export function SupplierDetailScreen() {
               </div>
               <div>
                 <span className="text-[10px] text-neutral-500 uppercase font-bold block">Low Stock Alerts</span>
-                <span className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-amber-500' : 'text-neutral-400'}`}>
+                <span className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-amber-500' : 'text-secondary'}`}>
                   {lowStockItems.length}
                 </span>
               </div>
@@ -167,8 +167,8 @@ export function SupplierDetailScreen() {
           </div>
 
           {/* Contact profile card */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-850 pb-2">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2">
               Contact Profile
             </h3>
             <div className="space-y-4 text-sm">
@@ -201,12 +201,12 @@ export function SupplierDetailScreen() {
           </div>
 
           {/* Supplier Notes */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-850 pb-2 flex items-center space-x-1.5">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center space-x-1.5">
               <FileText size={13} className="text-neutral-500" />
               <span>Internal Procurement Notes</span>
             </h3>
-            <div className="text-neutral-400 italic bg-neutral-950 p-3 rounded-lg border border-neutral-850 text-xs leading-relaxed max-w-full break-words">
+            <div className="text-secondary italic bg-input p-3 rounded-lg border border-border text-xs leading-relaxed max-w-full break-words">
               {supplier.notes || 'No custom procurement notes registered for this supplier profile.'}
             </div>
           </div>
@@ -214,17 +214,17 @@ export function SupplierDetailScreen() {
 
         {/* Right Side: Supplied Catalog Products */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/20 overflow-hidden">
-            <div className="border-b border-neutral-800 bg-neutral-950 px-6 py-4 flex items-center justify-between">
+          <div className="rounded-xl border border-border bg-neutral-900/20 overflow-hidden">
+            <div className="border-b border-border bg-input px-6 py-4 flex items-center justify-between">
               <h3 className="text-base font-semibold text-neutral-200">Linked Catalog Products</h3>
-              <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-850 border border-neutral-750 text-neutral-400">
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-850 border border-neutral-750 text-secondary">
                 {catalog.length} Products
               </span>
             </div>
 
             {catalog.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 mb-3">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 border border-border text-secondary mb-3">
                   <Archive size={18} />
                 </div>
                 <h4 className="text-sm font-semibold text-neutral-300">Catalog is Empty</h4>
@@ -236,7 +236,7 @@ export function SupplierDetailScreen() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-neutral-800 bg-neutral-950/40 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                    <tr className="border-b border-border bg-input/40 text-xs font-semibold uppercase tracking-wider text-secondary">
                       <th className="px-6 py-3.5">Barcode / Code</th>
                       <th className="px-6 py-3.5">Product Name</th>
                       <th className="px-6 py-3.5 text-right">Cost Price</th>
@@ -253,7 +253,7 @@ export function SupplierDetailScreen() {
                       return (
                         <tr key={product.id} className="hover:bg-neutral-850/20 transition-colors">
                           {/* Barcode */}
-                          <td className="px-6 py-4 text-xs font-mono text-neutral-400">
+                          <td className="px-6 py-4 text-xs font-mono text-secondary">
                             {product.barcode || <span className="text-neutral-600 font-sans italic">No Barcode</span>}
                           </td>
 
@@ -280,7 +280,7 @@ export function SupplierDetailScreen() {
                           </td>
 
                           {/* Unit */}
-                          <td className="px-6 py-4 text-xs text-center text-neutral-400">
+                          <td className="px-6 py-4 text-xs text-center text-secondary">
                             {product.unit}
                           </td>
 
@@ -328,14 +328,14 @@ export function SupplierDetailScreen() {
       {/* Supplier Soft Deletion Safety Confirmation Modal */}
       {isDeleteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl p-6 text-neutral-100">
+          <div className="w-full max-w-md rounded-xl border border-border bg-neutral-900 shadow-2xl p-6 text-neutral-100">
             <div className="flex items-start space-x-3">
               <div className="rounded-full bg-rose-950/50 p-2 text-rose-500 border border-rose-900/30">
                 <AlertTriangle size={24} />
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold tracking-wide text-neutral-200">Confirm Soft Deletion</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+                <p className="text-sm text-secondary leading-relaxed font-sans">
                   Are you sure you want to delete supplier <span className="font-semibold text-neutral-100">"{supplier.name}"</span> ({supplier.supplier_code})?
                 </p>
 
@@ -343,17 +343,17 @@ export function SupplierDetailScreen() {
                   <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-300 leading-relaxed font-sans">
                     <span className="font-semibold block mb-1">⚠️ Active Catalog Link Warning:</span>
                     This supplier is currently linked to <span className="font-semibold underline">{catalog.length} active product(s)</span>.
-                    If you proceed, those products will remain in the catalog, but their primary supplier connection will be set to <span className="font-mono bg-neutral-950 px-1 rounded text-neutral-300">NULL</span>.
+                    If you proceed, those products will remain in the catalog, but their primary supplier connection will be set to <span className="font-mono bg-input px-1 rounded text-neutral-300">NULL</span>.
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 border-t border-neutral-800 pt-4 mt-6">
+            <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
               <button
                 onClick={() => setIsDeleteOpen(false)}
                 disabled={deleteSupplier.isPending}
-                className="rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>

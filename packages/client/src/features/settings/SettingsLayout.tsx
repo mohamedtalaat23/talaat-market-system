@@ -23,7 +23,7 @@ export function SettingsLayout() {
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-primary/10 text-primary'
-                    : 'text-neutral-400 hover:text-foreground hover:bg-neutral-800/50'
+                    : 'text-secondary hover:text-foreground hover:bg-card-hover'
                 }`
               }
             >
@@ -34,7 +34,7 @@ export function SettingsLayout() {
         </nav>
       </div>
 
-      <div className="flex-1 bg-neutral-900 border border-border rounded-xl overflow-hidden flex flex-col">
+      <div className="flex-1 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </div>

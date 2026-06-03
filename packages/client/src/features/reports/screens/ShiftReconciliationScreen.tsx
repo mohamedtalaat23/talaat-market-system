@@ -52,7 +52,7 @@ export function ShiftReconciliationScreen() {
                 <TableBody>
                   {data?.data?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-neutral-400 py-4">
+                      <TableCell colSpan={8} className="text-center text-secondary py-4">
                         No closed shifts found.
                       </TableCell>
                     </TableRow>
@@ -60,7 +60,7 @@ export function ShiftReconciliationScreen() {
                   {data?.data?.map((shift) => (
                     <TableRow
                       key={shift.id}
-                      className="cursor-pointer hover:bg-neutral-800/50 transition-colors"
+                      className="cursor-pointer hover:bg-card-hover/50 transition-colors"
                       onClick={() => navigate(`/reports/shifts/${shift.id}`)}
                     >
                       <TableCell className="font-medium">{shift.cashier_name || 'Unknown'}</TableCell>
@@ -89,7 +89,7 @@ export function ShiftReconciliationScreen() {
                   >
                     Previous
                   </Button>
-                  <span className="flex items-center text-sm text-neutral-400">
+                  <span className="flex items-center text-sm text-secondary">
                     Page {page} of {data.meta.totalPages}
                   </span>
                   <Button 

@@ -81,14 +81,14 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="w-full max-w-lg rounded-xl border border-neutral-850 bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200"
+        className="w-full max-w-lg rounded-xl border border-border bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border bg-input px-6 py-4">
           <h3 className="text-lg font-semibold tracking-wide">Select Cart Customer</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 transition-colors"
+            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -97,14 +97,14 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-neutral-850 bg-neutral-950/30 px-6">
+        <div className="flex border-b border-border bg-input/30 px-6">
           <button
             type="button"
             onClick={() => setActiveTab('search')}
             className={`border-b-2 px-4 py-3 text-sm font-semibold tracking-wide transition-colors focus:outline-none ${
               activeTab === 'search'
                 ? 'border-emerald-500 text-emerald-400'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                : 'border-transparent text-secondary hover:text-neutral-200'
             }`}
           >
             Search Directory
@@ -115,7 +115,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
             className={`border-b-2 px-4 py-3 text-sm font-semibold tracking-wide transition-colors focus:outline-none ${
               activeTab === 'create'
                 ? 'border-emerald-500 text-emerald-400'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                : 'border-transparent text-secondary hover:text-neutral-200'
             }`}
           >
             Quick Register
@@ -138,15 +138,15 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name or phone number..."
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Results list */}
-            <div className="max-h-60 overflow-y-auto rounded-lg border border-neutral-850 divide-y divide-neutral-850 bg-neutral-950/20">
+            <div className="max-h-60 overflow-y-auto rounded-lg border border-border divide-y divide-neutral-850 bg-input/20">
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <svg className="h-5 w-5 animate-spin text-neutral-400" fill="none" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 animate-spin text-secondary" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
@@ -162,7 +162,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                     key={cust.id}
                     type="button"
                     onClick={() => handleSelect(cust)}
-                    className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-neutral-800 transition-colors focus:bg-neutral-800 focus:outline-none group"
+                    className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-card-hover transition-colors focus:bg-neutral-800 focus:outline-none group"
                   >
                     <div>
                       <div className="font-semibold text-neutral-200 group-hover:text-emerald-400 transition-colors">
@@ -177,7 +177,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                             ? 'text-rose-500'
                             : cust.balance > 0
                             ? 'text-emerald-500'
-                            : 'text-neutral-400'
+                            : 'text-secondary'
                         }`}
                       >
                         {Number(cust.balance).toFixed(2)} EGP
@@ -198,7 +198,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
           <form onSubmit={handleQuickCreate} className="p-6 space-y-4">
             {/* Quick Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Full Name *</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Full Name *</label>
               <input
                 ref={nameInputRef}
                 type="text"
@@ -206,29 +206,29 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Enter customer's name"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Quick Phone */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Phone Number</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Phone Number</label>
               <input
                 type="tel"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
                 placeholder="e.g. 01012345678"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end space-x-3 border-t border-neutral-800 pt-4 mt-6">
+            <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={createCustomer.isPending}
-                className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>

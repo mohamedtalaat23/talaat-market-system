@@ -79,7 +79,7 @@ export function EmployeeModal() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-lg border border-border bg-neutral-950 p-6 shadow-xl relative z-10 animate-fade-in"
+        className="w-full max-w-2xl rounded-lg border border-border bg-input p-6 shadow-xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="employee-modal-title"
@@ -91,7 +91,7 @@ export function EmployeeModal() {
           <button
             onClick={closeModal}
             disabled={isSaving}
-            className="rounded-md p-1.5 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Close modal"
           >
             <X size={18} />

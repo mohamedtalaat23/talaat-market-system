@@ -285,19 +285,19 @@ export function PaymentModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-3xl rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-3xl rounded-lg border border-border bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="payment-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-6">
-          <h3 id="payment-modal-title" className="text-2xl font-bold text-white flex items-center space-x-2">
+        <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
+          <h3 id="payment-modal-title" className="text-2xl font-bold text-foreground flex items-center space-x-2">
             <span>Checkout</span>
           </h3>
           <button
             onClick={closeModal}
             disabled={isSubmitting}
-            className="rounded-md p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50"
+            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -306,17 +306,17 @@ export function PaymentModal() {
         <div className="grid grid-cols-2 gap-8">
           {/* Left Column: Totals */}
           <div className="space-y-4">
-            <div className="bg-slate-950 rounded-lg p-5 border border-slate-800">
-              <div className="flex justify-between text-slate-400 mb-2 text-lg">
+            <div className="bg-input rounded-lg p-5 border border-border">
+              <div className="flex justify-between text-secondary mb-2 text-lg">
                 <span>Subtotal</span>
                 <span>EGP {subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-emerald-400 mb-2 text-lg">
+              <div className="flex justify-between text-success mb-2 text-lg">
                 <span>Discounts</span>
                 <span>- EGP {(itemDiscounts + globalDiscount).toFixed(2)}</span>
               </div>
-              <div className="w-full h-px bg-slate-800 my-4"></div>
-              <div className="flex justify-between text-white text-4xl font-bold tracking-tight">
+              <div className="w-full h-px bg-border my-4"></div>
+              <div className="flex justify-between text-foreground text-4xl font-bold tracking-tight">
                 <span>Total</span>
                 <span>EGP {total.toFixed(2)}</span>
               </div>
@@ -329,7 +329,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cash')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-success/15 border-success text-success' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
               >
                 <Banknote size={20} />
                 <span className="font-bold text-base">Cash</span>
@@ -337,7 +337,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-primary/15 border-primary text-primary' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
               >
                 <CreditCard size={20} />
                 <span className="font-bold text-base">Card</span>
@@ -345,7 +345,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('split')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-amber-600/20 border-amber-500 text-amber-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-warning/15 border-warning text-warning' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
               >
                 <Monitor size={20} />
                 <span className="font-bold text-base">Split</span>
@@ -356,10 +356,10 @@ export function PaymentModal() {
                 onClick={() => setPaymentMethod('debt')}
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${
                   paymentMethod === 'debt'
-                    ? 'bg-rose-600/20 border-rose-500 text-rose-400'
+                    ? 'bg-danger/15 border-danger text-danger'
                     : selectedCustomer
-                    ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
-                    : 'bg-slate-900 border-slate-850 text-slate-600 cursor-not-allowed border-dashed'
+                    ? 'bg-card border-border text-secondary hover:bg-card-hover'
+                    : 'bg-input/20 border-border text-muted cursor-not-allowed border-dashed'
                 }`}
                 title={selectedCustomer ? 'Charge to customer account' : 'Select customer (F7) to use debt'}
               >
@@ -373,7 +373,7 @@ export function PaymentModal() {
             {paymentMethod === 'cash' && (
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="cash-input" className="block text-sm font-medium text-slate-300 mb-1">
+                  <label htmlFor="cash-input" className="block text-sm font-medium text-secondary mb-1">
                     Cash Received (EGP)
                   </label>
                   <input
@@ -383,13 +383,13 @@ export function PaymentModal() {
                     step="0.01"
                     min={0}
                     disabled={isSubmitting}
-                    className="w-full bg-slate-950 border border-slate-700 rounded p-4 text-3xl font-bold text-white placeholder-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full bg-input border border-border rounded p-4 text-3xl font-bold text-foreground placeholder:text-muted focus:outline-none focus:border-success focus:ring-1 focus:ring-success"
                     value={cashReceivedStr}
                     onChange={(e) => setCashReceivedStr(e.target.value)}
                   />
                 </div>
                 
-                <div className={`p-4 rounded border ${changeDue > 0 ? 'bg-blue-900/20 border-blue-800 text-blue-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                <div className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input/40 border-border text-secondary'}`}>
                   <div className="text-sm font-medium mb-1">Change Due</div>
                   <div className="text-4xl font-bold tracking-tight">EGP {changeDue.toFixed(2)}</div>
                 </div>
@@ -397,37 +397,37 @@ export function PaymentModal() {
             )}
 
             {paymentMethod === 'split' && (
-              <div className="space-y-4 bg-slate-950/60 p-4 border border-slate-800/80 rounded-lg">
-                <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Split Allocation (EGP)</div>
+              <div className="space-y-4 bg-input/45 p-4 border border-border rounded-lg">
+                <div className="text-sm font-bold text-secondary uppercase tracking-wider mb-2">Split Allocation (EGP)</div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="cash-portion" className="block text-xs font-semibold text-slate-400 mb-1">Cash Portion</label>
+                    <label htmlFor="cash-portion" className="block text-xs font-semibold text-secondary mb-1">Cash Portion</label>
                     <input
                       id="cash-portion"
                       type="number"
                       step="0.01"
                       min={0}
                       disabled={isSubmitting}
-                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-input border border-border rounded px-3 py-2 text-lg font-bold text-foreground focus:outline-none focus:border-success"
                       value={cashPortionStr}
                       onChange={(e) => handleCashPortionChange(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label htmlFor="card-portion" className="block text-xs font-semibold text-slate-400 mb-1">Card Portion</label>
+                    <label htmlFor="card-portion" className="block text-xs font-semibold text-secondary mb-1">Card Portion</label>
                     <input
                       id="card-portion"
                       type="number"
                       step="0.01"
                       min={0}
                       disabled={isSubmitting}
-                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-input border border-border rounded px-3 py-2 text-lg font-bold text-foreground focus:outline-none focus:border-success"
                       value={cardPortionStr}
                       onChange={(e) => handleCardPortionChange(e.target.value)}
                     />
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 text-center pt-2">
+                <div className="text-xs text-muted text-center pt-2">
                   Verify Cash portion ({Number(cashPortionStr || 0).toFixed(2)}) + Card portion ({Number(cardPortionStr || 0).toFixed(2)}) equals total ({total.toFixed(2)})
                 </div>
               </div>
@@ -435,10 +435,10 @@ export function PaymentModal() {
 
             {paymentMethod === 'debt' && selectedCustomer && (
               <div className="space-y-4">
-                <div className="p-4 rounded border bg-rose-950/20 border-rose-900/30 text-rose-300">
-                  <div className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-1">Buy on Credit (Debt Account)</div>
-                  <p className="text-xs leading-relaxed text-slate-300">
-                    The total sum of <strong className="text-rose-400 font-mono">EGP {total.toFixed(2)}</strong> will be charged to the account of <strong className="text-white">{selectedCustomer.name}</strong>. Their new outstanding balance will be <strong className="text-rose-400 font-mono">EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}</strong>.
+                <div className="p-4 rounded border bg-danger/10 border-danger/20 text-danger">
+                  <div className="text-xs font-bold uppercase tracking-wider text-danger mb-1">Buy on Credit (Debt Account)</div>
+                  <p className="text-xs leading-relaxed text-secondary">
+                    The total sum of <strong className="text-danger font-mono">EGP {total.toFixed(2)}</strong> will be charged to the account of <strong className="text-foreground">{selectedCustomer.name}</strong>. Their new outstanding balance will be <strong className="text-danger font-mono">EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}</strong>.
                   </p>
                 </div>
               </div>
@@ -447,7 +447,7 @@ export function PaymentModal() {
             <button
               type="submit"
               disabled={!canCheckout}
-              className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 rounded font-bold text-white transition-colors text-xl flex items-center justify-center space-x-2 shadow-lg"
+              className="w-full py-5 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-xl flex items-center justify-center space-x-2 shadow-lg shadow-success/10"
             >
               {isSubmitting ? (
                 <span>Processing...</span>

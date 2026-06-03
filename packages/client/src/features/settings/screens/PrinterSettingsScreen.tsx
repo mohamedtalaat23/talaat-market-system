@@ -95,10 +95,10 @@ export function PrinterSettingsScreen() {
 
   if (!isElectron) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 border border-neutral-800 rounded-lg bg-neutral-950/40 text-center max-w-md mx-auto my-12">
-        <Printer className="h-10 w-10 text-neutral-500 mb-3" />
-        <h3 className="text-base font-semibold text-neutral-300">Desktop Integration Required</h3>
-        <p className="text-sm text-neutral-500 mt-2 leading-relaxed">
+      <div className="flex flex-col items-center justify-center p-8 border border-border rounded-lg bg-input/40 text-center max-w-md mx-auto my-12 text-foreground">
+        <Printer className="h-10 w-10 text-secondary mb-3" />
+        <h3 className="text-base font-semibold">Desktop Integration Required</h3>
+        <p className="text-sm text-secondary mt-2 leading-relaxed">
           Native hardware ESC/POS direct USB printing is locked to the desktop app shell. Standard web browsers cannot access physical USB ports directly.
         </p>
       </div>
@@ -106,16 +106,16 @@ export function PrinterSettingsScreen() {
   }
 
   return (
-    <div className="max-w-2xl font-sans text-neutral-100 space-y-6 select-text">
-      <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
+    <div className="max-w-2xl font-sans text-foreground space-y-6 select-text">
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h3 className="text-xl font-semibold text-neutral-100">ESC/POS Printer Setup</h3>
-          <p className="text-sm text-neutral-400 mt-1">Configure direct USB ESC/POS thermal receipt printing.</p>
+          <h3 className="text-xl font-semibold">ESC/POS Printer Setup</h3>
+          <p className="text-sm text-secondary mt-1">Configure direct USB ESC/POS thermal receipt printing.</p>
         </div>
         <button
           onClick={checkPrinterStatus}
           disabled={isLoadingStatus}
-          className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 transition-colors border border-neutral-800"
+          className="rounded-lg p-2 text-secondary hover:bg-card-hover hover:text-foreground transition-colors border border-border"
           title="Refresh Printer Connection State"
         >
           <RefreshCw size={16} className={isLoadingStatus ? 'animate-spin text-emerald-400' : ''} />
@@ -142,32 +142,32 @@ export function PrinterSettingsScreen() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Printer Mode Selection */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-300">Printer Model Type</label>
+            <label className="block text-sm font-medium">Printer Model Type</label>
             <select
               value={config.type}
               onChange={(e) => setConfig({ ...config, type: e.target.value as any })}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground"
             >
               <option value="mock">Development Mock Printer (Visual Logs)</option>
               <option value="usb">Native USB Printer (ESC/POS Raw Direct)</option>
             </select>
-            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+            <p className="text-xs text-secondary font-sans leading-relaxed">
               Use Mock mode to simulate printing without a physical receipt printer plugged in.
             </p>
           </div>
 
           {/* Paper Width Selection */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-300">Receipt Paper Width</label>
+            <label className="block text-sm font-medium">Receipt Paper Width</label>
             <select
               value={config.paperWidth}
               onChange={(e) => setConfig({ ...config, paperWidth: Number(e.target.value) as any })}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground"
             >
               <option value={80}>80mm (High Capacity / Standard Supermarket)</option>
               <option value={58}>58mm (Compact Portable / Small Roll)</option>
             </select>
-            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+            <p className="text-xs text-secondary font-sans leading-relaxed">
               Adjusts line character sizes (80mm formats to 48 columns; 58mm formats to 32 columns).
             </p>
           </div>
@@ -175,10 +175,10 @@ export function PrinterSettingsScreen() {
 
         {/* USB Path Selection (Only shown if USB mode selected) */}
         {config.type === 'usb' && (
-          <div className="space-y-3 bg-neutral-950/40 p-4 border border-neutral-800 rounded-xl">
+          <div className="space-y-3 bg-input/40 p-4 border border-border rounded-xl">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-neutral-300 flex items-center space-x-1.5">
-                <HardDrive size={16} className="text-neutral-500" />
+              <label className="block text-sm font-medium flex items-center space-x-1.5">
+                <HardDrive size={16} className="text-secondary" />
                 <span>Printer Port Device Path</span>
               </label>
 
@@ -189,7 +189,7 @@ export function PrinterSettingsScreen() {
                   value={config.devicePath}
                   onChange={(e) => setConfig({ ...config, devicePath: e.target.value })}
                   placeholder="e.g. /dev/usb/lp0"
-                  className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono"
+                  className="flex-1 bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-foreground"
                 />
                 
                 {discoveredPorts.length > 0 && (
@@ -197,7 +197,7 @@ export function PrinterSettingsScreen() {
                     onChange={(e) => {
                       if (e.target.value) setConfig({ ...config, devicePath: e.target.value });
                     }}
-                    className="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-300 focus:outline-none"
+                    className="bg-input border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none"
                     value=""
                   >
                     <option value="" disabled>Auto-Discovered Ports</option>
@@ -210,7 +210,7 @@ export function PrinterSettingsScreen() {
             </div>
 
             {discoveredPorts.length === 0 ? (
-              <p className="text-xs text-neutral-500 flex items-center space-x-1.5">
+              <p className="text-xs text-secondary flex items-center space-x-1.5">
                 <HelpCircle size={12} />
                 <span>No active USB printers detected. Connect your device or verify OS permissions.</span>
               </p>
@@ -222,7 +222,7 @@ export function PrinterSettingsScreen() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-neutral-950/20 p-4 border border-neutral-800 rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-input/20 p-4 border border-border rounded-xl">
           {/* Auto Print Toggle */}
           <div className="flex items-start space-x-3 pt-1">
             <input
@@ -230,21 +230,21 @@ export function PrinterSettingsScreen() {
               type="checkbox"
               checked={config.autoPrint}
               onChange={(e) => setConfig({ ...config, autoPrint: e.target.checked })}
-              className="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 mt-0.5"
+              className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0 mt-0.5"
             />
             <div className="space-y-1">
-              <label htmlFor="autoPrint" className="text-sm font-semibold text-neutral-200 cursor-pointer">
+              <label htmlFor="autoPrint" className="text-sm font-semibold cursor-pointer">
                 Automatic Printing
               </label>
-              <p className="text-xs text-neutral-500 leading-relaxed">
+              <p className="text-xs text-secondary leading-relaxed">
                 Immediately enqueue and print receipts when checkouts finish without popup confirmations.
               </p>
             </div>
           </div>
-
+ 
           {/* Retry Threshold */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-300">Failure Retry Policy</label>
+            <label className="block text-sm font-medium">Failure Retry Policy</label>
             <div className="flex items-center space-x-2">
               <input
                 type="number"
@@ -252,18 +252,18 @@ export function PrinterSettingsScreen() {
                 max="10"
                 value={config.retries}
                 onChange={(e) => setConfig({ ...config, retries: Math.max(0, Number(e.target.value)) })}
-                className="w-24 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-center"
+                className="w-24 bg-input border border-border rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-center text-foreground"
               />
-              <span className="text-xs text-neutral-400">Retry Attempts</span>
+              <span className="text-xs text-secondary">Retry Attempts</span>
             </div>
-            <p className="text-xs text-neutral-500 leading-relaxed">
+            <p className="text-xs text-secondary leading-relaxed">
               Number of background retries if the printer encounters a connection drop or paper cut block.
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-5 border-t border-neutral-800 flex items-center space-x-3">
+        <div className="pt-5 border-t border-border flex items-center space-x-3">
           <button
             type="submit"
             disabled={isSaving}
@@ -276,7 +276,7 @@ export function PrinterSettingsScreen() {
             type="button"
             onClick={handleTestPrint}
             disabled={isTesting}
-            className="flex items-center justify-center rounded-lg bg-neutral-850 hover:bg-neutral-800 border border-neutral-750 px-6 py-2.5 text-sm font-semibold text-neutral-200 hover:text-neutral-100 disabled:opacity-50 transition-colors"
+            className="flex items-center justify-center rounded-lg bg-card hover:bg-card-hover border border-border px-6 py-2.5 text-sm font-semibold text-foreground disabled:opacity-50 transition-colors"
           >
             {isTesting ? 'Sending test print...' : 'Print Test Receipt'}
           </button>

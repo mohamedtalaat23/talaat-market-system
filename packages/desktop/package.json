@@ -1,8 +1,10 @@
 {
-  "name": "@talaat-market/desktop",
+  "name": "talaat-market-desktop",
   "version": "1.0.0",
   "description": "Talaat Market — Electron Desktop Shell",
   "private": true,
+  "homepage": "https://talaatmarket.local",
+  "author": "Talaat Market",
   "main": "dist/main.js",
   "scripts": {
     "dev": "tsc --project tsconfig.json && wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && node ../../scripts/start-electron-dev.cjs",

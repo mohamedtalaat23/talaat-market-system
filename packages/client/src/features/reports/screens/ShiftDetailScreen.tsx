@@ -64,22 +64,22 @@ export function ShiftDetailScreen() {
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Cashier</p>
+            <p className="text-xs text-secondary mb-1">Cashier</p>
             <p className="font-semibold">{shift.cashier_name || 'Unknown'}</p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Register</p>
+            <p className="text-xs text-secondary mb-1">Register</p>
             <p className="font-semibold">{shift.register_name || 'Main'}</p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Duration</p>
+            <p className="text-xs text-secondary mb-1">Duration</p>
             <p className="text-sm">
               {formatDateTime(new Date(shift.start_time))} <br />
               {shift.end_time ? formatDateTime(new Date(shift.end_time)) : 'Ongoing'}
             </p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Totals</p>
+            <p className="text-xs text-secondary mb-1">Totals</p>
             <div className="text-sm space-y-1">
               <div className="flex justify-between">
                 <span>Revenue:</span>
@@ -93,25 +93,25 @@ export function ShiftDetailScreen() {
           </div>
           
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Starting Cash</p>
+            <p className="text-xs text-secondary mb-1">Starting Cash</p>
             <p className="font-mono">{formatCurrency(shift.starting_cash)}</p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Expected Cash</p>
+            <p className="text-xs text-secondary mb-1">Expected Cash</p>
             <p className="font-mono">{shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : 'N/A'}</p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Actual Ending Cash</p>
+            <p className="text-xs text-secondary mb-1">Actual Ending Cash</p>
             <p className="font-mono font-bold">{shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : 'N/A'}</p>
           </div>
           <div>
-            <p className="text-xs text-neutral-400 mb-1">Variance</p>
+            <p className="text-xs text-secondary mb-1">Variance</p>
             <div className="mt-1">{renderVarianceBadge(shift.variance)}</div>
           </div>
           
           {shift.notes && (
-            <div className="col-span-full mt-2 pt-2 border-t border-neutral-800">
-              <p className="text-xs text-neutral-400 mb-1">Closing Notes</p>
+            <div className="col-span-full mt-2 pt-2 border-t border-border">
+              <p className="text-xs text-secondary mb-1">Closing Notes</p>
               <p className="text-sm italic">{shift.notes}</p>
             </div>
           )}
@@ -206,7 +206,7 @@ export function ShiftDetailScreen() {
 
           {/* Transaction Pagination Controls */}
           {transactions_meta && transactions_meta.totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4 border-t border-neutral-800 mt-2">
+            <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
               <span className="text-xs text-neutral-500 font-mono">
                 Page {transactions_meta.page} of {transactions_meta.totalPages}
                 {' • '}{transactions_meta.total} total transactions

@@ -124,15 +124,15 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-lg rounded-xl border border-border bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border bg-input px-6 py-4">
           <h3 className="text-lg font-semibold tracking-wide">
             {customer ? 'Edit Customer Profile' : 'Register New Customer'}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 transition-colors"
+            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -145,15 +145,15 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Full Name *</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Full Name *</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter customer's full name"
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                  errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.name && <p className="text-xs text-rose-500 mt-0.5">{errors.name}</p>}
@@ -161,14 +161,14 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Phone */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Phone Number</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 01012345678"
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                  errors.phone ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.phone ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.phone && <p className="text-xs text-rose-500 mt-0.5">{errors.phone}</p>}
@@ -176,14 +176,14 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Email Address</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Email Address</label>
               <input
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="customer@domain.com"
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                  errors.email ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.email ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.email && <p className="text-xs text-rose-500 mt-0.5">{errors.email}</p>}
@@ -191,14 +191,14 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Address */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Physical Address</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Physical Address</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter street, city details"
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                  errors.address ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.address ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.address && <p className="text-xs text-rose-500 mt-0.5">{errors.address}</p>}
@@ -207,7 +207,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
             {/* Initial Balance - Only for NEW customers */}
             {!customer && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
                   Initial Balance (EGP)
                 </label>
                 <input
@@ -216,8 +216,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                   value={balance}
                   onChange={(e) => setBalance(e.target.value)}
                   placeholder="0.00 (Debt: -50, Credit: 50)"
-                  className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                    errors.balance ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                  className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                    errors.balance ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                   }`}
                 />
                 {errors.balance && <p className="text-xs text-rose-500 mt-0.5">{errors.balance}</p>}
@@ -226,15 +226,15 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Loyalty Points */}
             <div className={customer ? 'col-span-2 space-y-1.5' : 'space-y-1.5'}>
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Loyalty Points</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Loyalty Points</label>
               <input
                 type="number"
                 min="0"
                 value={loyaltyPoints}
                 onChange={(e) => setLoyaltyPoints(e.target.value)}
                 placeholder="0"
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
-                  errors.loyalty_points ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors ${
+                  errors.loyalty_points ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.loyalty_points && <p className="text-xs text-rose-500 mt-0.5">{errors.loyalty_points}</p>}
@@ -242,14 +242,14 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Notes */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Internal Notes</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Internal Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add special instructions, credit limits, or notes..."
                 rows={3}
-                className={`w-full rounded-lg border bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors resize-none ${
-                  errors.notes ? 'border-rose-500 focus:border-rose-500' : 'border-neutral-800 focus:border-emerald-500'
+                className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none transition-colors resize-none ${
+                  errors.notes ? 'border-rose-500 focus:border-rose-500' : 'border-border focus:border-emerald-500'
                 }`}
               />
               {errors.notes && <p className="text-xs text-rose-500 mt-0.5">{errors.notes}</p>}
@@ -257,12 +257,12 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 border-t border-neutral-800 pt-4 mt-6">
+          <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
             >
               Cancel
             </button>

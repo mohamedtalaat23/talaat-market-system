@@ -69,7 +69,7 @@ export function InventoryFilterBar({
       </form>
 
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inventory Filters">
-        <div className="flex items-center space-x-1 text-xs text-neutral-400 font-semibold uppercase mr-1">
+        <div className="flex items-center space-x-1 text-xs text-secondary font-semibold uppercase mr-1">
           <Filter size={14} className="text-neutral-500" />
           <span>Category:</span>
         </div>
@@ -120,7 +120,7 @@ export function InventoryFilterBar({
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="text-xs text-neutral-400 hover:text-destructive shrink-0 font-semibold"
+            className="text-xs text-secondary hover:text-destructive shrink-0 font-semibold"
           >
             Clear Filters
           </Button>

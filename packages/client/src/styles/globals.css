@@ -17,7 +17,7 @@ body {
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   color: var(--text-primary);
-  background: radial-gradient(circle at top center, var(--color-neutral-900) 0%, var(--bg-app) 100%);
+  background: radial-gradient(circle at top center, var(--bg-gradient-start) 0%, var(--bg-app) 100%);
   background-attachment: fixed;
   line-height: var(--leading-normal);
   /* Prevent text selection during rapid interactions (POS use) */
@@ -42,7 +42,7 @@ textarea,
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-neutral-900);
+  background: var(--bg-sidebar);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -57,7 +57,7 @@ textarea,
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-neutral-600) var(--color-neutral-900);
+  scrollbar-color: var(--color-neutral-600) var(--bg-sidebar);
 }
 
 /* ── Typography ─────────────────────────────────────────────── */
@@ -109,11 +109,11 @@ h6 { font-size: var(--text-sm);  font-weight: var(--font-medium); }
 }
 
 .price--success {
-  color: var(--color-success-400);
+  color: var(--text-success);
 }
 
 .price--danger {
-  color: var(--color-danger-400);
+  color: var(--text-danger);
 }
 
 /* Status badges */
@@ -130,22 +130,22 @@ h6 { font-size: var(--text-sm);  font-weight: var(--font-medium); }
 
 .badge--success {
   background-color: rgb(16 185 129 / 0.15);
-  color: var(--color-success-400);
+  color: var(--text-success);
 }
 
 .badge--warning {
   background-color: rgb(245 158 11 / 0.15);
-  color: var(--color-warning-400);
+  color: var(--text-warning);
 }
 
 .badge--danger {
   background-color: rgb(244 63 94 / 0.15);
-  color: var(--color-danger-400);
+  color: var(--text-danger);
 }
 
 .badge--neutral {
   background-color: rgb(100 116 139 / 0.15);
-  color: var(--color-neutral-400);
+  color: var(--text-secondary);
 }
 
 /* Card component base */

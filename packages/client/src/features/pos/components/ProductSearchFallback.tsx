@@ -143,19 +143,19 @@ export function ProductSearchFallback() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-xl rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl relative z-10 animate-fade-in"
+        className="w-full max-w-xl rounded-lg border border-border bg-card p-6 shadow-xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
           <h3 id="search-modal-title" className="text-lg font-bold text-white flex items-center space-x-2">
-            <Search size={18} className="text-slate-400" />
+            <Search size={18} className="text-secondary" />
             <span>Product Search</span>
           </h3>
           <button
             onClick={() => { closeModal(); document.body.focus(); }}
-            className="rounded-md p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="rounded-md p-1.5 text-secondary hover:text-white hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <X size={18} />
           </button>
@@ -170,7 +170,7 @@ export function ProductSearchFallback() {
                 autoFocus
                 type="text"
                 placeholder="Type name, SKU, or Arabic name... (Press Enter to add)"
-                className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="w-full bg-background border border-border rounded p-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -178,9 +178,9 @@ export function ProductSearchFallback() {
               />
             </div>
 
-            <div className="h-64 overflow-y-auto border border-slate-800 rounded bg-slate-950/50 p-2 space-y-1">
+            <div className="h-64 overflow-y-auto border border-border rounded bg-background/50 p-2 space-y-1">
               {isLoading ? (
-                <div className="p-3 text-slate-400 text-sm text-center mt-16 font-mono">
+                <div className="p-3 text-secondary text-sm text-center mt-16 font-mono">
                   Loading matching products...
                 </div>
               ) : !showResults ? (
@@ -204,14 +204,14 @@ export function ProductSearchFallback() {
                       className={`flex items-center justify-between p-2.5 rounded cursor-pointer transition-all border ${
                         isSelected
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : 'bg-slate-900/40 text-slate-300 border-transparent hover:bg-slate-800/40 hover:text-white'
+                          : 'bg-card/40 text-secondary border-transparent hover:bg-card-hover/40 hover:text-white'
                       } ${isInactive ? 'opacity-50' : ''}`}
                     >
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium truncate">{product.name}</span>
                           {product.name_ar && (
-                            <span className="text-xs text-slate-400 font-medium truncate dir-rtl" lang="ar">
+                            <span className="text-xs text-secondary font-medium truncate dir-rtl" lang="ar">
                               ({product.name_ar})
                             </span>
                           )}

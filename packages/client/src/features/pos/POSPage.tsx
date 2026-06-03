@@ -64,17 +64,17 @@ export function POSPage() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-200 overflow-hidden select-none">
+    <div className="flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden select-none">
       <POSTopBar />
       
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel: Cart (70% approximation) */}
-        <div className="w-8/12 flex flex-col border-r border-slate-800 bg-slate-900/50">
+        <div className="w-8/12 flex flex-col border-r rtl:border-r-0 rtl:border-l border-border bg-card/40">
           <POSCartList />
         </div>
 
         {/* Right Panel: Summary & Actions (30% approximation) */}
-        <div className="w-4/12 flex flex-col bg-slate-900 p-4 space-y-4 justify-between h-full overflow-y-auto">
+        <div className="w-4/12 flex flex-col bg-sidebar p-4 space-y-4 justify-between h-full overflow-y-auto">
           <POSSummary 
             cart={cart}
             paymentMethod={paymentMethod}

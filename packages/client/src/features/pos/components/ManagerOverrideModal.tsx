@@ -110,21 +110,21 @@ export function ManagerOverrideModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-sm rounded-lg border border-red-900 bg-slate-900 p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-sm rounded-lg border border-red-900 bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="override-modal-title"
       >
-        <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-slate-800">
+        <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-border">
           <ShieldAlert size={48} className="text-red-500 mb-2" />
           <h3 id="override-modal-title" className="text-xl font-bold text-white text-center">
             Manager Authorization Required
           </h3>
-          <p className="text-slate-400 text-sm mt-1 text-center">{actionName}</p>
+          <p className="text-secondary text-sm mt-1 text-center">{actionName}</p>
         </div>
         <button
           onClick={closeModal}
-          className="absolute top-4 right-4 rounded-md p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          className="absolute top-4 right-4 rounded-md p-1.5 text-secondary hover:text-white hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
           <X size={18} />
         </button>
@@ -138,7 +138,7 @@ export function ManagerOverrideModal() {
               <select
                 id="manager-select"
                 disabled={isSubmitting}
-                className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-red-500 text-sm font-semibold"
+                className="w-full bg-background border border-border rounded p-3 text-white focus:outline-none focus:border-red-500 text-sm font-semibold"
                 value={selectedManagerId}
                 onChange={(e) => setSelectedManagerId(Number(e.target.value))}
               >
@@ -162,7 +162,7 @@ export function ManagerOverrideModal() {
               inputMode="numeric"
               maxLength={6}
               disabled={isSubmitting}
-              className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-center text-3xl tracking-[1em] text-white placeholder-slate-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              className="w-full bg-background border border-border rounded p-3 text-center text-3xl tracking-[1em] text-white placeholder-slate-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
             />

@@ -70,6 +70,9 @@
   --text-muted:       var(--color-neutral-600);
   --text-on-primary:  var(--color-neutral-0);
   --text-on-danger:   var(--color-neutral-0);
+  --text-success:     var(--color-success-400);
+  --text-warning:     var(--color-warning-400);
+  --text-danger:      var(--color-danger-400);
 
   --color-accent:     var(--color-primary-500);
   --color-accent-hover: var(--color-primary-600);
@@ -151,4 +154,45 @@
   --z-modal:    300;
   --z-toast:    400;
   --z-tooltip:  500;
+
+  /* ── Radial Gradient Background Start (Dark Default) ────── */
+  --bg-gradient-start: var(--color-neutral-900);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  
+  /* Override semantic variables for Light Mode */
+  --bg-app:            var(--color-neutral-50);
+  --bg-sidebar:        var(--color-neutral-100);
+  --bg-header:         var(--color-neutral-100);
+  --bg-card:           var(--color-neutral-0);
+  --bg-card-hover:     var(--color-neutral-50);
+  --bg-input:          var(--color-neutral-0);
+  --bg-modal:          var(--color-neutral-0);
+  --bg-tooltip:        var(--color-neutral-200);
+
+  --border-color:       var(--color-neutral-200);
+  --border-focus:       var(--color-primary-400);
+
+  --text-primary:       var(--color-neutral-900);
+  --text-secondary:     var(--color-neutral-600);
+  --text-muted:         var(--color-neutral-400);
+
+  --bg-gradient-start:  var(--color-neutral-100);
+  
+  /* Redefine base status colors in light theme for WCAG contrast */
+  --color-primary-500:  var(--color-primary-600);
+  --color-success-500:  var(--color-success-600);
+  --color-warning-500:  var(--color-warning-600);
+  --color-danger-500:   var(--color-danger-600);
+
+  --text-success:       var(--color-success-600);
+  --text-warning:       var(--color-warning-600);
+  --text-danger:        var(--color-danger-600);
+  
+  --shadow-sm:   0 1px 3px rgb(15 23 42 / 0.08);
+  --shadow-md:   0 4px 6px -1px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.1);
+  --shadow-lg:   0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+  --shadow-xl:   0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.1);
 }

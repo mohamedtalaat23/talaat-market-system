@@ -64,7 +64,7 @@ export function DeleteConfirmDialog() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-md rounded-lg border border-destructive/20 bg-neutral-950 p-6 shadow-xl relative z-10 animate-fade-in text-center"
+        className="w-full max-w-md rounded-lg border border-destructive/20 bg-input p-6 shadow-xl relative z-10 animate-fade-in text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-confirm-title"
@@ -78,7 +78,7 @@ export function DeleteConfirmDialog() {
           Delete Catalog Item
         </h3>
 
-        <p id="delete-confirm-desc" className="text-sm text-neutral-400 mb-6 leading-relaxed">
+        <p id="delete-confirm-desc" className="text-sm text-secondary mb-6 leading-relaxed">
           Are you sure you want to delete <strong className="text-foreground">{product.name}</strong>? 
           This is a soft-delete; the product will be deactivated and hidden from the checkout catalogue, but sale history logs will be preserved.
         </p>

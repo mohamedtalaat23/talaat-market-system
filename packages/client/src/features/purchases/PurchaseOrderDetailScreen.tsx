@@ -50,7 +50,7 @@ export function PurchaseOrderDetailScreen() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 border-neutral-700 uppercase">Draft</Badge>;
+        return <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 border-border uppercase">Draft</Badge>;
       case 'ordered':
         return <Badge variant="warning" className="bg-amber-950/40 text-amber-400 border-amber-800/50 uppercase">Ordered</Badge>;
       case 'received':
@@ -80,7 +80,7 @@ export function PurchaseOrderDetailScreen() {
     return (
       <div className="flex h-96 flex-col items-center justify-center font-sans text-neutral-100">
         <Spinner size="md" />
-        <span className="mt-3 text-sm text-neutral-400 font-mono">Loading purchase order details...</span>
+        <span className="mt-3 text-sm text-secondary font-mono">Loading purchase order details...</span>
       </div>
     );
   }
@@ -94,7 +94,7 @@ export function PurchaseOrderDetailScreen() {
         </p>
         <button
           onClick={() => navigate('/purchases')}
-          className="mt-6 rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-neutral-700 hover:text-neutral-100 transition-colors"
+          className="mt-6 rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover hover:text-neutral-100 transition-colors"
         >
           Back to Purchases Control
         </button>
@@ -105,11 +105,11 @@ export function PurchaseOrderDetailScreen() {
   return (
     <div className="space-y-6 font-sans text-neutral-100 p-6 max-w-7xl mx-auto">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-850 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate('/purchases')}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-850 hover:text-neutral-100 transition-colors border border-neutral-800 bg-neutral-900/30"
+            className="rounded-lg p-1.5 text-secondary hover:bg-neutral-850 hover:text-neutral-100 transition-colors border border-border bg-neutral-900/30"
             title="Back to Overview"
           >
             <ArrowLeft size={18} />
@@ -121,7 +121,7 @@ export function PurchaseOrderDetailScreen() {
               </h1>
               {getStatusBadge(po.status)}
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-neutral-400 font-mono">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-secondary font-mono">
               <span className="flex items-center space-x-1">
                 <Calendar size={13} className="text-neutral-500" />
                 <span>Created: {formatDate(po.created_at)}</span>
@@ -147,7 +147,7 @@ export function PurchaseOrderDetailScreen() {
                 <Button
                   onClick={handleCancelOrder}
                   disabled={cancelOrder.isPending}
-                  className="bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 text-rose-400 font-semibold"
+                  className="bg-neutral-900 border border-border hover:bg-neutral-850 text-rose-400 font-semibold"
                 >
                   <XCircle size={14} className="mr-1.5" />
                   Cancel Draft
@@ -166,7 +166,7 @@ export function PurchaseOrderDetailScreen() {
                 <Button
                   onClick={handleCancelOrder}
                   disabled={cancelOrder.isPending}
-                  className="bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 text-rose-400 font-semibold"
+                  className="bg-neutral-900 border border-border hover:bg-neutral-850 text-rose-400 font-semibold"
                 >
                   <XCircle size={14} className="mr-1.5" />
                   Cancel Order
@@ -189,8 +189,8 @@ export function PurchaseOrderDetailScreen() {
         {/* Left Side: Supplier and Audit Details */}
         <div className="space-y-6 lg:col-span-1">
           {/* Supplier Info Profile */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800 pb-2">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2">
               Supplier Overview
             </h3>
             <div className="space-y-3.5 text-sm">
@@ -206,8 +206,8 @@ export function PurchaseOrderDetailScreen() {
           </div>
 
           {/* Logistics & Registry Audit Trail */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800 pb-2 flex items-center justify-between">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center justify-between">
               <span>Ledger Metadata</span>
               <User size={14} className="text-neutral-500" />
             </h3>
@@ -226,12 +226,12 @@ export function PurchaseOrderDetailScreen() {
           </div>
 
           {/* Order Notes */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-800 pb-2 flex items-center space-x-1.5">
+          <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center space-x-1.5">
               <FileText size={13} className="text-neutral-500" />
               <span>Logistics Notes</span>
             </h3>
-            <p className="text-neutral-400 italic bg-neutral-950/50 p-3 rounded-lg border border-neutral-850 text-xs leading-relaxed max-w-full break-words">
+            <p className="text-secondary italic bg-input/50 p-3 rounded-lg border border-border text-xs leading-relaxed max-w-full break-words">
               {po.notes || 'No custom delivery terms or audit logs specified.'}
             </p>
           </div>
@@ -240,7 +240,7 @@ export function PurchaseOrderDetailScreen() {
         {/* Right Side: Financial Recaps & Items Grid */}
         <div className="lg:col-span-2 space-y-6">
           {/* Financial Breakdown Panel */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-xl border border-neutral-800 bg-neutral-900/20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-xl border border-border bg-neutral-900/20">
             <div className="space-y-1">
               <span className="text-[10px] text-neutral-500 uppercase font-bold block">Subtotal</span>
               <span className="text-base font-mono font-bold text-neutral-300">{formatCurrency(po.subtotal)}</span>
@@ -260,17 +260,17 @@ export function PurchaseOrderDetailScreen() {
           </div>
 
           {/* Items Order List Table */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 overflow-hidden">
-            <div className="border-b border-neutral-800 bg-neutral-950 px-5 py-3 flex items-center justify-between">
+          <div className="rounded-xl border border-border bg-neutral-900/30 overflow-hidden">
+            <div className="border-b border-border bg-input px-5 py-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-200">Purchase Line Items</h3>
-              <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400">
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-900 border border-border text-secondary">
                 {po.items?.length || 0} items
               </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-neutral-800 bg-neutral-950/40 text-neutral-400 font-semibold">
+                  <tr className="border-b border-border bg-input/40 text-secondary font-semibold">
                     <th className="py-3 px-4">Product</th>
                     <th className="py-3 px-4 text-center">Barcode</th>
                     <th className="py-3 px-4 text-center">Ordered Qty</th>

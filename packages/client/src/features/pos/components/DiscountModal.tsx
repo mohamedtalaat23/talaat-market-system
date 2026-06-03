@@ -108,57 +108,57 @@ export function DiscountModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-6">
+        <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
           <h3 className="text-xl font-bold text-white flex items-center space-x-2">
             <Tag size={24} className="text-emerald-500" />
             <span>Apply Discount</span>
           </h3>
-          <button onClick={closeModal} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={closeModal} className="text-secondary hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex bg-slate-950 p-1 rounded border border-slate-800">
+          <div className="flex bg-background p-1 rounded border border-border">
             <button
               type="button"
               onClick={() => setTarget('item')}
               disabled={cart.length === 0}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'item' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'} disabled:opacity-50`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'item' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'} disabled:opacity-50`}
             >
               Selected Item
             </button>
             <button
               type="button"
               onClick={() => setTarget('cart')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'cart' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'cart' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
             >
               Entire Cart
             </button>
           </div>
 
-          <div className="flex bg-slate-950 p-1 rounded border border-slate-800">
+          <div className="flex bg-background p-1 rounded border border-border">
             <button
               type="button"
               onClick={() => setDiscountType('fixed')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'fixed' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'fixed' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
             >
               Fixed Amount (EGP)
             </button>
             <button
               type="button"
               onClick={() => setDiscountType('percentage')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'percentage' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'percentage' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
             >
               Percentage (%)
             </button>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-secondary mb-1">
               Discount Amount {discountType === 'percentage' ? '(%)' : '(EGP)'}
             </label>
             <input
@@ -166,7 +166,7 @@ export function DiscountModal() {
               type="number"
               step="0.01"
               min={0}
-              className="w-full bg-slate-950 border border-slate-700 rounded p-4 text-3xl font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
             />

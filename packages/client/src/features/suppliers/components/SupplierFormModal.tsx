@@ -80,15 +80,15 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl border border-neutral-850 bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-lg rounded-xl border border-border bg-neutral-900 shadow-2xl overflow-hidden font-sans text-neutral-100 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border bg-input px-6 py-4">
           <h3 className="text-lg font-semibold tracking-wide">
             {supplier ? 'Edit Supplier Profile' : 'Register New Supplier'}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 transition-colors"
+            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -101,24 +101,24 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
           <div className="grid grid-cols-2 gap-4">
             {/* Supplier Code */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Supplier Code</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Supplier Code</label>
               <input
                 type="text"
                 disabled={!!supplier} // Do not modify supplier code on edit
                 value={supplierCode}
                 onChange={(e) => setSupplierCode(e.target.value)}
                 placeholder="e.g. SUP-0001 (Auto if blank)"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
               />
             </div>
 
             {/* Status */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Status</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 focus:border-emerald-500 focus:outline-none transition-colors"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive (Warning in POS)</option>
@@ -128,20 +128,20 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
 
             {/* Name */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Supplier Name *</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Supplier Name *</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter supplier or company name"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Contact Name (Representative) */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
                 Contact Person (Representative)
               </label>
               <input
@@ -149,66 +149,66 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="Enter representative's name"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Phone */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Phone Number</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 01012345678"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Email Address</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="supplier@company.com"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Address */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Office Address</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Office Address</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter street, office location"
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Notes */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Supplier Notes</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">Supplier Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add special terms, shipping details, or internal notes..."
                 rows={3}
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors resize-none"
               />
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 border-t border-neutral-800 pt-4 mt-6">
+          <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-neutral-800 px-5 py-2.5 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
             >
               Cancel
             </button>

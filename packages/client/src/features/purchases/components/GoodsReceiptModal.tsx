@@ -85,19 +85,19 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl">
+      <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-input border border-border rounded-xl overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-900/40">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-neutral-900/40">
           <div>
             <h2 className="text-lg font-bold text-neutral-100 flex items-center space-x-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               <span>Verify Goods Receipt</span>
             </h2>
-            <p className="text-xs text-neutral-400 mt-0.5 font-mono">
+            <p className="text-xs text-secondary mt-0.5 font-mono">
               Purchase Order: {purchaseOrder.po_number}
             </p>
           </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-200">
+          <button onClick={onClose} className="text-secondary hover:text-neutral-200">
             <X size={18} />
           </button>
         </div>
@@ -116,22 +116,22 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           </div>
 
           {/* Supplier Info */}
-          <div className="p-3.5 rounded-lg border border-neutral-800 bg-neutral-900/20 flex flex-col sm:flex-row justify-between text-xs gap-3">
+          <div className="p-3.5 rounded-lg border border-border bg-neutral-900/20 flex flex-col sm:flex-row justify-between text-xs gap-3">
             <div>
-              <span className="text-neutral-400 block mb-0.5 uppercase tracking-wider font-semibold">Supplier Name</span>
+              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">Supplier Name</span>
               <span className="text-neutral-200 font-bold">{purchaseOrder.supplier_name}</span>
             </div>
             <div className="sm:text-right">
-              <span className="text-neutral-400 block mb-0.5 uppercase tracking-wider font-semibold">Supplier Code</span>
+              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">Supplier Code</span>
               <span className="text-neutral-200 font-mono">{purchaseOrder.supplier_code}</span>
             </div>
           </div>
 
           {/* Items Listing */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/10 overflow-hidden">
+          <div className="rounded-xl border border-border bg-neutral-900/10 overflow-hidden">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-900/40 text-neutral-400 font-semibold">
+                <tr className="border-b border-border bg-neutral-900/40 text-secondary font-semibold">
                   <th className="py-2.5 px-3">Product</th>
                   <th className="py-2.5 px-3 text-center">Barcode</th>
                   <th className="py-2.5 px-3 text-center">Ordered Qty</th>
@@ -148,7 +148,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                     <td className="py-2.5 px-3 text-center font-mono text-neutral-500">
                       {item.barcode || 'N/A'}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-neutral-400">
+                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-secondary">
                       {item.ordered_quantity}
                     </td>
                     <td className="py-2.5 px-3 text-center">
@@ -160,7 +160,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                           required
                           value={item.received_quantity}
                           onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
-                          className="bg-neutral-950 border-neutral-800 text-center py-1 h-8 text-xs font-mono font-bold text-emerald-400 w-24 focus:border-emerald-600"
+                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-bold text-emerald-400 w-24 focus:border-emerald-600"
                         />
                         {item.received_quantity !== item.ordered_quantity && (
                           <span className="text-[10px] font-bold text-amber-500 font-mono uppercase bg-amber-950/20 px-1 border border-amber-800/30 rounded shrink-0">
@@ -180,19 +180,19 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
           {/* Notes Area */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-xs font-semibold text-neutral-400">Receipt Verification Notes</label>
+            <label className="text-xs font-semibold text-secondary">Receipt Verification Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g., Shortages noted due to delivery damage, all other items accounted for..."
               rows={2}
-              className="w-full bg-neutral-900 text-neutral-200 border border-neutral-800 rounded-lg py-2 px-3 focus:outline-none focus:border-primary text-sm"
+              className="w-full bg-neutral-900 text-neutral-200 border border-border rounded-lg py-2 px-3 focus:outline-none focus:border-primary text-sm"
             />
           </div>
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end p-4 border-t border-neutral-800 bg-neutral-900/40 space-x-3">
+        <div className="flex items-center justify-end p-4 border-t border-border bg-neutral-900/40 space-x-3">
           <Button variant="ghost" type="button" onClick={onClose}>
             Cancel
           </Button>

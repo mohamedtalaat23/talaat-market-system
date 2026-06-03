@@ -35,13 +35,13 @@ export function POSPreferencesScreen() {
       <form onSubmit={handleSubmit} className="space-y-6">
         
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Workflow & Security</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Workflow & Security</h4>
           
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="allow_negative_inventory"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.allow_negative_inventory}
               onChange={(e) => setForm({ ...form, allow_negative_inventory: e.target.checked })}
             />
@@ -51,11 +51,11 @@ export function POSPreferencesScreen() {
             </label>
           </div>
 
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="require_manager_pin_voids"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.require_manager_pin_voids}
               onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
             />
@@ -67,14 +67,14 @@ export function POSPreferencesScreen() {
         </div>
 
         <div className="space-y-4 pt-2">
-          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Alerts & Notifications</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Alerts & Notifications</h4>
           
           <div>
             <label className="block text-sm font-medium mb-2">Default Low Stock Threshold</label>
             <input
               type="number"
               min="0"
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none max-w-xs"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none max-w-xs"
               value={form.low_stock_threshold}
               onChange={(e) => setForm({ ...form, low_stock_threshold: Number(e.target.value) })}
             />

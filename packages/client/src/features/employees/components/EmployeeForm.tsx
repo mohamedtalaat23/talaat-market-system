@@ -186,7 +186,7 @@ export function EmployeeForm({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-primary focus:ring-primary focus:ring-offset-0"
+          className="h-4 w-4 rounded border-border bg-neutral-800 text-primary focus:ring-primary focus:ring-offset-0"
         />
         <label htmlFor="isEmpActive" className="text-sm font-semibold text-neutral-200 cursor-pointer">
           Account Active (Allows ERP / POS authentication)

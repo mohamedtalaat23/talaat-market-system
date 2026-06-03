@@ -10,18 +10,18 @@ export function RegistersScreen() {
         </button>
       </div>
       
-      <div className="bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden">
+      <div className="bg-input border border-border rounded-lg overflow-hidden">
         <table className="w-full text-sm text-left">
-          <thead className="bg-neutral-900 border-b border-neutral-800 text-neutral-400">
+          <thead className="bg-card-hover border-b border-border text-secondary">
             <tr>
               <th className="px-6 py-3 font-medium">Register Name</th>
               <th className="px-6 py-3 font-medium">Status</th>
               <th className="px-6 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-800">
+          <tbody className="divide-y divide-border">
             {/* Placeholder data since we don't have a CRUD endpoint for registers yet */}
-            <tr className="hover:bg-neutral-900/50">
+            <tr className="hover:bg-card-hover/40">
               <td className="px-6 py-4 font-medium flex items-center space-x-3">
                 <Store size={16} className="text-neutral-500" />
                 <span>Main Register 01</span>
@@ -35,7 +35,7 @@ export function RegistersScreen() {
                 <button className="text-primary hover:underline font-medium text-sm">Edit</button>
               </td>
             </tr>
-            <tr className="hover:bg-neutral-900/50">
+            <tr className="hover:bg-card-hover/40">
               <td className="px-6 py-4 font-medium flex items-center space-x-3">
                 <Store size={16} className="text-neutral-500" />
                 <span>Backup Register 02</span>

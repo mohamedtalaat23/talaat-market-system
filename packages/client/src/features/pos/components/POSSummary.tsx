@@ -29,14 +29,14 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
     <div className="flex flex-col h-full justify-between font-sans">
       <div className="space-y-4">
         {/* Customer Widget */}
-        <div className="bg-slate-800 rounded p-4 border border-slate-750">
+        <div className="bg-card rounded p-4 border border-border">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cart Customer</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Cart Customer</span>
             {selectedCustomer && (
               <button
                 type="button"
                 onClick={() => selectCustomer(null)}
-                className="text-[9px] font-bold text-rose-400 hover:text-rose-300 focus:outline-none transition-colors"
+                className="text-[9px] font-bold text-danger hover:text-danger/80 focus:outline-none transition-colors"
                 title="Remove customer from cart"
               >
                 DISCONNECT
@@ -45,16 +45,16 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           </div>
           {selectedCustomer ? (
             <div className="flex flex-col">
-              <span className="font-semibold text-white text-sm">{selectedCustomer.name}</span>
-              <div className="flex items-center justify-between text-xs mt-1.5 text-slate-400 font-mono">
+              <span className="font-semibold text-foreground text-sm">{selectedCustomer.name}</span>
+              <div className="flex items-center justify-between text-xs mt-1.5 text-secondary font-mono">
                 <span>{selectedCustomer.phone || 'No phone'}</span>
                 <span
                   className={`font-semibold ${
                     selectedCustomer.balance < 0
-                      ? 'text-rose-400'
+                      ? 'text-danger'
                       : selectedCustomer.balance > 0
-                      ? 'text-emerald-400'
-                      : 'text-slate-300'
+                      ? 'text-success'
+                      : 'text-secondary'
                   }`}
                 >
                   {Number(selectedCustomer.balance).toFixed(2)} EGP
@@ -63,18 +63,18 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               <button
                 type="button"
                 onClick={() => openModal('pos_customer_select')}
-                className="w-full text-center mt-3 text-[10px] font-semibold text-slate-400 hover:text-slate-200 transition-colors py-1.5 border border-slate-700 hover:bg-slate-700/30 rounded"
+                className="w-full text-center mt-3 text-[10px] font-semibold text-secondary hover:text-foreground transition-colors py-1.5 border border-border hover:bg-card rounded"
               >
                 Change Customer (F7)
               </button>
             </div>
           ) : (
             <div className="flex items-center justify-between py-1">
-              <span className="text-xs italic text-slate-500 font-medium">Walk-in Customer</span>
+              <span className="text-xs italic text-muted font-medium">Walk-in Customer</span>
               <button
                 type="button"
                 onClick={() => openModal('pos_customer_select')}
-                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 focus:outline-none transition-colors border border-emerald-900/40 bg-emerald-950/20 px-3 py-1 rounded"
+                className="text-xs font-bold text-success hover:text-success/80 focus:outline-none transition-colors border border-success/30 bg-success/10 px-3 py-1 rounded"
               >
                 SELECT (F7)
               </button>
@@ -82,13 +82,13 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           )}
         </div>
 
-        <div className="bg-slate-800 rounded p-4">
-          <div className="flex justify-between text-slate-400 mb-2">
+        <div className="bg-card rounded p-4 border border-border">
+          <div className="flex justify-between text-secondary mb-2">
             <span>Subtotal</span>
             <span>EGP {subtotal.toFixed(2)}</span>
           </div>
           {(discount > 0 || globalDiscount > 0) && (
-            <div className="flex flex-col space-y-1 mb-2 text-sm text-emerald-400">
+            <div className="flex flex-col space-y-1 mb-2 text-sm text-success">
               {discount > 0 && (
                 <div className="flex justify-between">
                   <span>Item Discounts</span>
@@ -103,8 +103,8 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               )}
             </div>
           )}
-          <div className="w-full h-px bg-slate-700 my-4"></div>
-          <div className="flex justify-between text-white text-3xl font-bold tracking-tight">
+          <div className="w-full h-px bg-border my-4"></div>
+          <div className="flex justify-between text-foreground text-3xl font-bold tracking-tight">
             <span>Total</span>
             <span>EGP {total.toFixed(2)}</span>
           </div>
@@ -113,13 +113,13 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
         <div className="grid grid-cols-2 gap-3">
           <button 
             onClick={() => openModal('pos_payment')}
-            className="py-4 bg-emerald-600 hover:bg-emerald-500 rounded font-bold text-white transition-colors text-lg shadow-lg shadow-emerald-900/20"
+            className="py-4 bg-success hover:bg-success/90 rounded font-bold text-white transition-colors text-lg shadow-lg shadow-success/10"
           >
             Pay (Space)
           </button>
           <button 
             onClick={() => openModal('pos_manager_override', { action: 'void_transaction' })}
-            className="py-4 bg-slate-800 hover:bg-slate-700 rounded font-bold text-slate-300 transition-colors border border-slate-700"
+            className="py-4 bg-card hover:bg-card-hover rounded font-bold text-secondary hover:text-foreground transition-colors border border-border"
           >
             Void (F8)
           </button>

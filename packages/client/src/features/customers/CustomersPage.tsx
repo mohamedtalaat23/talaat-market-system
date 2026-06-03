@@ -63,7 +63,7 @@ export function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-100">Customer Directory</h1>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-secondary">
             Manage customer accounts, track credit balances/debts, and loyalty points.
           </p>
         </div>
@@ -81,8 +81,8 @@ export function CustomersPage() {
       {/* Stats Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Total Customers */}
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Customers</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Total Customers</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight">{totalCustomers}</span>
             <span className="text-xs text-neutral-500">Active Profiles</span>
@@ -90,8 +90,8 @@ export function CustomersPage() {
         </div>
 
         {/* Card 2: Total Credit (Deposits) */}
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Customer Credit</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Total Customer Credit</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-emerald-500">{totalCredit.toFixed(2)}</span>
             <span className="text-xs font-mono text-neutral-500">EGP Deposits</span>
@@ -99,8 +99,8 @@ export function CustomersPage() {
         </div>
 
         {/* Card 3: Total Debt (Receivables) */}
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Outstanding Debt</span>
+        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Total Outstanding Debt</span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-rose-500">{totalDebt.toFixed(2)}</span>
             <span className="text-xs font-mono text-neutral-500">EGP Receivables</span>
@@ -109,7 +109,7 @@ export function CustomersPage() {
       </div>
 
       {/* Filter / Search section */}
-      <div className="flex items-center rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+      <div className="flex items-center rounded-lg border border-border bg-neutral-900/40 p-4">
         <div className="relative w-full max-w-md">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,21 +124,21 @@ export function CustomersPage() {
               setPage(1); // Reset page on search
             }}
             placeholder="Search by name or phone number..."
-            className="w-full rounded-lg border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+            className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
           />
         </div>
       </div>
 
       {/* Main List */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900/20 overflow-hidden">
+      <div className="rounded-xl border border-border bg-neutral-900/20 overflow-hidden">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16">
             <Spinner size="md" />
-            <span className="mt-3 text-sm text-neutral-400 font-mono">Fetching customer directory...</span>
+            <span className="mt-3 text-sm text-secondary font-mono">Fetching customer directory...</span>
           </div>
         ) : !customers || customers.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 mb-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 border border-border text-secondary mb-4">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -152,7 +152,7 @@ export function CustomersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-border bg-input text-xs font-semibold uppercase tracking-wider text-secondary">
                   <th className="px-6 py-4">Name</th>
                   <th className="px-6 py-4">Phone</th>
                   <th className="px-6 py-4 text-right">Balance</th>
@@ -175,7 +175,7 @@ export function CustomersPage() {
                     </td>
 
                     {/* Phone */}
-                    <td className="px-6 py-4 text-sm font-mono text-neutral-400">
+                    <td className="px-6 py-4 text-sm font-mono text-secondary">
                       {customer.phone || '—'}
                     </td>
 
@@ -187,7 +187,7 @@ export function CustomersPage() {
                             ? 'text-rose-500 bg-rose-950/20 border border-rose-900/30 px-2.5 py-1 rounded-md'
                             : customer.balance > 0
                             ? 'text-emerald-500 bg-emerald-950/20 border border-emerald-900/30 px-2.5 py-1 rounded-md'
-                            : 'text-neutral-400'
+                            : 'text-secondary'
                         }
                       >
                         {Number(customer.balance).toFixed(2)} EGP
@@ -243,15 +243,15 @@ export function CustomersPage() {
 
       {/* Pagination Controls */}
       {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6 bg-neutral-900/40 p-4 rounded-lg border border-neutral-800">
-          <div className="text-sm text-neutral-400">
+        <div className="flex items-center justify-between mt-6 bg-neutral-900/40 p-4 rounded-lg border border-border">
+          <div className="text-sm text-secondary">
             Showing <span className="font-semibold text-neutral-200">{customers.length}</span> of <span className="font-semibold text-neutral-200">{meta.total}</span> customers
           </div>
           <div className="flex space-x-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors text-sm font-medium border border-neutral-700"
+              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-card-hover transition-colors text-sm font-medium border border-border"
             >
               Previous
             </button>
@@ -261,7 +261,7 @@ export function CustomersPage() {
             <button
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
               disabled={page === meta.totalPages}
-              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors text-sm font-medium border border-neutral-700"
+              className="px-4 py-2 rounded bg-neutral-800 text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-card-hover transition-colors text-sm font-medium border border-border"
             >
               Next
             </button>

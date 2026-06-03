@@ -19,9 +19,9 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
   }, [cart]);
 
   return (
-    <div className="bg-slate-800/50 rounded border border-slate-700 p-4 flex justify-between items-center">
+    <div className="bg-slate-800/50 rounded border border-border p-4 flex justify-between items-center">
       <div>
-        <div className="flex items-center space-x-2 text-sm text-slate-400 mb-1">
+        <div className="flex items-center space-x-2 text-sm text-secondary mb-1">
           <Clock size={14} />
           <span>{new Date(cart.timestamp).toLocaleTimeString()}</span>
           <span className="px-2 text-slate-600">|</span>
@@ -115,15 +115,15 @@ export function SuspendedCartsModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl rounded-lg border border-border bg-card p-6 shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[80vh]"
         role="dialog"
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
           <h3 className="text-xl font-bold text-white flex items-center space-x-2">
             <Clock size={24} className="text-amber-500" />
             <span>Suspended Carts</span>
           </h3>
-          <button onClick={closeModal} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={closeModal} className="text-secondary hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>

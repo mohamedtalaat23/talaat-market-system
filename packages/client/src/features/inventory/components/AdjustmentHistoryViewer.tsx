@@ -93,7 +93,7 @@ export function AdjustmentHistoryViewer() {
       {/* Side Slide Panel */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl bg-neutral-950 border-l border-border h-full flex flex-col shadow-2xl relative z-10 animate-slide-in"
+        className="w-full max-w-2xl bg-input border-l border-border h-full flex flex-col shadow-2xl relative z-10 animate-slide-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="history-panel-title"
@@ -108,7 +108,7 @@ export function AdjustmentHistoryViewer() {
           </div>
           <button
             onClick={closeModal}
-            className="rounded-md p-1.5 text-neutral-400 hover:text-foreground hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Close panel"
           >
             <X size={18} />
@@ -127,9 +127,9 @@ export function AdjustmentHistoryViewer() {
               Failed to load adjustments: {error.message}
             </div>
           ) : adjustments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center p-12 border border-neutral-900 rounded-lg bg-neutral-900/10">
+            <div className="flex flex-col items-center justify-center text-center p-12 border border-border rounded-lg bg-neutral-900/10">
               <Clipboard className="h-8 w-8 text-neutral-600 mb-3" aria-hidden="true" />
-              <div className="text-sm font-semibold text-neutral-400">No Adjustment Records Found</div>
+              <div className="text-sm font-semibold text-secondary">No Adjustment Records Found</div>
               <div className="text-xs text-neutral-500 mt-1">This product has no manual or relative adjustment logs.</div>
             </div>
           ) : (
@@ -140,9 +140,9 @@ export function AdjustmentHistoryViewer() {
                 return (
                   <div
                     key={log.id}
-                    className="rounded-lg border border-neutral-800 bg-neutral-900/30 p-4 space-y-3 hover:border-neutral-800/80 transition-all text-xs"
+                    className="rounded-lg border border-border bg-neutral-900/30 p-4 space-y-3 hover:border-border/80 transition-all text-xs"
                   >
-                    <div className="flex items-center justify-between border-b border-neutral-900 pb-2">
+                    <div className="flex items-center justify-between border-b border-border pb-2">
                       <div className="flex items-center space-x-2">
                         <Badge variant={badge.variant}>{badge.label}</Badge>
                         <span className="font-mono font-bold text-foreground">
@@ -162,10 +162,10 @@ export function AdjustmentHistoryViewer() {
                     )}
 
                     {/* Stock Shift Indicator */}
-                    <div className="flex items-center space-x-3 bg-neutral-950 p-2 rounded border border-neutral-900 font-mono text-center justify-around">
+                    <div className="flex items-center space-x-3 bg-input p-2 rounded border border-border font-mono text-center justify-around">
                       <div>
                         <div className="text-[9px] text-neutral-500">PREVIOUS</div>
-                        <div className="font-semibold text-neutral-400">{log.old_quantity}</div>
+                        <div className="font-semibold text-secondary">{log.old_quantity}</div>
                       </div>
                       <ArrowRight size={12} className="text-neutral-600" aria-hidden="true" />
                       <div>
@@ -175,13 +175,13 @@ export function AdjustmentHistoryViewer() {
                     </div>
 
                     {/* Audit Trail Note & Cashier Name */}
-                    <div className="space-y-1 bg-neutral-900/60 p-2.5 rounded border border-neutral-800/40">
-                      <div className="text-neutral-400 font-medium select-text">
+                    <div className="space-y-1 bg-neutral-900/60 p-2.5 rounded border border-border/40">
+                      <div className="text-secondary font-medium select-text">
                         Reason: {log.notes || 'No reason details entered'}
                       </div>
                       <div className="flex items-center space-x-1.5 text-neutral-500 text-[10px] pt-1">
                         <User size={10} aria-hidden="true" />
-                        <span>Processed by: <strong className="text-neutral-400 font-semibold">{log.creator_name || 'System Operator'}</strong></span>
+                        <span>Processed by: <strong className="text-secondary font-semibold">{log.creator_name || 'System Operator'}</strong></span>
                       </div>
                     </div>
                   </div>
@@ -207,7 +207,7 @@ export function AdjustmentHistoryViewer() {
               >
                 Prev
               </Button>
-              <span className="text-[11px] font-mono text-neutral-400" aria-current="page">
+              <span className="text-[11px] font-mono text-secondary" aria-current="page">
                 Page {meta.page} / {meta.totalPages}
               </span>
               <Button

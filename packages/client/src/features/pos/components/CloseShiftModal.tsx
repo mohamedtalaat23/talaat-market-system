@@ -166,17 +166,17 @@ export function CloseShiftModal() {
   const discrepancy = summary ? parseFloat(endingCash || '0') - summary.expected_cash : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm text-slate-200">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm text-foreground">
+      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-slate-800/50">
           <div className="flex items-center space-x-3">
             <Lock className="w-5 h-5 text-rose-400" />
             <h2 className="text-lg font-semibold text-white">Close Shift Report</h2>
           </div>
           <button 
             onClick={() => closeModal('pos_close_shift')}
-            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors"
+            className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -203,29 +203,29 @@ export function CloseShiftModal() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-slate-400">Starting Cash</p>
+                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
+                  <p className="text-sm text-secondary">Starting Cash</p>
                   <p className="text-xl font-bold font-mono">EGP {summary.starting_cash.toFixed(2)}</p>
                 </div>
-                <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-slate-400">Cash Sales</p>
+                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
+                  <p className="text-sm text-secondary">Cash Sales</p>
                   <p className="text-xl font-bold text-emerald-400 font-mono">+EGP {summary.cash_sales.toFixed(2)}</p>
                 </div>
-                <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-slate-400">Card Sales</p>
+                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
+                  <p className="text-sm text-secondary">Card Sales</p>
                   <p className="text-xl font-bold text-blue-400 font-mono">EGP {summary.card_sales.toFixed(2)}</p>
                 </div>
-                <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-slate-400">Expected Cash in Drawer</p>
+                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
+                  <p className="text-sm text-secondary">Expected Cash in Drawer</p>
                   <p className="text-2xl font-bold text-white font-mono">EGP {summary.expected_cash.toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2 border-t border-slate-800">
-                <label className="text-sm font-medium text-slate-400 flex justify-between">
+              <div className="space-y-2 pt-2 border-t border-border">
+                <label className="text-sm font-medium text-secondary flex justify-between">
                   <span>Actual Cash Counted (EGP)</span>
                   {endingCash && (
-                    <span className={`font-mono ${discrepancy < 0 ? 'text-rose-400' : discrepancy > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                    <span className={`font-mono ${discrepancy < 0 ? 'text-rose-400' : discrepancy > 0 ? 'text-emerald-400' : 'text-secondary'}`}>
                       Diff: {discrepancy > 0 ? '+' : ''}{discrepancy.toFixed(2)}
                     </span>
                   )}
@@ -243,22 +243,22 @@ export function CloseShiftModal() {
                       if (e.key === 'Enter') handleCloseShift();
                       if (e.key === 'Escape') closeModal('pos_close_shift');
                     }}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all placeholder:text-slate-700"
+                    className="w-full bg-background border border-border rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all placeholder:text-slate-700"
                     placeholder="0.00"
                   />
                 </div>
               </div>
             </>
           ) : (
-            <p className="text-slate-400 text-center">No summary data available.</p>
+            <p className="text-secondary text-center">No summary data available.</p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end space-x-3">
+        <div className="p-4 border-t border-border bg-slate-800/30 flex justify-end space-x-3">
           <button
             onClick={() => closeModal('pos_close_shift')}
-            className="px-6 py-3 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors"
+            className="px-6 py-3 rounded-lg font-medium text-secondary bg-slate-800 hover:bg-card-hover transition-colors"
           >
             Cancel
           </button>

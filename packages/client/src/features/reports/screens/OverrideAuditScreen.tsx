@@ -42,7 +42,7 @@ export function OverrideAuditScreen() {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
-              <label className="text-sm text-neutral-400">Date From</label>
+              <label className="text-sm text-secondary">Date From</label>
               <Input 
                 type="date" 
                 value={dateFrom} 
@@ -50,7 +50,7 @@ export function OverrideAuditScreen() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm text-neutral-400">Date To</label>
+              <label className="text-sm text-secondary">Date To</label>
               <Input 
                 type="date" 
                 value={dateTo} 
@@ -122,7 +122,7 @@ export function OverrideAuditScreen() {
                   >
                     Previous
                   </Button>
-                  <span className="flex items-center text-sm text-neutral-400">
+                  <span className="flex items-center text-sm text-secondary">
                     Page {page} of {data.meta.totalPages}
                   </span>
                   <Button 

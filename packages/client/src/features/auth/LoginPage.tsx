@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { Store, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface LoginResponse {
   success: boolean;
@@ -22,6 +23,7 @@ interface LoginResponse {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +52,7 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Please fill in all fields');
+      setError(t('login.error'));
       return;
     }
 
@@ -77,54 +79,54 @@ export function LoginPage() {
         toast.success(`Welcome back, ${employee.full_name}!`);
         navigate(from, { replace: true });
       } else {
-        setError('Login failed. Please check your credentials.');
+        setError(t('login.error'));
       }
     } catch (err: any) {
-      setError(err.message || 'Invalid username or password');
+      setError(err.message || t('login.error'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 p-4 font-sans select-text">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 font-sans select-text">
       {/* Visual background accents */}
       <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-indigo-500/5 blur-3xl" />
 
-      <Card className="w-full max-w-md border-neutral-800 bg-neutral-900/40 backdrop-blur-md relative z-10">
+      <Card className="w-full max-w-md border-border bg-card/60 backdrop-blur-md relative z-10">
         <CardHeader className="space-y-2 text-center pb-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
             <Store className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight mt-3">Talaat Market</CardTitle>
-          <CardDescription className="text-neutral-400">
-            Supermarket Administration Panel
+          <CardTitle className="text-2xl font-bold tracking-tight mt-3">{t('login.title')}</CardTitle>
+          <CardDescription className="text-secondary">
+            {t('login.subtitle')}
           </CardDescription>
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="flex items-center space-x-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive animate-fade-in">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive animate-fade-in">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
             
-            <div className="space-y-1.5">
-              <label htmlFor="username" className="text-sm font-medium text-neutral-300">
-                Username
+            <div className="space-y-1.5 text-left rtl:text-right">
+              <label htmlFor="username" className="text-sm font-medium text-secondary">
+                {t('login.username')}
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-3 rtl:pl-0 rtl:pr-3 text-neutral-500">
                   <User className="h-4 w-4" />
                 </span>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="admin, manager..."
-                  className="pl-10"
+                  placeholder="admin..."
+                  className="pl-10 rtl:pl-3 rtl:pr-10"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={isLoading}
@@ -134,12 +136,12 @@ export function LoginPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-neutral-300">
-                Password
+            <div className="space-y-1.5 text-left rtl:text-right">
+              <label htmlFor="password" className="text-sm font-medium text-secondary">
+                {t('login.password')}
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-3 rtl:pl-0 rtl:pr-3 text-neutral-500">
                   <Lock className="h-4 w-4" />
                 </span>
                 <Input
@@ -155,7 +157,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500 hover:text-neutral-300 focus:outline-none focus:text-neutral-300 transition-colors"
+                  className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center pr-3 rtl:pr-0 rtl:pl-3 text-secondary hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -174,7 +176,7 @@ export function LoginPage() {
               className="w-full font-semibold"
               disabled={isLoading}
             >
-              {isLoading ? 'Authenticating...' : 'Log In'}
+              {isLoading ? t('login.submitting') : t('login.submit')}
             </Button>
           </CardFooter>
         </form>

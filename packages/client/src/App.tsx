@@ -8,6 +8,7 @@ import { LANSyncManager } from '@/features/pos/components/LANSyncManager';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
+import { PreferencesProvider } from '@/contexts/preferencesContext';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProductsPage } from '@/features/products/ProductsPage';
@@ -85,8 +86,9 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <BrowserRouter>
+      <PreferencesProvider>
+        <ErrorBoundary>
+          <BrowserRouter>
           <Routes>
             {/* Public route */}
             <Route path="login" element={<LoginPage />} />
@@ -215,6 +217,7 @@ export function App() {
         </BrowserRouter>
         <LANSyncManager />
       </ErrorBoundary>
+    </PreferencesProvider>
 
       {/* Toast notifications */}
       <Toaster

@@ -45,12 +45,12 @@ export function GeneralSettingsScreen() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Details */}
         <div className="space-y-4 pb-4 border-b border-border/50">
-          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Company Details</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Company Details</h4>
           <div>
             <label className="block text-sm font-medium mb-2">Store Name</label>
             <input
               type="text"
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               value={form.store_name}
               onChange={(e) => setForm({ ...form, store_name: e.target.value })}
               required
@@ -59,7 +59,7 @@ export function GeneralSettingsScreen() {
           <div>
             <label className="block text-sm font-medium mb-2">Store Address</label>
             <textarea
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none h-20"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none h-20"
               value={form.store_address}
               onChange={(e) => setForm({ ...form, store_address: e.target.value })}
               placeholder="123 Main St, City, Country"
@@ -70,7 +70,7 @@ export function GeneralSettingsScreen() {
               <label className="block text-sm font-medium mb-2">Phone Number</label>
               <input
                 type="text"
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.store_phone}
                 onChange={(e) => setForm({ ...form, store_phone: e.target.value })}
                 placeholder="+20 123 456 7890"
@@ -80,7 +80,7 @@ export function GeneralSettingsScreen() {
               <label className="block text-sm font-medium mb-2">Tax ID / Commercial Register</label>
               <input
                 type="text"
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.tax_id}
                 onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
                 placeholder="XXX-XXX-XXX"
@@ -91,13 +91,13 @@ export function GeneralSettingsScreen() {
 
         {/* Financial & Localization */}
         <div className="space-y-4 pb-4 border-b border-border/50">
-          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Financial & Localization</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Financial & Localization</h4>
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-2">Currency Symbol</label>
               <input
                 type="text"
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.currency_symbol}
                 onChange={(e) => setForm({ ...form, currency_symbol: e.target.value })}
               />
@@ -108,7 +108,7 @@ export function GeneralSettingsScreen() {
                 type="number"
                 step="0.01"
                 min="0"
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.tax_rate}
                 onChange={(e) => setForm({ ...form, tax_rate: Number(e.target.value) })}
               />
@@ -118,7 +118,7 @@ export function GeneralSettingsScreen() {
             <div>
               <label className="block text-sm font-medium mb-2">Timezone</label>
               <select
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
                 value={form.timezone}
                 onChange={(e) => setForm({ ...form, timezone: e.target.value })}
               >
@@ -133,7 +133,7 @@ export function GeneralSettingsScreen() {
             <div>
               <label className="block text-sm font-medium mb-2">Date Format</label>
               <select
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
+                className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
                 value={form.date_format}
                 onChange={(e) => setForm({ ...form, date_format: e.target.value })}
               >

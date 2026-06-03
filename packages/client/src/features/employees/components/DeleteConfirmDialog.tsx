@@ -64,7 +64,7 @@ export function DeleteConfirmDialog() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-md rounded-lg border border-destructive/20 bg-neutral-950 p-6 shadow-xl relative z-10 animate-fade-in text-center"
+        className="w-full max-w-md rounded-lg border border-destructive/20 bg-input p-6 shadow-xl relative z-10 animate-fade-in text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="emp-delete-confirm-title"
@@ -78,7 +78,7 @@ export function DeleteConfirmDialog() {
           Deactivate & Remove Account
         </h3>
 
-        <p id="emp-delete-confirm-desc" className="text-sm text-neutral-400 mb-6 leading-relaxed">
+        <p id="emp-delete-confirm-desc" className="text-sm text-secondary mb-6 leading-relaxed">
           Are you sure you want to delete <strong className="text-foreground">{employee.full_name}</strong>? 
           This will soft-delete and deactivate their access. They will no longer be able to log in or operate cash registers, but historical sale logs will be preserved.
         </p>

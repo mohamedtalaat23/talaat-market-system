@@ -69,10 +69,10 @@ export function InventoryAdjustmentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 select-text">
       {/* Product Card Header */}
-      <div className="rounded-lg bg-neutral-900 border border-neutral-800 p-4 space-y-1">
-        <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">Item Details</div>
+      <div className="rounded-lg bg-neutral-900 border border-border p-4 space-y-1">
+        <div className="text-xs text-secondary font-semibold uppercase tracking-wider">Item Details</div>
         <div className="font-bold text-foreground text-sm">{item.product_name}</div>
-        <div className="flex justify-between text-xs text-neutral-400 pt-2 border-t border-neutral-800/60 mt-2 font-mono">
+        <div className="flex justify-between text-xs text-secondary pt-2 border-t border-border/60 mt-2 font-mono">
           <span>Barcode: {item.product_barcode || 'Loose Produce'}</span>
           <span>Current Level: <strong className="text-foreground">{item.quantity} {item.product_unit}</strong></span>
         </div>
@@ -128,7 +128,7 @@ export function InventoryAdjustmentForm({
       </div>
 
       {/* Preview Calculations */}
-      <div className="grid grid-cols-3 gap-2 bg-neutral-900/40 rounded-lg p-3 border border-neutral-800 text-center select-none font-mono">
+      <div className="grid grid-cols-3 gap-2 bg-neutral-900/40 rounded-lg p-3 border border-border text-center select-none font-mono">
         <div>
           <div className="text-[10px] text-neutral-500 uppercase font-semibold">Current</div>
           <div className="text-sm font-bold text-neutral-300">{item.quantity}</div>

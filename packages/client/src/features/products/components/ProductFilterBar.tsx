@@ -9,7 +9,7 @@ export const FILTER_BUTTON_BASE =
 export const FILTER_BUTTON_ACTIVE =
   'bg-primary text-primary-foreground border-transparent';
 export const FILTER_BUTTON_INACTIVE =
-  'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-foreground';
+  'bg-neutral-900 text-secondary border-border hover:text-foreground';
 
 interface Category {
   id: number;
@@ -68,7 +68,7 @@ export function ProductFilterBar({
       </form>
 
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Category Filters">
-        <div className="flex items-center space-x-1 text-xs text-neutral-400 font-semibold uppercase mr-1">
+        <div className="flex items-center space-x-1 text-xs text-secondary font-semibold uppercase mr-1">
           <Filter size={14} className="text-neutral-500" />
           <span>Category:</span>
         </div>
@@ -105,7 +105,7 @@ export function ProductFilterBar({
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="text-xs text-neutral-400 hover:text-destructive shrink-0 font-semibold"
+            className="text-xs text-secondary hover:text-destructive shrink-0 font-semibold"
           >
             Clear Filters
           </Button>

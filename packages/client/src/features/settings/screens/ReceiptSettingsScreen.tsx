@@ -42,7 +42,7 @@ export function ReceiptSettingsScreen() {
         <div>
           <label className="block text-sm font-medium mb-2">Receipt Header Text</label>
           <textarea
-            className="w-full h-24 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
+            className="w-full h-24 bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
             value={form.receipt_header_text}
             onChange={(e) => setForm({ ...form, receipt_header_text: e.target.value })}
             placeholder="Talaat Market\nMain Branch"
@@ -53,7 +53,7 @@ export function ReceiptSettingsScreen() {
         <div>
           <label className="block text-sm font-medium mb-2">Receipt Footer Text</label>
           <textarea
-            className="w-full h-24 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
+            className="w-full h-24 bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
             value={form.receipt_footer_text}
             onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })}
             placeholder="Thank you for shopping with us!"
@@ -62,13 +62,13 @@ export function ReceiptSettingsScreen() {
         </div>
 
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-neutral-400 uppercase tracking-wider mb-2">Printing Options</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider mb-2">Printing Options</h4>
           
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="auto_print"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.auto_print}
               onChange={(e) => setForm({ ...form, auto_print: e.target.checked })}
             />
@@ -78,11 +78,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="show_cashier_name"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.show_cashier_name}
               onChange={(e) => setForm({ ...form, show_cashier_name: e.target.checked })}
             />
@@ -92,11 +92,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="show_tax_breakdown"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.show_tax_breakdown}
               onChange={(e) => setForm({ ...form, show_tax_breakdown: e.target.checked })}
             />
@@ -106,11 +106,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center space-x-3 bg-neutral-900/50 p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="include_store_contact"
-              className="w-4 h-4 rounded border-neutral-700 text-primary focus:ring-primary bg-neutral-950"
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
               checked={form.include_store_contact}
               onChange={(e) => setForm({ ...form, include_store_contact: e.target.checked })}
             />

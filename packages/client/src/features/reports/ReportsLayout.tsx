@@ -20,7 +20,7 @@ export function ReportsLayout() {
                   `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
                     isActive || window.location.pathname.startsWith('/reports/shifts/')
                       ? 'bg-primary/10 text-primary'
-                      : 'text-neutral-400 hover:bg-neutral-800 hover:text-foreground'
+                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >
@@ -32,7 +32,7 @@ export function ReportsLayout() {
                 to="/reports/weekly"
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
-                    isActive ? 'bg-primary/10 text-primary' : 'text-neutral-400 hover:bg-neutral-800 hover:text-foreground'
+                    isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >
@@ -44,7 +44,7 @@ export function ReportsLayout() {
                 to="/reports/overrides"
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
-                    isActive ? 'bg-primary/10 text-primary' : 'text-neutral-400 hover:bg-neutral-800 hover:text-foreground'
+                    isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >

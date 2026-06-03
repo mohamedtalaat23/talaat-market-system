@@ -33,10 +33,10 @@ export function EmployeeGrid({
 
   if (employees.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-12 border border-neutral-800 rounded-lg bg-neutral-900/10">
+      <div className="flex flex-col items-center justify-center text-center p-12 border border-border rounded-lg bg-neutral-900/10">
         <UserMinus className="h-10 w-10 text-neutral-600 mb-3" aria-hidden="true" />
         <h3 className="text-base font-semibold text-foreground">No Employees Found</h3>
-        <p className="text-sm text-neutral-400 mt-2 leading-relaxed">
+        <p className="text-sm text-secondary mt-2 leading-relaxed">
           No active cashier or manager accounts match your query parameters.
         </p>
         {hasFilters && (
@@ -59,8 +59,8 @@ export function EmployeeGrid({
         const role = getRoleBadgeDetails(emp.role);
         // Grayscale deactivation card styling constraint
         const activeCardStyle = emp.is_active
-          ? 'border-neutral-800 bg-card hover:border-neutral-700'
-          : 'border-neutral-900 bg-neutral-950/80 saturate-50 opacity-75';
+          ? 'border-border bg-card hover:border-border'
+          : 'border-border bg-input/80 saturate-50 opacity-75';
 
         return (
           <Card
@@ -77,7 +77,7 @@ export function EmployeeGrid({
                         ? 'bg-destructive/10 text-destructive border-destructive/20'
                         : emp.role === 'manager'
                         ? 'bg-primary/10 text-primary border-primary/20'
-                        : 'bg-neutral-800 text-neutral-400 border-neutral-700'
+                        : 'bg-neutral-800 text-secondary border-border'
                     }`}
                     aria-hidden="true"
                   >
@@ -93,7 +93,7 @@ export function EmployeeGrid({
                         </span>
                       )}
                     </h4>
-                    <span className="text-xs text-neutral-400 font-mono">@{emp.username}</span>
+                    <span className="text-xs text-secondary font-mono">@{emp.username}</span>
                   </div>
                 </div>
 
@@ -105,7 +105,7 @@ export function EmployeeGrid({
                       <span>Active Access</span>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-800 select-none">
+                    <Badge variant="outline" className="text-[10px] text-neutral-500 border-border select-none">
                       Suspended
                     </Badge>
                   )}
@@ -132,7 +132,7 @@ export function EmployeeGrid({
                   onClick={() => onDelete(emp)}
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs font-semibold text-neutral-400 hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-destructive"
+                  className="h-8 text-xs font-semibold text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-destructive"
                   aria-label={`Remove access for ${emp.full_name}`}
                 >
                   <UserMinus size={12} aria-hidden="true" />

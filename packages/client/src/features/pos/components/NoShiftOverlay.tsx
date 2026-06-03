@@ -12,15 +12,15 @@ export function NoShiftOverlay() {
   if (activeShift) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md text-slate-200">
-      <div className="flex flex-col items-center bg-slate-900 border border-slate-700 rounded-xl p-8 max-w-md w-full shadow-2xl space-y-6">
-        <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 shadow-inner">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md text-foreground">
+      <div className="flex flex-col items-center bg-card border border-border rounded-xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center border border-border shadow-inner">
           <LockKeyhole className="w-10 h-10 text-emerald-500" />
         </div>
         
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold tracking-tight text-white">POS Locked</h2>
-          <p className="text-slate-400">
+          <p className="text-secondary">
             Register {registerId} requires an active shift to operate.
           </p>
         </div>
@@ -35,7 +35,7 @@ export function NoShiftOverlay() {
           
           <button 
             onClick={() => openModal('pos_manager_override', { action: 'exit_pos', onSuccess: () => navigate('/') })}
-            className="w-full bg-transparent border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold py-3 rounded-lg transition-all active:scale-95"
+            className="w-full bg-transparent border border-border hover:bg-card-hover text-secondary font-semibold py-3 rounded-lg transition-all active:scale-95"
           >
             Exit to Dashboard
           </button>

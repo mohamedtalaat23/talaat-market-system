@@ -66,7 +66,7 @@ export function WeeklyReportScreen() {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
-              <label className="text-sm text-neutral-400">Week Start</label>
+              <label className="text-sm text-secondary">Week Start</label>
               <Input 
                 type="date" 
                 value={weekStart} 
@@ -74,7 +74,7 @@ export function WeeklyReportScreen() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm text-neutral-400">Week End</label>
+              <label className="text-sm text-secondary">Week End</label>
               <Input 
                 type="date" 
                 value={weekEnd} 
@@ -184,7 +184,7 @@ export function WeeklyReportScreen() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="bg-neutral-900 border-t-2 border-neutral-700">
+                    <TableRow className="bg-neutral-900 border-t-2 border-border">
                       <TableCell className="font-bold text-lg">TOTALS</TableCell>
                       <TableCell className="text-right font-bold">{data.data.totals.transaction_count}</TableCell>
                       <TableCell className="text-right font-mono font-bold">{formatCurrency(data.data.totals.total_revenue)}</TableCell>
@@ -223,7 +223,7 @@ export function WeeklyReportScreen() {
                         <TableBody>
                           {data.data.top_products.map((prod, index) => (
                             <TableRow key={index}>
-                              <TableCell className="text-center font-bold text-neutral-400">#{index + 1}</TableCell>
+                              <TableCell className="text-center font-bold text-secondary">#{index + 1}</TableCell>
                               <TableCell className="font-medium">{prod.product_name}</TableCell>
                               <TableCell className="text-right">{prod.total_quantity_sold}</TableCell>
                               <TableCell className="text-right font-mono">{formatCurrency(prod.total_revenue)}</TableCell>

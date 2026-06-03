@@ -21,8 +21,12 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { usePreferences } from '@/contexts/preferencesContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useLANStore } from '@/features/pos/stores/useLANStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
@@ -43,12 +47,30 @@ const NAV_ITEMS = [
 
 import React from 'react';
 
+const getTranslationKey = (label: string): any => {
+  const mapping: Record<string, string> = {
+    'Dashboard': 'nav.dashboard',
+    'Point of Sale': 'nav.pos',
+    'Products': 'nav.products',
+    'Inventory': 'nav.inventory',
+    'Suppliers': 'nav.suppliers',
+    'Purchases': 'nav.purchases',
+    'Customers': 'nav.customers',
+    'Employees': 'nav.employees',
+    'Reports': 'nav.reports',
+    'Settings': 'nav.settings',
+  };
+  return mapping[label] || label;
+};
+
 export const AppLayout = React.memo(() => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { status: lanStatus, offlineSales } = useLANStore();
+  const { theme, toggleTheme, language, toggleLanguage } = usePreferences();
+  const { t } = useTranslation();
   const hasOfflineSales = offlineSales.length > 0;
 
   // Redirect to login if user object is not available
@@ -78,58 +100,64 @@ export const AppLayout = React.memo(() => {
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground font-sans">
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className={`flex flex-col bg-neutral-900 border-r border-border transition-all duration-300 z-20 shrink-0 ${
+        className={`flex flex-col bg-sidebar border-r rtl:border-r-0 rtl:border-l border-border transition-all duration-300 z-20 shrink-0 ${
           collapsed ? 'w-16' : 'w-[240px]'
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-[60px] items-center px-4 border-b border-border space-x-3 overflow-hidden select-none">
+        <div className="flex h-[60px] items-center px-4 border-b border-border gap-3 overflow-hidden select-none">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 shadow-glow">
             <Store size={18} />
           </div>
           {!collapsed && (
-            <div className="flex flex-col text-left leading-none">
-              <span className="text-sm font-bold tracking-tight text-foreground">Talaat Market</span>
-              <span className="text-[10px] text-neutral-400 font-medium">Supermarket ERP</span>
+            <div className="flex flex-col text-left rtl:text-right leading-none">
+              <span className="text-sm font-bold tracking-tight text-foreground">{t('login.subtitle')}</span>
+              <span className="text-[10px] text-neutral-400 font-medium">{t('topbar.station')}</span>
             </div>
           )}
         </div>
 
         {/* Sidebar Nav links */}
         <nav className="flex-1 py-4 overflow-y-auto px-3 space-y-1.5" aria-label="Main Navigation">
-          {visibleNavItems.map(({ label, path, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  isActive
-                    ? 'bg-primary/10 text-primary border-l-2 border-primary pl-2'
-                    : 'text-neutral-400 hover:text-foreground hover:bg-neutral-800/50'
-                }`
-              }
-              end={path === '/'}
-              title={collapsed ? label : undefined}
-            >
-              <Icon size={18} className="shrink-0" strokeWidth={2} />
-              {!collapsed && <span className="truncate">{label}</span>}
-            </NavLink>
-          ))}
+          {visibleNavItems.map(({ label, path, icon: Icon }) => {
+            const translatedLabel = t(getTranslationKey(label));
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    isActive
+                      ? 'bg-primary/10 text-primary border-l-2 rtl:border-l-0 rtl:border-r-2 border-primary pl-2 pr-3 rtl:pl-3 rtl:pr-2 font-semibold'
+                      : 'text-secondary hover:text-foreground hover:bg-card-hover'
+                  }`
+                }
+                end={path === '/'}
+                title={collapsed ? translatedLabel : undefined}
+              >
+                <Icon size={18} className="shrink-0" strokeWidth={2} />
+                {!collapsed && <span className="truncate">{translatedLabel}</span>}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Collapse toggle and footer info */}
         <div className="p-3 border-t border-border flex flex-col space-y-3">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center h-9 w-full rounded-md border border-neutral-800 text-neutral-400 hover:text-foreground hover:bg-neutral-800/80 transition-colors"
+            className="flex items-center justify-center h-9 w-full rounded-md border border-border text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {collapsed 
+              ? (language === 'ar' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />) 
+              : (language === 'ar' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />)
+            }
           </button>
           
           {!collapsed && (
-            <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono px-1">
+            <div className="flex items-center justify-between text-[11px] text-secondary font-mono px-1">
               <span>Station 1</span>
               <span>v1.0.0</span>
             </div>
@@ -140,47 +168,65 @@ export const AppLayout = React.memo(() => {
       {/* ── Main Workspace ────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         {/* Top Navbar */}
-        <header className="flex h-[60px] w-full items-center justify-between px-6 bg-neutral-900/20 border-b border-border backdrop-blur-sm z-10 select-none">
-          <div className="flex items-center space-x-3">
+        <header className="flex h-[60px] w-full items-center justify-between px-6 bg-card/80 border-b border-border backdrop-blur-md z-10 select-none">
+          <div className="flex items-center gap-3">
             <button
-              className="md:hidden text-neutral-400 hover:text-foreground"
+              className="md:hidden text-secondary hover:text-foreground"
               aria-label="Toggle side drawer"
             >
               <Menu size={20} />
             </button>
             <h1 className="text-base font-semibold tracking-tight text-foreground">
-              {currentPage?.label ?? 'ERP System'}
+              {currentPage ? t(getTranslationKey(currentPage.label)) : 'ERP System'}
             </h1>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             {/* LAN Connection / Offline Sync Status */}
-            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-neutral-800/40 border border-neutral-700/50 backdrop-blur-sm select-none text-xs font-medium">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card-hover border border-border backdrop-blur-sm select-none text-xs font-medium">
               {lanStatus === 'online' ? (
                 <>
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   <Wifi size={14} className="text-emerald-500" />
-                  <span className="text-neutral-300">LAN Online</span>
+                  <span className="text-foreground">{t('topbar.lanOnline')}</span>
                 </>
               ) : (
                 <>
                   <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
                   <WifiOff size={14} className="text-rose-500" />
-                  <span className="text-rose-400">LAN Offline</span>
+                  <span className="text-rose-400">{t('topbar.lanOffline')}</span>
                 </>
               )}
               {hasOfflineSales && (
                 <>
-                  <div className="h-3 w-[1px] bg-neutral-700 mx-1" />
+                  <div className="h-3 w-[1px] bg-border mx-1" />
                   <RefreshCw size={12} className="text-amber-500 animate-spin" />
-                  <span className="text-amber-400 font-semibold">{offlineSales.length} Syncing</span>
+                  <span className="text-amber-400 font-semibold">{offlineSales.length} {t('topbar.syncing')}</span>
                 </>
               )}
             </div>
 
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLanguage}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold border border-border bg-transparent hover:bg-card-hover text-foreground hover:text-primary transition-all duration-150 uppercase"
+              title={language === 'ar' ? 'Switch to English' : 'تحويل للغة العربية'}
+            >
+              {language === 'ar' ? 'EN' : 'عربي'}
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-full text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* Notifications */}
             <button
-              className="relative p-1.5 rounded-full text-neutral-400 hover:text-foreground hover:bg-neutral-800/50 transition-colors"
+              className="relative p-1.5 rounded-full text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
               aria-label="View notifications"
             >
               <Bell size={18} />
@@ -191,16 +237,20 @@ export const AppLayout = React.memo(() => {
             <div className="h-5 w-[1px] bg-border" />
 
             {/* Profile Information */}
-            <div className="flex items-center space-x-2.5">
+            <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase shadow-sm select-none">
                 {user?.username?.charAt(0) || 'U'}
               </div>
-              <div className="hidden sm:flex flex-col text-left">
+              <div className="hidden sm:flex flex-col text-left rtl:text-right">
                 <span className="text-xs font-semibold text-foreground leading-tight">
                   {user?.full_name || user?.username}
                 </span>
-                <span className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">
-                  {user?.role}
+                <span className="text-[10px] text-secondary font-medium uppercase tracking-wider">
+                  {user?.role === 'admin' 
+                    ? t('dashboard.roleAdmin') 
+                    : user?.role === 'manager' 
+                    ? t('dashboard.roleManager') 
+                    : t('dashboard.roleCashier')}
                 </span>
               </div>
             </div>
@@ -208,7 +258,7 @@ export const AppLayout = React.memo(() => {
             {/* Logout Trigger */}
             <button
               onClick={handleLogout}
-              className="p-1.5 rounded-full text-neutral-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="p-1.5 rounded-full text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors"
               aria-label="Log out of session"
               title="Log out"
             >
