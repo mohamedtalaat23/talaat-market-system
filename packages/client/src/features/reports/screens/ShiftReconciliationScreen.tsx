@@ -7,9 +7,11 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ShiftReconciliationScreen() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useShiftsList({ page, limit: 15 });
 
@@ -27,33 +29,33 @@ export function ShiftReconciliationScreen() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Shift Reconciliation</CardTitle>
+          <CardTitle>{t('reports.shiftReconciliation')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center p-8"><Spinner /></div>
           ) : isError ? (
-            <div className="text-destructive text-center p-4">Failed to load shifts.</div>
+            <div className="text-destructive text-center p-4">{t('reports.failedToLoadShifts')}</div>
           ) : (
             <div className="space-y-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cashier</TableHead>
-                    <TableHead>Register</TableHead>
-                    <TableHead>Start Time</TableHead>
-                    <TableHead>End Time</TableHead>
-                    <TableHead className="text-right">Starting Cash</TableHead>
-                    <TableHead className="text-right">Expected</TableHead>
-                    <TableHead className="text-right">Actual</TableHead>
-                    <TableHead className="text-right">Variance</TableHead>
+                    <TableHead>{t('reports.cashier')}</TableHead>
+                    <TableHead>{t('reports.register')}</TableHead>
+                    <TableHead>{t('reports.startTime')}</TableHead>
+                    <TableHead>{t('reports.endTime')}</TableHead>
+                    <TableHead className="text-right">{t('reports.startingCash')}</TableHead>
+                    <TableHead className="text-right">{t('reports.expected')}</TableHead>
+                    <TableHead className="text-right">{t('reports.actual')}</TableHead>
+                    <TableHead className="text-right">{t('reports.variance')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data?.data?.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-secondary py-4">
-                        No closed shifts found.
+                        {t('reports.noClosedShifts')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -81,23 +83,23 @@ export function ShiftReconciliationScreen() {
               </Table>
               
               {data?.meta && data.meta.totalPages > 1 && (
-                <div className="flex justify-center space-x-2 pt-4">
+                <div className="flex justify-center gap-2 pt-4">
                   <Button 
                     variant="outline" 
                     disabled={page === 1} 
                     onClick={() => setPage(p => p - 1)}
                   >
-                    Previous
+                    {t('reports.previous')}
                   </Button>
-                  <span className="flex items-center text-sm text-secondary">
-                    Page {page} of {data.meta.totalPages}
+                  <span className="flex items-center text-sm text-secondary px-2">
+                    {t('reports.pageOf').replace('{page}', String(page)).replace('{total}', String(data.meta.totalPages))}
                   </span>
                   <Button 
                     variant="outline" 
                     disabled={page >= data.meta.totalPages} 
                     onClick={() => setPage(p => p + 1)}
                   >
-                    Next
+                    {t('reports.next')}
                   </Button>
                 </div>
               )}

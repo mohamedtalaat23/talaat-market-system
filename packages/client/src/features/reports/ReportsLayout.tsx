@@ -2,12 +2,15 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { FileText, Calendar, ShieldAlert } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ReportsLayout() {
+  const { t } = useTranslation();
+
   return (
     <PageContainer
-      title="Reports & Analytics"
-      description="View financial summaries, audit logs, and reconcile cashier shifts."
+      title={t('reports.title')}
+      description={t('reports.subtitle')}
     >
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sidebar Navigation for Reports */}
@@ -17,7 +20,7 @@ export function ReportsLayout() {
               <NavLink
                 to="/reports/shifts"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
                     isActive || window.location.pathname.startsWith('/reports/shifts/')
                       ? 'bg-primary/10 text-primary'
                       : 'text-secondary hover:bg-card-hover hover:text-foreground'
@@ -25,31 +28,31 @@ export function ReportsLayout() {
                 }
               >
                 <FileText size={18} />
-                <span className="font-medium text-sm">Shift Reconciliation</span>
+                <span className="font-medium text-sm">{t('reports.shiftReconciliation')}</span>
               </NavLink>
               
               <NavLink
                 to="/reports/weekly"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
                     isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >
                 <Calendar size={18} />
-                <span className="font-medium text-sm">Weekly Report</span>
+                <span className="font-medium text-sm">{t('reports.weeklyReport')}</span>
               </NavLink>
 
               <NavLink
                 to="/reports/overrides"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
                     isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >
                 <ShieldAlert size={18} />
-                <span className="font-medium text-sm">Override Audit</span>
+                <span className="font-medium text-sm">{t('reports.overrideAudit')}</span>
               </NavLink>
             </CardContent>
           </Card>

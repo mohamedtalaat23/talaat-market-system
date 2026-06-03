@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { Printer, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar
 } from 'recharts';
 
 export function WeeklyReportScreen() {
+  const { t } = useTranslation();
   const [weekStart, setWeekStart] = useState(() => {
     const now = new Date();
     const day = now.getDay();
@@ -66,7 +68,7 @@ export function WeeklyReportScreen() {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
-              <label className="text-sm text-secondary">Week Start</label>
+              <label className="text-sm text-secondary">{t('reports.weekStart')}</label>
               <Input 
                 type="date" 
                 value={weekStart} 
@@ -74,16 +76,16 @@ export function WeeklyReportScreen() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm text-secondary">Week End</label>
+              <label className="text-sm text-secondary">{t('reports.weekEnd')}</label>
               <Input 
                 type="date" 
                 value={weekEnd} 
                 onChange={(e) => setWeekEnd(e.target.value)} 
               />
             </div>
-            <Button onClick={handleLoad}>Load Report</Button>
-            <Button variant="outline" className="ml-auto" onClick={handlePrint}>
-              <Printer className="mr-2" size={16} /> Print
+            <Button onClick={handleLoad}>{t('reports.loadReport')}</Button>
+            <Button variant="outline" className="ml-auto flex items-center gap-2" onClick={handlePrint}>
+              <Printer size={16} /> {t('reports.print')}
             </Button>
           </div>
         </CardContent>
@@ -91,21 +93,21 @@ export function WeeklyReportScreen() {
 
       <div id="print-area" className="space-y-6">
         <h2 className="text-2xl font-bold hidden print:block mb-4">
-          Weekly Report ({activeQuery.weekStart} to {activeQuery.weekEnd})
+          {t('reports.weeklyReportTitle').replace('{start}', activeQuery.weekStart).replace('{end}', activeQuery.weekEnd)}
         </h2>
 
         {isLoading ? (
           <div className="flex justify-center p-12"><Spinner size="lg" /></div>
         ) : isError || !data?.data ? (
-          <div className="p-6 text-center text-destructive">Failed to load weekly report.</div>
+          <div className="p-6 text-center text-destructive">{t('reports.failedToLoadWeeklyReport')}</div>
         ) : (
           <>
             {/* Daily Revenue Chart */}
             <Card className="no-print">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <span>Revenue Trend</span>
+                  <span>{t('reports.revenueTrend')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -138,7 +140,7 @@ export function WeeklyReportScreen() {
                         contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
                         itemStyle={{ color: 'var(--color-primary-400)', fontWeight: 'bold' }}
                         labelStyle={{ color: 'var(--color-neutral-400)', marginBottom: '4px' }}
-                        formatter={(value: number) => [formatCurrency(value), 'Net Revenue']}
+                        formatter={(value: number) => [formatCurrency(value), t('reports.netRevenue')]}
                       />
                       <Area 
                         type="monotone" 
@@ -157,17 +159,17 @@ export function WeeklyReportScreen() {
             {/* Daily Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Daily Summary</CardTitle>
+                <CardTitle>{t('reports.dailySummary')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Transactions</TableHead>
-                      <TableHead className="text-right">Revenue</TableHead>
-                      <TableHead className="text-right">Discounts</TableHead>
-                      <TableHead className="text-right">Net Revenue</TableHead>
+                      <TableHead>{t('reports.date')}</TableHead>
+                      <TableHead className="text-right">{t('reports.transactions')}</TableHead>
+                      <TableHead className="text-right">{t('reports.revenue')}</TableHead>
+                      <TableHead className="text-right">{t('reports.discounts')}</TableHead>
+                      <TableHead className="text-right">{t('reports.netRevenue')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -184,8 +186,8 @@ export function WeeklyReportScreen() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="bg-neutral-900 border-t-2 border-border">
-                      <TableCell className="font-bold text-lg">TOTALS</TableCell>
+                    <TableRow className="bg-card-hover border-t-2 border-border">
+                      <TableCell className="font-bold text-lg">{t('reports.totals')}</TableCell>
                       <TableCell className="text-right font-bold">{data.data.totals.transaction_count}</TableCell>
                       <TableCell className="text-right font-mono font-bold">{formatCurrency(data.data.totals.total_revenue)}</TableCell>
                       <TableCell className="text-right font-mono font-bold text-warning">
@@ -203,21 +205,21 @@ export function WeeklyReportScreen() {
             {/* Top Products */}
             <Card>
               <CardHeader>
-                <CardTitle>Top Products This Week</CardTitle>
+                <CardTitle>{t('reports.topProductsTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {data.data.top_products.length === 0 ? (
-                  <div className="text-center py-6 text-neutral-500 italic">No products sold this week</div>
+                  <div className="text-center py-6 text-neutral-500 italic">{t('reports.noProductsSold')}</div>
                 ) : (
                   <div className="grid md:grid-cols-2 gap-8">
                     <div>
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-16 text-center">Rank</TableHead>
-                            <TableHead>Product Name</TableHead>
-                            <TableHead className="text-right">Units Sold</TableHead>
-                            <TableHead className="text-right">Revenue</TableHead>
+                            <TableHead className="w-16 text-center">{t('reports.rank')}</TableHead>
+                            <TableHead>{t('reports.productName')}</TableHead>
+                            <TableHead className="text-right">{t('reports.unitsSold')}</TableHead>
+                            <TableHead className="text-right">{t('reports.revenue')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -249,7 +251,7 @@ export function WeeklyReportScreen() {
                           <Tooltip 
                             cursor={{fill: 'var(--color-neutral-800)'}}
                             contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
-                            formatter={(value: number) => [value, 'Units Sold']}
+                            formatter={(value: number) => [value, t('reports.unitsSold')]}
                           />
                           <Bar dataKey="total_quantity_sold" fill="var(--color-primary-500)" radius={[0, 4, 4, 0]} barSize={20} />
                         </BarChart>

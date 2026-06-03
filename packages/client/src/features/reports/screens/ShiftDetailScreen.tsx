@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { ArrowLeft, CheckCircle2, XCircle, FileWarning } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ShiftDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const shiftId = Number(id);
 
   const [txPage, setTxPage] = useState(1);
@@ -25,8 +27,8 @@ export function ShiftDetailScreen() {
   if (isError || !data?.data) {
     return (
       <div className="p-6 text-center space-y-4">
-        <p className="text-destructive">Failed to load shift details.</p>
-        <Button variant="outline" onClick={() => navigate('/reports/shifts')}>Back to Shifts</Button>
+        <p className="text-destructive">{t('reports.failedToLoadShiftDetail')}</p>
+        <Button variant="outline" onClick={() => navigate('/reports/shifts')}>{t('reports.backToShifts')}</Button>
       </div>
     );
   }
@@ -50,68 +52,68 @@ export function ShiftDetailScreen() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/reports/shifts')}>
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-xl font-semibold">Shift Detail #{shift.id}</h2>
+        <h2 className="text-xl font-semibold">{t('reports.shiftDetailTitle').replace('{id}', String(shift.id))}</h2>
       </div>
 
       {/* Shift Summary Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Shift Summary</CardTitle>
+          <CardTitle>{t('reports.shiftSummary')}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-xs text-secondary mb-1">Cashier</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.cashier')}</p>
             <p className="font-semibold">{shift.cashier_name || 'Unknown'}</p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Register</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.register')}</p>
             <p className="font-semibold">{shift.register_name || 'Main'}</p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Duration</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.duration')}</p>
             <p className="text-sm">
               {formatDateTime(new Date(shift.start_time))} <br />
-              {shift.end_time ? formatDateTime(new Date(shift.end_time)) : 'Ongoing'}
+              {shift.end_time ? formatDateTime(new Date(shift.end_time)) : t('reports.ongoing')}
             </p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Totals</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.totals')}</p>
             <div className="text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>Revenue:</span>
+              <div className="flex justify-between gap-4">
+                <span>{t('reports.revenue')}:</span>
                 <span className="font-mono">{formatCurrency(summary.total_revenue)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Discounts:</span>
+              <div className="flex justify-between gap-4">
+                <span>{t('reports.discounts')}:</span>
                 <span className="font-mono">{formatCurrency(summary.total_discounts)}</span>
               </div>
             </div>
           </div>
           
           <div>
-            <p className="text-xs text-secondary mb-1">Starting Cash</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.startingCash')}</p>
             <p className="font-mono">{formatCurrency(shift.starting_cash)}</p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Expected Cash</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.expectedCash')}</p>
             <p className="font-mono">{shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : 'N/A'}</p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Actual Ending Cash</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.actualEndingCash')}</p>
             <p className="font-mono font-bold">{shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : 'N/A'}</p>
           </div>
           <div>
-            <p className="text-xs text-secondary mb-1">Variance</p>
+            <p className="text-xs text-secondary mb-1">{t('reports.variance')}</p>
             <div className="mt-1">{renderVarianceBadge(shift.variance)}</div>
           </div>
           
           {shift.notes && (
             <div className="col-span-full mt-2 pt-2 border-t border-border">
-              <p className="text-xs text-secondary mb-1">Closing Notes</p>
+              <p className="text-xs text-secondary mb-1">{t('reports.closingNotes')}</p>
               <p className="text-sm italic">{shift.notes}</p>
             </div>
           )}
@@ -121,24 +123,24 @@ export function ShiftDetailScreen() {
       {/* Override Log */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2">
             <FileWarning size={18} className="text-warning" />
-            <span>Override Log</span>
+            <span>{t('reports.overrideLog')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {overrides.length === 0 ? (
             <div className="text-center py-6 text-neutral-500 italic">
-              No overrides recorded for this shift
+              {t('reports.noOverridesForShift')}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Details</TableHead>
+                  <TableHead>{t('reports.time')}</TableHead>
+                  <TableHead>{t('reports.manager')}</TableHead>
+                  <TableHead>{t('reports.action')}</TableHead>
+                  <TableHead>{t('reports.details')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -159,19 +161,19 @@ export function ShiftDetailScreen() {
       {/* Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Transactions ({summary.transaction_count})</CardTitle>
+          <CardTitle>{t('reports.transactions')} ({summary.transaction_count})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Receipt #</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Discounts</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center">Prints</TableHead>
+                <TableHead>{t('reports.receiptNumber')}</TableHead>
+                <TableHead>{t('reports.time')}</TableHead>
+                <TableHead>{t('reports.paymentMethod')}</TableHead>
+                <TableHead className="text-right">{t('pos.total')}</TableHead>
+                <TableHead className="text-right">{t('reports.discounts')}</TableHead>
+                <TableHead className="text-center">{t('common.status')}</TableHead>
+                <TableHead className="text-center">{t('reports.prints')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,7 +199,7 @@ export function ShiftDetailScreen() {
               {transactions.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-6 text-neutral-500">
-                    No transactions found
+                    {t('reports.noTransactionsFound')}
                   </TableCell>
                 </TableRow>
               )}
@@ -208,8 +210,8 @@ export function ShiftDetailScreen() {
           {transactions_meta && transactions_meta.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
               <span className="text-xs text-neutral-500 font-mono">
-                Page {transactions_meta.page} of {transactions_meta.totalPages}
-                {' • '}{transactions_meta.total} total transactions
+                {t('reports.pageOf').replace('{page}', String(transactions_meta.page)).replace('{total}', String(transactions_meta.totalPages))}
+                {' • '}{transactions_meta.total} {t('reports.transactions')}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -218,7 +220,7 @@ export function ShiftDetailScreen() {
                   onClick={() => setTxPage((p) => Math.max(1, p - 1))}
                   disabled={txPage <= 1}
                 >
-                  ← Previous
+                  ← {t('reports.previous')}
                 </Button>
                 <Button
                   variant="outline"
@@ -226,7 +228,7 @@ export function ShiftDetailScreen() {
                   onClick={() => setTxPage((p) => Math.min(transactions_meta.totalPages, p + 1))}
                   disabled={txPage >= transactions_meta.totalPages}
                 >
-                  Next →
+                  {t('reports.next')} →
                 </Button>
               </div>
             </div>

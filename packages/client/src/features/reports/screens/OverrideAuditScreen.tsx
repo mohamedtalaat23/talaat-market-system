@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatDateTime } from '@/utils/formatters';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function OverrideAuditScreen() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -42,7 +44,7 @@ export function OverrideAuditScreen() {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
-              <label className="text-sm text-secondary">Date From</label>
+              <label className="text-sm text-secondary">{t('reports.dateFrom')}</label>
               <Input 
                 type="date" 
                 value={dateFrom} 
@@ -50,21 +52,21 @@ export function OverrideAuditScreen() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm text-secondary">Date To</label>
+              <label className="text-sm text-secondary">{t('reports.dateTo')}</label>
               <Input 
                 type="date" 
                 value={dateTo} 
                 onChange={(e) => setDateTo(e.target.value)} 
               />
             </div>
-            <Button onClick={handleApplyFilters}>Apply Filter</Button>
+            <Button onClick={handleApplyFilters}>{t('reports.applyFilter')}</Button>
             {(activeFilters.date_from || activeFilters.date_to) && (
               <Button variant="ghost" onClick={() => {
                 setDateFrom('');
                 setDateTo('');
                 setPage(1);
                 setActiveFilters({ date_from: '', date_to: '' });
-              }}>Clear</Button>
+              }}>{t('reports.clear')}</Button>
             )}
           </div>
         </CardContent>
@@ -72,31 +74,31 @@ export function OverrideAuditScreen() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Manager Overrides Log</CardTitle>
+          <CardTitle>{t('reports.managerOverridesLog')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center p-8"><Spinner /></div>
           ) : isError ? (
-            <div className="text-destructive text-center p-4">Failed to load override logs.</div>
+            <div className="text-destructive text-center p-4">{t('reports.failedToLoadOverrides')}</div>
           ) : (
             <div className="space-y-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Manager</TableHead>
-                    <TableHead>Cashier</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Details</TableHead>
+                    <TableHead>{t('reports.dateTime')}</TableHead>
+                    <TableHead>{t('reports.manager')}</TableHead>
+                    <TableHead>{t('reports.cashier')}</TableHead>
+                    <TableHead>{t('reports.action')}</TableHead>
+                    <TableHead>{t('reports.reference')}</TableHead>
+                    <TableHead>{t('reports.details')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data?.data?.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-neutral-500 italic py-6">
-                        No manager overrides have been recorded.
+                        {t('reports.noOverridesRecorded')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -114,23 +116,23 @@ export function OverrideAuditScreen() {
               </Table>
               
               {data?.meta && data.meta.totalPages > 1 && (
-                <div className="flex justify-center space-x-2 pt-4">
+                <div className="flex justify-center gap-2 pt-4">
                   <Button 
                     variant="outline" 
                     disabled={page === 1} 
                     onClick={() => setPage(p => p - 1)}
                   >
-                    Previous
+                    {t('reports.previous')}
                   </Button>
-                  <span className="flex items-center text-sm text-secondary">
-                    Page {page} of {data.meta.totalPages}
+                  <span className="flex items-center text-sm text-secondary px-2">
+                    {t('reports.pageOf').replace('{page}', String(page)).replace('{total}', String(data.meta.totalPages))}
                   </span>
                   <Button 
                     variant="outline" 
                     disabled={page >= data.meta.totalPages} 
                     onClick={() => setPage(p => p + 1)}
                   >
-                    Next
+                    {t('reports.next')}
                   </Button>
                 </div>
               )}
