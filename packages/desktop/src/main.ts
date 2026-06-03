@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
 import path from 'path';
 import { ServerManager } from './server-manager';
+import { PostgresManager } from './postgres-manager';
 import { registerIpcHandlers } from './ipc/handlers';
 
 // ── Logger (simple console wrapper for main process) ────────────────────────
@@ -18,6 +19,7 @@ const SERVER_PORT_DEV = 3001; // Dev server runs on fixed port
 // ── App state ────────────────────────────────────────────────────────────────
 let mainWindow: BrowserWindow | null = null;
 const serverManager = new ServerManager();
+const postgresManager = new PostgresManager();
 
 // ── Force dark mode (supermarket staff prefer it) ────────────────────────────
 nativeTheme.themeSource = 'dark';
@@ -88,7 +90,9 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
     await win.loadURL(VITE_DEV_SERVER_URL);
   } else {
     // Production: Load from built files
-    const indexPath = path.join(__dirname, '../../client/dist/index.html');
+    const indexPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'client/dist/index.html')
+      : path.join(__dirname, '../../client/dist/index.html');
     logger.info(`Loading from: ${indexPath}`);
     await win.loadFile(indexPath);
   }
@@ -114,9 +118,16 @@ app.on('ready', async () => {
   logger.info(`Platform: ${process.platform}, isDev: ${isDev}`);
 
   try {
+    const managedPostgres = await postgresManager.start();
+    const childEnv = managedPostgres?.env ?? {};
+
     // In production: start and wait for the Express server
     // In development: Express is already running separately
-    const serverPort = isDev ? SERVER_PORT_DEV : await serverManager.start();
+    if (!isDev) {
+      await serverManager.runStartupTasks(childEnv);
+    }
+
+    const serverPort = isDev ? SERVER_PORT_DEV : await serverManager.start(childEnv);
     logger.info(`Server port: ${serverPort}`);
 
     // Register all IPC handlers
@@ -128,6 +139,10 @@ app.on('ready', async () => {
     logger.info('Main window created successfully');
   } catch (error) {
     logger.error('Failed to start application', error);
+    dialog.showErrorBox(
+      'Talaat Market failed to start',
+      error instanceof Error ? error.message : String(error),
+    );
     app.quit();
   }
 });
@@ -151,6 +166,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', async () => {
   logger.info('App quitting — stopping server...');
   await serverManager.stop();
+  await postgresManager.stop();
 });
 
 // Handle uncaught errors in main process

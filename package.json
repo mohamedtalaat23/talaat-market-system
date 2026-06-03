@@ -14,6 +14,7 @@
     "dev:client": "npm run dev --workspace=packages/client",
     "dev:desktop": "npm run dev --workspace=packages/desktop",
     "build": "npm run build --workspace=packages/server && npm run build --workspace=packages/client && npm run build --workspace=packages/desktop",
+    "build:win": "npm run build --workspace=packages/server && npm run build --workspace=packages/client && npm run build:win --workspace=packages/desktop",
     "build:server": "npm run build --workspace=packages/server",
     "build:client": "npm run build --workspace=packages/client",
     "build:desktop": "npm run build --workspace=packages/desktop",
@@ -25,7 +26,7 @@
     "db:migrate": "npm run migrate --workspace=packages/server",
     "db:rollback": "npm run migrate:rollback --workspace=packages/server",
     "db:seed": "npm run seed --workspace=packages/server",
-    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+    "clean": "node scripts/clean.cjs"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",

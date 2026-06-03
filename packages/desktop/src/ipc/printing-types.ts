@@ -34,9 +34,10 @@ export interface Receipt {
 }
 
 export interface PrinterConfig {
-  type: 'mock' | 'usb';
+  type: 'mock' | 'usb' | 'system';
   paperWidth: 58 | 80;
   devicePath: string;
+  deviceName?: string;
   autoPrint: boolean;
   retries: number;
 }

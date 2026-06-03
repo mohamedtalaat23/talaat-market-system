@@ -43,12 +43,12 @@ const knexConfig: Knex.Config = {
     },
   },
   migrations: {
-    directory: path.resolve(__dirname, '../../migrations'),
-    extension: 'ts',
+    directory: path.resolve(__dirname, env.NODE_ENV === 'production' ? '../migrations' : '../../migrations'),
+    extension: env.NODE_ENV === 'production' ? 'js' : 'ts',
   },
   seeds: {
-    directory: path.resolve(__dirname, '../../seeds'),
-    extension: 'ts',
+    directory: path.resolve(__dirname, env.NODE_ENV === 'production' ? '../seeds' : '../../seeds'),
+    extension: env.NODE_ENV === 'production' ? 'js' : 'ts',
   },
   // Use snake_case for all column/table names
   wrapIdentifier: (value, origImpl) => origImpl(value),

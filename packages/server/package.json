@@ -6,10 +6,11 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/database/migrate.ts",
+    "bootstrap": "tsx src/database/bootstrap.ts",
     "migrate:rollback": "tsx src/database/migrate.ts rollback",
     "seed": "tsx src/database/migrate.ts seed"
   },

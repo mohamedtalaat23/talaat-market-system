@@ -1,4 +1,5 @@
 import { fork, type ChildProcess } from 'child_process';
+import { app } from 'electron';
 import path from 'path';
 import * as net from 'net';
 import { logger } from './main';
@@ -41,7 +42,7 @@ export class ServerManager {
    * Find an available port and start the Express server.
    * Returns the port number once the server signals 'ready'.
    */
-  async start(): Promise<number> {
+  async start(extraEnv: Record<string, string> = {}): Promise<number> {
     // Find an available port (prefer 3001, fall back to others)
     this.port = await findAvailablePort(3001);
 
@@ -51,11 +52,20 @@ export class ServerManager {
       return this.port;
     }
 
-    return this.startProductionServer();
+    return this.startProductionServer(extraEnv);
   }
 
-  private async startProductionServer(): Promise<number> {
-    const serverPath = path.join(__dirname, '../../server/dist/index.js');
+  async runStartupTasks(extraEnv: Record<string, string> = {}): Promise<void> {
+    if (process.env['NODE_ENV'] === 'development') {
+      return;
+    }
+
+    await this.runNodeChild(this.getServerAssetPath('database/migrate.js'), [], extraEnv, 'migrations');
+    await this.runNodeChild(this.getServerAssetPath('database/bootstrap.js'), [], extraEnv, 'bootstrap');
+  }
+
+  private async startProductionServer(extraEnv: Record<string, string>): Promise<number> {
+    const serverPath = this.getServerAssetPath('index.js');
 
     logger.info(`[ServerManager] Starting Express server from: ${serverPath}`);
 
@@ -66,6 +76,8 @@ export class ServerManager {
         this.process = fork(serverPath, [], {
           env: {
             ...process.env,
+            ...extraEnv,
+            ELECTRON_RUN_AS_NODE: '1',
             NODE_ENV: 'production',
             SERVER_PORT: String(this.port),
             SERVER_HOST: 'localhost',
@@ -162,5 +174,44 @@ export class ServerManager {
 
   getPort(): number {
     return this.port;
+  }
+
+  private getServerAssetPath(relativePath: string): string {
+    if (app.isPackaged) {
+      return path.join(process.resourcesPath, 'server', 'dist', relativePath);
+    }
+
+    return path.join(__dirname, '../../server/dist', relativePath);
+  }
+
+  private runNodeChild(
+    scriptPath: string,
+    args: string[],
+    extraEnv: Record<string, string>,
+    label: string,
+  ): Promise<void> {
+    logger.info(`[ServerManager] Running ${label}: ${scriptPath}`);
+
+    return new Promise<void>((resolve, reject) => {
+      const child = fork(scriptPath, args, {
+        env: {
+          ...process.env,
+          ...extraEnv,
+          ELECTRON_RUN_AS_NODE: '1',
+          NODE_ENV: 'production',
+        },
+        silent: false,
+      });
+
+      child.on('error', reject);
+      child.on('exit', (code, signal) => {
+        if (code === 0) {
+          resolve();
+          return;
+        }
+
+        reject(new Error(`${label} failed (code=${code}, signal=${signal})`));
+      });
+    });
   }
 }

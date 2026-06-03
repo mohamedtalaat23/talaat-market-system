@@ -121,6 +121,15 @@ export function registerIpcHandlers(
 
   ipcMain.handle(IPC_CHANNELS.GET_PRINTER_STATUS, async () => {
     const config = printQueue.getConfig();
+    if (config.type === 'system') {
+      return {
+        online: true,
+        message: config.deviceName
+          ? `Windows system printer selected: ${config.deviceName}`
+          : 'Windows system printer mode active. Default printer will be used.',
+      };
+    }
+
     let adapter;
     if (config.type === 'mock') {
       adapter = new MockPrinterAdapter();
@@ -140,6 +149,12 @@ export function registerIpcHandlers(
   });
 
   ipcMain.handle(IPC_CHANNELS.DISCOVER_PRINTERS, async () => {
+    if (process.platform === 'win32') {
+      const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+      const printers = await win?.webContents.getPrintersAsync();
+      return (printers ?? []).map((printer) => printer.name);
+    }
+
     return UsbPrinterAdapter.discover();
   });
 

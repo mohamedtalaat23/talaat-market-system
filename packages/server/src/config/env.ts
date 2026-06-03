@@ -2,13 +2,17 @@ import { z } from 'zod';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// When npm runs workspace scripts, process.cwd() = packages/server/
-// The monorepo root .env is two levels up: ../../.env
-// We also try the current directory as fallback.
-dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+const envFiles = [
+  process.env['TALAAT_CONFIG_PATH'],
+  path.resolve(process.cwd(), '../../.env'),
+  path.resolve(process.cwd(), '../../.env.production'),
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '.env.production'),
+].filter((value): value is string => Boolean(value));
 
-
+for (const envFile of envFiles) {
+  dotenv.config({ path: envFile, override: false });
+}
 
 /**
  * Environment variable schema with validation.

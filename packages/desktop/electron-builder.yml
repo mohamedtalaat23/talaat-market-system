@@ -1,6 +1,7 @@
 appId: com.talaat.market
 productName: Talaat Market
 copyright: Copyright © 2026 Talaat Market
+electronVersion: 39.8.10
 
 # Files to include in the package
 files:
@@ -14,8 +15,14 @@ extraResources:
     to: "client/dist"
   - from: "../server/dist"
     to: "server/dist"
-  - from: "../server/node_modules"
-    to: "server/node_modules"
+  - from: "../../node_modules"
+    to: "node_modules"
+    filter:
+      - "**/*"
+  - from: "../../vendor/postgres/win-x64"
+    to: "postgres/win-x64"
+    filter:
+      - "**/*"
 
 # Build output directory
 directories:
@@ -28,17 +35,13 @@ win:
     - target: nsis
       arch:
         - x64
-  icon: resources/icon.ico
-  # Request admin rights for first install (needed for PostgreSQL setup)
+  # App-managed bundled PostgreSQL runs without a Windows service.
   requestedExecutionLevel: asInvoker
 
 nsis:
   oneClick: false
   allowElevation: true
   allowToChangeInstallationDirectory: true
-  installerIcon: resources/icon.ico
-  uninstallerIcon: resources/icon.ico
-  installerHeaderIcon: resources/icon.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Talaat Market
@@ -61,7 +64,7 @@ linux:
 deb:
   depends:
     - "postgresql-client"
-  afterInstall: scripts/postinstall.sh
+  # afterInstall: scripts/postinstall.sh
 
 # ── macOS (future) ────────────────────────────────────────────────
 # mac:

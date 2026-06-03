@@ -114,6 +114,48 @@ This starts all three packages concurrently:
 
 ---
 
+## Packaged Windows App
+
+The Windows installer is designed to run out of the box without a separate
+PostgreSQL installation. Electron starts a bundled PostgreSQL runtime, stores
+the database under the Windows user profile, runs migrations, creates the
+baseline admin account, and then starts the local API server.
+
+Before building the Windows installer, place the PostgreSQL Windows x64 runtime
+under:
+
+```text
+vendor/postgres/win-x64
+```
+
+The required runtime layout is documented in
+`vendor/postgres/win-x64/README.md`. The installer packages that directory into
+`resources/postgres/win-x64`.
+
+On first launch, the app creates:
+
+```text
+%APPDATA%/Talaat Market/postgres-data
+%APPDATA%/Talaat Market/config.env
+%APPDATA%/Talaat Market/logs
+%APPDATA%/Talaat Market/backups
+```
+
+The generated `config.env` contains local database credentials and generated
+session/JWT secrets. Keep it private.
+
+Default first-run admin account:
+
+```text
+Username: admin
+Password: admin123
+PIN: 1111
+```
+
+Change this password immediately after first login.
+
+---
+
 ## Project Structure
 
 ```

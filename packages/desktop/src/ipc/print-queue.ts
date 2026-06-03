@@ -11,6 +11,7 @@ export const DEFAULT_PRINTER_CONFIG: PrinterConfig = {
   type: 'mock',
   paperWidth: 80,
   devicePath: '/dev/usb/lp0',
+  deviceName: '',
   autoPrint: true,
   retries: 3,
 };
@@ -94,6 +95,10 @@ export class PrintQueue {
   public async kickDrawer(): Promise<{ success: boolean; message: string }> {
     console.log('[PrintQueue] High-priority cash drawer kick requested. Bypassing print queue.');
     
+    if (this.config.type === 'system') {
+      return { success: false, message: 'Cash drawer kick is not supported by Windows system printer mode' };
+    }
+
     let adapter: PrinterAdapter;
     if (this.config.type === 'mock') {
       adapter = new MockPrinterAdapter();
@@ -142,6 +147,10 @@ export class PrintQueue {
 
     // 2. Perform connection re-initialization and flush physical hardware buffers
     try {
+      if (this.config.type === 'system') {
+        return { success: false, message: 'Printer recovery is not required for Windows system printer mode.' };
+      }
+
       let adapter: PrinterAdapter;
       if (this.config.type === 'mock') {
         adapter = new MockPrinterAdapter();
@@ -184,6 +193,16 @@ export class PrintQueue {
     console.log(`[PrintQueue] Processing job: ${nextJob.id} (Attempt ${nextJob.attempts + 1})`);
 
     try {
+      if (this.config.type === 'system') {
+        await this.printWithSystemPrinter(nextJob.receipt, this.config);
+        nextJob.status = 'completed';
+        nextJob.error = null;
+        console.log(`[PrintQueue] Printed successfully via system printer: Job ${nextJob.id}`);
+        this.isProcessing = false;
+        this.triggerProcessing();
+        return;
+      }
+
       let adapter: PrinterAdapter;
       if (this.config.type === 'mock') {
         adapter = new MockPrinterAdapter();
@@ -259,6 +278,20 @@ export class PrintQueue {
    */
   public async testPrinter(tempConfig: PrinterConfig): Promise<PrinterStatus> {
     try {
+      if (tempConfig.type === 'system') {
+        await this.printLinesWithSystemPrinter([
+          'TALAAT MARKET SYSTEM',
+          'WINDOWS SYSTEM PRINTER TEST',
+          '--------------------------------',
+          `Time: ${new Date().toLocaleString()}`,
+          `Printer: ${tempConfig.deviceName || 'Default printer'}`,
+          `Width: ${tempConfig.paperWidth}mm`,
+          '--------------------------------',
+          'PRINTER TEST SUCCESSFUL!',
+        ], tempConfig);
+        return { online: true, message: 'Windows system printer test completed successfully' };
+      }
+
       let adapter: PrinterAdapter;
       if (tempConfig.type === 'mock') {
         adapter = new MockPrinterAdapter();
@@ -305,6 +338,93 @@ export class PrintQueue {
     } catch (err) {
       console.error('[PrintQueue] Error broadcasting events to windows:', err);
     }
+  }
+
+  private async printWithSystemPrinter(receipt: Receipt, config: PrinterConfig): Promise<void> {
+    const lines = ReceiptRenderer.render(receipt, config.paperWidth);
+    await this.printLinesWithSystemPrinter(lines, config);
+  }
+
+  private printLinesWithSystemPrinter(lines: string[], config: PrinterConfig): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const printWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
+      });
+
+      const timeout = setTimeout(() => {
+        if (!printWindow.isDestroyed()) {
+          printWindow.destroy();
+        }
+        reject(new Error('PRINTER_TIMEOUT: Windows system printer did not respond in time'));
+      }, 20_000);
+
+      const escapedLines = lines.map((line) =>
+        line
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+      );
+      const widthPx = config.paperWidth === 58 ? 219 : 302;
+      const html = `
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <style>
+              body { margin: 0; background: white; }
+              pre {
+                width: ${widthPx}px;
+                margin: 0;
+                padding: 8px;
+                color: black;
+                font-family: Consolas, "Courier New", monospace;
+                font-size: 11px;
+                line-height: 1.3;
+                white-space: pre-wrap;
+              }
+            </style>
+          </head>
+          <body><pre>${escapedLines.join('\n')}</pre></body>
+        </html>
+      `;
+
+      printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+      printWindow.webContents.once('did-finish-load', () => {
+        const printOptions: import('electron').WebContentsPrintOptions = {
+          silent: Boolean(config.deviceName),
+          printBackground: true,
+          margins: {
+            marginType: 'none',
+          },
+        };
+        if (config.deviceName) {
+          printOptions.deviceName = config.deviceName;
+        }
+
+        printWindow.webContents.print(printOptions, (success, failureReason) => {
+          clearTimeout(timeout);
+          if (!printWindow.isDestroyed()) {
+            printWindow.destroy();
+          }
+          if (success) {
+            resolve();
+          } else {
+            reject(new Error(`HARDWARE_ERROR: ${failureReason || 'Windows system print failed'}`));
+          }
+        });
+      });
+      printWindow.webContents.once('did-fail-load', (_event, _code, description) => {
+        clearTimeout(timeout);
+        if (!printWindow.isDestroyed()) {
+          printWindow.destroy();
+        }
+        reject(new Error(`HARDWARE_ERROR: Failed to load print document: ${description}`));
+      });
+    });
   }
 }
 
