@@ -80,7 +80,7 @@ export function PurchasesPage() {
         return (
           <Badge
             variant="warning"
-            className="bg-amber-950/40 text-amber-400 border-amber-800/50 uppercase"
+            className="bg-warning/15 text-warning border-warning/30 uppercase"
           >
             {t('purchases.ordered')}
           </Badge>
@@ -89,7 +89,7 @@ export function PurchasesPage() {
         return (
           <Badge
             variant="success"
-            className="bg-emerald-950/40 text-emerald-400 border-emerald-800/50 uppercase"
+            className="bg-success/15 text-success border-success/30 uppercase"
           >
             {t('purchases.received')}
           </Badge>
@@ -98,7 +98,7 @@ export function PurchasesPage() {
         return (
           <Badge
             variant="destructive"
-            className="bg-rose-950/40 text-rose-400 border-rose-800/50 uppercase"
+            className="bg-danger/15 text-danger border-danger/30 uppercase"
           >
             {t('purchases.cancelled')}
           </Badge>
@@ -140,7 +140,7 @@ export function PurchasesPage() {
         isManagerOrAdmin ? (
           <Button
             onClick={handleCreate}
-            className="flex items-center gap-1.5 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white"
+            className="flex items-center gap-1.5 font-semibold bg-success hover:bg-success/90 text-white"
           >
             <Plus size={16} />
             <span>{t('purchases.createPO')}</span>
@@ -179,7 +179,7 @@ export function PurchasesPage() {
             {t('purchases.pendingDeliveries')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-amber-500">
+            <span className="text-3xl font-bold tracking-tight text-warning">
               {items.filter((po) => po.status === 'ordered').length}
             </span>
             <span className="text-xs text-secondary font-mono">{t('purchases.inTransit')}</span>
@@ -191,7 +191,7 @@ export function PurchasesPage() {
             {t('purchases.receivedAudited')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-emerald-500">
+            <span className="text-3xl font-bold tracking-tight text-success">
               {items.filter((po) => po.status === 'received').length}
             </span>
             <span className="text-xs text-secondary font-mono">{t('purchases.stockSettled')}</span>
@@ -300,7 +300,7 @@ export function PurchasesPage() {
                           <Button
                             size="sm"
                             onClick={() => handlePlaceOrder(po.id)}
-                            className="bg-amber-600 hover:bg-amber-500 text-white font-semibold"
+                            className="bg-warning/90 hover:bg-warning text-white font-semibold"
                           >
                             {t('purchases.placeOrder')}
                           </Button>
@@ -310,7 +310,7 @@ export function PurchasesPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleCancelOrder(po.id)}
-                            className="text-rose-500 hover:text-rose-400 hover:bg-rose-950/20"
+                            className="text-danger hover:text-danger hover:bg-danger/10"
                             title={t('purchases.cancel')}
                           >
                             <XCircle size={14} />

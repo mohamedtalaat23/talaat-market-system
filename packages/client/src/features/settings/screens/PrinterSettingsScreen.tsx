@@ -120,14 +120,14 @@ export function PrinterSettingsScreen() {
           className="rounded-lg p-2 text-secondary hover:bg-card-hover hover:text-foreground transition-colors border border-border"
           title={t('settings.refreshPrinter')}
         >
-          <RefreshCw size={16} className={isLoadingStatus ? 'animate-spin text-emerald-400' : ''} />
+          <RefreshCw size={16} className={isLoadingStatus ? 'animate-spin text-success' : ''} />
         </button>
       </div>
 
       {/* Live status badge */}
       {printerStatus && (
         <div
-          className={`flex items-start gap-3 rounded-lg border p-4 ${printerStatus.online ? 'border-emerald-900/30 bg-emerald-950/15 text-emerald-300' : 'border-rose-900/30 bg-rose-950/15 text-rose-300'}`}
+          className={`flex items-start gap-3 rounded-lg border p-4 ${printerStatus.online ? 'border-success/30 bg-success/15 text-success' : 'border-danger/20 bg-danger/15 text-danger'}`}
         >
           <div className="mt-0.5">
             {printerStatus.online ? <CheckCircle2 size={18} /> : <ShieldAlert size={18} />}
@@ -226,7 +226,7 @@ export function PrinterSettingsScreen() {
                 <span>{t('settings.noPrintersDetected')}</span>
               </p>
             ) : (
-              <p className="text-xs text-emerald-500 font-medium">
+              <p className="text-xs text-success font-medium">
                 {t('settings.printersFound').replace('{count}', String(discoveredPorts.length))}
               </p>
             )}
@@ -280,7 +280,7 @@ export function PrinterSettingsScreen() {
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-lg shadow-emerald-950/20"
+            className="flex items-center justify-center rounded-lg bg-success px-6 py-2.5 text-sm font-semibold text-white hover:bg-success/90 disabled:opacity-50 transition-colors shadow-lg shadow-success/10"
           >
             {isSaving ? t('settings.savingConfig') : t('settings.saveConfig')}
           </button>

@@ -53,21 +53,21 @@
   --color-neutral-950: #020617;
 
   /* ── Semantic Colors (Dark Theme Default) ───────────────── */
-  --bg-app: var(--color-neutral-950);
-  --bg-sidebar: var(--color-neutral-900);
-  --bg-header: var(--color-neutral-900);
+  --bg-app: #030712;
+  --bg-sidebar: #0c1222;
+  --bg-header: #0c1222;
   --bg-card: var(--color-neutral-800);
-  --bg-card-hover: var(--color-neutral-700);
-  --bg-input: var(--color-neutral-800);
+  --bg-card-hover: #293548;
+  --bg-input: #162032;
   --bg-modal: var(--color-neutral-800);
   --bg-tooltip: var(--color-neutral-700);
 
-  --border-color: var(--color-neutral-700);
+  --border-color: #2a3a50;
   --border-focus: var(--color-primary-500);
 
   --text-primary: var(--color-neutral-50);
   --text-secondary: var(--color-neutral-400);
-  --text-muted: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-400);
   --text-on-primary: var(--color-neutral-0);
   --text-on-danger: var(--color-neutral-0);
   --text-success: var(--color-success-400);
@@ -139,7 +139,8 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
-  --shadow-glow: 0 0 20px rgb(99 102 241 / 0.3);
+  --shadow-glow: 0 0 24px rgb(99 102 241 / 0.15);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(99 102 241 / 0.04);
 
   /* ── Transitions ─────────────────────────────────────────── */
   --transition-fast: 100ms ease;
@@ -156,30 +157,33 @@
   --z-tooltip: 500;
 
   /* ── Radial Gradient Background Start (Dark Default) ────── */
-  --bg-gradient-start: var(--color-neutral-900);
+  --bg-gradient-start: #0e1726;
+
+  /* ── Theme Transition ──────────────────────────────────────── */
+  --theme-transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  /* Override semantic variables for Light Mode (absolute hex mapping to prevent light-theme collisions) */
-  --bg-app: #f8fafc;
-  --bg-sidebar: #f1f5f9;
-  --bg-header: #f1f5f9;
+  /* Override semantic variables for Light Mode */
+  --bg-app: #f4f6f9;
+  --bg-sidebar: #eaeff5;
+  --bg-header: #eaeff5;
   --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
-  --bg-input: #ffffff;
+  --bg-card-hover: #f0f4f8;
+  --bg-input: #f8fafc;
   --bg-modal: #ffffff;
   --bg-tooltip: #cbd5e1;
 
-  --border-color: #e2e8f0;
+  --border-color: #dde3ec;
   --border-focus: var(--color-primary-400);
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
 
-  --bg-gradient-start: #f1f5f9;
+  --bg-gradient-start: #e8edf4;
 
   /* Invert the absolute neutral color scale in light mode so hardcoded Tailwind utility classes scale cleanly */
   --color-neutral-50: #020617;
@@ -189,10 +193,10 @@
   --color-neutral-400: #475569;
   --color-neutral-500: #64748b;
   --color-neutral-600: #94a3b8;
-  --color-neutral-700: #cbd5e1;
-  --color-neutral-800: #e2e8f0;
-  --color-neutral-900: #f1f5f9;
-  --color-neutral-950: #f8fafc;
+  --color-neutral-700: #dde3ec;
+  --color-neutral-800: #e8edf4;
+  --color-neutral-900: #eaeff5;
+  --color-neutral-950: #f4f6f9;
 
   /* Redefine base status colors in light theme for WCAG contrast */
   --color-primary-500: var(--color-primary-600);
@@ -204,8 +208,10 @@
   --text-warning: var(--color-warning-600);
   --text-danger: var(--color-danger-600);
 
-  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.08);
-  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.1);
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.08), 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-lg: 0 10px 24px rgb(15 23 42 / 0.1), 0 4px 8px rgb(15 23 42 / 0.06);
+  --shadow-xl: 0 20px 40px rgb(15 23 42 / 0.12), 0 8px 16px rgb(15 23 42 / 0.06);
+  --shadow-glow: 0 0 20px rgb(79 70 229 / 0.12);
+  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
 }

@@ -50,7 +50,7 @@ export function CustomerDetailScreen() {
   if (error || !customer) {
     return (
       <div className="text-center py-12 font-sans">
-        <h3 className="text-lg font-semibold text-rose-500">{t('customers.notFound')}</h3>
+        <h3 className="text-lg font-semibold text-danger">{t('customers.notFound')}</h3>
         <p className="text-sm text-neutral-500 mt-2">{t('customers.notFoundDesc')}</p>
         <Button onClick={() => navigate('/customers')} variant="secondary" className="mt-6">
           {t('customers.backToDirectory')}
@@ -88,7 +88,7 @@ export function CustomerDetailScreen() {
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setIsPaymentOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/20 gap-2"
+            className="bg-success hover:bg-success/90 text-white shadow-lg shadow-success/10 gap-2"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -127,9 +127,9 @@ export function CustomerDetailScreen() {
                 <div
                   className={`text-2xl font-bold font-mono ${
                     customer.balance < 0
-                      ? 'text-rose-500'
+                      ? 'text-danger'
                       : customer.balance > 0
-                        ? 'text-emerald-500'
+                        ? 'text-success'
                         : 'text-foreground'
                   }`}
                 >
@@ -147,7 +147,7 @@ export function CustomerDetailScreen() {
                 <span className="text-xs text-neutral-500 uppercase font-semibold">
                   {t('customers.rewardPoints')}
                 </span>
-                <div className="text-xl font-bold text-amber-500">
+                <div className="text-xl font-bold text-warning">
                   {t('customers.rewardPointsVal').replace(
                     '{count}',
                     String(customer.loyalty_points),
@@ -255,9 +255,9 @@ export function CustomerDetailScreen() {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
                               tx.transaction_type === 'sale'
-                                ? 'bg-rose-950/30 text-rose-400 border border-rose-900/20'
+                                ? 'bg-danger/15 text-danger border border-danger/30'
                                 : tx.transaction_type === 'payment'
-                                  ? 'bg-emerald-950/30 text-emerald-400 border border-emerald-900/20'
+                                  ? 'bg-success/15 text-success border border-success/30'
                                   : 'bg-input text-secondary border border-border'
                             }`}
                           >
@@ -271,7 +271,7 @@ export function CustomerDetailScreen() {
 
                         {/* Amount */}
                         <td className="px-6 py-4 text-xs font-mono font-semibold">
-                          <span className={tx.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}>
+                          <span className={tx.amount < 0 ? 'text-danger' : 'text-success'}>
                             {tx.amount < 0 ? '' : '+'}
                             {Number(tx.amount).toFixed(2)} EGP
                           </span>

@@ -61,7 +61,7 @@ export function SupplierDetailScreen() {
   if (error || !supplier) {
     return (
       <div className="text-center py-12 font-sans text-neutral-100">
-        <h3 className="text-lg font-semibold text-rose-500">Supplier Profile Not Found</h3>
+        <h3 className="text-lg font-semibold text-danger">Supplier Profile Not Found</h3>
         <p className="text-sm text-neutral-500 mt-2">
           The requested supplier directory profile does not exist or has been deleted.
         </p>
@@ -101,15 +101,15 @@ export function SupplierDetailScreen() {
               </span>
               <span className="h-1 w-1 rounded-full bg-neutral-700" />
               {supplier.status === 'active' ? (
-                <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400">
+                <span className="inline-flex items-center text-[11px] font-semibold text-success">
                   <CheckCircle2 size={11} className="mr-1" /> Active
                 </span>
               ) : supplier.status === 'inactive' ? (
-                <span className="inline-flex items-center text-[11px] font-semibold text-amber-400">
+                <span className="inline-flex items-center text-[11px] font-semibold text-warning">
                   <AlertTriangle size={11} className="mr-1" /> Inactive
                 </span>
               ) : (
-                <span className="inline-flex items-center text-[11px] font-semibold text-rose-400">
+                <span className="inline-flex items-center text-[11px] font-semibold text-danger">
                   <ShieldAlert size={11} className="mr-1" /> Suspended
                 </span>
               )}
@@ -127,7 +127,7 @@ export function SupplierDetailScreen() {
           {isAdminOrManager && (
             <button
               onClick={handleDeleteClick}
-              className="inline-flex items-center justify-center rounded-lg bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 hover:text-rose-300 px-4 py-2.5 text-sm font-semibold transition-colors border border-rose-900/30"
+              className="inline-flex items-center justify-center rounded-lg bg-danger/15 text-danger hover:bg-danger/15 hover:text-danger px-4 py-2.5 text-sm font-semibold transition-colors border border-danger/20"
             >
               <Trash2 size={14} className="mr-1.5" />
               Delete Supplier
@@ -160,14 +160,14 @@ export function SupplierDetailScreen() {
                   Low Stock Alerts
                 </span>
                 <span
-                  className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-amber-500' : 'text-secondary'}`}
+                  className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-warning' : 'text-secondary'}`}
                 >
                   {lowStockItems.length}
                 </span>
               </div>
             </div>
             {supplier.status === 'inactive' && (
-              <div className="rounded-lg border border-amber-900/30 bg-amber-950/15 p-2.5 text-xs text-amber-400 flex items-start space-x-2">
+              <div className="rounded-lg border border-warning/30 bg-warning/15 p-2.5 text-xs text-warning flex items-start space-x-2">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0" />
                 <span>
                   Supplier is marked inactive. Warnings will display if active products are chosen.
@@ -175,7 +175,7 @@ export function SupplierDetailScreen() {
               </div>
             )}
             {supplier.status === 'suspended' && (
-              <div className="rounded-lg border border-rose-900/30 bg-rose-950/15 p-2.5 text-xs text-rose-400 flex items-start space-x-2">
+              <div className="rounded-lg border border-danger/20 bg-danger/15 p-2.5 text-xs text-danger flex items-start space-x-2">
                 <ShieldAlert size={15} className="mt-0.5 shrink-0" />
                 <span>
                   Supplier is suspended. Newly created products cannot be assigned to this supplier.
@@ -339,7 +339,7 @@ export function SupplierDetailScreen() {
                           {/* Live Inventory Quantity */}
                           <td className="px-6 py-4 text-xs text-center font-mono">
                             <span
-                              className={`font-semibold px-2 py-0.5 rounded ${isLowStock ? 'text-amber-500 bg-amber-950/25 border border-amber-900/30' : 'text-neutral-300 bg-neutral-850'}`}
+                              className={`font-semibold px-2 py-0.5 rounded ${isLowStock ? 'text-warning bg-warning/15 border border-warning/30' : 'text-neutral-300 bg-neutral-850'}`}
                             >
                               {product.inventory_quantity}
                             </span>
@@ -348,12 +348,12 @@ export function SupplierDetailScreen() {
                           {/* Stock Status Alert */}
                           <td className="px-6 py-4 text-xs text-right">
                             {isLowStock ? (
-                              <span className="inline-flex items-center rounded bg-amber-950/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-500 border border-amber-900/30">
+                              <span className="inline-flex items-center rounded bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning border border-warning/30">
                                 <AlertTriangle size={10} className="mr-1 shrink-0" />
                                 Low Stock ({product.min_stock_level})
                               </span>
                             ) : (
-                              <span className="inline-flex items-center rounded bg-emerald-950/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-900/30">
+                              <span className="inline-flex items-center rounded bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success border border-success/30">
                                 Healthy
                               </span>
                             )}
@@ -384,7 +384,7 @@ export function SupplierDetailScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl border border-border bg-neutral-900 shadow-2xl p-6 text-neutral-100">
             <div className="flex items-start space-x-3">
-              <div className="rounded-full bg-rose-950/50 p-2 text-rose-500 border border-rose-900/30">
+              <div className="rounded-full bg-danger/15 p-2 text-danger border border-danger/20">
                 <AlertTriangle size={24} />
               </div>
               <div className="space-y-2">
@@ -398,7 +398,7 @@ export function SupplierDetailScreen() {
                 </p>
 
                 {catalog.length > 0 && (
-                  <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-300 leading-relaxed font-sans">
+                  <div className="rounded-lg border border-warning/30 bg-warning/15 p-3 text-xs text-warning leading-relaxed font-sans">
                     <span className="font-semibold block mb-1">
                       ⚠️ Active Catalog Link Warning:
                     </span>
@@ -425,7 +425,7 @@ export function SupplierDetailScreen() {
               <button
                 onClick={confirmDelete}
                 disabled={deleteSupplier.isPending}
-                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors shadow-lg shadow-rose-950/20"
+                className="rounded-lg bg-danger/90 px-4 py-2 text-sm font-semibold text-white hover:bg-danger disabled:opacity-50 transition-colors shadow-lg shadow-danger/10"
               >
                 {deleteSupplier.isPending ? 'Deleting...' : 'Proceed Delete'}
               </button>

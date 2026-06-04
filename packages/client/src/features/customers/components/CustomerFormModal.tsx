@@ -180,11 +180,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 placeholder={t('customers.name')}
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                   errors.name
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
-              {errors.name && <p className="text-xs text-rose-500 mt-0.5">{errors.name}</p>}
+              {errors.name && <p className="text-xs text-danger mt-0.5">{errors.name}</p>}
             </div>
 
             {/* Phone */}
@@ -199,11 +199,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 placeholder="e.g. 01012345678"
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                   errors.phone
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
-              {errors.phone && <p className="text-xs text-rose-500 mt-0.5">{errors.phone}</p>}
+              {errors.phone && <p className="text-xs text-danger mt-0.5">{errors.phone}</p>}
             </div>
 
             {/* Email */}
@@ -218,11 +218,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 placeholder="customer@domain.com"
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                   errors.email
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
-              {errors.email && <p className="text-xs text-rose-500 mt-0.5">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-danger mt-0.5">{errors.email}</p>}
             </div>
 
             {/* Address */}
@@ -237,11 +237,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 placeholder={t('customers.address')}
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                   errors.address
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
-              {errors.address && <p className="text-xs text-rose-500 mt-0.5">{errors.address}</p>}
+              {errors.address && <p className="text-xs text-danger mt-0.5">{errors.address}</p>}
             </div>
 
             {/* Initial Balance - Only for NEW customers */}
@@ -258,11 +258,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                   placeholder="0.00"
                   className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                     errors.balance
-                      ? 'border-rose-500 focus:border-rose-500'
-                      : 'border-border focus:border-emerald-500'
+                      ? 'border-danger focus:border-danger'
+                      : 'border-border focus:border-success'
                   }`}
                 />
-                {errors.balance && <p className="text-xs text-rose-500 mt-0.5">{errors.balance}</p>}
+                {errors.balance && <p className="text-xs text-danger mt-0.5">{errors.balance}</p>}
               </div>
             )}
 
@@ -279,12 +279,12 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 placeholder="0"
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors ${
                   errors.loyalty_points
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
               {errors.loyalty_points && (
-                <p className="text-xs text-rose-500 mt-0.5">{errors.loyalty_points}</p>
+                <p className="text-xs text-danger mt-0.5">{errors.loyalty_points}</p>
               )}
             </div>
 
@@ -300,11 +300,11 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 rows={3}
                 className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors resize-none ${
                   errors.notes
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-border focus:border-emerald-500'
+                    ? 'border-danger focus:border-danger'
+                    : 'border-border focus:border-success'
                 }`}
               />
-              {errors.notes && <p className="text-xs text-rose-500 mt-0.5">{errors.notes}</p>}
+              {errors.notes && <p className="text-xs text-danger mt-0.5">{errors.notes}</p>}
             </div>
           </div>
 
@@ -322,7 +322,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
             <Button
               type="submit"
               disabled={isPending || !name.trim()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 shadow-lg shadow-emerald-950/20"
+              className="bg-success hover:bg-success/90 text-white px-5 py-2.5 shadow-lg shadow-success/10"
             >
               {isPending ? (
                 <>

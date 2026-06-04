@@ -39,7 +39,7 @@ export function OverrideAuditScreen() {
     switch (action) {
       case 'reprint_receipt':
         return (
-          <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+          <Badge variant="secondary" className="bg-primary/10 text-primary">
             Reprint
           </Badge>
         );

@@ -67,13 +67,13 @@ export function ReceiptPreviewModal() {
       >
         <button
           onClick={closeModal}
-          className="absolute -top-12 right-0 text-white hover:text-emerald-400 transition-colors"
+          className="absolute -top-12 right-0 text-white hover:text-success transition-colors"
         >
           <X size={32} />
         </button>
 
         <div className="text-center mb-6">
-          <CheckCircle size={48} className="mx-auto text-emerald-600 mb-2" />
+          <CheckCircle size={48} className="mx-auto text-success mb-2" />
           <h2 className="text-2xl font-bold uppercase tracking-widest">Talaat Market</h2>
           <p className="text-gray-500 mt-1">123 Supermarket St, Cairo</p>
           <p className="text-gray-500">Tel: +20 123 456 7890</p>
@@ -145,7 +145,7 @@ export function ReceiptPreviewModal() {
         <div className="text-center">
           <p className="font-bold mb-1">Thank you for shopping!</p>
           <div
-            className="inline-flex items-center space-x-1 text-gray-400 mt-4 px-3 py-1 bg-gray-100 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-200 hover:text-emerald-600 transition-colors"
+            className="inline-flex items-center space-x-1 text-gray-400 mt-4 px-3 py-1 bg-gray-100 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-200 hover:text-success transition-colors"
             onClick={handlePrint}
           >
             <Printer size={14} />

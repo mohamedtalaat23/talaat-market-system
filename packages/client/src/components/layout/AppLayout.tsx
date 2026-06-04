@@ -202,22 +202,22 @@ export const AppLayout = React.memo(() => {
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card-hover border border-border backdrop-blur-sm select-none text-xs font-medium">
               {lanStatus === 'online' ? (
                 <>
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <Wifi size={14} className="text-emerald-500" />
+                  <span className="flex h-2 w-2 rounded-full bg-success/90 animate-pulse" />
+                  <Wifi size={14} className="text-success" />
                   <span className="text-foreground">{t('topbar.lanOnline')}</span>
                 </>
               ) : (
                 <>
-                  <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                  <WifiOff size={14} className="text-rose-500" />
-                  <span className="text-rose-400">{t('topbar.lanOffline')}</span>
+                  <span className="flex h-2 w-2 rounded-full bg-danger/15 animate-pulse" />
+                  <WifiOff size={14} className="text-danger" />
+                  <span className="text-danger">{t('topbar.lanOffline')}</span>
                 </>
               )}
               {hasOfflineSales && (
                 <>
                   <div className="h-3 w-[1px] bg-border mx-1" />
-                  <RefreshCw size={12} className="text-amber-500 animate-spin" />
-                  <span className="text-amber-400 font-semibold">
+                  <RefreshCw size={12} className="text-warning animate-spin" />
+                  <span className="text-warning font-semibold">
                     {offlineSales.length} {t('topbar.syncing')}
                   </span>
                 </>

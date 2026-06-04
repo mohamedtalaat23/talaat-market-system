@@ -29,11 +29,11 @@ export function Pagination({
 
   return (
     <div
-      className="flex flex-col sm:flex-row items-center justify-between border-t border-neutral-800 px-4 py-3 bg-neutral-900/20 select-none gap-3"
+      className="flex flex-col sm:flex-row items-center justify-between border-t border-border px-4 py-3 bg-card/30 select-none gap-3"
       role="navigation"
       aria-label="Pagination Navigation"
     >
-      <div className="text-xs text-neutral-400">
+      <div className="text-xs text-secondary">
         Showing <span className="font-semibold text-foreground">{startRange}</span> to{' '}
         <span className="font-semibold text-foreground">{endRange}</span> of{' '}
         <span className="font-semibold text-foreground">{total}</span> {itemName}
@@ -52,7 +52,7 @@ export function Pagination({
           <span className="hidden sm:inline">Previous</span>
         </Button>
 
-        <div className="text-xs text-neutral-300 font-mono" aria-current="page">
+        <div className="text-xs text-foreground font-mono" aria-current="page">
           Page {page} of {totalPages}
         </div>
 

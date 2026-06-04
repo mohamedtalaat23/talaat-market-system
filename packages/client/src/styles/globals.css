@@ -24,9 +24,18 @@ body {
   );
   background-attachment: fixed;
   line-height: var(--leading-normal);
+  transition: var(--theme-transition);
   /* Prevent text selection during rapid interactions (POS use) */
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Smooth theme transition on key structural elements */
+aside,
+header,
+main,
+.card {
+  transition: var(--theme-transition);
 }
 
 /* Force form elements to use main sans font to prevent browser serif fallback */
@@ -70,18 +79,18 @@ html[lang="ar"] optgroup {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-600);
+  background: var(--border-color);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-500);
+  background: var(--text-muted);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-neutral-600) var(--bg-sidebar);
+  scrollbar-color: var(--border-color) var(--bg-sidebar);
 }
 
 /* ── Typography ─────────────────────────────────────────────── */
@@ -193,10 +202,12 @@ h6 {
 /* Card component base */
 .card {
   background-color: var(--bg-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--card-padding);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
 }
 
 /* Section divider */

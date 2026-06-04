@@ -161,7 +161,7 @@ export function ProductSearchFallback() {
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
           <h3
             id="search-modal-title"
-            className="text-lg font-bold text-white flex items-center space-x-2"
+            className="text-lg font-bold text-foreground flex items-center space-x-2"
           >
             <Search size={18} className="text-secondary" />
             <span>Product Search</span>
@@ -171,7 +171,7 @@ export function ProductSearchFallback() {
               closeModal();
               document.body.focus();
             }}
-            className="rounded-md p-1.5 text-secondary hover:text-white hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
           >
             <X size={18} />
           </button>
@@ -188,7 +188,7 @@ export function ProductSearchFallback() {
                 autoFocus
                 type="text"
                 placeholder="Type name, SKU, or Arabic name... (Press Enter to add)"
-                className="w-full bg-background border border-border rounded p-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="w-full bg-background border border-border rounded p-3 text-foreground placeholder-muted focus:outline-none focus:border-success focus:ring-1 focus:ring-success"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -202,7 +202,7 @@ export function ProductSearchFallback() {
                   Loading matching products...
                 </div>
               ) : !showResults ? (
-                <div className="p-3 text-slate-500 text-sm text-center mt-16">
+                <div className="p-3 text-secondary text-sm text-center mt-16">
                   Type at least 2 characters to search products by name, SKU, or barcode...
                 </div>
               ) : products.length === 0 ? (
@@ -222,8 +222,8 @@ export function ProductSearchFallback() {
                       onClick={() => onSelectProduct(product)}
                       className={`flex items-center justify-between p-2.5 rounded cursor-pointer transition-all border ${
                         isSelected
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : 'bg-card/40 text-secondary border-transparent hover:bg-card-hover/40 hover:text-white'
+                          ? 'bg-success/90/10 text-success border-success/30'
+                          : 'bg-card/40 text-secondary border-transparent hover:bg-card-hover/40 hover:text-foreground'
                       } ${isInactive ? 'opacity-50' : ''}`}
                     >
                       <div className="flex flex-col min-w-0 flex-1">
@@ -238,7 +238,7 @@ export function ProductSearchFallback() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center space-x-3 text-xs text-slate-500 mt-0.5">
+                        <div className="flex items-center space-x-3 text-xs text-secondary mt-0.5">
                           <span>SKU: {product.id}</span>
                           <span>Barcode: {product.barcode || 'N/A'}</span>
                           <span>
@@ -252,7 +252,7 @@ export function ProductSearchFallback() {
                       <div className="flex items-center space-x-3 ml-4">
                         <div className="flex flex-col items-end">
                           <span
-                            className={`text-sm font-bold ${isSelected ? 'text-emerald-400' : 'text-white'}`}
+                            className={`text-sm font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
                           >
                             {product.selling_price.toFixed(2)} EGP
                           </span>
@@ -264,7 +264,7 @@ export function ProductSearchFallback() {
                             </span>
                           )}
                           {isOutOfStock && !isInactive && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-warning/15 text-warning border border-warning/20">
                               OUT OF STOCK
                             </span>
                           )}

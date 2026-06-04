@@ -38,23 +38,23 @@ export class GlobalErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center w-full h-full min-h-[400px] p-6 text-center animate-fade-in">
-          <div className="bg-rose-950/20 border border-rose-900/30 rounded-full p-4 mb-4">
-            <AlertTriangle size={32} className="text-rose-500" />
+          <div className="bg-danger/10 border border-danger/20 rounded-full p-4 mb-4">
+            <AlertTriangle size={32} className="text-danger" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
-          <p className="text-neutral-400 text-sm max-w-md mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
+          <p className="text-secondary text-sm max-w-md mb-6">
             An unexpected error occurred in this section of the application. The issue has been
             logged. You can try reloading this view.
           </p>
-          <div className="p-4 bg-black/40 rounded-lg text-left overflow-auto max-w-2xl w-full mb-6 border border-neutral-800">
-            <pre className="text-rose-400 text-xs font-mono whitespace-pre-wrap">
+          <div className="p-4 bg-background/40 rounded-lg text-left overflow-auto max-w-2xl w-full mb-6 border border-border">
+            <pre className="text-danger text-xs font-mono whitespace-pre-wrap">
               {this.state.error?.message || 'Unknown render error'}
             </pre>
           </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={this.handleReset}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors text-sm font-medium border border-neutral-700"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-card-hover hover:bg-border text-foreground rounded-lg transition-colors text-sm font-medium border border-border"
             >
               <RefreshCw size={16} />
               <span>Try Again</span>
@@ -62,7 +62,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
             <Link
               to="/"
               onClick={this.handleReset}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-emerald-900/20"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-success hover:bg-success/90 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-success/10"
             >
               <Home size={16} />
               <span>Go Home</span>

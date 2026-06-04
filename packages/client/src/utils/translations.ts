@@ -925,7 +925,7 @@ export const translations = {
       closingNotes: 'ملاحظات الإغلاق',
       overrideLog: 'سجل التجاوزات',
       noOverridesForShift: 'لم يتم تسجيل أي تجاوزات لهذه الوردية',
-      time: 'القت',
+      time: 'الوقت',
       receiptNumber: 'رقم الفاتورة',
       paymentMethod: 'طريقة الدفع',
       prints: 'الطباعات',

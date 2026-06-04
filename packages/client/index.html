@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar-EG" dir="ltr">
+<html lang="ar-EG">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,6 +20,17 @@
     />
 
     <title>Talaat Market — نظام إدارة السوبر ماركت</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('talaat_theme') || 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          var lang = localStorage.getItem('talaat_lang') || 'ar';
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

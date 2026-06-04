@@ -99,7 +99,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4 font-sans select-text">
       {/* Visual background accents */}
       <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-indigo-500/5 blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
 
       <Card className="w-full max-w-md border-border bg-card/60 backdrop-blur-md relative z-10">
         <CardHeader className="space-y-2 text-center pb-4">

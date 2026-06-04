@@ -207,7 +207,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 placeholder="Scan barcode or type product name..."
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
-                className="pl-9 bg-neutral-900 border-border focus:border-emerald-600"
+                className="pl-9 bg-neutral-900 border-border focus:border-success"
               />
             </div>
 
@@ -233,11 +233,11 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                       </div>
                       <div className="flex items-center space-x-4 text-xs font-mono">
                         <span className="text-secondary">Stock: {prod.inventory_quantity}</span>
-                        <span className="text-emerald-500 font-bold">{prod.selling_price} EGP</span>
+                        <span className="text-success font-bold">{prod.selling_price} EGP</span>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-emerald-500 hover:bg-emerald-950/20"
+                          className="text-success hover:bg-success/15"
                         >
                           <Plus size={14} />
                         </Button>
@@ -290,7 +290,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                           onChange={(e) =>
                             handleUpdateItem(item.product_id, 'unit_cost', Number(e.target.value))
                           }
-                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold text-emerald-500"
+                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold text-success"
                         />
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -320,7 +320,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                         <button
                           type="button"
                           onClick={() => handleRemoveProduct(item.product_id)}
-                          className="text-neutral-500 hover:text-rose-500 transition-colors"
+                          className="text-neutral-500 hover:text-danger transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -360,7 +360,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             </div>
             <div className="text-neutral-100 font-bold text-base">
               Grand Total:{' '}
-              <span className="text-emerald-500">
+              <span className="text-success">
                 {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
                   total,
                 )}
@@ -375,7 +375,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
               type="button"
               onClick={handleSubmit}
               disabled={createPO.isPending}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center space-x-1.5"
+              className="bg-success hover:bg-success/90 text-white font-semibold flex items-center space-x-1.5"
             >
               <span>Submit Draft</span>
             </Button>

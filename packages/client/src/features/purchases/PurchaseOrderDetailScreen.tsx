@@ -56,7 +56,7 @@ export function PurchaseOrderDetailScreen() {
         return (
           <Badge
             variant="warning"
-            className="bg-amber-950/40 text-amber-400 border-amber-800/50 uppercase"
+            className="bg-warning/15 text-warning border-warning/30 uppercase"
           >
             {t('purchases.ordered')}
           </Badge>
@@ -65,7 +65,7 @@ export function PurchaseOrderDetailScreen() {
         return (
           <Badge
             variant="success"
-            className="bg-emerald-950/40 text-emerald-400 border-emerald-800/50 uppercase"
+            className="bg-success/15 text-success border-success/30 uppercase"
           >
             {t('purchases.received')}
           </Badge>
@@ -74,7 +74,7 @@ export function PurchaseOrderDetailScreen() {
         return (
           <Badge
             variant="destructive"
-            className="bg-rose-950/40 text-rose-400 border-rose-800/50 uppercase"
+            className="bg-danger/15 text-danger border-danger/30 uppercase"
           >
             {t('purchases.cancelled')}
           </Badge>
@@ -119,7 +119,7 @@ export function PurchaseOrderDetailScreen() {
   if (error || !po) {
     return (
       <div className="text-center py-12 font-sans text-foreground">
-        <h3 className="text-lg font-semibold text-rose-500">{t('purchases.notFound')}</h3>
+        <h3 className="text-lg font-semibold text-danger">{t('purchases.notFound')}</h3>
         <p className="text-sm text-neutral-500 mt-2">{t('purchases.notFoundDesc')}</p>
         <Button onClick={() => navigate('/purchases')} variant="secondary" className="mt-6">
           {t('purchases.backToControl')}
@@ -180,7 +180,7 @@ export function PurchaseOrderDetailScreen() {
                   onClick={handleCancelOrder}
                   disabled={cancelOrder.isPending}
                   variant="outline"
-                  className="text-rose-500 hover:text-rose-400 hover:bg-rose-950/20 border-border gap-1.5"
+                  className="text-danger hover:text-danger hover:bg-danger/10 border-border gap-1.5"
                 >
                   <XCircle size={14} />
                   {t('purchases.cancelDraft')}
@@ -188,7 +188,7 @@ export function PurchaseOrderDetailScreen() {
                 <Button
                   onClick={handlePlaceOrder}
                   disabled={placeOrder.isPending}
-                  className="bg-amber-600 hover:bg-amber-500 text-white font-semibold"
+                  className="bg-warning/90 hover:bg-warning text-white font-semibold"
                 >
                   {t('purchases.placeOrder')}
                 </Button>
@@ -200,14 +200,14 @@ export function PurchaseOrderDetailScreen() {
                   onClick={handleCancelOrder}
                   disabled={cancelOrder.isPending}
                   variant="outline"
-                  className="text-rose-500 hover:text-rose-400 hover:bg-rose-950/20 border-border gap-1.5"
+                  className="text-danger hover:text-danger hover:bg-danger/10 border-border gap-1.5"
                 >
                   <XCircle size={14} />
                   {t('purchases.cancelOrder')}
                 </Button>
                 <Button
                   onClick={() => setIsReceiptOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1.5"
+                  className="bg-success hover:bg-success/90 text-white font-bold gap-1.5"
                 >
                   <CheckCircle2 size={14} />
                   {t('purchases.receiveInflux')}
@@ -295,7 +295,7 @@ export function PurchaseOrderDetailScreen() {
               <span className="text-[10px] text-secondary uppercase font-bold block">
                 {t('pos.discount')}
               </span>
-              <span className="text-base font-mono font-bold text-rose-400">
+              <span className="text-base font-mono font-bold text-danger">
                 -{formatCurrency(po.discount_amount)}
               </span>
             </div>
@@ -308,10 +308,10 @@ export function PurchaseOrderDetailScreen() {
               </span>
             </div>
             <div className="space-y-1">
-              <span className="text-[10px] text-emerald-500 uppercase font-bold block">
+              <span className="text-[10px] text-success uppercase font-bold block">
                 {t('purchases.grandTotal')}
               </span>
-              <span className="text-lg font-mono font-extrabold text-emerald-400">
+              <span className="text-lg font-mono font-extrabold text-success">
                 {formatCurrency(po.total)}
               </span>
             </div>
@@ -358,7 +358,7 @@ export function PurchaseOrderDetailScreen() {
                         {item.ordered_quantity}
                       </td>
                       {po.status === 'received' && (
-                        <td className="py-3 px-4 text-center font-mono font-bold text-emerald-400">
+                        <td className="py-3 px-4 text-center font-mono font-bold text-success">
                           {item.received_quantity}
                         </td>
                       )}

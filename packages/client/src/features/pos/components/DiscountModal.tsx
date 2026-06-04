@@ -112,8 +112,8 @@ export function DiscountModal() {
         role="dialog"
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
-          <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-            <Tag size={24} className="text-emerald-500" />
+          <h3 className="text-xl font-bold text-foreground flex items-center space-x-2">
+            <Tag size={24} className="text-success" />
             <span>Apply Discount</span>
           </h3>
           <button
@@ -130,14 +130,14 @@ export function DiscountModal() {
               type="button"
               onClick={() => setTarget('item')}
               disabled={cart.length === 0}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'item' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'} disabled:opacity-50`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'item' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'} disabled:opacity-50`}
             >
               Selected Item
             </button>
             <button
               type="button"
               onClick={() => setTarget('cart')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'cart' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'cart' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
               Entire Cart
             </button>
@@ -147,14 +147,14 @@ export function DiscountModal() {
             <button
               type="button"
               onClick={() => setDiscountType('fixed')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'fixed' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'fixed' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
               Fixed Amount (EGP)
             </button>
             <button
               type="button"
               onClick={() => setDiscountType('percentage')}
-              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'percentage' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-secondary'}`}
+              className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'percentage' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
               Percentage (%)
             </button>
@@ -169,7 +169,7 @@ export function DiscountModal() {
               type="number"
               step="0.01"
               min={0}
-              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-foreground focus:border-success focus:ring-1 focus:ring-success"
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
             />
@@ -178,7 +178,7 @@ export function DiscountModal() {
           <button
             type="submit"
             disabled={!amountStr || isNaN(Number(amountStr))}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 rounded font-bold text-white transition-colors text-lg"
+            className="w-full py-4 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-lg"
           >
             Apply Discount
           </button>

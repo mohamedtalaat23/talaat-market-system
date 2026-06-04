@@ -117,9 +117,9 @@ export function RecordPaymentModal({
               <span
                 className={`font-semibold font-mono ${
                   numericBalance < 0
-                    ? 'text-rose-500'
+                    ? 'text-danger'
                     : numericBalance > 0
-                      ? 'text-emerald-500'
+                      ? 'text-success'
                       : 'text-foreground'
                 }`}
               >
@@ -146,11 +146,11 @@ export function RecordPaymentModal({
               placeholder={t('customers.paymentPlaceholder')}
               className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors font-mono ${
                 error
-                  ? 'border-rose-500 focus:border-rose-500'
-                  : 'border-border focus:border-emerald-500'
+                  ? 'border-danger focus:border-danger'
+                  : 'border-border focus:border-success'
               }`}
             />
-            {error && <p className="text-xs text-rose-500 mt-0.5">{error}</p>}
+            {error && <p className="text-xs text-danger mt-0.5">{error}</p>}
           </div>
 
           {/* Note input */}
@@ -163,7 +163,7 @@ export function RecordPaymentModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t('customers.paymentNotesPlaceholder')}
-              className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+              className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:border-success focus:outline-none transition-colors"
             />
           </div>
 
@@ -174,9 +174,9 @@ export function RecordPaymentModal({
               <span
                 className={`font-semibold font-mono text-base ${
                   projectedBalance < 0
-                    ? 'text-rose-500'
+                    ? 'text-danger'
                     : projectedBalance > 0
-                      ? 'text-emerald-500'
+                      ? 'text-success'
                       : 'text-foreground'
                 }`}
               >
@@ -198,7 +198,7 @@ export function RecordPaymentModal({
             <button
               type="submit"
               disabled={recordPayment.isPending || parsedAmount <= 0}
-              className="flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-lg shadow-emerald-950/20"
+              className="flex items-center justify-center rounded-lg bg-success px-5 py-2.5 text-sm font-semibold text-white hover:bg-success/90 disabled:opacity-50 transition-colors shadow-lg shadow-success/10"
             >
               {recordPayment.isPending ? (
                 <>

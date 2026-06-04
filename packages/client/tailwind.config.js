@@ -33,8 +33,8 @@ export default {
           foreground: "var(--text-on-danger)",
         },
         muted: {
-          DEFAULT: "var(--color-neutral-800)",
-          foreground: "var(--text-muted)",
+          DEFAULT: "var(--text-muted)",
+          background: "var(--color-neutral-800)",
         },
         accent: {
           DEFAULT: "var(--color-primary-500)",

@@ -119,7 +119,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={supplierCode}
                 onChange={(e) => setSupplierCode(e.target.value)}
                 placeholder={t('suppliers.supplierCodePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
               />
             </div>
 
@@ -131,7 +131,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground focus:border-success focus:outline-none transition-colors"
               >
                 <option value="active">{t('suppliers.active')}</option>
                 <option value="inactive">{t('suppliers.statusInactiveLabel')}</option>
@@ -150,7 +150,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('suppliers.supplierNamePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -164,7 +164,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder={t('suppliers.contactPersonPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -178,7 +178,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={t('suppliers.phonePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -192,7 +192,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('suppliers.emailPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -206,7 +206,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder={t('suppliers.addressPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -220,7 +220,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('suppliers.notesPlaceholder')}
                 rows={3}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors resize-none"
               />
             </div>
           </div>
@@ -233,7 +233,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
             <Button
               type="submit"
               disabled={isPending || !name.trim()}
-              className="flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/10"
+              className="flex items-center justify-center bg-success hover:bg-success/90 text-white shadow-lg shadow-success/10"
             >
               {isPending ? (
                 <>

@@ -212,7 +212,7 @@ export function ProductForm({
             />
           </div>
           {selectedSupplier && selectedSupplier.status === 'inactive' && (
-            <p className="text-[10px] text-amber-500 font-medium mt-1">
+            <p className="text-[10px] text-warning font-medium mt-1">
               ⚠️ {t('products.inactiveSupplierWarning')}
             </p>
           )}

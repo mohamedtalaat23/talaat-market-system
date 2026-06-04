@@ -72,7 +72,7 @@ export function CustomersPage() {
         </div>
         <Button
           onClick={handleCreate}
-          className="flex items-center justify-center font-semibold bg-emerald-600 hover:bg-emerald-500 text-white"
+          className="flex items-center justify-center font-semibold bg-success hover:bg-success/90 text-white"
         >
           <svg
             className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0"
@@ -105,7 +105,7 @@ export function CustomersPage() {
             {t('customers.totalCredit')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-emerald-500">
+            <span className="text-3xl font-bold tracking-tight text-success">
               {totalCredit.toFixed(2)}
             </span>
             <span className="text-xs font-mono text-neutral-500">{t('customers.deposits')}</span>
@@ -118,7 +118,7 @@ export function CustomersPage() {
             {t('customers.totalDebt')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-rose-500">
+            <span className="text-3xl font-bold tracking-tight text-danger">
               {totalDebt.toFixed(2)}
             </span>
             <span className="text-xs font-mono text-neutral-500">{t('customers.receivables')}</span>
@@ -147,7 +147,7 @@ export function CustomersPage() {
               setPage(1); // Reset page on search
             }}
             placeholder={t('customers.searchPlaceholder')}
-            className="w-full rounded-lg border border-border bg-input py-2.5 ps-10 pe-4 text-sm text-foreground placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+            className="w-full rounded-lg border border-border bg-input py-2.5 ps-10 pe-4 text-sm text-foreground placeholder-neutral-500 focus:border-success focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -198,7 +198,7 @@ export function CustomersPage() {
                     <td className="px-6 py-4 font-semibold text-foreground">
                       <button
                         onClick={() => navigate(`/customers/${customer.id}`)}
-                        className="hover:underline text-start font-semibold text-foreground hover:text-emerald-500 focus:outline-none transition-colors"
+                        className="hover:underline text-start font-semibold text-foreground hover:text-success focus:outline-none transition-colors"
                       >
                         {customer.name}
                       </button>
@@ -214,9 +214,9 @@ export function CustomersPage() {
                       <span
                         className={
                           customer.balance < 0
-                            ? 'text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-md'
+                            ? 'text-danger bg-danger/10 border border-danger/20 px-2.5 py-1 rounded-md'
                             : customer.balance > 0
-                              ? 'text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md'
+                              ? 'text-success bg-success/90/10 border border-success/20 px-2.5 py-1 rounded-md'
                               : 'text-secondary'
                         }
                       >
@@ -249,7 +249,7 @@ export function CustomersPage() {
                           onClick={() => handlePayment(customer)}
                           variant="outline"
                           size="sm"
-                          className="h-8 text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                          className="h-8 text-xs font-semibold bg-success/90/10 hover:bg-success/90/20 border-success/20 text-success dark:text-success"
                         >
                           {t('customers.payment')}
                         </Button>

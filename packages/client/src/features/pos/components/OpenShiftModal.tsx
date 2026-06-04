@@ -47,14 +47,14 @@ export function OpenShiftModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm text-foreground">
       <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-slate-800/50">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
           <div className="flex items-center space-x-3">
-            <Wallet className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-lg font-semibold text-white">Open Register Shift</h2>
+            <Wallet className="w-5 h-5 text-success" />
+            <h2 className="text-lg font-semibold text-foreground">Open Register Shift</h2>
           </div>
           <button
             onClick={() => closeModal('pos_open_shift')}
-            className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
+            className="text-secondary hover:text-foreground p-1 rounded-md hover:bg-card-hover transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,7 +64,7 @@ export function OpenShiftModal() {
         <div className="p-6 space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-secondary">Register ID</label>
-            <div className="p-3 bg-slate-800 rounded-lg text-secondary font-mono text-lg border border-border">
+            <div className="p-3 bg-background rounded-lg text-secondary font-mono text-lg border border-border">
               Terminal {registerId}
             </div>
           </div>
@@ -72,7 +72,7 @@ export function OpenShiftModal() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-secondary">Starting Cash Drawer (EGP)</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-semibold">
                 £
               </span>
               <input
@@ -86,7 +86,7 @@ export function OpenShiftModal() {
                   if (e.key === 'Enter') handleOpenShift();
                   if (e.key === 'Escape') closeModal('pos_open_shift');
                 }}
-                className="w-full bg-background border border-border rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all placeholder:text-slate-700"
+                className="w-full bg-background border border-border rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-success transition-all placeholder:text-muted"
                 placeholder="0.00"
               />
             </div>
@@ -94,17 +94,17 @@ export function OpenShiftModal() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-slate-800/30 flex justify-end space-x-3">
+        <div className="p-4 border-t border-border bg-card-hover/30 flex justify-end space-x-3">
           <button
             onClick={() => closeModal('pos_open_shift')}
-            className="px-6 py-3 rounded-lg font-medium text-secondary bg-slate-800 hover:bg-card-hover transition-colors"
+            className="px-6 py-3 rounded-lg font-medium text-secondary bg-card-hover hover:bg-border transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleOpenShift}
             disabled={isSubmitting}
-            className="px-8 py-3 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 rounded-lg font-bold text-white bg-success hover:bg-success/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Opening...' : 'Start Shift'}
           </button>

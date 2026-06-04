@@ -30,7 +30,7 @@ export function RegistersScreen() {
                 <span>Main Register 01</span>
               </td>
               <td className="px-6 py-4">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/90/10 text-success">
                   {t('products.active')}
                 </span>
               </td>
@@ -46,7 +46,7 @@ export function RegistersScreen() {
                 <span>Backup Register 02</span>
               </td>
               <td className="px-6 py-4">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/90/10 text-success">
                   {t('products.active')}
                 </span>
               </td>

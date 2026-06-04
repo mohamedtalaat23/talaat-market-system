@@ -105,7 +105,7 @@ export function LANSettingsScreen() {
     <div className="space-y-8 max-w-4xl text-foreground select-text">
       <div>
         <h3 className="text-xl font-bold tracking-tight text-foreground mb-2 flex items-center gap-2">
-          <Wifi className="text-emerald-500" size={24} />
+          <Wifi className="text-success" size={24} />
           {t('settings.lanTitle')}
         </h3>
         <p className="text-sm text-secondary">{t('settings.lanDesc')}</p>
@@ -117,13 +117,13 @@ export function LANSettingsScreen() {
           onClick={() => setMode('standalone')}
           className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
             mode === 'standalone'
-              ? 'bg-card border-emerald-600 ring-1 ring-emerald-500/30'
+              ? 'bg-card border-success ring-1 ring-success'
               : 'bg-background/40 border-border hover:border-border'
           }`}
         >
           <Monitor
             size={24}
-            className={`mb-3 ${mode === 'standalone' ? 'text-emerald-400' : 'text-secondary'}`}
+            className={`mb-3 ${mode === 'standalone' ? 'text-success' : 'text-secondary'}`}
           />
           <h4 className="font-semibold text-foreground">{t('settings.standalone')}</h4>
           <p className="text-xs text-secondary mt-1">{t('settings.standaloneDesc')}</p>
@@ -134,13 +134,13 @@ export function LANSettingsScreen() {
           onClick={() => setMode('master')}
           className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
             mode === 'master'
-              ? 'bg-card border-emerald-600 ring-1 ring-emerald-500/30'
+              ? 'bg-card border-success ring-1 ring-success'
               : 'bg-background/40 border-border hover:border-border'
           }`}
         >
           <Server
             size={24}
-            className={`mb-3 ${mode === 'master' ? 'text-emerald-400' : 'text-secondary'}`}
+            className={`mb-3 ${mode === 'master' ? 'text-success' : 'text-secondary'}`}
           />
           <h4 className="font-semibold text-foreground">{t('settings.hostMaster')}</h4>
           <p className="text-xs text-secondary mt-1">{t('settings.hostMasterDesc')}</p>
@@ -151,13 +151,13 @@ export function LANSettingsScreen() {
           onClick={() => setMode('client')}
           className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
             mode === 'client'
-              ? 'bg-card border-emerald-600 ring-1 ring-emerald-500/30'
+              ? 'bg-card border-success ring-1 ring-success'
               : 'bg-background/40 border-border hover:border-border'
           }`}
         >
           <Laptop
             size={24}
-            className={`mb-3 ${mode === 'client' ? 'text-emerald-400' : 'text-secondary'}`}
+            className={`mb-3 ${mode === 'client' ? 'text-success' : 'text-secondary'}`}
           />
           <h4 className="font-semibold text-foreground">{t('settings.clientTerminal')}</h4>
           <p className="text-xs text-secondary mt-1">{t('settings.clientTerminalDesc')}</p>
@@ -167,7 +167,7 @@ export function LANSettingsScreen() {
       {mode === 'client' && (
         <div className="bg-card/50 rounded-xl border border-border p-6 space-y-6">
           <h4 className="font-bold text-foreground flex items-center gap-2">
-            <Activity size={18} className="text-emerald-400" />
+            <Activity size={18} className="text-success" />
             {t('settings.hostConnSettings')}
           </h4>
 
@@ -180,7 +180,7 @@ export function LANSettingsScreen() {
                 <input
                   type="text"
                   placeholder={t('settings.placeholderHostAddress')}
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-foreground outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-foreground outline-none focus:border-success/60 transition-colors"
                   value={addressInput}
                   onChange={(e) => setAddressInput(e.target.value)}
                 />
@@ -204,7 +204,7 @@ export function LANSettingsScreen() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-500 transition-colors"
+                  className="px-5 py-2.5 rounded-lg bg-success text-white font-semibold text-sm hover:bg-success/90 transition-colors"
                 >
                   {t('settings.saveHost')}
                 </button>
@@ -216,12 +216,12 @@ export function LANSettingsScreen() {
             <div
               className={`p-4 rounded-lg border flex items-start gap-3 ${
                 pingResult.success
-                  ? 'bg-emerald-950/20 border-emerald-800/80 text-emerald-300'
+                  ? 'bg-success/15 border-success/30 text-success'
                   : 'bg-red-950/20 border-red-800/80 text-red-300'
               }`}
             >
               {pingResult.success ? (
-                <Wifi size={20} className="text-emerald-400 mt-0.5 shrink-0" />
+                <Wifi size={20} className="text-success mt-0.5 shrink-0" />
               ) : (
                 <WifiOff size={20} className="text-red-400 mt-0.5 shrink-0" />
               )}
@@ -248,7 +248,7 @@ export function LANSettingsScreen() {
             </span>
             <div className="flex items-center gap-2">
               <span
-                className={`h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}
+                className={`h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-success/90 animate-pulse' : 'bg-red-500'}`}
               />
               <span className="text-sm font-bold uppercase tracking-wider">
                 {status === 'online' ? t('settings.onlineSynced') : t('settings.offlineOutage')}
@@ -263,7 +263,7 @@ export function LANSettingsScreen() {
         <div className="flex justify-between items-center">
           <div className="space-y-1">
             <h4 className="font-bold text-foreground flex items-center gap-2">
-              <Database size={18} className="text-emerald-400" />
+              <Database size={18} className="text-success" />
               {t('settings.syncBufferTitle')}
             </h4>
             <p className="text-xs text-secondary">{t('settings.syncBufferDesc')}</p>

@@ -22,18 +22,18 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
   }, [cart]);
 
   return (
-    <div className="bg-slate-800/50 rounded border border-border p-4 flex justify-between items-center">
+    <div className="bg-card-hover/50 rounded border border-border p-4 flex justify-between items-center">
       <div>
         <div className="flex items-center space-x-2 text-sm text-secondary mb-1">
           <Clock size={14} />
           <span>{new Date(cart.timestamp).toLocaleTimeString()}</span>
-          <span className="px-2 text-slate-600">|</span>
+          <span className="px-2 text-muted">|</span>
           <UserIcon size={14} />
           <span>Cashier ID: {cart.cashier_id}</span>
         </div>
-        <div className="font-bold text-white text-lg">
-          {cart.cart.length} items{' '}
-          <span className="text-slate-500 font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
+        <div className="font-bold text-foreground text-lg">
+          {cart.cart.length} {cart.cart.length === 1 ? 'item' : 'items'}
+          <span className="text-secondary font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
         </button>
         <button
           onClick={() => onResume(cart.hold_id, cart.cashier_id)}
-          className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded transition-colors"
+          className="px-6 py-2 bg-warning/90 hover:bg-warning text-white font-bold rounded transition-colors"
         >
           Resume
         </button>
@@ -124,7 +124,7 @@ export function SuspendedCartsModal() {
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
           <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-            <Clock size={24} className="text-amber-500" />
+            <Clock size={24} className="text-warning" />
             <span>Suspended Carts</span>
           </h3>
           <button
@@ -137,7 +137,7 @@ export function SuspendedCartsModal() {
 
         <div className="flex-1 overflow-y-auto space-y-3">
           {heldCarts.length === 0 ? (
-            <div className="py-12 text-center text-slate-500">
+            <div className="py-12 text-center text-secondary">
               <p>No suspended carts found.</p>
             </div>
           ) : (

@@ -66,14 +66,14 @@ export function QuantityModal() {
         <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
           <h3
             id="quantity-modal-title"
-            className="text-xl font-bold text-white flex items-center space-x-2"
+            className="text-xl font-bold text-foreground flex items-center space-x-2"
           >
-            <Hash size={24} className="text-emerald-500" />
+            <Hash size={24} className="text-success" />
             <span>Update Quantity</span>
           </h3>
           <button
             onClick={closeModal}
-            className="text-secondary hover:text-white transition-colors"
+            className="text-secondary hover:text-foreground transition-colors"
           >
             <X size={20} />
           </button>
@@ -82,8 +82,8 @@ export function QuantityModal() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-background/60 p-4 border border-border rounded-lg">
             <div className="text-sm font-semibold text-secondary mb-1">Product</div>
-            <div className="text-lg font-bold text-white truncate">{activeItem.name}</div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-lg font-bold text-foreground truncate">{activeItem.name}</div>
+            <div className="text-xs text-secondary mt-1">
               Current Stock: {activeItem.inventory_quantity} {activeItem.unit}
             </div>
           </div>
@@ -101,7 +101,7 @@ export function QuantityModal() {
               type="number"
               step="0.01"
               min={0}
-              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-foreground focus:border-success focus:ring-1 focus:ring-success"
               value={quantityStr}
               onChange={(e) => setQuantityStr(e.target.value)}
             />
@@ -110,7 +110,7 @@ export function QuantityModal() {
           <button
             type="submit"
             disabled={!quantityStr || isNaN(Number(quantityStr))}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 rounded font-bold text-white transition-colors text-lg"
+            className="w-full py-4 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-lg"
           >
             Update Quantity
           </button>

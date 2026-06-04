@@ -90,7 +90,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         <div className="flex items-center justify-between p-4 border-b border-border bg-neutral-900/40">
           <div>
             <h2 className="text-lg font-bold text-neutral-100 flex items-center space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span>Verify Goods Receipt</span>
             </h2>
             <p className="text-xs text-secondary mt-0.5 font-mono">
@@ -105,8 +105,8 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         {/* Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Warning Alert Banner */}
-          <div className="p-4 rounded-lg bg-amber-950/20 border border-amber-800/40 text-amber-200 text-xs leading-relaxed flex items-start space-x-3">
-            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-lg bg-warning/15 border border-warning/30 text-warning text-xs leading-relaxed flex items-start space-x-3">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1">
               <span className="font-bold">CRITICAL TRANSACTION WORKFLOW</span>
               <p>
@@ -167,10 +167,10 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                           required
                           value={item.received_quantity}
                           onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
-                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-bold text-emerald-400 w-24 focus:border-emerald-600"
+                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-bold text-success w-24 focus:border-success"
                         />
                         {item.received_quantity !== item.ordered_quantity && (
-                          <span className="text-[10px] font-bold text-amber-500 font-mono uppercase bg-amber-950/20 px-1 border border-amber-800/30 rounded shrink-0">
+                          <span className="text-[10px] font-bold text-warning font-mono uppercase bg-warning/15 px-1 border border-warning/30 rounded shrink-0">
                             Diff
                           </span>
                         )}
@@ -209,7 +209,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
             type="button"
             onClick={handleSubmit}
             disabled={receivePO.isPending}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center space-x-1.5"
+            className="bg-success hover:bg-success/90 text-white font-bold flex items-center space-x-1.5"
           >
             <span>Confirm Influx</span>
           </Button>

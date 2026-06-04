@@ -86,7 +86,7 @@ export function SuppliersPage() {
       actions={
         <Button
           onClick={handleCreate}
-          className="flex items-center space-x-1.5 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white"
+          className="flex items-center space-x-1.5 font-semibold bg-success hover:bg-success/90 text-white"
         >
           <Plus size={16} />
           <span>{t('suppliers.registerSupplier')}</span>
@@ -112,7 +112,7 @@ export function SuppliersPage() {
             {t('suppliers.catalogCoverage')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-emerald-500">
+            <span className="text-3xl font-bold tracking-tight text-success">
               {items.reduce((sum, item) => sum + (item.active_catalog_count || 0), 0)}
             </span>
             <span className="text-xs text-neutral-500 font-mono">
@@ -128,16 +128,16 @@ export function SuppliersPage() {
           </span>
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-3 text-xs flex-wrap">
-              <span className="flex items-center text-emerald-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+              <span className="flex items-center text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success/90 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                 {pageActiveCount} {t('suppliers.active')}
               </span>
-              <span className="flex items-center text-amber-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+              <span className="flex items-center text-warning">
+                <span className="h-1.5 w-1.5 rounded-full bg-warning mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                 {pageInactiveCount} {t('suppliers.inactive')}
               </span>
-              <span className="flex items-center text-rose-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+              <span className="flex items-center text-danger">
+                <span className="h-1.5 w-1.5 rounded-full bg-danger mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                 {pageSuspendedCount} {t('suppliers.suspended')}
               </span>
             </div>
@@ -159,7 +159,7 @@ export function SuppliersPage() {
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={t('suppliers.searchPlaceholder')}
-            className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-foreground placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+            className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-foreground placeholder-neutral-500 focus:border-success focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -168,7 +168,7 @@ export function SuppliersPage() {
       <div className="rounded-xl border border-border bg-card/20 overflow-hidden">
         {isLoading && page > 1 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500/20 border-t-emerald-500" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-success/20 border-t-emerald-500" />
             <span className="mt-3 text-sm text-secondary font-mono">{t('common.loading')}</span>
           </div>
         ) : items.length === 0 ? (
@@ -210,7 +210,7 @@ export function SuppliersPage() {
                     <td className="px-6 py-4 font-semibold text-foreground">
                       <button
                         onClick={() => navigate(`/suppliers/${supplier.id}`)}
-                        className="hover:underline text-left rtl:text-right font-semibold text-foreground hover:text-emerald-500 focus:outline-none transition-colors"
+                        className="hover:underline text-left rtl:text-right font-semibold text-foreground hover:text-success focus:outline-none transition-colors"
                       >
                         {supplier.name}
                       </button>
@@ -234,17 +234,17 @@ export function SuppliersPage() {
                     {/* Status Badge */}
                     <td className="px-6 py-4 text-sm">
                       {supplier.status === 'active' ? (
-                        <span className="inline-flex items-center rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                        <span className="inline-flex items-center rounded-md bg-success/90/10 border border-success/20 px-2 py-1 text-xs font-medium text-success dark:text-success">
                           <CheckCircle2 size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                           {t('suppliers.active')}
                         </span>
                       ) : supplier.status === 'inactive' ? (
-                        <span className="inline-flex items-center rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                        <span className="inline-flex items-center rounded-md bg-warning/10 border border-warning/20 px-2 py-1 text-xs font-medium text-warning dark:text-warning">
                           <AlertTriangle size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                           {t('suppliers.inactive')}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-md bg-rose-500/10 border border-rose-500/20 px-2 py-1 text-xs font-medium text-rose-600 dark:text-rose-400">
+                        <span className="inline-flex items-center rounded-md bg-danger/10 border border-danger/20 px-2 py-1 text-xs font-medium text-danger dark:text-danger">
                           <ShieldAlert size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
                           {t('suppliers.suspended')}
                         </span>
@@ -344,7 +344,7 @@ export function SuppliersPage() {
                   </p>
 
                   {supplierToDelete.active_catalog_count > 0 && (
-                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 leading-relaxed">
+                    <div className="rounded-lg border border-warning/20 bg-warning/10 p-3 text-xs text-warning dark:text-warning leading-relaxed">
                       <span className="font-semibold block mb-1">
                         {t('suppliers.activeCatalogWarningTitle')}
                       </span>
@@ -368,7 +368,7 @@ export function SuppliersPage() {
                 <Button
                   onClick={confirmDelete}
                   disabled={deleteSupplier.isPending}
-                  className="bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors shadow-lg shadow-rose-950/20"
+                  className="bg-danger/90 px-4 py-2 text-sm font-semibold text-white hover:bg-danger disabled:opacity-50 transition-colors shadow-lg shadow-danger/10"
                 >
                   {deleteSupplier.isPending ? t('common.loading') : t('common.delete')}
                 </Button>
