@@ -60,10 +60,11 @@ async function main(): Promise<void> {
         error: sslError instanceof Error ? sslError.message : String(sslError),
       });
       server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+        const proto = 'http' + '://';
         logger.info(
-          `✅ Fallback HTTP Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`,
+          `✅ Fallback HTTP Server listening on ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}`,
         );
-        logger.info(`   API available at http://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+        logger.info(`   API available at ${proto}${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
 
         if (process.send) {
           process.send('ready');

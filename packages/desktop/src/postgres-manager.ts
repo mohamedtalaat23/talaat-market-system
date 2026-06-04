@@ -49,8 +49,8 @@ function writeEnvFile(filePath: string, values: Record<string, string>): void {
     '# Talaat Market generated production configuration',
     '# This file is managed by the desktop app. Keep it private.',
     ...Object.entries(values).map(([key, value]) => {
-      const normalizedValue = value.replace(/\\/g, '/').replace(/"/g, '\\"');
-      return `${key}="${normalizedValue}"`;
+      const normalizedValue = value.replace(/\\/g, '/');
+      return `${key}=${JSON.stringify(normalizedValue)}`;
     }),
     '',
   ];

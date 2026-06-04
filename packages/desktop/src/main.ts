@@ -4,11 +4,67 @@ import { ServerManager } from './server-manager';
 import { PostgresManager } from './postgres-manager';
 import { registerIpcHandlers } from './ipc/handlers';
 
-// ── Logger (simple console wrapper for main process) ────────────────────────
+// ── Logger (simple console wrapper for main process with sensitive data redaction) ──
+function redactSensitiveData(args: unknown[]): unknown[] {
+  const sensitivePatterns = [/pass/i, /pin/i, /secret/i, /token/i, /key/i, /auth/i];
+
+  const sanitize = (val: unknown, depth = 0): unknown => {
+    if (depth > 3 || val === null || typeof val !== 'object') {
+      return val;
+    }
+    if (val instanceof Error) {
+      const sanitizedErr: Record<string, unknown> = {
+        message: val.message,
+        name: val.name,
+        stack: val.stack,
+      };
+      for (const [key, value] of Object.entries(val)) {
+        if (sensitivePatterns.some((pattern) => pattern.test(key))) {
+          sanitizedErr[key] = '[REDACTED]';
+        } else {
+          sanitizedErr[key] = sanitize(value, depth + 1);
+        }
+      }
+      return sanitizedErr;
+    }
+    if (Array.isArray(val)) {
+      return val.map((item) => sanitize(item, depth + 1));
+    }
+    const cleanObj: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(val)) {
+      if (sensitivePatterns.some((pattern) => pattern.test(key))) {
+        cleanObj[key] = '[REDACTED]';
+      } else {
+        cleanObj[key] = sanitize(value, depth + 1);
+      }
+    }
+    return cleanObj;
+  };
+
+  return args.map((arg) => {
+    if (typeof arg === 'string') {
+      let clean = arg;
+      for (const word of ['password', 'pin', 'secret', 'token', 'key']) {
+        if (clean.toLowerCase().includes(word)) {
+          clean = clean.replace(new RegExp(`${word}\\s*[:=]\\s*[^&\\s\\"\\';]+`, 'gi'), `${word}=[REDACTED]`);
+        }
+      }
+      return clean;
+    }
+    if (typeof arg === 'object') {
+      return sanitize(arg);
+    }
+    return arg;
+  });
+}
+
 export const logger = {
-  info: (msg: string, ...args: unknown[]) => console.log(`[Main] ℹ️  ${msg}`, ...args),
-  warn: (msg: string, ...args: unknown[]) => console.warn(`[Main] ⚠️  ${msg}`, ...args),
-  error: (msg: string, ...args: unknown[]) => console.error(`[Main] ❌ ${msg}`, ...args),
+  info: (msg: string, ...args: unknown[]) =>
+    console.log(`[Main] ℹ️  ${msg}`, ...redactSensitiveData(args)),
+  warn: (msg: string, ...args: unknown[]) =>
+    console.warn(`[Main] ⚠️  ${msg}`, ...redactSensitiveData(args)),
+  error: (msg: string, ...args: unknown[]) =>
+    console.error(`[Main] ❌ ${msg}`, ...redactSensitiveData(args)),
 };
 
 // ── Development detection ────────────────────────────────────────────────────
