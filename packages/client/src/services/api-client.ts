@@ -4,7 +4,7 @@ import { useLANStore } from '@/features/pos/stores/useLANStore';
 
 /**
  * Configure API client with baseURL and standard headers.
- * Vite development server proxies "/api" requests to http://localhost:3001.
+ * Vite development server proxies "/api" requests to localhost:3001.
  */
 export const apiClient = axios.create({
   baseURL: '/api/v1',

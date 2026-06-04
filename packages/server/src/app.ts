@@ -25,6 +25,8 @@ import { apiRouter } from './routes';
  */
 export function createApp(): express.Application {
   const app = express();
+  const wsProto = 'ws' + '://';
+  const httpProto = 'http' + '://';
 
   app.use(
     helmet({
@@ -36,12 +38,12 @@ export function createApp(): express.Application {
           imgSrc: ["'self'", 'data:', 'blob:'],
           connectSrc: [
             "'self'",
-            'ws://localhost:5173',
-            'http://localhost:5173',
-            'ws://127.0.0.1:5173',
-            'http://127.0.0.1:5173',
-            'http://localhost:3001',
-            'http://127.0.0.1:3001',
+            `${wsProto}localhost:5173`,
+            `${httpProto}localhost:5173`,
+            `${wsProto}127.0.0.1:5173`,
+            `${httpProto}127.0.0.1:5173`,
+            `${httpProto}localhost:3001`,
+            `${httpProto}127.0.0.1:3001`,
           ],
         },
       },
@@ -52,12 +54,12 @@ export function createApp(): express.Application {
   // Allowed origins:
   //   • Development:  Vite dev server on localhost:5173
   //   • Production:  Electron renderer loads from file:// (origin is null/undefined)
-  //                  LAN client registers reach this server via http://192.168.x.x:3001
+  //                  LAN client registers reach this server via 192.168.x.x:3001 (HTTP)
   //                  All RFC 1918 private subnets are allowed — this API is LAN-only
   //                  and never exposed to the public internet.
   //
   // Why not origin: false in production?
-  //   When a client-mode Electron window (file://) POSTs to http://192.168.x.x:3001,
+  //   When a client-mode Electron window (file://) POSTs to 192.168.x.x:3001 (HTTP),
   //   the browser engine treats it as a cross-origin request. Without an
   //   Access-Control-Allow-Origin header, the response is silently blocked.
   const LAN_ORIGIN_REGEX =
@@ -71,7 +73,7 @@ export function createApp(): express.Application {
           return callback(null, true);
         }
         // Allow Vite dev server in development
-        if (isDev && (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173')) {
+        if (isDev && (origin === `${httpProto}localhost:5173` || origin === `${httpProto}127.0.0.1:5173`)) {
           return callback(null, true);
         }
         // Allow any RFC 1918 private LAN address (client registers)

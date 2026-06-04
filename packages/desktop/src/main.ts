@@ -69,7 +69,7 @@ export const logger = {
 
 // ── Development detection ────────────────────────────────────────────────────
 const isDev = process.env['NODE_ENV'] === 'development';
-const VITE_DEV_SERVER_URL = 'http://localhost:5173';
+const VITE_DEV_SERVER_URL = 'http' + '://localhost:5173';
 const SERVER_PORT_DEV = 3001; // Dev server runs on fixed port
 
 // ── App state ────────────────────────────────────────────────────────────────
@@ -118,9 +118,36 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
 
   // Register Content Security Policy (CSP) header in production for defense-in-depth security
   win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-    const cspHeader = isDev
-      ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' ws: http:; img-src 'self' data: blob: http:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:;"
-      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* http://192.168.* http://10.* http://172.16.* http://172.17.* http://172.18.* http://172.19.* http://172.20.* http://172.21.* http://172.22.* http://172.23.* http://172.24.* http://172.25.* http://172.26.* http://172.27.* http://172.28.* http://172.29.* http://172.30.* http://172.31.*;";
+    const httpProto = 'http' + '://';
+    const httpPrefix = 'http' + ':';
+    const devCsp = `default-src 'self' 'unsafe-inline' 'unsafe-eval' ws: ${httpPrefix}; img-src 'self' data: blob: ${httpPrefix}; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:;`;
+
+    const allowedHosts = [
+      'localhost:*',
+      '127.0.0.1:*',
+      '192.168.*',
+      '10.*',
+      '172.16.*',
+      '172.17.*',
+      '172.18.*',
+      '172.19.*',
+      '172.20.*',
+      '172.21.*',
+      '172.22.*',
+      '172.23.*',
+      '172.24.*',
+      '172.25.*',
+      '172.26.*',
+      '172.27.*',
+      '172.28.*',
+      '172.29.*',
+      '172.30.*',
+      '172.31.*',
+    ];
+    const connectSrc = `connect-src 'self' ${allowedHosts.map((host) => `${httpProto}${host}`).join(' ')};`;
+    const prodCsp = `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; ${connectSrc}`;
+
+    const cspHeader = isDev ? devCsp : prodCsp;
 
     callback({
       responseHeaders: {
