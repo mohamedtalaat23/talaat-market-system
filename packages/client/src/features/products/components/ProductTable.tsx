@@ -2,6 +2,7 @@ import { Barcode, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { Product } from '../hooks/useProductQueries';
 
 interface ProductTableProps {
@@ -21,28 +22,52 @@ export function ProductTable({
   onClearFilters,
   hasFilters,
 }: ProductTableProps) {
+  const { t, language } = useTranslation();
+
   return (
-    <Card className="overflow-hidden border-border" role="region" aria-label="Product Catalog Table">
+    <Card
+      className="overflow-hidden border-border"
+      role="region"
+      aria-label="Product Catalog Table"
+    >
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-foreground" role="table">
-          <caption className="sr-only">List of store products with names, prices, and stock indicators</caption>
+        <table className="w-full text-start text-sm text-foreground" role="table">
+          <caption className="sr-only">
+            List of store products with names, prices, and stock indicators
+          </caption>
           <thead className="bg-card-hover border-b border-border text-secondary font-semibold select-none">
             <tr>
-              <th scope="col" className="p-4 font-medium">Product Name / Description</th>
-              <th scope="col" className="p-4 font-medium">Barcode</th>
-              <th scope="col" className="p-4 font-medium">Category</th>
-              <th scope="col" className="p-4 font-medium text-right">Cost Price</th>
-              <th scope="col" className="p-4 font-medium text-right">Selling Price</th>
-              <th scope="col" className="p-4 font-medium text-right">Stock Qty</th>
-              <th scope="col" className="p-4 font-medium text-center">Status</th>
-              <th scope="col" className="p-4 font-medium text-center">Actions</th>
+              <th scope="col" className="p-4 font-medium text-start">
+                {t('products.nameDesc')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-start">
+                {t('products.barcode')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-start">
+                {t('products.category').replace(':', '')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-end">
+                {t('products.costPrice')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-end">
+                {t('products.sellingPrice')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-end">
+                {t('products.stockQty')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-center">
+                {t('common.status')}
+              </th>
+              <th scope="col" className="p-4 font-medium text-center">
+                {t('common.actions')}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border select-text">
             {isLoading ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-secondary font-medium">
-                  Refreshing products...
+                  {t('products.refreshing')}
                 </td>
               </tr>
             ) : products.length > 0 ? (
@@ -52,78 +77,96 @@ export function ProductTable({
                 return (
                   <tr key={product.id} className="hover:bg-card-hover/40 transition-colors">
                     <td className="p-4">
-                      <div className="font-semibold text-foreground leading-tight">{product.name}</div>
+                      <div className="font-semibold text-foreground leading-tight">
+                        {product.name}
+                      </div>
                       {product.name_ar && (
-                        <div className="text-xs text-secondary font-arabic mt-0.5 text-right md:text-left select-all">
+                        <div className="text-xs text-secondary font-arabic mt-0.5 text-start select-all">
                           {product.name_ar}
                         </div>
                       )}
                       {product.description && (
-                        <div className="text-xs text-neutral-500 mt-1 truncate max-w-xs">{product.description}</div>
+                        <div className="text-xs text-neutral-500 mt-1 truncate max-w-xs">
+                          {product.description}
+                        </div>
                       )}
                     </td>
                     <td className="p-4 font-mono text-foreground">
                       {product.barcode ? (
-                        <div className="flex items-center space-x-1.5 select-all">
+                        <div className="flex items-center gap-1.5 select-all">
                           <Barcode size={14} className="text-neutral-500" aria-hidden="true" />
                           <span>{product.barcode}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-neutral-500">Loose Produce</span>
+                        <span className="text-xs text-neutral-500">
+                          {t('products.looseProduce')}
+                        </span>
                       )}
                     </td>
                     <td className="p-4">
-                      <div className="flex flex-col space-y-1">
-                        <span className="flex items-center space-x-1 text-xs text-secondary">
-                          <span className="text-primary/75 font-bold mr-0.5">#</span>
-                          <span>{product.category_name || 'Uncategorized'}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="flex items-center gap-1 text-xs text-secondary">
+                          <span className="text-primary/75 font-bold me-0.5">#</span>
+                          <span>
+                            {language === 'ar' && product.category_name_ar
+                              ? product.category_name_ar
+                              : product.category_name || t('products.uncategorized')}
+                          </span>
                         </span>
                         {product.supplier_name && (
-                          <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[120px]" title={`${product.supplier_name} (${product.supplier_code})`}>
-                            Sup: {product.supplier_name}
+                          <span
+                            className="text-[10px] text-neutral-500 font-mono truncate max-w-[120px]"
+                            title={`${product.supplier_name} (${product.supplier_code})`}
+                          >
+                            {t('products.supplierLabel')}: {product.supplier_name}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-right font-mono text-secondary">
+                    <td className="p-4 text-end font-mono text-secondary">
                       EGP {product.cost_price.toFixed(2)}
                     </td>
-                    <td className="p-4 text-right font-mono font-bold text-foreground">
+                    <td className="p-4 text-end font-mono font-bold text-foreground">
                       EGP {product.selling_price.toFixed(2)}
                     </td>
-                    <td className="p-4 text-right font-mono">
+                    <td className="p-4 text-end font-mono">
                       <div className="flex flex-col items-end">
-                        <span className={`font-semibold ${isLow ? 'text-destructive font-bold' : 'text-foreground'}`}>
+                        <span
+                          className={`font-semibold ${isLow ? 'text-destructive font-bold' : 'text-foreground'}`}
+                        >
                           {qty} {product.unit}
                         </span>
                         {isLow && (
-                          <span className="flex items-center space-x-0.5 text-[9px] text-destructive uppercase tracking-wider mt-0.5 font-bold" aria-label="Low stock alert">
+                          <span
+                            className="flex items-center gap-0.5 text-[9px] text-destructive uppercase tracking-wider mt-0.5 font-bold"
+                            aria-label="Low stock alert"
+                          >
                             <ShieldAlert size={10} aria-hidden="true" />
-                            <span>Low Stock</span>
+                            <span>{t('products.lowStock')}</span>
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="p-4 text-center">
                       <Badge variant={product.is_active ? 'success' : 'outline'}>
-                        {product.is_active ? 'Active' : 'Inactive'}
+                        {product.is_active ? t('products.active') : t('products.inactive')}
                       </Badge>
                     </td>
                     <td className="p-4">
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => onEdit(product)}
                           className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          title="Edit details"
-                          aria-label={`Edit details for ${product.name}`}
+                          title={t('products.editDetails')}
+                          aria-label={`${t('products.editDetails')} ${product.name}`}
                         >
                           <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => onDelete(product)}
                           className="rounded-md p-1.5 text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          title="Soft delete product"
-                          aria-label={`Delete ${product.name}`}
+                          title={t('products.deleteProduct')}
+                          aria-label={`${t('products.deleteProduct')} ${product.name}`}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -135,9 +178,12 @@ export function ProductTable({
             ) : (
               <tr>
                 <td colSpan={8} className="p-12 text-center text-secondary font-medium">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <Barcode className="h-8 w-8 text-neutral-500 animate-pulse" aria-hidden="true" />
-                    <span>No products found in the catalog.</span>
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Barcode
+                      className="h-8 w-8 text-neutral-500 animate-pulse"
+                      aria-hidden="true"
+                    />
+                    <span>{t('products.noProductsCatalog')}</span>
                     {hasFilters && (
                       <Button
                         variant="outline"
@@ -145,7 +191,7 @@ export function ProductTable({
                         onClick={onClearFilters}
                         className="mt-2 text-xs font-semibold"
                       >
-                        Clear Active Filters
+                        {t('products.clearFilters')}
                       </Button>
                     )}
                   </div>

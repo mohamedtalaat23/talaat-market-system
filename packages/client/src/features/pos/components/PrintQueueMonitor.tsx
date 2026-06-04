@@ -2,15 +2,21 @@ import { useState, useEffect } from 'react';
 import type { PrintJob, PrinterStatus } from '@/types';
 import toast from 'react-hot-toast';
 import { Printer, CheckCircle2, RefreshCw, Settings, Save, Zap } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function PrintQueueMonitor() {
+  const { t } = useTranslation();
   const [isElectron, setIsElectron] = useState(false);
   const [jobs, setJobs] = useState<PrintJob[]>([]);
   const [status, setStatus] = useState<PrinterStatus | null>(null);
-  
+
   // Dashboard & Re-routing States
   const [showSettings, setShowSettings] = useState(false);
-  const [printerConfig, setPrinterConfig] = useState<any>({ type: 'mock', devicePath: '/dev/usb/lp0', paperWidth: 80 });
+  const [printerConfig, setPrinterConfig] = useState<any>({
+    type: 'mock',
+    devicePath: '/dev/usb/lp0',
+    paperWidth: 80,
+  });
   const [discoveredPorts, setDiscoveredPorts] = useState<string[]>([]);
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,7 +96,10 @@ export function PrintQueueMonitor() {
     setIsTesting(true);
     const toastId = toast.loading('Sending test print command...');
     try {
-      const res = (await window.electronAPI.testPrinter(printerConfig)) as unknown as { success: boolean; message: string };
+      const res = (await window.electronAPI.testPrinter(printerConfig)) as unknown as {
+        success: boolean;
+        message: string;
+      };
       setIsTesting(false);
       if (res.success) {
         toast.success('Test print sent successfully!', { id: toastId });
@@ -127,7 +136,9 @@ export function PrintQueueMonitor() {
   // Filter queue jobs to active tasks (pending, processing, failed, retrying)
   const activeJobs = jobs.filter((j) => j.status !== 'completed');
   const failedJobs = jobs.filter((j) => j.status === 'failed');
-  const processingJobs = jobs.filter((j) => j.status === 'processing' || j.status === 'pending' || j.status === 'retrying');
+  const processingJobs = jobs.filter(
+    (j) => j.status === 'processing' || j.status === 'pending' || j.status === 'retrying',
+  );
 
   return (
     <div className="bg-card border border-border rounded-lg p-3.5 space-y-3 font-sans select-none text-xs text-secondary">
@@ -135,7 +146,7 @@ export function PrintQueueMonitor() {
       <div className="flex items-center justify-between border-b border-border pb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-secondary flex items-center space-x-1.5">
           <Printer size={13} className="text-secondary" />
-          <span>Receipt Printer Queue</span>
+          <span>{t('pos.receiptPrinterQueue')}</span>
         </span>
         <div className="flex items-center space-x-3">
           <button
@@ -168,10 +179,12 @@ export function PrintQueueMonitor() {
           <div className="text-[9px] font-bold uppercase tracking-wider text-muted mb-1">
             Device Routing & Configuration
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">Printer Type</label>
+              <label className="block text-[9px] text-secondary font-semibold mb-1">
+                Printer Type
+              </label>
               <select
                 className="w-full bg-input border border-border rounded px-2 py-1.5 text-foreground focus:outline-none focus:border-success"
                 value={printerConfig.type}
@@ -182,11 +195,15 @@ export function PrintQueueMonitor() {
               </select>
             </div>
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">Paper Width</label>
+              <label className="block text-[9px] text-secondary font-semibold mb-1">
+                Paper Width
+              </label>
               <select
                 className="w-full bg-input border border-border rounded px-2 py-1.5 text-foreground focus:outline-none focus:border-success"
                 value={printerConfig.paperWidth}
-                onChange={(e) => setPrinterConfig({ ...printerConfig, paperWidth: Number(e.target.value) })}
+                onChange={(e) =>
+                  setPrinterConfig({ ...printerConfig, paperWidth: Number(e.target.value) })
+                }
               >
                 <option value={80}>80 mm (Standard)</option>
                 <option value={58}>58 mm (Narrow)</option>
@@ -196,7 +213,9 @@ export function PrintQueueMonitor() {
 
           {printerConfig.type === 'usb' && (
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">Device Path / Port</label>
+              <label className="block text-[9px] text-secondary font-semibold mb-1">
+                Device Path / Port
+              </label>
               <input
                 type="text"
                 className="w-full bg-input border border-border rounded px-2.5 py-1.5 text-foreground focus:outline-none focus:border-success mb-1.5"
@@ -248,13 +267,20 @@ export function PrintQueueMonitor() {
       {/* Diagnostics / Printer status */}
       {status && (
         <div className="flex items-center justify-between bg-input/40 p-2 rounded border border-border">
-          <span className="text-[10px] text-secondary truncate max-w-[170px]" title={status.message}>
+          <span
+            className="text-[10px] text-secondary truncate max-w-[170px]"
+            title={status.message}
+          >
             {status.message}
           </span>
           <span className="flex items-center space-x-1 shrink-0">
-            <span className={`h-1.5 w-1.5 rounded-full ${status.online ? 'bg-success animate-pulse' : 'bg-danger'}`} />
-            <span className={`text-[9px] font-bold uppercase tracking-wider ${status.online ? 'text-success' : 'text-danger'}`}>
-              {status.online ? 'Online' : 'Offline'}
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${status.online ? 'bg-success animate-pulse' : 'bg-danger'}`}
+            />
+            <span
+              className={`text-[9px] font-bold uppercase tracking-wider ${status.online ? 'text-success' : 'text-danger'}`}
+            >
+              {status.online ? t('settings.online') : t('settings.offline')}
             </span>
           </span>
         </div>
@@ -290,7 +316,10 @@ export function PrintQueueMonitor() {
                   <span className="font-semibold block text-[10px] text-danger">
                     Print Failed: {job.receipt.receiptNumber}
                   </span>
-                  <span className="text-[9px] font-mono text-danger/90 block leading-tight truncate max-w-[180px]" title={job.error || ''}>
+                  <span
+                    className="text-[9px] font-mono text-danger/90 block leading-tight truncate max-w-[180px]"
+                    title={job.error || ''}
+                  >
                     Err: {job.error || 'Hardware connection lost'}
                   </span>
                 </div>

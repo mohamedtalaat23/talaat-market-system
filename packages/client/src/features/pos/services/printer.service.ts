@@ -20,7 +20,7 @@ export class PrinterService {
         unit: item.unit || 'pcs',
         unitPrice: Number(item.unit_price || 0),
         discount: Number(item.discount || 0),
-        lineTotal: Number(item.line_total || 0)
+        lineTotal: Number(item.line_total || 0),
       })),
       totals: {
         subtotal: Number(sale.subtotal || sale.total || 0),
@@ -28,13 +28,21 @@ export class PrinterService {
         globalDiscount: Number(sale.global_discount || 0),
         tax: Number(sale.tax_amount || 0),
         total: Number(sale.total || 0),
-        cashReceived: sale.cash_received !== undefined && sale.cash_received !== null ? Number(sale.cash_received) : null,
-        changeGiven: sale.change_given !== undefined && sale.change_given !== null ? Number(sale.change_given) : null
+        cashReceived:
+          sale.cash_received !== undefined && sale.cash_received !== null
+            ? Number(sale.cash_received)
+            : null,
+        changeGiven:
+          sale.change_given !== undefined && sale.change_given !== null
+            ? Number(sale.change_given)
+            : null,
       },
-      timestamp: sale.created_at ? new Date(sale.created_at).toLocaleString() : new Date().toLocaleString(),
+      timestamp: sale.created_at
+        ? new Date(sale.created_at).toLocaleString()
+        : new Date().toLocaleString(),
       paymentMethod: sale.payment_method || 'cash',
       printCount: sale.print_count || 0,
-      isReprint
+      isReprint,
     };
 
     // Try Electron Hardware Queue printing first
@@ -55,7 +63,7 @@ export class PrinterService {
       change_given: sale.change_given,
       payment_method: sale.payment_method,
       isReprint,
-      items: sale.items || []
+      items: sale.items || [],
     };
 
     const html = generateReceiptHtml(payload);

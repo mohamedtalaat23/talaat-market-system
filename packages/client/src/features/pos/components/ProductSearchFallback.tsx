@@ -13,13 +13,13 @@ export function ProductSearchFallback() {
   const closeModalAction = useModalStore((state) => state.closeModal);
   const payload = useModalStore((state) => state.modalPayloads.pos_product_search);
   const closeModal = () => closeModalAction('pos_product_search');
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  
+
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
-  const addItem = usePOSStore(state => state.addItem);
+  const addItem = usePOSStore((state) => state.addItem);
 
   // Sync search input with modal payload when opened
   useEffect(() => {
@@ -69,9 +69,12 @@ export function ProductSearchFallback() {
   const { data, isLoading } = useQuery<{ success: boolean; data: Product[] }>({
     queryKey: ['pos-product-search', debouncedSearch],
     queryFn: async () => {
-      const response = await apiClient.get<{ success: boolean; data: Product[] }>('/pos/products/search', {
-        params: { q: debouncedSearch, limit: 20 },
-      });
+      const response = await apiClient.get<{ success: boolean; data: Product[] }>(
+        '/pos/products/search',
+        {
+          params: { q: debouncedSearch, limit: 20 },
+        },
+      );
       return response.data;
     },
     enabled: isOpen && showResults,
@@ -101,7 +104,7 @@ export function ProductSearchFallback() {
       quantity: 1,
       discount: 0,
       unit: product.unit,
-      inventory_quantity: product.inventory_quantity || 0
+      inventory_quantity: product.inventory_quantity || 0,
     });
 
     toast.success(`Added ${product.name} to cart`);
@@ -139,7 +142,14 @@ export function ProductSearchFallback() {
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4">
-      <div className="absolute inset-0" onClick={() => { closeModal(); document.body.focus(); }} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        onClick={() => {
+          closeModal();
+          document.body.focus();
+        }}
+        aria-hidden="true"
+      />
 
       <div
         ref={focusTrapRef}
@@ -149,12 +159,18 @@ export function ProductSearchFallback() {
         aria-labelledby="search-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
-          <h3 id="search-modal-title" className="text-lg font-bold text-white flex items-center space-x-2">
+          <h3
+            id="search-modal-title"
+            className="text-lg font-bold text-white flex items-center space-x-2"
+          >
             <Search size={18} className="text-secondary" />
             <span>Product Search</span>
           </h3>
           <button
-            onClick={() => { closeModal(); document.body.focus(); }}
+            onClick={() => {
+              closeModal();
+              document.body.focus();
+            }}
             className="rounded-md p-1.5 text-secondary hover:text-white hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <X size={18} />
@@ -164,7 +180,9 @@ export function ProductSearchFallback() {
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="search-input" className="sr-only">Search Product</label>
+              <label htmlFor="search-input" className="sr-only">
+                Search Product
+              </label>
               <input
                 id="search-input"
                 autoFocus
@@ -194,7 +212,8 @@ export function ProductSearchFallback() {
               ) : (
                 products.map((product, index) => {
                   const isSelected = index === selectedIndex;
-                  const isOutOfStock = product.inventory_quantity !== undefined && product.inventory_quantity <= 0;
+                  const isOutOfStock =
+                    product.inventory_quantity !== undefined && product.inventory_quantity <= 0;
                   const isInactive = !product.is_active;
 
                   return (
@@ -211,7 +230,10 @@ export function ProductSearchFallback() {
                         <div className="flex items-center space-x-2">
                           <span className="font-medium truncate">{product.name}</span>
                           {product.name_ar && (
-                            <span className="text-xs text-secondary font-medium truncate dir-rtl" lang="ar">
+                            <span
+                              className="text-xs text-secondary font-medium truncate dir-rtl"
+                              lang="ar"
+                            >
                               ({product.name_ar})
                             </span>
                           )}
@@ -219,12 +241,19 @@ export function ProductSearchFallback() {
                         <div className="flex items-center space-x-3 text-xs text-slate-500 mt-0.5">
                           <span>SKU: {product.id}</span>
                           <span>Barcode: {product.barcode || 'N/A'}</span>
-                          <span>Stock: {product.inventory_quantity !== undefined ? `${product.inventory_quantity} ${product.unit}` : 'N/A'}</span>
+                          <span>
+                            Stock:{' '}
+                            {product.inventory_quantity !== undefined
+                              ? `${product.inventory_quantity} ${product.unit}`
+                              : 'N/A'}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3 ml-4">
                         <div className="flex flex-col items-end">
-                          <span className={`text-sm font-bold ${isSelected ? 'text-emerald-400' : 'text-white'}`}>
+                          <span
+                            className={`text-sm font-bold ${isSelected ? 'text-emerald-400' : 'text-white'}`}
+                          >
                             {product.selling_price.toFixed(2)} EGP
                           </span>
                         </div>
@@ -252,4 +281,3 @@ export function ProductSearchFallback() {
     </div>
   );
 }
-

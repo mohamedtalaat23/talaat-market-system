@@ -19,37 +19,30 @@ inventoryRouter.use(standardRateLimiter);
 inventoryRouter.use(requireAuth);
 
 // GET /inventory - List stock levels with search and filters
-inventoryRouter.get(
-  '/',
-  validate({ query: inventoryQuerySchema }),
-  controller.getInventory
-);
+inventoryRouter.get('/', validate({ query: inventoryQuerySchema }), controller.getInventory);
 
 // GET /inventory/adjustments - Get history of stock adjustments
-inventoryRouter.get(
-  '/adjustments',
-  controller.getAdjustments
-);
+inventoryRouter.get('/adjustments', controller.getAdjustments);
 
 // GET /inventory/:productId - Get stock details for a product
 inventoryRouter.get(
   '/:productId',
   validate({ params: productIdParamSchema }),
-  controller.getInventoryByProductId
+  controller.getInventoryByProductId,
 );
 
 // PUT /inventory/:productId - Set direct stock levels (manual correction)
 inventoryRouter.put(
   '/:productId',
   validate({ params: productIdParamSchema, body: updateInventorySchema }),
-  controller.updateInventory
+  controller.updateInventory,
 );
 
 // POST /inventory/adjust - Perform relative adjustments (add, remove, damage, expired)
 inventoryRouter.post(
   '/adjust',
   validate({ body: adjustInventorySchema }),
-  controller.adjustInventory
+  controller.adjustInventory,
 );
 
 export { inventoryRouter };

@@ -138,7 +138,7 @@ export function useWeeklyReport(weekStart?: string, weekEnd?: string) {
       const params: Record<string, string> = {};
       if (weekStart) params.week_start = weekStart;
       if (weekEnd) params.week_end = weekEnd;
-      
+
       const { data } = await apiClient.get('/reports/weekly', { params });
       return data;
     },
@@ -146,7 +146,12 @@ export function useWeeklyReport(weekStart?: string, weekEnd?: string) {
   });
 }
 
-export function useOverridesList(filters: { page: number; limit: number; date_from?: string; date_to?: string }) {
+export function useOverridesList(filters: {
+  page: number;
+  limit: number;
+  date_from?: string;
+  date_to?: string;
+}) {
   return useQuery<PaginatedResponse<OverrideAuditItem>>({
     queryKey: ['reports', 'overrides', filters],
     queryFn: async () => {

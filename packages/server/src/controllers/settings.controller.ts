@@ -24,7 +24,7 @@ export class SettingsController {
       const payload = updateSettingsSchema.parse(req.body);
       // user is attached by requireAuth middleware
       const userId = (req as any).user?.id;
-      
+
       if (!userId) {
         res.status(401).json({ status: 'error', message: 'Unauthorized' });
         return;

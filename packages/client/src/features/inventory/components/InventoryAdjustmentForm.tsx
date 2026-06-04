@@ -3,11 +3,16 @@ import { calculateExpectedStock, type AdjustmentType } from '../utils/calculatio
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { InventoryItem } from '../hooks/useInventoryQueries';
 
 interface InventoryAdjustmentFormProps {
   item: InventoryItem;
-  onSubmit: (data: { adjustment_type: AdjustmentType; quantity_change: number; notes: string }) => void;
+  onSubmit: (data: {
+    adjustment_type: AdjustmentType;
+    quantity_change: number;
+    notes: string;
+  }) => void;
   isLoading: boolean;
   onCancel: () => void;
 }
@@ -18,6 +23,7 @@ export function InventoryAdjustmentForm({
   isLoading,
   onCancel,
 }: InventoryAdjustmentFormProps) {
+  const { t, language } = useTranslation();
   const [type, setType] = useState<AdjustmentType>('stock_addition');
   const [changeValue, setChangeValue] = useState('');
   const [notes, setNotes] = useState('');
@@ -29,16 +35,30 @@ export function InventoryAdjustmentForm({
   // Dynamically calculate expected stock on any input changes using centralized utility logic
   useEffect(() => {
     const val = parseFloat(changeValue);
-    const { newQuantity, isValid, notes: calculationNote } = calculateExpectedStock(
-      item.quantity,
-      type,
-      val
-    );
+    const {
+      newQuantity,
+      isValid,
+      notes: calculationNote,
+    } = calculateExpectedStock(item.quantity, type, val);
 
     setExpectedStock(newQuantity);
     setIsFormValid(isValid);
     setWarningMessage(calculationNote);
   }, [changeValue, type, item.quantity]);
+
+  const getWarningTranslation = (msg: string) => {
+    if (!msg) return '';
+    if (language !== 'ar') return msg;
+    if (msg.startsWith('Addition quantity')) return 'يجب أن تكون كمية الإضافة غير سالبة';
+    if (msg.startsWith('Change quantity')) return 'يجب أن تكون كمية التغيير غير سالبة';
+    if (msg.startsWith('Cannot adjust past zero'))
+      return `لا يمكن تعديل المخزون لأقل من الصفر. أقصى كمية صرف مسموح بها هي ${item.quantity}`;
+    if (msg.startsWith('Inventory count cannot be negative'))
+      return 'لا يمكن أن تكون كمية المخزون سالبة';
+    if (msg.startsWith('Please enter a valid positive'))
+      return 'يرجى إدخال كمية تغيير إيجابية صالحة';
+    return msg;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +66,11 @@ export function InventoryAdjustmentForm({
 
     const val = parseFloat(changeValue);
     if (isNaN(val) || val <= 0) {
-      setWarningMessage('Please enter a valid positive change quantity');
+      setWarningMessage(
+        language === 'ar'
+          ? 'يرجى إدخال كمية تغيير إيجابية صالحة'
+          : 'Please enter a valid positive change quantity',
+      );
       return;
     }
 
@@ -69,26 +93,35 @@ export function InventoryAdjustmentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 select-text">
       {/* Product Card Header */}
-      <div className="rounded-lg bg-neutral-900 border border-border p-4 space-y-1">
-        <div className="text-xs text-secondary font-semibold uppercase tracking-wider">Item Details</div>
+      <div className="rounded-lg bg-card border border-border p-4 flex flex-col gap-1">
+        <div className="text-xs text-secondary font-semibold uppercase tracking-wider">
+          {t('inventory.itemDetails')}
+        </div>
         <div className="font-bold text-foreground text-sm">{item.product_name}</div>
         <div className="flex justify-between text-xs text-secondary pt-2 border-t border-border/60 mt-2 font-mono">
-          <span>Barcode: {item.product_barcode || 'Loose Produce'}</span>
-          <span>Current Level: <strong className="text-foreground">{item.quantity} {item.product_unit}</strong></span>
+          <span>
+            {t('inventory.barcode')}: {item.product_barcode || t('products.looseProduce')}
+          </span>
+          <span>
+            {t('inventory.currentLevel')}:{' '}
+            <strong className="text-foreground">
+              {item.quantity} {item.product_unit}
+            </strong>
+          </span>
         </div>
       </div>
 
       {warningMessage && (
         <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
-          {warningMessage}
+          {getWarningTranslation(warningMessage)}
         </div>
       )}
 
       {/* Input Adjustments Grid */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor="adjustType" className="text-xs font-semibold text-neutral-300">
-            Adjustment Type
+          <label htmlFor="adjustType" className="text-xs font-semibold text-secondary">
+            {t('inventory.adjustmentType')}
           </label>
           <select
             id="adjustType"
@@ -98,19 +131,22 @@ export function InventoryAdjustmentForm({
               setChangeValue(''); // Reset inputs
             }}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           >
-            <option value="stock_addition">Stock Addition (+)</option>
-            <option value="stock_removal">Stock Removal (-)</option>
-            <option value="damaged">Damaged Stock (-)</option>
-            <option value="expired">Expired Stock (-)</option>
-            <option value="manual_correction">Manual Stocktake Count (Override)</option>
+            <option value="stock_addition">{t('inventory.stockAddition')}</option>
+            <option value="stock_removal">{t('inventory.stockRemoval')}</option>
+            <option value="damaged">{t('inventory.damagedStock')}</option>
+            <option value="expired">{t('inventory.expiredStock')}</option>
+            <option value="manual_correction">{t('inventory.manualCorrection')}</option>
           </select>
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="changeValue" className="text-xs font-semibold text-neutral-300">
-            {type === 'manual_correction' ? 'Target Stock Count' : 'Change Quantity'} *
+          <label htmlFor="changeValue" className="text-xs font-semibold text-secondary">
+            {type === 'manual_correction'
+              ? t('inventory.targetStockCount')
+              : t('inventory.changeQty')}{' '}
+            *
           </label>
           <Input
             id="changeValue"
@@ -128,14 +164,18 @@ export function InventoryAdjustmentForm({
       </div>
 
       {/* Preview Calculations */}
-      <div className="grid grid-cols-3 gap-2 bg-neutral-900/40 rounded-lg p-3 border border-border text-center select-none font-mono">
+      <div className="grid grid-cols-3 gap-2 bg-card-hover/40 rounded-lg p-3 border border-border text-center select-none font-mono">
         <div>
-          <div className="text-[10px] text-neutral-500 uppercase font-semibold">Current</div>
-          <div className="text-sm font-bold text-neutral-300">{item.quantity}</div>
+          <div className="text-[10px] text-secondary uppercase font-semibold">
+            {t('inventory.current')}
+          </div>
+          <div className="text-sm font-bold text-foreground">{item.quantity}</div>
         </div>
         <div className="flex items-center justify-center text-neutral-500 text-sm">➔</div>
         <div>
-          <div className="text-[10px] text-neutral-500 uppercase font-semibold">Expected New</div>
+          <div className="text-[10px] text-secondary uppercase font-semibold">
+            {t('inventory.expectedNew')}
+          </div>
           <div className={`text-sm font-bold ${isFormValid ? 'text-primary' : 'text-destructive'}`}>
             {expectedStock}
           </div>
@@ -143,29 +183,24 @@ export function InventoryAdjustmentForm({
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="notes" className="text-xs font-semibold text-neutral-300">
-          Reason / Audit Notes *
+        <label htmlFor="notes" className="text-xs font-semibold text-secondary">
+          {t('inventory.reasonNotes')}
         </label>
         <textarea
           id="notes"
           rows={3}
-          placeholder="Include specific shift explanations (e.g. Broken packaging, expired expiration date, stocktake verification)"
+          placeholder={t('inventory.placeholderNotes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           disabled={isLoading}
           required
-          className="flex w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          className="flex w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />
       </div>
 
-      <div className="flex justify-end space-x-2 border-t border-border pt-4 mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Cancel
+      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
@@ -173,12 +208,12 @@ export function InventoryAdjustmentForm({
           disabled={isLoading || !isFormValid || !changeValue}
         >
           {isLoading ? (
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center gap-1.5">
               <Spinner size="sm" />
-              <span>Applying...</span>
+              <span>{t('inventory.applying')}</span>
             </div>
           ) : (
-            <span>Apply Adjustment</span>
+            <span>{t('inventory.applyAdjustment')}</span>
           )}
         </Button>
       </div>

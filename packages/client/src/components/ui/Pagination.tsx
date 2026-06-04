@@ -28,7 +28,7 @@ export function Pagination({
   const endRange = Math.min(page * limit, total);
 
   return (
-    <div 
+    <div
       className="flex flex-col sm:flex-row items-center justify-between border-t border-neutral-800 px-4 py-3 bg-neutral-900/20 select-none gap-3"
       role="navigation"
       aria-label="Pagination Navigation"

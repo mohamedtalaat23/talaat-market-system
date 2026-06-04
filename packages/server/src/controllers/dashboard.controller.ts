@@ -5,7 +5,7 @@ import { HTTP_STATUS } from '../config/constants';
 export async function getDashboardStats(
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const [productsRes, lowStockRes, shiftsRes] = await Promise.all([

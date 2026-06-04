@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSettings, useUpdateSettings } from '../hooks/useSettingsQueries';
 import { Spinner } from '@/components/ui/Spinner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function POSPreferencesScreen() {
+  const { t } = useTranslation();
   const { data: settings, isLoading } = useSettings();
   const { mutate: updateSettings, isPending } = useUpdateSettings();
 
@@ -15,14 +17,27 @@ export function POSPreferencesScreen() {
   useEffect(() => {
     if (settings) {
       setForm({
-        allow_negative_inventory: settings.allow_negative_inventory !== undefined ? String(settings.allow_negative_inventory) === 'true' : false,
-        require_manager_pin_voids: settings.require_manager_pin_voids !== undefined ? String(settings.require_manager_pin_voids) === 'true' : true,
-        low_stock_threshold: settings.low_stock_threshold ? Number(settings.low_stock_threshold) : 10,
+        allow_negative_inventory:
+          settings.allow_negative_inventory !== undefined
+            ? String(settings.allow_negative_inventory) === 'true'
+            : false,
+        require_manager_pin_voids:
+          settings.require_manager_pin_voids !== undefined
+            ? String(settings.require_manager_pin_voids) === 'true'
+            : true,
+        low_stock_threshold: settings.low_stock_threshold
+          ? Number(settings.low_stock_threshold)
+          : 10,
       });
     }
   }, [settings]);
 
-  if (isLoading) return <div className="flex justify-center p-12"><Spinner /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center p-12">
+        <Spinner />
+      </div>
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +45,15 @@ export function POSPreferencesScreen() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h3 className="text-xl font-semibold mb-6">POS Preferences</h3>
+    <div className="max-w-2xl select-text">
+      <h3 className="text-xl font-semibold mb-6">{t('settings.pos')}</h3>
       <form onSubmit={handleSubmit} className="space-y-6">
-        
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Workflow & Security</h4>
-          
-          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+            {t('settings.workflowSecurity')}
+          </h4>
+
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="allow_negative_inventory"
@@ -45,13 +61,18 @@ export function POSPreferencesScreen() {
               checked={form.allow_negative_inventory}
               onChange={(e) => setForm({ ...form, allow_negative_inventory: e.target.checked })}
             />
-            <label htmlFor="allow_negative_inventory" className="text-sm font-medium select-none cursor-pointer w-full">
-              Allow Negative Inventory
-              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Let cashiers sell out-of-stock items. Inventory levels will go below zero.</span>
+            <label
+              htmlFor="allow_negative_inventory"
+              className="text-sm font-medium select-none cursor-pointer w-full"
+            >
+              {t('settings.allowNegative')}
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">
+                {t('settings.allowNegativeDesc')}
+              </span>
             </label>
           </div>
 
-          <div className="flex items-center space-x-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
             <input
               type="checkbox"
               id="require_manager_pin_voids"
@@ -59,18 +80,27 @@ export function POSPreferencesScreen() {
               checked={form.require_manager_pin_voids}
               onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
             />
-            <label htmlFor="require_manager_pin_voids" className="text-sm font-medium select-none cursor-pointer w-full">
-              Require Manager PIN for Voids
-              <span className="block text-xs text-neutral-500 font-normal mt-0.5">Require an authorized manager PIN when voiding transactions or removing items from the cart.</span>
+            <label
+              htmlFor="require_manager_pin_voids"
+              className="text-sm font-medium select-none cursor-pointer w-full"
+            >
+              {t('settings.requireManagerPin')}
+              <span className="block text-xs text-neutral-500 font-normal mt-0.5">
+                {t('settings.requireManagerPinDesc')}
+              </span>
             </label>
           </div>
         </div>
 
         <div className="space-y-4 pt-2">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Alerts & Notifications</h4>
-          
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+            {t('settings.alertsNotifications')}
+          </h4>
+
           <div>
-            <label className="block text-sm font-medium mb-2">Default Low Stock Threshold</label>
+            <label className="block text-sm font-medium mb-2">
+              {t('settings.defaultLowStockThreshold')}
+            </label>
             <input
               type="number"
               min="0"
@@ -78,7 +108,7 @@ export function POSPreferencesScreen() {
               value={form.low_stock_threshold}
               onChange={(e) => setForm({ ...form, low_stock_threshold: Number(e.target.value) })}
             />
-            <p className="text-xs text-neutral-500 mt-1">Products will trigger a low stock alert when their quantity falls below this number (unless overridden on the product itself).</p>
+            <p className="text-xs text-neutral-500 mt-1">{t('settings.defaultLowStockDesc')}</p>
           </div>
         </div>
 
@@ -88,7 +118,7 @@ export function POSPreferencesScreen() {
             disabled={isPending}
             className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? t('settings.saving') : t('settings.saveChanges')}
           </button>
         </div>
       </form>

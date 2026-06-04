@@ -26,16 +26,12 @@ const employeeAuthCache = new Map<number, CachedEmployee>();
 
 /**
  * Stateless Authentication Middleware
- * 
+ *
  * Extracts Bearer token from the Authorization header, verifies it,
  * checks if the employee is still active and not deleted, and appends
  * user details to the Request object.
  */
-export async function requireAuth(
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -66,13 +62,15 @@ export async function requireAuth(
         role: employee.role as Role,
         is_active: !!employee.is_active,
         deleted_at: employee.deleted_at,
-        expiresAt: now + 60 * 1000 // 60-second TTL
+        expiresAt: now + 60 * 1000, // 60-second TTL
       };
       employeeAuthCache.set(decoded.id, cached);
     }
 
     if (!cached.is_active || cached.deleted_at !== null) {
-      logger.warn('Authentication blocked: Employee is inactive or has been deleted', { username: decoded.username });
+      logger.warn('Authentication blocked: Employee is inactive or has been deleted', {
+        username: decoded.username,
+      });
       return next(new AuthenticationError('This user account has been disabled'));
     }
 
@@ -85,14 +83,16 @@ export async function requireAuth(
 
     next();
   } catch (error) {
-    logger.debug('JWT verification failed', { error: error instanceof Error ? error.message : String(error) });
+    logger.debug('JWT verification failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return next(new AuthenticationError('Invalid or expired authentication token'));
   }
 }
 
 /**
  * Role-Based Access Control Middleware
- * 
+ *
  * Restricts route access to specified roles only.
  * Must be registered AFTER requireAuth middleware.
  */

@@ -22,31 +22,31 @@ customerRouter.use(requireAuth);
 customerRouter.get(
   '/',
   validate({ query: customerQuerySchema }),
-  customerController.list.bind(customerController)
+  customerController.list.bind(customerController),
 );
 
 customerRouter.get(
   '/:id',
   validate({ params: customerIdParamSchema }),
-  customerController.getDetail.bind(customerController)
+  customerController.getDetail.bind(customerController),
 );
 
 customerRouter.post(
   '/',
   validate({ body: createCustomerSchema }),
-  customerController.create.bind(customerController)
+  customerController.create.bind(customerController),
 );
 
 customerRouter.put(
   '/:id',
   validate({ params: customerIdParamSchema, body: updateCustomerSchema }),
-  customerController.update.bind(customerController)
+  customerController.update.bind(customerController),
 );
 
 customerRouter.post(
   '/:id/payments',
   validate({ params: customerIdParamSchema, body: recordPaymentSchema }),
-  customerController.recordPayment.bind(customerController)
+  customerController.recordPayment.bind(customerController),
 );
 
 // Soft deletion is restricted to Admins and Managers
@@ -54,8 +54,7 @@ customerRouter.delete(
   '/:id',
   requireRoles('admin', 'manager'),
   validate({ params: customerIdParamSchema }),
-  customerController.delete.bind(customerController)
+  customerController.delete.bind(customerController),
 );
 
 export { customerRouter };
-

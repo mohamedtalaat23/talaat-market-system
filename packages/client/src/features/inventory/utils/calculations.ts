@@ -29,7 +29,7 @@ export interface AdjustmentCalculationResult {
 export function calculateExpectedStock(
   currentQuantity: number,
   type: AdjustmentType,
-  inputValue: number
+  inputValue: number,
 ): AdjustmentCalculationResult {
   // If the user hasn't entered anything, new quantity remains identical
   if (isNaN(inputValue)) {

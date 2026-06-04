@@ -5,7 +5,11 @@
   max-width: var(--content-max-width);
 }
 
-.header { display: flex; flex-direction: column; gap: var(--space-1); }
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
 
 .title {
   font-size: var(--text-2xl);
@@ -62,7 +66,9 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .statCard:hover {
@@ -82,8 +88,14 @@
   flex-shrink: 0;
 }
 
-.iconSuccess { background: rgb(16 185 129 / 0.1); color: var(--color-success-400); }
-.iconDanger  { background: rgb(244 63 94 / 0.1);  color: var(--color-danger-400); }
+.iconSuccess {
+  background: rgb(16 185 129 / 0.1);
+  color: var(--color-success-400);
+}
+.iconDanger {
+  background: rgb(244 63 94 / 0.1);
+  color: var(--color-danger-400);
+}
 
 .statLabel {
   font-size: var(--text-xs);
@@ -108,9 +120,21 @@
   padding: var(--space-5);
 }
 
-.errorTitle { font-weight: var(--font-semibold); color: var(--color-danger-400); margin-bottom: var(--space-1); }
-.errorMsg   { font-size: var(--text-sm); color: var(--text-secondary); font-family: var(--font-mono); }
-.errorHint  { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); }
+.errorTitle {
+  font-weight: var(--font-semibold);
+  color: var(--color-danger-400);
+  margin-bottom: var(--space-1);
+}
+.errorMsg {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.errorHint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
 
 /* Placeholder */
 .placeholder {
@@ -121,5 +145,12 @@
   text-align: center;
 }
 
-.placeholder h3 { font-size: var(--text-lg); color: var(--text-primary); margin-bottom: var(--space-2); }
-.placeholder p  { font-size: var(--text-sm); color: var(--text-secondary); }
+.placeholder h3 {
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+.placeholder p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

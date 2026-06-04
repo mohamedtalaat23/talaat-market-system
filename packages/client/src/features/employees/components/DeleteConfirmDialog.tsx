@@ -6,6 +6,7 @@ import { useDeleteEmployee } from '../hooks/useEmployeeQueries';
 import toast from 'react-hot-toast';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * DeleteConfirmDialog overlay.
@@ -13,6 +14,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
  * Implements WAI-ARIA and focus trapping for accessibility.
  */
 export function DeleteConfirmDialog() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.employee_delete);
   const payload = useModalStore((state) => state.modalPayloads.employee_delete);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -43,10 +45,10 @@ export function DeleteConfirmDialog() {
   const handleDelete = async () => {
     try {
       await deleteMutation.mutateAsync(employee.id);
-      toast.success('Employee account deactivated and removed');
+      toast.success(t('employees.deleteSuccess'));
       closeModal();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to soft delete employee');
+      toast.error(error.message || t('employees.deleteFailed'));
     }
   };
 
@@ -55,16 +57,16 @@ export function DeleteConfirmDialog() {
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop click close */}
-      <div 
-        className="absolute inset-0" 
-        onClick={isDeleting ? undefined : closeModal} 
+      <div
+        className="absolute inset-0"
+        onClick={isDeleting ? undefined : closeModal}
         aria-hidden="true"
       />
 
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-md rounded-lg border border-destructive/20 bg-input p-6 shadow-xl relative z-10 animate-fade-in text-center"
+        className="w-full max-w-md rounded-lg border border-destructive/20 bg-modal text-foreground p-6 shadow-xl relative z-10 animate-fade-in text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="emp-delete-confirm-title"
@@ -74,38 +76,36 @@ export function DeleteConfirmDialog() {
           <AlertTriangle className="h-6 w-6" aria-hidden="true" />
         </div>
 
-        <h3 id="emp-delete-confirm-title" className="text-lg font-bold text-foreground mb-2 select-none">
-          Deactivate & Remove Account
+        <h3
+          id="emp-delete-confirm-title"
+          className="text-lg font-bold text-foreground mb-2 select-none"
+        >
+          {t('employees.deleteTitle')}
         </h3>
 
         <p id="emp-delete-confirm-desc" className="text-sm text-secondary mb-6 leading-relaxed">
-          Are you sure you want to delete <strong className="text-foreground">{employee.full_name}</strong>? 
-          This will soft-delete and deactivate their access. They will no longer be able to log in or operate cash registers, but historical sale logs will be preserved.
+          {t('employees.deleteDesc').replace('{name}', employee.full_name)}
         </p>
 
-        <div className="flex justify-end space-x-2 border-t border-border pt-4 mt-6 select-none">
-          <Button
-            variant="outline"
-            onClick={closeModal}
-            disabled={isDeleting}
-          >
-            Cancel
+        <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6 select-none">
+          <Button variant="outline" onClick={closeModal} disabled={isDeleting}>
+            {t('common.cancel')}
           </Button>
 
           <Button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 flex items-center space-x-1.5 font-semibold focus-visible:ring-2 focus-visible:ring-destructive"
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 flex items-center gap-1.5 font-semibold focus-visible:ring-2 focus-visible:ring-destructive"
           >
             {isDeleting ? (
               <>
                 <Spinner size="sm" />
-                <span>Removing...</span>
+                <span>{t('employees.deactivated')}</span>
               </>
             ) : (
               <>
                 <Trash2 size={14} />
-                <span>Confirm Delete</span>
+                <span>{t('employees.remove')}</span>
               </>
             )}
           </Button>

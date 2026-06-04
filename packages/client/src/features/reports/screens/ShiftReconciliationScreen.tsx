@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShiftsList } from '../hooks/useReportsQueries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -33,9 +40,13 @@ export function ShiftReconciliationScreen() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8"><Spinner /></div>
+            <div className="flex justify-center p-8">
+              <Spinner />
+            </div>
           ) : isError ? (
-            <div className="text-destructive text-center p-4">{t('reports.failedToLoadShifts')}</div>
+            <div className="text-destructive text-center p-4">
+              {t('reports.failedToLoadShifts')}
+            </div>
           ) : (
             <div className="space-y-4">
               <Table>
@@ -65,39 +76,49 @@ export function ShiftReconciliationScreen() {
                       className="cursor-pointer hover:bg-card-hover/50 transition-colors"
                       onClick={() => navigate(`/reports/shifts/${shift.id}`)}
                     >
-                      <TableCell className="font-medium">{shift.cashier_name || 'Unknown'}</TableCell>
+                      <TableCell className="font-medium">
+                        {shift.cashier_name || 'Unknown'}
+                      </TableCell>
                       <TableCell>{shift.register_name || 'Main Register'}</TableCell>
                       <TableCell>{formatDateTime(new Date(shift.start_time))}</TableCell>
-                      <TableCell>{shift.end_time ? formatDateTime(new Date(shift.end_time)) : '-'}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(shift.starting_cash)}</TableCell>
+                      <TableCell>
+                        {shift.end_time ? formatDateTime(new Date(shift.end_time)) : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(shift.starting_cash)}
+                      </TableCell>
                       <TableCell className="text-right">
                         {shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
                         {shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : '-'}
                       </TableCell>
-                      <TableCell className="text-right">{renderVarianceBadge(shift.variance)}</TableCell>
+                      <TableCell className="text-right">
+                        {renderVarianceBadge(shift.variance)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              
+
               {data?.meta && data.meta.totalPages > 1 && (
                 <div className="flex justify-center gap-2 pt-4">
-                  <Button 
-                    variant="outline" 
-                    disabled={page === 1} 
-                    onClick={() => setPage(p => p - 1)}
+                  <Button
+                    variant="outline"
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
                   >
                     {t('reports.previous')}
                   </Button>
                   <span className="flex items-center text-sm text-secondary px-2">
-                    {t('reports.pageOf').replace('{page}', String(page)).replace('{total}', String(data.meta.totalPages))}
+                    {t('reports.pageOf')
+                      .replace('{page}', String(page))
+                      .replace('{total}', String(data.meta.totalPages))}
                   </span>
-                  <Button 
-                    variant="outline" 
-                    disabled={page >= data.meta.totalPages} 
-                    onClick={() => setPage(p => p + 1)}
+                  <Button
+                    variant="outline"
+                    disabled={page >= data.meta.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
                   >
                     {t('reports.next')}
                   </Button>

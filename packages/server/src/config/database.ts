@@ -37,13 +37,16 @@ const knexConfig: Knex.Config = {
     // Propagate pool exhaustion warnings to the logger so spikes
     // can be diagnosed in the shift log without a DB query.
     afterCreate: (conn: any, done: (err: Error | null, conn: any) => void) => {
-      conn.query('SET application_name = \'talaat_market_pos\'', (err: Error) => {
+      conn.query("SET application_name = 'talaat_market_pos'", (err: Error) => {
         done(err, conn);
       });
     },
   },
   migrations: {
-    directory: path.resolve(__dirname, env.NODE_ENV === 'production' ? '../migrations' : '../../migrations'),
+    directory: path.resolve(
+      __dirname,
+      env.NODE_ENV === 'production' ? '../migrations' : '../../migrations',
+    ),
     extension: env.NODE_ENV === 'production' ? 'js' : 'ts',
   },
   seeds: {

@@ -2,7 +2,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useShiftDetail } from '../hooks/useReportsQueries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -21,14 +28,20 @@ export function ShiftDetailScreen() {
   const { data, isLoading, isError } = useShiftDetail(shiftId, txPage);
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Spinner size="lg" /></div>;
+    return (
+      <div className="flex justify-center p-12">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
   if (isError || !data?.data) {
     return (
       <div className="p-6 text-center space-y-4">
         <p className="text-destructive">{t('reports.failedToLoadShiftDetail')}</p>
-        <Button variant="outline" onClick={() => navigate('/reports/shifts')}>{t('reports.backToShifts')}</Button>
+        <Button variant="outline" onClick={() => navigate('/reports/shifts')}>
+          {t('reports.backToShifts')}
+        </Button>
       </div>
     );
   }
@@ -43,10 +56,18 @@ export function ShiftDetailScreen() {
 
   const getActionBadge = (action: string) => {
     switch (action) {
-      case 'reprint_receipt': return <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">Reprint</Badge>;
-      case 'void_transaction': return <Badge variant="destructive">Void</Badge>;
-      case 'price_override': return <Badge variant="warning">Price Override</Badge>;
-      default: return <Badge variant="secondary">{action}</Badge>;
+      case 'reprint_receipt':
+        return (
+          <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+            Reprint
+          </Badge>
+        );
+      case 'void_transaction':
+        return <Badge variant="destructive">Void</Badge>;
+      case 'price_override':
+        return <Badge variant="warning">Price Override</Badge>;
+      default:
+        return <Badge variant="secondary">{action}</Badge>;
     }
   };
 
@@ -56,7 +77,9 @@ export function ShiftDetailScreen() {
         <Button variant="ghost" size="icon" onClick={() => navigate('/reports/shifts')}>
           <ArrowLeft size={20} />
         </Button>
-        <h2 className="text-xl font-semibold">{t('reports.shiftDetailTitle').replace('{id}', String(shift.id))}</h2>
+        <h2 className="text-xl font-semibold">
+          {t('reports.shiftDetailTitle').replace('{id}', String(shift.id))}
+        </h2>
       </div>
 
       {/* Shift Summary Card */}
@@ -93,24 +116,28 @@ export function ShiftDetailScreen() {
               </div>
             </div>
           </div>
-          
+
           <div>
             <p className="text-xs text-secondary mb-1">{t('reports.startingCash')}</p>
             <p className="font-mono">{formatCurrency(shift.starting_cash)}</p>
           </div>
           <div>
             <p className="text-xs text-secondary mb-1">{t('reports.expectedCash')}</p>
-            <p className="font-mono">{shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : 'N/A'}</p>
+            <p className="font-mono">
+              {shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : 'N/A'}
+            </p>
           </div>
           <div>
             <p className="text-xs text-secondary mb-1">{t('reports.actualEndingCash')}</p>
-            <p className="font-mono font-bold">{shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : 'N/A'}</p>
+            <p className="font-mono font-bold">
+              {shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : 'N/A'}
+            </p>
           </div>
           <div>
             <p className="text-xs text-secondary mb-1">{t('reports.variance')}</p>
             <div className="mt-1">{renderVarianceBadge(shift.variance)}</div>
           </div>
-          
+
           {shift.notes && (
             <div className="col-span-full mt-2 pt-2 border-t border-border">
               <p className="text-xs text-secondary mb-1">{t('reports.closingNotes')}</p>
@@ -144,12 +171,14 @@ export function ShiftDetailScreen() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {overrides.map(ov => (
+                {overrides.map((ov) => (
                   <TableRow key={ov.id}>
                     <TableCell>{formatDateTime(new Date(ov.created_at))}</TableCell>
                     <TableCell>{ov.manager_name}</TableCell>
                     <TableCell>{getActionBadge(ov.action_type)}</TableCell>
-                    <TableCell className="max-w-md truncate" title={ov.details || ''}>{ov.details}</TableCell>
+                    <TableCell className="max-w-md truncate" title={ov.details || ''}>
+                      {ov.details}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -161,7 +190,9 @@ export function ShiftDetailScreen() {
       {/* Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('reports.transactions')} ({summary.transaction_count})</CardTitle>
+          <CardTitle>
+            {t('reports.transactions')} ({summary.transaction_count})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -177,14 +208,21 @@ export function ShiftDetailScreen() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map(tx => (
-                <TableRow key={tx.id} className={tx.status === 'voided' ? 'line-through text-neutral-500 opacity-60' : ''}>
+              {transactions.map((tx) => (
+                <TableRow
+                  key={tx.id}
+                  className={
+                    tx.status === 'voided' ? 'line-through text-neutral-500 opacity-60' : ''
+                  }
+                >
                   <TableCell className="font-mono text-xs">{tx.receipt_number}</TableCell>
                   <TableCell>{new Date(tx.created_at).toLocaleTimeString()}</TableCell>
                   <TableCell className="capitalize">{tx.payment_method}</TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(tx.total)}</TableCell>
                   <TableCell className="text-right font-mono text-warning">
-                    {(tx.discount_amount + tx.global_discount) > 0 ? `-${formatCurrency(tx.discount_amount + tx.global_discount)}` : '-'}
+                    {tx.discount_amount + tx.global_discount > 0
+                      ? `-${formatCurrency(tx.discount_amount + tx.global_discount)}`
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-center">
                     {tx.status === 'completed' ? (
@@ -210,8 +248,11 @@ export function ShiftDetailScreen() {
           {transactions_meta && transactions_meta.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
               <span className="text-xs text-neutral-500 font-mono">
-                {t('reports.pageOf').replace('{page}', String(transactions_meta.page)).replace('{total}', String(transactions_meta.totalPages))}
-                {' • '}{transactions_meta.total} {t('reports.transactions')}
+                {t('reports.pageOf')
+                  .replace('{page}', String(transactions_meta.page))
+                  .replace('{total}', String(transactions_meta.totalPages))}
+                {' • '}
+                {transactions_meta.total} {t('reports.transactions')}
               </span>
               <div className="flex items-center gap-2">
                 <Button

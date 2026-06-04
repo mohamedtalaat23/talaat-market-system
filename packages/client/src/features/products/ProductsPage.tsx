@@ -9,12 +9,14 @@ import { ProductFilterBar } from './components/ProductFilterBar';
 import { ProductTable } from './components/ProductTable';
 import { Pagination } from '@/components/ui/Pagination';
 import { useModalStore } from '@/stores/modalStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * Product Catalog orchestrator page.
  * Keeps feature layout clean, delegating logic to dedicated sub-components.
  */
 export function ProductsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -26,14 +28,22 @@ export function ProductsPage() {
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
 
   // Memoize filters to stabilize reference and prevent infinite render loops
-  const queryFilters = useMemo(() => ({
-    page,
-    limit,
-    search: debouncedSearch,
-    category_id: selectedCategoryId,
-  }), [page, limit, debouncedSearch, selectedCategoryId]);
+  const queryFilters = useMemo(
+    () => ({
+      page,
+      limit,
+      search: debouncedSearch,
+      category_id: selectedCategoryId,
+    }),
+    [page, limit, debouncedSearch, selectedCategoryId],
+  );
 
-  const { data: productsData, isLoading: isLoadingProducts, error, refetch } = useProducts(queryFilters);
+  const {
+    data: productsData,
+    isLoading: isLoadingProducts,
+    error,
+    refetch,
+  } = useProducts(queryFilters);
 
   const products = productsData?.data || [];
   const meta = productsData?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
@@ -68,15 +78,15 @@ export function ProductsPage() {
 
   return (
     <PageContainer
-      title="Product Catalog"
-      description="Add, search, and update standard supermarket stock items and scale-connected products."
+      title={t('products.title')}
+      description={t('products.description')}
       loading={isLoadingProducts && page === 1}
       error={error as Error}
       refetch={refetch}
       actions={
         <Button onClick={openCreateModal} className="flex items-center space-x-1.5 font-semibold">
           <Plus size={16} />
-          <span>Add Product</span>
+          <span>{t('products.addProduct')}</span>
         </Button>
       }
     >

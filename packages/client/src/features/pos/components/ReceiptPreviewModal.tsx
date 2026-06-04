@@ -20,13 +20,13 @@ export function ReceiptPreviewModal() {
     if (!sale) return;
     try {
       await printerService.printReceipt(sale);
-      
+
       const { status } = useLANStore.getState();
       // Mark as printed on the backend - only post if online and ID is positive
       if (sale.id > 0 && status === 'online') {
         await apiClient.post(`/pos/receipts/${sale.id}/print`);
       }
-      
+
       toast.success('Receipt printed successfully');
       closeModal();
     } catch (error) {
@@ -95,20 +95,23 @@ export function ReceiptPreviewModal() {
         </div>
 
         <div className="space-y-2 mb-4">
-          {sale.items && sale.items.map((item: any) => (
-            <div key={item.id} className="text-xs">
-              <div className="font-bold">{item.product_name}</div>
-              <div className="flex justify-between text-gray-700">
-                <span>{item.quantity} x EGP {Number(item.unit_price).toFixed(2)}</span>
-                <span>EGP {Number(item.line_total).toFixed(2)}</span>
-              </div>
-              {Number(item.discount) > 0 && (
-                <div className="text-right text-red-600">
-                  - EGP {Number(item.discount).toFixed(2)}
+          {sale.items &&
+            sale.items.map((item: any) => (
+              <div key={item.id} className="text-xs">
+                <div className="font-bold">{item.product_name}</div>
+                <div className="flex justify-between text-gray-700">
+                  <span>
+                    {item.quantity} x EGP {Number(item.unit_price).toFixed(2)}
+                  </span>
+                  <span>EGP {Number(item.line_total).toFixed(2)}</span>
                 </div>
-              )}
-            </div>
-          ))}
+                {Number(item.discount) > 0 && (
+                  <div className="text-right text-red-600">
+                    - EGP {Number(item.discount).toFixed(2)}
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
 
         <div className="border-t border-dashed border-gray-400 pt-2 space-y-1 mb-6">
@@ -141,12 +144,15 @@ export function ReceiptPreviewModal() {
 
         <div className="text-center">
           <p className="font-bold mb-1">Thank you for shopping!</p>
-          <div className="inline-flex items-center space-x-1 text-gray-400 mt-4 px-3 py-1 bg-gray-100 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-200 hover:text-emerald-600 transition-colors" onClick={handlePrint}>
+          <div
+            className="inline-flex items-center space-x-1 text-gray-400 mt-4 px-3 py-1 bg-gray-100 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-200 hover:text-emerald-600 transition-colors"
+            onClick={handlePrint}
+          >
             <Printer size={14} />
             <span className="text-xs font-sans">Print (Enter)</span>
           </div>
         </div>
-        
+
         {/* Helper text for cashier */}
         <div className="absolute -bottom-10 left-0 right-0 text-center text-white/50 text-sm font-sans">
           Press ENTER to print and continue

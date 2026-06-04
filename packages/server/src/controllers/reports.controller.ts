@@ -17,14 +17,18 @@ export async function getShifts(req: Request, res: Response, next: NextFunction)
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: result.items,
-      meta: result.meta
+      meta: result.meta,
     });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getShiftDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getShiftDetail(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const id = Number(req.params.id);
     const txPage = Math.max(1, Number(req.query.tx_page) || 1);
@@ -38,14 +42,18 @@ export async function getShiftDetail(req: Request, res: Response, next: NextFunc
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getWeeklyReport(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getWeeklyReport(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     let { week_start, week_end } = req.query;
 
@@ -56,7 +64,7 @@ export async function getWeeklyReport(req: Request, res: Response, next: NextFun
       const monday = new Date(now.setDate(diff));
       week_start = monday.toISOString().substring(0, 10);
     }
-    
+
     if (!week_end) {
       const start = new Date(week_start as string);
       start.setDate(start.getDate() + 6);
@@ -74,7 +82,7 @@ export async function getWeeklyReport(req: Request, res: Response, next: NextFun
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -97,7 +105,7 @@ export async function getOverrides(req: Request, res: Response, next: NextFuncti
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: result.items,
-      meta: result.meta
+      meta: result.meta,
     });
   } catch (error) {
     next(error);

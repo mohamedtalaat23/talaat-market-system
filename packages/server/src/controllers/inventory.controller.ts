@@ -4,14 +4,10 @@ import { HTTP_STATUS } from '../config/constants';
 
 /**
  * GET /inventory
- * 
+ *
  * Fetches inventory stock levels with pagination, search, categories, and low-stock filters.
  */
-export async function getInventory(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getInventory(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const filters = req.query as unknown as Parameters<typeof inventoryService.getInventory>[0];
     const result = await inventoryService.getInventory(filters);
@@ -27,13 +23,13 @@ export async function getInventory(
 
 /**
  * GET /inventory/:productId
- * 
+ *
  * Fetches inventory stock details for a single product.
  */
 export async function getInventoryByProductId(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const productId = Number(req.params.productId);
@@ -49,14 +45,14 @@ export async function getInventoryByProductId(
 
 /**
  * PUT /inventory/:productId
- * 
+ *
  * Directly overrides the stock level (e.g. for manual stocktakes).
  * Logs as manual_correction.
  */
 export async function updateInventory(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const productId = Number(req.params.productId);
@@ -73,13 +69,13 @@ export async function updateInventory(
 
 /**
  * POST /inventory/adjust
- * 
+ *
  * Relative stock adjustment (additions, removals, damaged, expired).
  */
 export async function adjustInventory(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const { product_id, adjustment_type, quantity_change, notes } = req.body;
@@ -90,7 +86,7 @@ export async function adjustInventory(
       adjustment_type,
       quantity_change,
       notes,
-      createdBy
+      createdBy,
     );
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -103,13 +99,13 @@ export async function adjustInventory(
 
 /**
  * GET /inventory/adjustments
- * 
+ *
  * Fetches log of stock adjustments.
  */
 export async function getAdjustments(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const page = Number(req.query.page) || 1;

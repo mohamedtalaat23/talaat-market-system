@@ -42,21 +42,27 @@ async function main(): Promise<void> {
     try {
       const key = fs.readFileSync(env.SSL_KEY_PATH);
       const cert = fs.readFileSync(env.SSL_CERT_PATH);
-      server = https.createServer({ key, cert }, app).listen(env.SERVER_PORT, env.SERVER_HOST, () => {
-        logger.info(`✅ Secure HTTPS Server listening on https://${env.SERVER_HOST}:${env.SERVER_PORT}`);
-        logger.info(`   API available at https://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
+      server = https
+        .createServer({ key, cert }, app)
+        .listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+          logger.info(
+            `✅ Secure HTTPS Server listening on https://${env.SERVER_HOST}:${env.SERVER_PORT}`,
+          );
+          logger.info(`   API available at https://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
 
-        // Signal to parent process (Electron's server-manager) that we're ready
-        if (process.send) {
-          process.send('ready');
-        }
-      });
+          // Signal to parent process (Electron's server-manager) that we're ready
+          if (process.send) {
+            process.send('ready');
+          }
+        });
     } catch (sslError: any) {
       logger.error('❌ Failed to load SSL certificates, falling back to HTTP', {
         error: sslError instanceof Error ? sslError.message : String(sslError),
       });
       server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
-        logger.info(`✅ Fallback HTTP Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`);
+        logger.info(
+          `✅ Fallback HTTP Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`,
+        );
         logger.info(`   API available at http://${env.SERVER_HOST}:${env.SERVER_PORT}/api/v1`);
 
         if (process.send) {

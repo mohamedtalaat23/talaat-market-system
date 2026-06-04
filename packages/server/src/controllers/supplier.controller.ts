@@ -17,16 +17,18 @@ export class SupplierController {
     try {
       const filters = supplierQuerySchema.parse(req.query);
       const search = filters.search || undefined;
-      
+
       const result = await supplierService.getSuppliers(search, filters.page, filters.limit);
-      
+
       res.json({
         status: 'success',
         ...result,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
         return;
       }
       logger.error('Error in supplier controller list:', error);
@@ -40,7 +42,7 @@ export class SupplierController {
   async detail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = supplierIdParamSchema.parse(req.params);
-      
+
       const supplier = await supplierService.getSupplierById(id);
       const catalog = await supplierService.getSupplierCatalog(id);
 
@@ -53,7 +55,9 @@ export class SupplierController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
         return;
       }
       logger.error('Error in supplier controller detail:', error);
@@ -77,7 +81,9 @@ export class SupplierController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Validation failed', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Validation failed', errors: error.errors });
         return;
       }
       if (error instanceof Error && error.message.includes('already in use')) {
@@ -106,7 +112,9 @@ export class SupplierController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Validation failed', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Validation failed', errors: error.errors });
         return;
       }
       logger.error('Error in supplier controller update:', error);
@@ -129,7 +137,9 @@ export class SupplierController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
         return;
       }
       logger.error('Error in supplier controller delete:', error);

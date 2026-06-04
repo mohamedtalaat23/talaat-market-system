@@ -60,15 +60,13 @@ export class InventoryService {
   async setStockDirectly(
     productId: number,
     newQuantity: number,
-    notes?: string | null
+    notes?: string | null,
   ): Promise<InventoryItem> {
     logger.info('Performing direct stock override', { productId, newQuantity });
 
     return db.transaction(async (trx) => {
       // Fetch current stock level inside the transaction
-      const current = await trx('inventory')
-        .where('product_id', productId)
-        .first();
+      const current = await trx('inventory').where('product_id', productId).forUpdate().first();
 
       if (!current) {
         throw new NotFoundError('Inventory for product', productId);
@@ -90,7 +88,7 @@ export class InventoryService {
           new_quantity: newQuantity,
           notes: notes || 'Direct manual stock override',
         },
-        trx
+        trx,
       );
 
       logger.info('Direct stock override completed', { productId, oldQuantity, newQuantity });
@@ -111,10 +109,15 @@ export class InventoryService {
    */
   async adjustStock(
     productId: number,
-    adjustmentType: 'stock_addition' | 'stock_removal' | 'damaged' | 'expired' | 'manual_correction',
+    adjustmentType:
+      | 'stock_addition'
+      | 'stock_removal'
+      | 'damaged'
+      | 'expired'
+      | 'manual_correction',
     quantityChange: number,
     notes?: string | null,
-    createdBy: number | null = null
+    createdBy: number | null = null,
   ): Promise<InventoryItem> {
     logger.info('Performing relative stock adjustment', {
       productId,
@@ -124,9 +127,7 @@ export class InventoryService {
 
     return db.transaction(async (trx) => {
       // Fetch current stock level inside the transaction
-      const current = await trx('inventory')
-        .where('product_id', productId)
-        .first();
+      const current = await trx('inventory').where('product_id', productId).forUpdate().first();
 
       if (!current) {
         throw new NotFoundError('Inventory for product', productId);
@@ -144,7 +145,7 @@ export class InventoryService {
             current_quantity: oldQuantity,
             quantity_change: quantityChange,
             resulting_quantity: newQuantity,
-          }
+          },
         );
       }
 
@@ -162,7 +163,7 @@ export class InventoryService {
           notes: notes || `Stock adjustment: ${adjustmentType}`,
           created_by: createdBy,
         },
-        trx
+        trx,
       );
 
       logger.info('Relative stock adjustment completed', {

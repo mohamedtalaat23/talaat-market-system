@@ -24,73 +24,45 @@ router.use(standardRateLimiter);
 router.use(requireAuth);
 
 // Transaction
-router.post(
-  '/checkout',
-  validate({ body: checkoutSchema }),
-  posController.checkout
-);
+router.post('/checkout', validate({ body: checkoutSchema }), posController.checkout);
 
-router.post(
-  '/sync',
-  validate({ body: syncOfflineSchema }),
-  posController.syncOffline
-);
+router.post('/sync', validate({ body: syncOfflineSchema }), posController.syncOffline);
 
 // Print Recovery & Reprints
 router.post(
   '/receipts/:id/print',
   validate({ params: receiptIdParamSchema }),
-  posController.markReceiptPrinted
+  posController.markReceiptPrinted,
 );
 
 router.post(
   '/receipts/:id/reprint',
   validate({ params: receiptIdParamSchema, body: reprintSchema }),
-  posController.reprintReceipt
+  posController.reprintReceipt,
 );
 
-router.get(
-  '/receipts/:id',
-  validate({ params: receiptIdParamSchema }),
-  posController.getReceipt
-);
+router.get('/receipts/:id', validate({ params: receiptIdParamSchema }), posController.getReceipt);
 
-router.get(
-  '/sales/search',
-  validate({ query: salesQuerySchema }),
-  posController.searchSales
-);
+router.get('/sales/search', validate({ query: salesQuerySchema }), posController.searchSales);
 
 // Lightweight POS product search (no COUNT(*) — for cashier search modal)
 router.get(
   '/products/search',
   validate({ query: posProductSearchQuerySchema }),
-  posController.searchProducts
+  posController.searchProducts,
 );
 
 // Shift Management
-router.post(
-  '/shifts/open',
-  validate({ body: openShiftSchema }),
-  posController.openShift
-);
+router.post('/shifts/open', validate({ body: openShiftSchema }), posController.openShift);
 
-router.post(
-  '/shifts/close',
-  validate({ body: closeShiftSchema }),
-  posController.closeShift
-);
+router.post('/shifts/close', validate({ body: closeShiftSchema }), posController.closeShift);
 
-router.get(
-  '/shifts/current',
-  posController.getCurrentShift
-);
+router.get('/shifts/current', posController.getCurrentShift);
 
 router.get(
   '/shifts/:id/summary',
   validate({ params: posIdParamSchema }),
-  posController.getShiftSummary
+  posController.getShiftSummary,
 );
 
 export default router;
-

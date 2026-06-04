@@ -93,15 +93,15 @@ export function useProducts(filters: ProductFilters) {
         page: filters.page,
         limit: filters.limit,
       };
-      
+
       if (filters.search) {
         params.search = filters.search;
       }
-      
+
       if (filters.category_id) {
         params.category_id = filters.category_id;
       }
-      
+
       const response = await apiClient.get<ProductsResponse>('/products', { params });
       return response.data;
     },
@@ -130,7 +130,10 @@ export function useCreateProduct() {
   const queryClient = useQueryClient();
   return useMutation<Product, Error, CreateProductInput>({
     mutationFn: async (input) => {
-      const response = await apiClient.post<{ success: boolean; data: Product }>('/products', input);
+      const response = await apiClient.post<{ success: boolean; data: Product }>(
+        '/products',
+        input,
+      );
       return response.data.data;
     },
     onSuccess: () => {
@@ -147,7 +150,10 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation<Product, Error, { id: number; data: UpdateProductInput }>({
     mutationFn: async ({ id, data }) => {
-      const response = await apiClient.put<{ success: boolean; data: Product }>(`/products/${id}`, data);
+      const response = await apiClient.put<{ success: boolean; data: Product }>(
+        `/products/${id}`,
+        data,
+      );
       return response.data.data;
     },
     onSuccess: () => {

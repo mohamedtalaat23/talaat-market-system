@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   useGenericListQuery,
   useGenericCreateMutation,
@@ -87,7 +88,11 @@ export function useCustomers(filters: CustomerFilters) {
     mappedFilters.q = filters.search;
   }
 
-  return useGenericListQuery<Customer, Record<string, any>>('customers', '/customers', mappedFilters);
+  return useGenericListQuery<Customer, Record<string, any>>(
+    'customers',
+    '/customers',
+    mappedFilters,
+  );
 }
 
 /**
@@ -99,9 +104,12 @@ export function useCustomerDetail(id: number, ledgerPage: number = 1) {
   return useQuery<CustomerDetail>({
     queryKey: ['customer', id, { ledgerPage }],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ status: string; data: CustomerDetail }>(`/customers/${id}`, {
-        params: { ledger_page: ledgerPage, ledger_limit: 50 },
-      });
+      const { data } = await apiClient.get<{ status: string; data: CustomerDetail }>(
+        `/customers/${id}`,
+        {
+          params: { ledger_page: ledgerPage, ledger_limit: 50 },
+        },
+      );
       return data.data;
     },
     enabled: !isNaN(id) && id > 0,
@@ -115,7 +123,7 @@ export function useCreateCustomer() {
   return useGenericCreateMutation<CreateCustomerPayload, Customer>(
     'customers',
     '/customers',
-    'Customer profile registered'
+    'Customer profile registered',
   );
 }
 
@@ -127,7 +135,7 @@ export function useUpdateCustomer(id: number) {
   const mutation = useGenericUpdateMutation<UpdateCustomerPayload, Customer>(
     'customers',
     '/customers',
-    'Customer profile updated'
+    'Customer profile updated',
   );
 
   return {
@@ -151,23 +159,24 @@ export function useDeleteCustomer() {
  */
 export function useRecordPayment(customerId: number) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async (payload: RecordPaymentPayload) => {
       const { data } = await apiClient.post<{ status: string; data: Customer }>(
         `/customers/${customerId}/payments`,
-        payload
+        payload,
       );
       return data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['customer', customerId] });
-      toast.success('Payment recorded successfully');
+      toast.success(t('customers.paymentSuccess'));
     },
     onError: (error: any) => {
-      const message = error.message || 'Failed to record payment';
-      toast.error(message);
+      const message = error.message || t('customers.paymentFailed');
+      toast.error(t(message));
     },
   });
 }

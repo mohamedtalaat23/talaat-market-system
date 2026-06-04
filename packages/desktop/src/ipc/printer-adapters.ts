@@ -43,11 +43,7 @@ export function mapHardwareError(err: any): PrinterErrorCode {
   ) {
     return 'OUT_OF_PAPER';
   }
-  if (
-    code === 'ETIMEDOUT' ||
-    msg.includes('timeout') ||
-    msg.includes('timed out')
-  ) {
+  if (code === 'ETIMEDOUT' || msg.includes('timeout') || msg.includes('timed out')) {
     return 'PRINTER_TIMEOUT';
   }
   return 'HARDWARE_ERROR';
@@ -60,7 +56,7 @@ export function mapHardwareError(err: any): PrinterErrorCode {
 export function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
-  operationName: string
+  operationName: string,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const runLater = setTimeout;
@@ -180,7 +176,9 @@ export class UsbPrinterAdapter implements PrinterAdapter {
       await withTimeout(openPromise, 5000, `Connection to ${this.devicePath}`);
     } catch (err: any) {
       const errCode = mapHardwareError(err);
-      throw new Error(`${errCode}: Failed to open printer port "${this.devicePath}": ${err.message}`);
+      throw new Error(
+        `${errCode}: Failed to open printer port "${this.devicePath}": ${err.message}`,
+      );
     }
   }
 
@@ -188,7 +186,7 @@ export class UsbPrinterAdapter implements PrinterAdapter {
     if (this.fd !== null) {
       const activeFd = this.fd;
       this.fd = null;
-      
+
       const closePromise = new Promise<void>((resolve) => {
         fs.close(activeFd, () => {
           resolve();
@@ -231,12 +229,15 @@ export class UsbPrinterAdapter implements PrinterAdapter {
       return { online: true, message: `Ready to print on ${this.devicePath}` };
     } catch (err: any) {
       const errCode = mapHardwareError(err);
-      return { online: false, message: `${errCode}: ${err.message || `Offline on ${this.devicePath}`}` };
+      return {
+        online: false,
+        message: `${errCode}: ${err.message || `Offline on ${this.devicePath}`}`,
+      };
     }
   }
 
   public async reset(): Promise<void> {
-    const initCmd = new Uint8Array([0x1B, 0x40]); // ESC @
+    const initCmd = new Uint8Array([0x1b, 0x40]); // ESC @
     try {
       await this.connect();
       await this.write(initCmd);
@@ -259,7 +260,7 @@ export class UsbPrinterAdapter implements PrinterAdapter {
       try {
         if (fs.existsSync('/dev/usb')) {
           const files = fs.readdirSync('/dev/usb');
-          files.forEach(f => {
+          files.forEach((f) => {
             if (f.startsWith('lp')) {
               ports.push(`/dev/usb/${f}`);
             }
@@ -267,7 +268,7 @@ export class UsbPrinterAdapter implements PrinterAdapter {
         }
 
         const rootDevFiles = fs.readdirSync('/dev');
-        rootDevFiles.forEach(f => {
+        rootDevFiles.forEach((f) => {
           if (f.startsWith('usblp')) {
             ports.push(`/dev/${f}`);
           }

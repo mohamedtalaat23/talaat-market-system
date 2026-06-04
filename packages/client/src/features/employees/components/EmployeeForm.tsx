@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Employee } from '../hooks/useEmployeeQueries';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EmployeeFormProps {
   initialData?: Employee | undefined;
@@ -19,6 +20,7 @@ export function EmployeeForm({
   mode,
   onCancel,
 }: EmployeeFormProps) {
+  const { t } = useTranslation();
   // Input fields
   const [fullName, setFullName] = useState(initialData?.full_name || '');
   const [username, setUsername] = useState(initialData?.username || '');
@@ -37,28 +39,28 @@ export function EmployeeForm({
 
     // Standard local validations
     if (!fullName.trim()) {
-      setFormError('Full name is required');
+      setFormError(t('employees.nameRequired'));
       return;
     }
 
     if (!username.trim() || username.length < 3) {
-      setFormError('Username must be at least 3 characters');
+      setFormError(t('employees.usernameMin'));
       return;
     }
 
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(username)) {
-      setFormError('Username can only contain letters, numbers, and underscores');
+      setFormError(t('employees.usernameInvalid'));
       return;
     }
 
     // Password validations (required on create, optional on update)
     if (mode === 'create' && (!password || password.length < 6)) {
-      setFormError('Password is required and must be at least 6 characters');
+      setFormError(t('employees.passwordRequired'));
       return;
     }
     if (mode === 'edit' && password && password.length < 6) {
-      setFormError('Updated password must be at least 6 characters');
+      setFormError(t('employees.passwordMin'));
       return;
     }
 
@@ -66,7 +68,7 @@ export function EmployeeForm({
     if (pin) {
       const pinRegex = /^\d{4,6}$/;
       if (!pinRegex.test(pin)) {
-        setFormError('Quick login PIN must be between 4 and 6 numeric digits');
+        setFormError(t('employees.pinInvalid'));
         return;
       }
     }
@@ -103,8 +105,8 @@ export function EmployeeForm({
       {/* Primary detail inputs */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor="fullName" className="text-xs font-semibold text-neutral-300">
-            Full Name *
+          <label htmlFor="fullName" className="text-xs font-semibold text-secondary">
+            {t('employees.fullName')}
           </label>
           <Input
             id="fullName"
@@ -117,8 +119,8 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="empUsername" className="text-xs font-semibold text-neutral-300">
-            System Username *
+          <label htmlFor="empUsername" className="text-xs font-semibold text-secondary">
+            {t('employees.usernameLabel')}
           </label>
           <Input
             id="empUsername"
@@ -131,31 +133,35 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="empRole" className="text-xs font-semibold text-neutral-300">
-            Access Role Level
+          <label htmlFor="empRole" className="text-xs font-semibold text-secondary">
+            {t('employees.roleLevel')}
           </label>
           <select
             id="empRole"
             value={role}
             onChange={(e) => setRole(e.target.value as any)}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           >
-            <option value="cashier">Cashier (Standard POS checkout rights)</option>
-            <option value="manager">Manager (Adjusts inventory & products)</option>
-            <option value="admin">Administrator (Full ERP access controls)</option>
+            <option value="cashier">{t('employees.cashierDesc')}</option>
+            <option value="manager">{t('employees.managerDesc')}</option>
+            <option value="admin">{t('employees.adminDesc')}</option>
           </select>
         </div>
 
         {/* Credentials sections - never preloaded, isolated state */}
         <div className="space-y-1">
-          <label htmlFor="empPassword" className="text-xs font-semibold text-neutral-300">
-            {mode === 'create' ? 'Password *' : 'Update Password (Optional)'}
+          <label htmlFor="empPassword" className="text-xs font-semibold text-secondary">
+            {mode === 'create' ? t('employees.passwordLabel') : t('employees.passwordUpdate')}
           </label>
           <Input
             id="empPassword"
             type="password"
-            placeholder={mode === 'create' ? 'Min. 6 characters' : 'Enter only to change password'}
+            placeholder={
+              mode === 'create'
+                ? t('employees.passwordPlaceholder')
+                : t('employees.passwordUpdatePlaceholder')
+            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
@@ -164,14 +170,14 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="empPin" className="text-xs font-semibold text-neutral-300">
-            Quick-Login PIN Code (Optional)
+          <label htmlFor="empPin" className="text-xs font-semibold text-secondary">
+            {t('employees.pinLabel')}
           </label>
           <Input
             id="empPin"
             type="password"
             maxLength={6}
-            placeholder="4 - 6 digits only"
+            placeholder={t('employees.pinPlaceholder')}
             value={pin}
             onChange={(e) => setPin(e.target.value)}
             disabled={isLoading}
@@ -179,41 +185,35 @@ export function EmployeeForm({
         </div>
       </div>
 
-      <div className="flex items-center space-x-2 py-2">
+      <div className="flex items-center gap-2 py-2">
         <input
           id="isEmpActive"
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-border bg-neutral-800 text-primary focus:ring-primary focus:ring-offset-0"
+          className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0"
         />
-        <label htmlFor="isEmpActive" className="text-sm font-semibold text-neutral-200 cursor-pointer">
-          Account Active (Allows ERP / POS authentication)
+        <label
+          htmlFor="isEmpActive"
+          className="text-sm font-semibold text-secondary cursor-pointer select-none"
+        >
+          {t('employees.accountActive')}
         </label>
       </div>
 
-      <div className="flex justify-end space-x-2 border-t border-border pt-4 mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Cancel
+      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          {t('common.cancel')}
         </Button>
-        <Button
-          type="submit"
-          className="font-medium min-w-[90px]"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="font-medium min-w-[90px]" disabled={isLoading}>
           {isLoading ? (
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center gap-1.5">
               <Spinner size="sm" />
-              <span>Saving...</span>
+              <span>{t('employees.saving')}</span>
             </div>
           ) : (
-            <span>Save Staff</span>
+            <span>{t('employees.saveStaff')}</span>
           )}
         </Button>
       </div>

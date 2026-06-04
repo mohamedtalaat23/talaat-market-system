@@ -18,7 +18,7 @@ export class SupplierService {
    */
   async getSuppliers(search?: string, page = 1, limit = 10): Promise<PaginatedSuppliers> {
     logger.debug('Fetching suppliers list with search & page parameters', { search, page, limit });
-    
+
     const { data: items, total } = await supplierRepository.findAll(search, page, limit);
 
     return {
@@ -65,7 +65,11 @@ export class SupplierService {
   /**
    * Update supplier profile details.
    */
-  async updateSupplier(id: number, input: any, updatedByUserId: number | null = null): Promise<Supplier> {
+  async updateSupplier(
+    id: number,
+    input: any,
+    updatedByUserId: number | null = null,
+  ): Promise<Supplier> {
     logger.info('Updating supplier profile details', { id });
     // Verify supplier exists
     await this.getSupplierById(id);
@@ -77,7 +81,7 @@ export class SupplierService {
    */
   async deleteSupplier(id: number): Promise<void> {
     logger.info('Soft deleting supplier profile', { id });
-    
+
     // 1. Ensure supplier exists
     await this.getSupplierById(id);
 
@@ -96,14 +100,19 @@ export class SupplierService {
     }
 
     if (supplier.status === 'suspended') {
-      throw new ConflictError(`Suspended supplier "${supplier.name}" cannot be assigned to products.`, {
-        supplier_id: supplierId,
-        status: supplier.status,
-      });
+      throw new ConflictError(
+        `Suspended supplier "${supplier.name}" cannot be assigned to products.`,
+        {
+          supplier_id: supplierId,
+          status: supplier.status,
+        },
+      );
     }
 
     if (supplier.status === 'inactive') {
-      logger.warn(`Inactive supplier "${supplier.name}" is being assigned to a product.`, { supplier_id: supplierId });
+      logger.warn(`Inactive supplier "${supplier.name}" is being assigned to a product.`, {
+        supplier_id: supplierId,
+      });
     }
   }
 }

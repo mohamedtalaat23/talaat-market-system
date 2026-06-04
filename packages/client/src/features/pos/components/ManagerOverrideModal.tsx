@@ -6,8 +6,10 @@ import toast from 'react-hot-toast';
 import { usePOSStore } from '../usePOSStore';
 import { useManagers } from '@/features/employees/hooks/useEmployeeQueries';
 import { apiClient } from '@/services/api-client';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ManagerOverrideModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_manager_override);
   const payload = useModalStore((state) => state.modalPayloads.pos_manager_override);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -17,7 +19,7 @@ export function ManagerOverrideModal() {
       payload.onCancel();
     }
   };
-  
+
   const { data: managers = [] } = useManagers();
   const [selectedManagerId, setSelectedManagerId] = useState<number | ''>('');
   const [pin, setPin] = useState('');
@@ -45,18 +47,21 @@ export function ManagerOverrideModal() {
 
   if (!isOpen) return null;
 
-  const actionMap: Record<string, string> = {
-    void_transaction: 'Void Transaction',
-    large_discount: 'Apply Large Discount (>20%)',
-    price_override: 'Manual Price Override',
-    cross_cashier_resume: 'Resume Another Cashier\'s Cart',
-    force_close_shift: 'Force Close Shift (Discrepancy/Pending)',
-    reprint_receipt: 'Reprint Past Receipt',
-    enter_pos: 'Access Point of Sale Screen',
-    exit_pos: 'Exit Point of Sale to Dashboard'
+  // Map action key → translation key
+  const actionKeyMap: Record<string, string> = {
+    void_transaction: 'pos.actionVoidTransaction',
+    large_discount: 'pos.actionLargeDiscount',
+    price_override: 'pos.actionPriceOverride',
+    cross_cashier_resume: 'pos.actionCrossCashierResume',
+    force_close_shift: 'pos.actionForceCloseShift',
+    reprint_receipt: 'pos.actionReprintReceipt',
+    enter_pos: 'pos.actionEnterPos',
+    exit_pos: 'pos.actionExitPos',
   };
 
-  const actionName = actionMap[payload?.action] || 'Restricted Action';
+  const actionName = payload?.action
+    ? t(actionKeyMap[payload.action] || 'pos.actionRestricted')
+    : t('pos.actionRestricted');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,65 +71,70 @@ export function ManagerOverrideModal() {
     try {
       const response = await apiClient.post('/employees/verify-pin', {
         manager_id: selectedManagerId,
-        pin
+        pin,
       });
 
       setIsSubmitting(false);
       if (response.data?.success) {
-        toast.success('Manager override approved');
+        toast.success(t('pos.overrideApproved'));
         const state = usePOSStore.getState();
 
         if (payload?.onSuccess) {
-           payload.onSuccess();
+          payload.onSuccess();
         } else if (payload?.action === 'void_transaction') {
-           state.clearCart();
-           toast.error('Transaction Voided');
+          state.clearCart();
+          toast.error(t('pos.transactionVoided'));
         } else if (payload?.action === 'large_discount') {
-           if (payload.target === 'cart') {
-             state.setGlobalDiscount(payload.discountValue);
-           } else {
-             state.updateItemDiscount(payload.cartId, payload.discountValue);
-           }
-           toast.success('Large Discount Applied');
+          if (payload.target === 'cart') {
+            state.setGlobalDiscount(payload.discountValue);
+          } else {
+            state.updateItemDiscount(payload.cartId, payload.discountValue);
+          }
+          toast.success(t('pos.largeDiscountApplied'));
         } else if (payload?.action === 'cross_cashier_resume') {
-           state.resumeCart(payload.holdId);
-           toast.success('Cross-Cashier Cart Resumed');
+          state.resumeCart(payload.holdId);
+          toast.success(t('pos.cartResumed'));
         }
 
         setPin('');
         closeModalAction('pos_manager_override');
       } else {
-        toast.error('Invalid Manager PIN');
+        toast.error(t('pos.invalidPin'));
         setPin('');
       }
     } catch (err: any) {
       setIsSubmitting(false);
-      toast.error(err.response?.data?.message || err.message || 'Verification failed');
+      toast.error(err.response?.data?.message || err.message || t('pos.invalidPin'));
       setPin('');
     }
   };
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="absolute inset-0" onClick={isSubmitting ? undefined : closeModal} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        onClick={isSubmitting ? undefined : closeModal}
+        aria-hidden="true"
+      />
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-sm rounded-lg border border-red-900 bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-sm rounded-lg border border-danger/30 bg-popover p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="override-modal-title"
       >
         <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-border">
-          <ShieldAlert size={48} className="text-red-500 mb-2" />
-          <h3 id="override-modal-title" className="text-xl font-bold text-white text-center">
-            Manager Authorization Required
+          <ShieldAlert size={48} className="text-danger mb-2" />
+          <h3 id="override-modal-title" className="text-xl font-bold text-foreground text-center">
+            {t('pos.managerAuthTitle')}
           </h3>
           <p className="text-secondary text-sm mt-1 text-center">{actionName}</p>
         </div>
         <button
           onClick={closeModal}
-          className="absolute top-4 right-4 rounded-md p-1.5 text-secondary hover:text-white hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          className="absolute top-4 end-4 rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          aria-label={t('common.cancel')}
         >
           <X size={18} />
         </button>
@@ -132,13 +142,16 @@ export function ManagerOverrideModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {managers.length > 0 && (
             <div>
-              <label htmlFor="manager-select" className="block text-sm font-medium text-slate-350 mb-1">
-                Authorize As
+              <label
+                htmlFor="manager-select"
+                className="block text-sm font-semibold text-secondary mb-1"
+              >
+                {t('pos.authorizeAs')}
               </label>
               <select
                 id="manager-select"
                 disabled={isSubmitting}
-                className="w-full bg-background border border-border rounded p-3 text-white focus:outline-none focus:border-red-500 text-sm font-semibold"
+                className="w-full bg-input border border-border rounded p-3 text-foreground focus:outline-none focus:border-danger text-sm font-semibold"
                 value={selectedManagerId}
                 onChange={(e) => setSelectedManagerId(Number(e.target.value))}
               >
@@ -152,8 +165,8 @@ export function ManagerOverrideModal() {
           )}
 
           <div>
-            <label htmlFor="pin-input" className="block text-sm font-medium text-slate-305 mb-1">
-              Enter Manager PIN
+            <label htmlFor="pin-input" className="block text-sm font-semibold text-secondary mb-1">
+              {t('pos.enterPin')}
             </label>
             <input
               id="pin-input"
@@ -162,7 +175,7 @@ export function ManagerOverrideModal() {
               inputMode="numeric"
               maxLength={6}
               disabled={isSubmitting}
-              className="w-full bg-background border border-border rounded p-3 text-center text-3xl tracking-[1em] text-white placeholder-slate-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              className="w-full bg-input border border-border rounded p-3 text-center text-3xl tracking-[1em] text-foreground placeholder-secondary/50 focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
             />
@@ -171,9 +184,9 @@ export function ManagerOverrideModal() {
           <button
             type="submit"
             disabled={isSubmitting || pin.length < 4}
-            className="w-full py-3 bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-500 rounded font-bold text-white transition-colors"
+            className="w-full py-3 bg-danger hover:bg-danger/90 disabled:bg-card-hover disabled:text-secondary rounded font-bold text-white transition-colors"
           >
-            {isSubmitting ? 'Verifying...' : 'Authorize Action'}
+            {isSubmitting ? t('pos.verifying') : t('pos.authorizeAction')}
           </button>
         </form>
       </div>

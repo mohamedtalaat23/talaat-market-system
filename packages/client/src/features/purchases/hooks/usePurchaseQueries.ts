@@ -107,7 +107,9 @@ export function usePurchaseOrders(filters: PurchaseOrderFilters) {
         params.supplier_id = filters.supplier_id;
       }
 
-      const response = await apiClient.get<PaginatedPurchaseOrdersResponse>('/purchases', { params });
+      const response = await apiClient.get<PaginatedPurchaseOrdersResponse>('/purchases', {
+        params,
+      });
       return response.data;
     },
     placeholderData: (previousData) => previousData,
@@ -121,7 +123,9 @@ export function usePurchaseOrder(id: number) {
   return useQuery<{ success: boolean; data: PurchaseOrder }>({
     queryKey: ['purchases', id],
     queryFn: async () => {
-      const response = await apiClient.get<{ success: boolean; data: PurchaseOrder }>(`/purchases/${id}`);
+      const response = await apiClient.get<{ success: boolean; data: PurchaseOrder }>(
+        `/purchases/${id}`,
+      );
       return response.data;
     },
     enabled: !!id,
@@ -135,7 +139,10 @@ export function useCreatePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreatePOPayload) => {
-      const response = await apiClient.post<{ success: boolean; data: PurchaseOrder }>('/purchases', payload);
+      const response = await apiClient.post<{ success: boolean; data: PurchaseOrder }>(
+        '/purchases',
+        payload,
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -155,7 +162,10 @@ export function useUpdatePurchaseOrder(id: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: UpdatePOPayload) => {
-      const response = await apiClient.put<{ success: boolean; data: PurchaseOrder }>(`/purchases/${id}`, payload);
+      const response = await apiClient.put<{ success: boolean; data: PurchaseOrder }>(
+        `/purchases/${id}`,
+        payload,
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -176,7 +186,9 @@ export function usePlacePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiClient.post<{ success: boolean; message: string }>(`/purchases/${id}/order`);
+      const response = await apiClient.post<{ success: boolean; message: string }>(
+        `/purchases/${id}/order`,
+      );
       return response.data;
     },
     onSuccess: (_, id) => {
@@ -197,7 +209,9 @@ export function useCancelPurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiClient.post<{ success: boolean; message: string }>(`/purchases/${id}/cancel`);
+      const response = await apiClient.post<{ success: boolean; message: string }>(
+        `/purchases/${id}/cancel`,
+      );
       return response.data;
     },
     onSuccess: (_, id) => {
@@ -218,7 +232,10 @@ export function useReceivePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payload }: { id: number; payload: ReceivePOPayload }) => {
-      const response = await apiClient.post<{ success: boolean; message: string }>(`/purchases/${id}/receive`, payload);
+      const response = await apiClient.post<{ success: boolean; message: string }>(
+        `/purchases/${id}/receive`,
+        payload,
+      );
       return response.data;
     },
     onSuccess: (_, variables) => {

@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   FILTER_BUTTON_BASE,
   FILTER_BUTTON_ACTIVE,
@@ -28,23 +29,44 @@ export function EmployeeFilterBar({
   onSelectStatus,
   onClearFilters,
 }: EmployeeFilterBarProps) {
+  const { t } = useTranslation();
+
+  const getRoleLabel = (role: EmployeeRole) => {
+    switch (role) {
+      case 'admin':
+        return t('employees.roleAdmin');
+      case 'manager':
+        return t('employees.roleManager');
+      case 'cashier':
+        return t('employees.roleCashier');
+    }
+  };
+
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4 mb-6 select-text">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 select-text">
       <div className="relative flex-1 max-w-md">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+        <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-neutral-500">
           <Search className="h-4 w-4" />
         </span>
         <Input
-          placeholder="Quick search staff by name or username..."
-          className="pl-10 focus-visible:ring-2 focus-visible:ring-primary"
+          placeholder={t('employees.searchPlaceholder')}
+          className="ps-10 focus-visible:ring-2 focus-visible:ring-primary"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 select-none" role="group" aria-label="Staff Directory Filters">
+      <div
+        className="flex flex-wrap items-center gap-2 select-none"
+        role="group"
+        aria-label="Staff Directory Filters"
+      >
         {/* Role filter selectors */}
-        <div className="flex space-x-1 border-r border-border pr-2 mr-2" role="group" aria-label="Role Group">
+        <div
+          className="flex gap-1 border-e border-border pe-2 me-2"
+          role="group"
+          aria-label="Role Group"
+        >
           <button
             onClick={() => onSelectRole(null)}
             className={`${FILTER_BUTTON_BASE} ${
@@ -52,7 +74,7 @@ export function EmployeeFilterBar({
             }`}
             aria-pressed={selectedRole === null}
           >
-            All Roles
+            {t('employees.allRoles')}
           </button>
           {(['admin', 'manager', 'cashier'] as const).map((r) => (
             <button
@@ -63,21 +85,23 @@ export function EmployeeFilterBar({
               }`}
               aria-pressed={selectedRole === r}
             >
-              {r}
+              {getRoleLabel(r)}
             </button>
           ))}
         </div>
 
         {/* Active / Inactive filter selectors */}
-        <div className="flex space-x-1" role="group" aria-label="Status Group">
+        <div className="flex gap-1" role="group" aria-label="Status Group">
           <button
             onClick={() => onSelectStatus(null)}
             className={`${FILTER_BUTTON_BASE} ${
-              selectedStatus === null ? 'bg-neutral-800 text-foreground border-transparent' : FILTER_BUTTON_INACTIVE
+              selectedStatus === null
+                ? 'bg-card text-foreground border-border'
+                : FILTER_BUTTON_INACTIVE
             }`}
             aria-pressed={selectedStatus === null}
           >
-            All Statuses
+            {t('employees.allStatuses')}
           </button>
           <button
             onClick={() => onSelectStatus(true)}
@@ -88,7 +112,7 @@ export function EmployeeFilterBar({
             }`}
             aria-pressed={selectedStatus === true}
           >
-            Active
+            {t('employees.active')}
           </button>
           <button
             onClick={() => onSelectStatus(false)}
@@ -99,7 +123,7 @@ export function EmployeeFilterBar({
             }`}
             aria-pressed={selectedStatus === false}
           >
-            Inactive
+            {t('employees.inactive')}
           </button>
         </div>
 
@@ -110,7 +134,7 @@ export function EmployeeFilterBar({
             onClick={onClearFilters}
             className="text-xs text-secondary hover:text-destructive shrink-0 font-semibold"
           >
-            Clear Filters
+            {t('employees.clearSearch')}
           </Button>
         )}
       </div>

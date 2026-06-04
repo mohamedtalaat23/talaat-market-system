@@ -54,13 +54,18 @@ export class CustomerRepository {
   /**
    * List all customers (excluding soft-deleted ones by default) with optional text search and pagination.
    */
-  async findAll(search?: string, limit = 50, offset = 0): Promise<{ data: Customer[], total: number }> {
+  async findAll(
+    search?: string,
+    limit = 50,
+    offset = 0,
+  ): Promise<{ data: Customer[]; total: number }> {
     let query = db('customers').whereNull('deleted_at');
 
     if (search) {
       const cleanSearch = search.trim();
       query = query.andWhere((builder) => {
-        builder.where('name', 'ilike', `%${cleanSearch}%`)
+        builder
+          .where('name', 'ilike', `%${cleanSearch}%`)
           .orWhere('phone', 'like', `%${cleanSearch}%`);
       });
     }
@@ -78,10 +83,7 @@ export class CustomerRepository {
    * Retrieve a customer by ID.
    */
   async findById(id: number): Promise<Customer | null> {
-    const customer = await db('customers')
-      .where('id', id)
-      .whereNull('deleted_at')
-      .first();
+    const customer = await db('customers').where('id', id).whereNull('deleted_at').first();
 
     return customer || null;
   }
@@ -94,22 +96,23 @@ export class CustomerRepository {
   async getTransactionLedger(
     customerId: number,
     page: number = 1,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<{ data: CustomerTransaction[]; total: number }> {
     const safeLimit = Math.min(limit, 100);
     const offset = (page - 1) * safeLimit;
 
     const baseQuery = db('customer_transactions')
       .leftJoin('employees', 'employees.id', 'customer_transactions.created_by')
-      .select(
-        'customer_transactions.*',
-        'employees.full_name as created_by_name'
-      )
+      .select('customer_transactions.*', 'employees.full_name as created_by_name')
       .where('customer_id', customerId);
 
     const [countResult, data] = await Promise.all([
       baseQuery.clone().clearSelect().count({ count: 'customer_transactions.id' }).first(),
-      baseQuery.clone().orderBy('customer_transactions.created_at', 'desc').limit(safeLimit).offset(offset),
+      baseQuery
+        .clone()
+        .orderBy('customer_transactions.created_at', 'desc')
+        .limit(safeLimit)
+        .offset(offset),
     ]);
 
     return {
@@ -121,7 +124,10 @@ export class CustomerRepository {
   /**
    * Register a new customer.
    */
-  async create(input: CreateCustomerInput, createdByUserId: number | null = null): Promise<Customer> {
+  async create(
+    input: CreateCustomerInput,
+    createdByUserId: number | null = null,
+  ): Promise<Customer> {
     return db.transaction(async (trx) => {
       const [customer] = await trx('customers')
         .insert({
@@ -130,7 +136,7 @@ export class CustomerRepository {
           email: input.email || null,
           address: input.address || null,
           notes: input.notes || null,
-          balance: input.balance || 0.00,
+          balance: input.balance || 0.0,
           loyalty_points: input.loyalty_points || 0,
         })
         .returning('*');
@@ -158,7 +164,7 @@ export class CustomerRepository {
       .where('id', id)
       .update({
         ...input,
-        updated_at: db.fn.now()
+        updated_at: db.fn.now(),
       })
       .returning('*');
 
@@ -173,12 +179,10 @@ export class CustomerRepository {
    * Soft-delete a customer profile.
    */
   async softDelete(id: number): Promise<void> {
-    const rowsAffected = await db('customers')
-      .where('id', id)
-      .update({
-        deleted_at: db.fn.now(),
-        updated_at: db.fn.now()
-      });
+    const rowsAffected = await db('customers').where('id', id).update({
+      deleted_at: db.fn.now(),
+      updated_at: db.fn.now(),
+    });
 
     if (rowsAffected === 0) {
       throw new Error(`Customer with ID ${id} not found or already deleted.`);
@@ -199,7 +203,7 @@ export class CustomerRepository {
     shiftId?: number | null,
     registerId?: number | null,
     paymentMethod?: 'cash' | 'card' | null,
-    externalTrx?: Knex.Transaction
+    externalTrx?: Knex.Transaction,
   ): Promise<Customer> {
     const exec = async (trx: Knex.Transaction) => {
       // 1. Double check customer exists with row-locking
@@ -223,7 +227,7 @@ export class CustomerRepository {
         shift_id: shiftId || null,
         register_id: registerId || null,
         payment_method: paymentMethod || 'cash',
-        created_at: trx.fn.now()
+        created_at: trx.fn.now(),
       });
 
       // 3. Update cached balance on customer row

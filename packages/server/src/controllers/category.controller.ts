@@ -4,13 +4,13 @@ import { HTTP_STATUS } from '../config/constants';
 
 /**
  * GET /categories
- * 
+ *
  * Retrieves all active product categories.
  */
 export async function getCategories(
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const categories = await categoryService.getCategories();

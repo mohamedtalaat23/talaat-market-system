@@ -12,7 +12,11 @@ import styles from './Dashboard.module.css';
  * In Phase 4, this will display KPIs, charts, and business intelligence.
  */
 export function Dashboard() {
-  const { data: health, isLoading, error } = useQuery<HealthData>({
+  const {
+    data: health,
+    isLoading,
+    error,
+  } = useQuery<HealthData>({
     queryKey: ['health'],
     queryFn: () => api.get<HealthData>('/health'),
     refetchInterval: 30_000, // Refresh every 30 seconds
@@ -35,16 +39,16 @@ export function Dashboard() {
         <div className={styles.errorCard}>
           <p className={styles.errorTitle}>⚠️ Server Unreachable</p>
           <p className={styles.errorMsg}>{error.message}</p>
-          <p className={styles.errorHint}>
-            Make sure the Express server is running on port 3001.
-          </p>
+          <p className={styles.errorHint}>Make sure the Express server is running on port 3001.</p>
         </div>
       )}
 
       {health && (
         <>
           {/* Status banner */}
-          <div className={`${styles.statusBanner} ${health.status === 'healthy' ? styles.statusOk : styles.statusDegraded}`}>
+          <div
+            className={`${styles.statusBanner} ${health.status === 'healthy' ? styles.statusOk : styles.statusDegraded}`}
+          >
             <Activity size={18} />
             <span>
               System is <strong>{health.status}</strong> — {health.environment} environment
@@ -54,7 +58,9 @@ export function Dashboard() {
           {/* Stats grid */}
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
-              <div className={styles.statIcon}><Server size={20} /></div>
+              <div className={styles.statIcon}>
+                <Server size={20} />
+              </div>
               <div>
                 <p className={styles.statLabel}>API Server</p>
                 <p className={styles.statValue}>Online</p>
@@ -62,7 +68,9 @@ export function Dashboard() {
             </div>
 
             <div className={styles.statCard}>
-              <div className={`${styles.statIcon} ${health.services.database.status === 'connected' ? styles.iconSuccess : styles.iconDanger}`}>
+              <div
+                className={`${styles.statIcon} ${health.services.database.status === 'connected' ? styles.iconSuccess : styles.iconDanger}`}
+              >
                 <Database size={20} />
               </div>
               <div>
@@ -76,15 +84,21 @@ export function Dashboard() {
             </div>
 
             <div className={styles.statCard}>
-              <div className={styles.statIcon}><Clock size={20} /></div>
+              <div className={styles.statIcon}>
+                <Clock size={20} />
+              </div>
               <div>
                 <p className={styles.statLabel}>Uptime</p>
-                <p className={styles.statValue}>{Math.floor(health.uptime / 60)}m {health.uptime % 60}s</p>
+                <p className={styles.statValue}>
+                  {Math.floor(health.uptime / 60)}m {health.uptime % 60}s
+                </p>
               </div>
             </div>
 
             <div className={styles.statCard}>
-              <div className={styles.statIcon}><Activity size={20} /></div>
+              <div className={styles.statIcon}>
+                <Activity size={20} />
+              </div>
               <div>
                 <p className={styles.statLabel}>Response Time</p>
                 <p className={styles.statValue}>{health.responseTimeMs}ms</p>
@@ -96,8 +110,8 @@ export function Dashboard() {
           <div className={styles.placeholder}>
             <h3>🚧 Phase 1 — Foundation Complete</h3>
             <p>
-              The project scaffold is ready. Business features (POS, inventory, reports)
-              will be implemented in Phases 2–6.
+              The project scaffold is ready. Business features (POS, inventory, reports) will be
+              implemented in Phases 2–6.
             </p>
           </div>
         </>

@@ -34,7 +34,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Native ESC/POS Hardware printing (Phase 12)
   enqueuePrintJob: (receipt: any): Promise<{ success: boolean; jobId: string }> =>
-    ipcRenderer.invoke(IPC_CHANNELS.ENQUEUE_PRINT_JOB, receipt) as Promise<{ success: boolean; jobId: string }>,
+    ipcRenderer.invoke(IPC_CHANNELS.ENQUEUE_PRINT_JOB, receipt) as Promise<{
+      success: boolean;
+      jobId: string;
+    }>,
 
   getPrintJobs: (): Promise<any[]> =>
     ipcRenderer.invoke(IPC_CHANNELS.GET_PRINT_JOBS) as Promise<any[]>,
@@ -58,7 +61,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(IPC_CHANNELS.DISCOVER_PRINTERS) as Promise<string[]>,
 
   testPrinter: (config: any): Promise<{ success: boolean; message: string }> =>
-    ipcRenderer.invoke(IPC_CHANNELS.TEST_PRINTER, config) as Promise<{ success: boolean; message: string }>,
+    ipcRenderer.invoke(IPC_CHANNELS.TEST_PRINTER, config) as Promise<{
+      success: boolean;
+      message: string;
+    }>,
 
   // Backup (Phase 5)
   createBackup: (backupPath: string): Promise<void> =>
@@ -81,8 +87,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: (): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.MAXIMIZE_WINDOW) as Promise<void>,
 
-  closeWindow: (): Promise<void> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLOSE_WINDOW) as Promise<void>,
+  closeWindow: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.CLOSE_WINDOW) as Promise<void>,
 
   // Durable Offline Storage (C-2)
   persistOfflineSale: (sale: any): Promise<void> =>

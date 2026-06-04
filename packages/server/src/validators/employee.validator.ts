@@ -8,7 +8,10 @@ export const loginSchema = z
   .object({
     username: z.string().trim().min(1, 'Username is required'),
     password: z.string().min(1, 'Password is required').optional(),
-    pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits').optional(),
+    pin: z
+      .string()
+      .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+      .optional(),
   })
   .refine((data) => data.password !== undefined || data.pin !== undefined, {
     message: 'Either password or PIN is required to login',

@@ -5,6 +5,7 @@ import { useCreateProduct, useUpdateProduct } from '../hooks/useProductQueries';
 import toast from 'react-hot-toast';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * ProductModal overlay.
@@ -12,6 +13,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
  * Implements WAI-ARIA role structures and useFocusTrap for keyboard accessibility.
  */
 export function ProductModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.product_form);
   const payload = useModalStore((state) => state.modalPayloads.product_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -45,17 +47,17 @@ export function ProductModal() {
     try {
       if (mode === 'create') {
         await createMutation.mutateAsync(formData);
-        toast.success('Product created successfully');
+        toast.success(t('products.productCreated'));
       } else if (mode === 'edit' && product) {
         await updateMutation.mutateAsync({
           id: product.id,
           data: formData,
         });
-        toast.success('Product updated successfully');
+        toast.success(t('products.productUpdated'));
       }
       closeModal();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save product');
+      toast.error(error.message || t('products.failedSave'));
     }
   };
 
@@ -64,9 +66,9 @@ export function ProductModal() {
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop closer click hook */}
-      <div 
-        className="absolute inset-0" 
-        onClick={isSaving ? undefined : closeModal} 
+      <div
+        className="absolute inset-0"
+        onClick={isSaving ? undefined : closeModal}
         aria-hidden="true"
       />
 
@@ -80,13 +82,13 @@ export function ProductModal() {
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
           <h3 id="product-modal-title" className="text-lg font-bold text-foreground">
-            {mode === 'create' ? 'Add New Product' : `Edit Product: ${product?.name}`}
+            {mode === 'create' ? t('products.addProduct') : `${t('common.edit')}: ${product?.name}`}
           </h3>
           <button
             onClick={closeModal}
             disabled={isSaving}
             className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Close modal"
+            aria-label={t('products.closeModal')}
           >
             <X size={18} />
           </button>

@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { Employee } from '../hooks/useEmployeeQueries';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EmployeeGridProps {
   employees: Employee[];
@@ -19,25 +20,27 @@ export function EmployeeGrid({
   onClearFilters,
   hasFilters,
 }: EmployeeGridProps) {
+  const { t } = useTranslation();
+
   // Centralized role styling mapping
   const getRoleBadgeDetails = (role: 'admin' | 'manager' | 'cashier') => {
     switch (role) {
       case 'admin':
-        return { label: 'Administrator', variant: 'destructive' as const };
+        return { label: t('employees.roleAdmin'), variant: 'destructive' as const };
       case 'manager':
-        return { label: 'Manager', variant: 'default' as const };
+        return { label: t('employees.roleManager'), variant: 'default' as const };
       case 'cashier':
-        return { label: 'Cashier', variant: 'secondary' as const };
+        return { label: t('employees.roleCashier'), variant: 'secondary' as const };
     }
   };
 
   if (employees.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-12 border border-border rounded-lg bg-neutral-900/10">
+      <div className="flex flex-col items-center justify-center text-center p-12 border border-border rounded-lg bg-card/10">
         <UserMinus className="h-10 w-10 text-neutral-600 mb-3" aria-hidden="true" />
-        <h3 className="text-base font-semibold text-foreground">No Employees Found</h3>
+        <h3 className="text-base font-semibold text-foreground">{t('employees.noEmployees')}</h3>
         <p className="text-sm text-secondary mt-2 leading-relaxed">
-          No active cashier or manager accounts match your query parameters.
+          {t('employees.noEmployeesDesc')}
         </p>
         {hasFilters && (
           <Button
@@ -46,7 +49,7 @@ export function EmployeeGrid({
             onClick={onClearFilters}
             className="mt-4 text-xs font-semibold"
           >
-            Clear Search Query
+            {t('employees.clearSearch')}
           </Button>
         )}
       </div>
@@ -60,36 +63,33 @@ export function EmployeeGrid({
         // Grayscale deactivation card styling constraint
         const activeCardStyle = emp.is_active
           ? 'border-border bg-card hover:border-border'
-          : 'border-border bg-input/80 saturate-50 opacity-75';
+          : 'border-border bg-card/60 saturate-50 opacity-75';
 
         return (
-          <Card
-            key={emp.id}
-            className={`transition-all duration-150 ${activeCardStyle}`}
-          >
-            <CardContent className="p-5 flex justify-between items-start space-x-4">
-              <div className="space-y-2.5 select-text">
-                <div className="flex items-center space-x-3">
+          <Card key={emp.id} className={`transition-all duration-150 ${activeCardStyle}`}>
+            <CardContent className="p-5 flex justify-between items-start gap-4">
+              <div className="space-y-2.5 select-text flex-1">
+                <div className="flex items-center gap-3">
                   {/* Centralized role initial tagger */}
-                  <div 
+                  <div
                     className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm border uppercase shadow-sm shrink-0 ${
                       emp.role === 'admin'
                         ? 'bg-destructive/10 text-destructive border-destructive/20'
                         : emp.role === 'manager'
-                        ? 'bg-primary/10 text-primary border-primary/20'
-                        : 'bg-neutral-800 text-secondary border-border'
+                          ? 'bg-primary/10 text-primary border-primary/20'
+                          : 'bg-card-hover text-secondary border-border'
                     }`}
                     aria-hidden="true"
                   >
                     {emp.full_name.charAt(0)}
                   </div>
-                  
-                  <div className="text-left">
-                    <h4 className="font-bold text-foreground text-sm leading-tight flex items-center space-x-1.5">
+
+                  <div className="text-start">
+                    <h4 className="font-bold text-foreground text-sm leading-tight flex items-center gap-1.5 flex-wrap">
                       <span>{emp.full_name}</span>
                       {!emp.is_active && (
-                        <span className="inline-block text-[8px] bg-neutral-900 text-destructive border border-destructive/30 px-1 py-0.5 rounded uppercase font-extrabold select-none">
-                          Deactivated
+                        <span className="inline-block text-[8px] bg-destructive/10 text-destructive border border-destructive/30 px-1 py-0.5 rounded uppercase font-extrabold select-none">
+                          {t('employees.deactivated')}
                         </span>
                       )}
                     </h4>
@@ -97,46 +97,57 @@ export function EmployeeGrid({
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 pt-1">
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
                   <Badge variant={role.variant}>{role.label}</Badge>
                   {emp.is_active ? (
-                    <Badge variant="success" className="text-[10px] select-none flex items-center space-x-1">
+                    <Badge
+                      variant="success"
+                      className="text-[10px] select-none flex items-center gap-1"
+                    >
                       <ShieldCheck size={10} aria-hidden="true" />
-                      <span>Active Access</span>
+                      <span>{t('employees.activeAccess')}</span>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] text-neutral-500 border-border select-none">
-                      Suspended
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] text-neutral-500 border-border select-none"
+                    >
+                      {t('employees.suspended')}
                     </Badge>
                   )}
                 </div>
 
                 <div className="text-[10px] text-neutral-500 font-mono select-none pt-0.5">
-                  Last Access: {emp.last_login ? new Date(emp.last_login).toLocaleString() : 'Never logged in'}
+                  {emp.last_login
+                    ? t('employees.lastAccess').replace(
+                        '{time}',
+                        new Date(emp.last_login).toLocaleString(),
+                      )
+                    : t('employees.neverLoggedIn')}
                 </div>
               </div>
 
               {/* Actions buttons */}
-              <div className="flex flex-col space-y-1.5 shrink-0 select-none">
+              <div className="flex flex-col gap-1.5 shrink-0 select-none items-end rtl:items-start">
                 <Button
                   onClick={() => onEdit(emp)}
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs font-semibold flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-8 text-xs font-semibold flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label={`Edit login details for ${emp.full_name}`}
                 >
                   <Key size={12} aria-hidden="true" />
-                  <span>Edit Credentials</span>
+                  <span>{t('employees.editCredentials')}</span>
                 </Button>
                 <Button
                   onClick={() => onDelete(emp)}
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs font-semibold text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-destructive"
+                  className="h-8 text-xs font-semibold text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-destructive"
                   aria-label={`Remove access for ${emp.full_name}`}
                 >
                   <UserMinus size={12} aria-hidden="true" />
-                  <span>Remove</span>
+                  <span>{t('employees.remove')}</span>
                 </Button>
               </div>
             </CardContent>

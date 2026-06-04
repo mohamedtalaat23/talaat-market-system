@@ -1,8 +1,6 @@
 import type { Receipt, ReceiptItem } from './printing-types';
 
 export class ReceiptRenderer {
-
-
   /**
    * Helper to pad a string on the left to match a specific length.
    */
@@ -55,7 +53,7 @@ export class ReceiptRenderer {
     if (receipt.storePhone) {
       lines.push(this.centerText(`Tel: ${receipt.storePhone}`, width));
     }
-    
+
     lines.push(this.getDivider(width));
 
     // Reprint Warning
@@ -88,7 +86,7 @@ export class ReceiptRenderer {
       // Line 3: Quantities & Line Total
       const qtyStr = `${item.quantity.toFixed(2)} x ${item.unitPrice.toFixed(2)}`;
       const totalStr = item.lineTotal.toFixed(2);
-      
+
       lines.push(this.splitKeyValue(`  ${qtyStr}`, totalStr, width));
 
       // Line 4: Item-level discount (if provided)
@@ -101,32 +99,40 @@ export class ReceiptRenderer {
 
     // 4. Totals & Payment Summary
     lines.push(this.splitKeyValue('Subtotal:', `${receipt.totals.subtotal.toFixed(2)} EGP`, width));
-    
+
     const disc = receipt.totals.discount + (receipt.totals.globalDiscount || 0);
     if (disc > 0) {
       lines.push(this.splitKeyValue('Discount:', `-${disc.toFixed(2)} EGP`, width));
     }
-    
+
     if (receipt.totals.tax > 0) {
       lines.push(this.splitKeyValue('Tax:', `${receipt.totals.tax.toFixed(2)} EGP`, width));
     }
-    
+
     lines.push(this.getDivider(width));
-    
+
     // Bold total (handled in ESC/POS formatting layer, here we just output text)
     lines.push(this.splitKeyValue('TOTAL:', `${receipt.totals.total.toFixed(2)} EGP`, width));
-    
+
     lines.push(this.getDivider(width));
 
     // Payment details
     lines.push(this.splitKeyValue('Payment Method:', receipt.paymentMethod.toUpperCase(), width));
-    
+
     if (receipt.totals.cashReceived !== undefined && receipt.totals.cashReceived !== null) {
-      lines.push(this.splitKeyValue('Cash Received:', `${receipt.totals.cashReceived.toFixed(2)} EGP`, width));
+      lines.push(
+        this.splitKeyValue(
+          'Cash Received:',
+          `${receipt.totals.cashReceived.toFixed(2)} EGP`,
+          width,
+        ),
+      );
     }
-    
+
     if (receipt.totals.changeGiven !== undefined && receipt.totals.changeGiven !== null) {
-      lines.push(this.splitKeyValue('Change Due:', `${receipt.totals.changeGiven.toFixed(2)} EGP`, width));
+      lines.push(
+        this.splitKeyValue('Change Due:', `${receipt.totals.changeGiven.toFixed(2)} EGP`, width),
+      );
     }
 
     lines.push(this.getDivider(width));
@@ -134,7 +140,7 @@ export class ReceiptRenderer {
     // 5. Friendly Footer (Centered)
     lines.push(this.centerText('Thank you for shopping!', width));
     lines.push(this.centerText('شكراً لزيارتكم', width));
-    
+
     return lines;
   }
 }

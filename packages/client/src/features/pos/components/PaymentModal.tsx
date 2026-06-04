@@ -15,7 +15,7 @@ export function PaymentModal() {
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
   const closeModal = () => closeModalAction('pos_payment');
-  
+
   const cart = usePOSStore((state) => state.cart);
   const paymentMethod = usePOSStore((state) => state.paymentMethod);
   const setPaymentMethod = usePOSStore((state) => state.setPaymentMethod);
@@ -24,10 +24,10 @@ export function PaymentModal() {
   const setLastSaleId = usePOSStore((state) => state.setLastSaleId);
   const autoPrintReceipts = usePOSStore((state) => state.autoPrintReceipts);
   const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
-  
-  const rawSubtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+
+  const rawSubtotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
   const rawDiscount = cart.reduce((sum, item) => sum + item.discount, 0);
-  
+
   const subtotal = bankersRound(rawSubtotal);
   const itemDiscounts = bankersRound(rawDiscount);
   const total = bankersRound(subtotal - itemDiscounts - globalDiscount);
@@ -74,10 +74,14 @@ export function PaymentModal() {
 
   const cashReceived = parseFloat(cashReceivedStr) || 0;
   const changeDue = Math.max(0, cashReceived - total);
-  
+
   // Validation for checkout
   const isValidAmount = paymentMethod !== 'cash' || cashReceived >= total;
-  const canCheckout = cart.length > 0 && isValidAmount && !isSubmitting && (paymentMethod !== 'debt' || !!selectedCustomer);
+  const canCheckout =
+    cart.length > 0 &&
+    isValidAmount &&
+    !isSubmitting &&
+    (paymentMethod !== 'debt' || !!selectedCustomer);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +107,8 @@ export function PaymentModal() {
           ...activeShift,
           cash_sales: Number(activeShift.cash_sales || 0) + cashSalesAdd,
           card_sales: Number(activeShift.card_sales || 0) + cardSalesAdd,
-          total_discounts: Number(activeShift.total_discounts || 0) + itemDiscounts + globalDiscount
+          total_discounts:
+            Number(activeShift.total_discounts || 0) + itemDiscounts + globalDiscount,
         };
         usePOSStore.getState().setActiveShift(updatedShift);
       }
@@ -113,8 +118,11 @@ export function PaymentModal() {
       const activeShift = usePOSStore.getState().activeShift;
       const shiftId = activeShift?.id || 1;
       const registerId = usePOSStore.getState().registerId || 1;
-      const cashierName = useAuthStore.getState().user?.full_name || useAuthStore.getState().user?.username || 'Cashier';
-      
+      const cashierName =
+        useAuthStore.getState().user?.full_name ||
+        useAuthStore.getState().user?.username ||
+        'Cashier';
+
       const offlineUuid = crypto.randomUUID();
       const receiptNumber = `STR01-REG${String(registerId).padStart(2, '0')}-OFF-${offlineUuid.slice(0, 8).toUpperCase()}`;
       const saleId = offlineUuid;
@@ -130,7 +138,7 @@ export function PaymentModal() {
         unit: item.unit,
         unit_price: item.unit_price,
         discount: item.discount,
-        line_total: (item.quantity * item.unit_price) - item.discount
+        line_total: item.quantity * item.unit_price - item.discount,
       }));
 
       const offlineCreatedAt = new Date().toISOString();
@@ -143,17 +151,17 @@ export function PaymentModal() {
         register_id: registerId,
         payment_method: paymentMethod,
         cash_received: paymentMethod === 'cash' ? cashReceived : undefined,
-        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || 0) : undefined,
-        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || 0) : undefined,
+        cash_amount: paymentMethod === 'split' ? parseFloat(cashPortionStr) || 0 : undefined,
+        card_amount: paymentMethod === 'split' ? parseFloat(cardPortionStr) || 0 : undefined,
         idempotency_key,
         global_discount: globalDiscount,
         customer_id: selectedCustomer?.id || undefined,
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          discount: item.discount
-        }))
+          discount: item.discount,
+        })),
       };
 
       const saleData = {
@@ -167,13 +175,13 @@ export function PaymentModal() {
         tax_amount: 0,
         total,
         cash_received: paymentMethod === 'cash' ? cashReceived : null,
-        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || null) : null,
-        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || null) : null,
+        cash_amount: paymentMethod === 'split' ? parseFloat(cashPortionStr) || null : null,
+        card_amount: paymentMethod === 'split' ? parseFloat(cardPortionStr) || null : null,
         change_given: changeDue > 0 ? changeDue : 0,
         payment_method: paymentMethod,
         created_at: offlineCreatedAt,
         is_offline: true,
-        print_count: 0
+        print_count: 0,
       };
 
       // Spool locally to offline queue
@@ -182,26 +190,26 @@ export function PaymentModal() {
         idempotency_key,
         payload,
         saleData,
-        timestamp: offlineCreatedAt
+        timestamp: offlineCreatedAt,
       });
 
       // Update running shift tally locally
       updateLocalShiftTally(saleId);
 
-      toast.success('Offline checkout stored in local register queue', { icon: '💾', duration: 4000 });
+      toast.success('Offline checkout stored in local register queue', {
+        icon: '💾',
+        duration: 4000,
+      });
       clearCart();
       closeModal();
       setLastSaleId(saleId);
 
       if (autoPrintReceipts) {
-        toast.promise(
-          printerService.printReceipt(saleData),
-          {
-            loading: 'Printing offline receipt...',
-            success: 'Receipt printed successfully!',
-            error: 'Failed to print receipt',
-          }
-        );
+        toast.promise(printerService.printReceipt(saleData), {
+          loading: 'Printing offline receipt...',
+          success: 'Receipt printed successfully!',
+          error: 'Failed to print receipt',
+        });
       } else {
         openModalAction('pos_receipt_preview', { sale: saleData });
       }
@@ -222,25 +230,25 @@ export function PaymentModal() {
         register_id: usePOSStore.getState().registerId,
         payment_method: paymentMethod,
         cash_received: paymentMethod === 'cash' ? cashReceived : undefined,
-        cash_amount: paymentMethod === 'split' ? (parseFloat(cashPortionStr) || 0) : undefined,
-        card_amount: paymentMethod === 'split' ? (parseFloat(cardPortionStr) || 0) : undefined,
+        cash_amount: paymentMethod === 'split' ? parseFloat(cashPortionStr) || 0 : undefined,
+        card_amount: paymentMethod === 'split' ? parseFloat(cardPortionStr) || 0 : undefined,
         idempotency_key,
         global_discount: globalDiscount,
         customer_id: selectedCustomer?.id || undefined,
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          discount: item.discount
-        }))
+          discount: item.discount,
+        })),
       };
 
       const response = await apiClient.post('/pos/checkout', payload);
-      
+
       toast.success('Checkout successful!', { icon: '🎉' });
       clearCart();
       closeModal();
-      
+
       const saleData = response.data.data;
       setLastSaleId(saleData.id);
 
@@ -259,16 +267,22 @@ export function PaymentModal() {
             loading: 'Printing receipt...',
             success: 'Receipt printed successfully!',
             error: 'Failed to print receipt',
-          }
+          },
         );
       } else {
         openModalAction('pos_receipt_preview', { sale: saleData });
       }
     } catch (error: any) {
-      const isNetworkError = !error.response || error.message?.includes('Network Error') || error.status === undefined || error.status >= 500;
-      
+      const isNetworkError =
+        !error.response ||
+        error.message?.includes('Network Error') ||
+        error.status === undefined ||
+        error.status >= 500;
+
       if (mode === 'client' && isNetworkError) {
-        toast.error('Network connection to Master server failed. Routing to offline buffer...', { duration: 4000 });
+        toast.error('Network connection to Master server failed. Routing to offline buffer...', {
+          duration: 4000,
+        });
         setStatus('offline');
         executeOfflineCheckout();
       } else {
@@ -281,7 +295,11 @@ export function PaymentModal() {
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4">
-      <div className="absolute inset-0" onClick={isSubmitting ? undefined : closeModal} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        onClick={isSubmitting ? undefined : closeModal}
+        aria-hidden="true"
+      />
 
       <div
         ref={focusTrapRef}
@@ -291,7 +309,10 @@ export function PaymentModal() {
         aria-labelledby="payment-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
-          <h3 id="payment-modal-title" className="text-2xl font-bold text-foreground flex items-center space-x-2">
+          <h3
+            id="payment-modal-title"
+            className="text-2xl font-bold text-foreground flex items-center space-x-2"
+          >
             <span>Checkout</span>
           </h3>
           <button
@@ -358,13 +379,22 @@ export function PaymentModal() {
                   paymentMethod === 'debt'
                     ? 'bg-danger/15 border-danger text-danger'
                     : selectedCustomer
-                    ? 'bg-card border-border text-secondary hover:bg-card-hover'
-                    : 'bg-input/20 border-border text-muted cursor-not-allowed border-dashed'
+                      ? 'bg-card border-border text-secondary hover:bg-card-hover'
+                      : 'bg-input/20 border-border text-muted cursor-not-allowed border-dashed'
                 }`}
-                title={selectedCustomer ? 'Charge to customer account' : 'Select customer (F7) to use debt'}
+                title={
+                  selectedCustomer
+                    ? 'Charge to customer account'
+                    : 'Select customer (F7) to use debt'
+                }
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <span className="font-bold text-base">Debt</span>
               </button>
@@ -373,7 +403,10 @@ export function PaymentModal() {
             {paymentMethod === 'cash' && (
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="cash-input" className="block text-sm font-medium text-secondary mb-1">
+                  <label
+                    htmlFor="cash-input"
+                    className="block text-sm font-medium text-secondary mb-1"
+                  >
                     Cash Received (EGP)
                   </label>
                   <input
@@ -388,20 +421,31 @@ export function PaymentModal() {
                     onChange={(e) => setCashReceivedStr(e.target.value)}
                   />
                 </div>
-                
-                <div className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input/40 border-border text-secondary'}`}>
+
+                <div
+                  className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input/40 border-border text-secondary'}`}
+                >
                   <div className="text-sm font-medium mb-1">Change Due</div>
-                  <div className="text-4xl font-bold tracking-tight">EGP {changeDue.toFixed(2)}</div>
+                  <div className="text-4xl font-bold tracking-tight">
+                    EGP {changeDue.toFixed(2)}
+                  </div>
                 </div>
               </div>
             )}
 
             {paymentMethod === 'split' && (
               <div className="space-y-4 bg-input/45 p-4 border border-border rounded-lg">
-                <div className="text-sm font-bold text-secondary uppercase tracking-wider mb-2">Split Allocation (EGP)</div>
+                <div className="text-sm font-bold text-secondary uppercase tracking-wider mb-2">
+                  Split Allocation (EGP)
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="cash-portion" className="block text-xs font-semibold text-secondary mb-1">Cash Portion</label>
+                    <label
+                      htmlFor="cash-portion"
+                      className="block text-xs font-semibold text-secondary mb-1"
+                    >
+                      Cash Portion
+                    </label>
                     <input
                       id="cash-portion"
                       type="number"
@@ -414,7 +458,12 @@ export function PaymentModal() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="card-portion" className="block text-xs font-semibold text-secondary mb-1">Card Portion</label>
+                    <label
+                      htmlFor="card-portion"
+                      className="block text-xs font-semibold text-secondary mb-1"
+                    >
+                      Card Portion
+                    </label>
                     <input
                       id="card-portion"
                       type="number"
@@ -428,7 +477,8 @@ export function PaymentModal() {
                   </div>
                 </div>
                 <div className="text-xs text-muted text-center pt-2">
-                  Verify Cash portion ({Number(cashPortionStr || 0).toFixed(2)}) + Card portion ({Number(cardPortionStr || 0).toFixed(2)}) equals total ({total.toFixed(2)})
+                  Verify Cash portion ({Number(cashPortionStr || 0).toFixed(2)}) + Card portion (
+                  {Number(cardPortionStr || 0).toFixed(2)}) equals total ({total.toFixed(2)})
                 </div>
               </div>
             )}
@@ -436,9 +486,19 @@ export function PaymentModal() {
             {paymentMethod === 'debt' && selectedCustomer && (
               <div className="space-y-4">
                 <div className="p-4 rounded border bg-danger/10 border-danger/20 text-danger">
-                  <div className="text-xs font-bold uppercase tracking-wider text-danger mb-1">Buy on Credit (Debt Account)</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-danger mb-1">
+                    Buy on Credit (Debt Account)
+                  </div>
                   <p className="text-xs leading-relaxed text-secondary">
-                    The total sum of <strong className="text-danger font-mono">EGP {total.toFixed(2)}</strong> will be charged to the account of <strong className="text-foreground">{selectedCustomer.name}</strong>. Their new outstanding balance will be <strong className="text-danger font-mono">EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}</strong>.
+                    The total sum of{' '}
+                    <strong className="text-danger font-mono">EGP {total.toFixed(2)}</strong> will
+                    be charged to the account of{' '}
+                    <strong className="text-foreground">{selectedCustomer.name}</strong>. Their new
+                    outstanding balance will be{' '}
+                    <strong className="text-danger font-mono">
+                      EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}
+                    </strong>
+                    .
                   </p>
                 </div>
               </div>

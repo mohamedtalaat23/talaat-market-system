@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSettings, useUpdateSettings } from '../hooks/useSettingsQueries';
 import { Spinner } from '@/components/ui/Spinner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function GeneralSettingsScreen() {
+  const { t } = useTranslation();
   const { data: settings, isLoading } = useSettings();
   const { mutate: updateSettings, isPending } = useUpdateSettings();
 
@@ -32,7 +34,12 @@ export function GeneralSettingsScreen() {
     }
   }, [settings]);
 
-  if (isLoading) return <div className="flex justify-center p-12"><Spinner /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center p-12">
+        <Spinner />
+      </div>
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,14 +47,16 @@ export function GeneralSettingsScreen() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h3 className="text-xl font-semibold mb-6">General Settings</h3>
+    <div className="max-w-2xl select-text">
+      <h3 className="text-xl font-semibold mb-6">{t('settings.general')}</h3>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Details */}
         <div className="space-y-4 pb-4 border-b border-border/50">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Company Details</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+            {t('settings.companyDetails')}
+          </h4>
           <div>
-            <label className="block text-sm font-medium mb-2">Store Name</label>
+            <label className="block text-sm font-medium mb-2">{t('settings.storeName')}</label>
             <input
               type="text"
               className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
@@ -57,33 +66,33 @@ export function GeneralSettingsScreen() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Store Address</label>
+            <label className="block text-sm font-medium mb-2">{t('settings.storeAddress')}</label>
             <textarea
               className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none h-20"
               value={form.store_address}
               onChange={(e) => setForm({ ...form, store_address: e.target.value })}
-              placeholder="123 Main St, City, Country"
+              placeholder={t('settings.placeholderAddress')}
             />
           </div>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Phone Number</label>
+              <label className="block text-sm font-medium mb-2">{t('settings.phone')}</label>
               <input
                 type="text"
                 className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.store_phone}
                 onChange={(e) => setForm({ ...form, store_phone: e.target.value })}
-                placeholder="+20 123 456 7890"
+                placeholder={t('settings.placeholderPhone')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Tax ID / Commercial Register</label>
+              <label className="block text-sm font-medium mb-2">{t('settings.taxId')}</label>
               <input
                 type="text"
                 className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 value={form.tax_id}
                 onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
-                placeholder="XXX-XXX-XXX"
+                placeholder={t('settings.placeholderTaxId')}
               />
             </div>
           </div>
@@ -91,10 +100,14 @@ export function GeneralSettingsScreen() {
 
         {/* Financial & Localization */}
         <div className="space-y-4 pb-4 border-b border-border/50">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">Financial & Localization</h4>
+          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+            {t('settings.financialL10n')}
+          </h4>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Currency Symbol</label>
+              <label className="block text-sm font-medium mb-2">
+                {t('settings.currencySymbol')}
+              </label>
               <input
                 type="text"
                 className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
@@ -103,7 +116,7 @@ export function GeneralSettingsScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Default Tax Rate (%)</label>
+              <label className="block text-sm font-medium mb-2">{t('settings.defaultTax')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -116,7 +129,7 @@ export function GeneralSettingsScreen() {
           </div>
           <div className="grid grid-cols-2 gap-6 mt-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Timezone</label>
+              <label className="block text-sm font-medium mb-2">{t('settings.timezone')}</label>
               <select
                 className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
                 value={form.timezone}
@@ -127,11 +140,10 @@ export function GeneralSettingsScreen() {
                 <option value="Asia/Dubai">Asia/Dubai</option>
                 <option value="Europe/London">Europe/London</option>
                 <option value="America/New_York">America/New_York</option>
-                {/* Add more timezones as needed */}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Date Format</label>
+              <label className="block text-sm font-medium mb-2">{t('settings.dateFormat')}</label>
               <select
                 className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none"
                 value={form.date_format}
@@ -150,7 +162,7 @@ export function GeneralSettingsScreen() {
             disabled={isPending}
             className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? t('settings.saving') : t('settings.saveChanges')}
           </button>
         </div>
       </form>

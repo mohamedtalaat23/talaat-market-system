@@ -56,3 +56,9 @@ packages/desktop/dist/
 backups/
 *.dump
 *.sql.gz
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

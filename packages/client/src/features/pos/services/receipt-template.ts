@@ -67,13 +67,17 @@ export function generateReceiptHtml(data: PrinterPayload): string {
       ${data.isReprint ? '<div class="reprint-watermark">*** REPRINT COPY ***</div>' : ''}
       
       <div class="divider"></div>
-      ${data.items.map((i) => `
+      ${data.items
+        .map(
+          (i) => `
         <div dir="auto">${i.product_name} ${i.name_ar ? '(' + i.name_ar + ')' : ''}</div>
         <div class="flex-between">
           <span>${i.quantity}x ${Number(i.unit_price).toFixed(2)}</span>
           <span>${Number(i.line_total).toFixed(2)}</span>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
       <div class="divider"></div>
       
       <div class="flex-between bold" style="font-size: 14px;">

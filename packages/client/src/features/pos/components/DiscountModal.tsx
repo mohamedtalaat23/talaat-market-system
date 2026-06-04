@@ -10,7 +10,7 @@ export function DiscountModal() {
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
   const closeModal = () => closeModalAction('pos_discount');
-  
+
   const cart = usePOSStore((state) => state.cart);
   const activeItemIndex = usePOSStore((state) => state.activeItemIndex);
   const setGlobalDiscount = usePOSStore((state) => state.setGlobalDiscount);
@@ -51,7 +51,7 @@ export function DiscountModal() {
     if (target === 'item') {
       if (!activeItem) return toast.error('No item selected');
       const lineTotalBeforeDiscount = activeItem.quantity * activeItem.unit_price;
-      
+
       if (discountType === 'percentage') {
         discountValue = lineTotalBeforeDiscount * (amount / 100);
       }
@@ -61,13 +61,13 @@ export function DiscountModal() {
       }
 
       // Manager override required if discount > 20%
-      if (discountValue > lineTotalBeforeDiscount * 0.20) {
+      if (discountValue > lineTotalBeforeDiscount * 0.2) {
         closeModal();
-        openModalAction('pos_manager_override', { 
-          action: 'large_discount', 
-          target: 'item', 
-          cartId: activeItem.cart_id, 
-          discountValue 
+        openModalAction('pos_manager_override', {
+          action: 'large_discount',
+          target: 'item',
+          cartId: activeItem.cart_id,
+          discountValue,
         });
         return;
       }
@@ -76,8 +76,8 @@ export function DiscountModal() {
       toast.success('Item discount applied');
       closeModal();
     } else {
-      const cartSubtotal = cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-      
+      const cartSubtotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+
       if (discountType === 'percentage') {
         discountValue = cartSubtotal * (amount / 100);
       }
@@ -86,12 +86,12 @@ export function DiscountModal() {
         return toast.error('Discount cannot exceed cart subtotal');
       }
 
-      if (discountValue > cartSubtotal * 0.20) {
+      if (discountValue > cartSubtotal * 0.2) {
         closeModal();
-        openModalAction('pos_manager_override', { 
-          action: 'large_discount', 
-          target: 'cart', 
-          discountValue 
+        openModalAction('pos_manager_override', {
+          action: 'large_discount',
+          target: 'cart',
+          discountValue,
         });
         return;
       }
@@ -116,7 +116,10 @@ export function DiscountModal() {
             <Tag size={24} className="text-emerald-500" />
             <span>Apply Discount</span>
           </h3>
-          <button onClick={closeModal} className="text-secondary hover:text-white transition-colors">
+          <button
+            onClick={closeModal}
+            className="text-secondary hover:text-white transition-colors"
+          >
             <X size={20} />
           </button>
         </div>

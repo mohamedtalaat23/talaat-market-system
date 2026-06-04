@@ -8,7 +8,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 const TransactionSearchModal = () => {
   const { activeModals, closeModal, openModal } = useModalStore();
   const isOpen = activeModals.pos_transaction_search;
-  
+
   const [query, setQuery] = useState('');
   const [sales, setSales] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,9 @@ const TransactionSearchModal = () => {
   const searchSales = useCallback(async (searchQuery: string) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get<{ success: boolean; data: any[] }>(`/pos/sales/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await apiClient.get<{ success: boolean; data: any[] }>(
+        `/pos/sales/search?q=${encodeURIComponent(searchQuery)}`,
+      );
       if (response.data?.success) {
         setSales(response.data.data);
       }
@@ -57,13 +59,17 @@ const TransactionSearchModal = () => {
         } catch (error) {
           toast.error('Reprint authorization failed');
         }
-      }
+      },
     });
   };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-foreground">
-      <div className="absolute inset-0" onClick={() => closeModal('pos_transaction_search')} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        onClick={() => closeModal('pos_transaction_search')}
+        aria-hidden="true"
+      />
 
       <div
         ref={focusTrapRef}
@@ -75,7 +81,7 @@ const TransactionSearchModal = () => {
             <Search className="w-5 h-5 text-blue-400" />
             <h2 className="text-lg font-semibold text-white">Transaction Search & Reprint</h2>
           </div>
-          <button 
+          <button
             onClick={() => closeModal('pos_transaction_search')}
             className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
           >
@@ -86,7 +92,7 @@ const TransactionSearchModal = () => {
         <div className="p-4 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-            <input 
+            <input
               type="text"
               autoFocus
               value={query}
@@ -103,9 +109,7 @@ const TransactionSearchModal = () => {
               <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
             </div>
           ) : sales.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
-              No transactions found.
-            </div>
+            <div className="text-center py-12 text-slate-500">No transactions found.</div>
           ) : (
             <table className="w-full text-left text-sm border-collapse">
               <thead>
@@ -120,16 +124,27 @@ const TransactionSearchModal = () => {
               </thead>
               <tbody>
                 {sales.map((sale) => (
-                  <tr key={sale.id} className="border-b border-border/50 hover:bg-card-hover/30 transition-colors">
+                  <tr
+                    key={sale.id}
+                    className="border-b border-border/50 hover:bg-card-hover/30 transition-colors"
+                  >
                     <td className="py-3 font-mono text-emerald-400">{sale.receipt_number}</td>
-                    <td className="py-3 text-secondary">{new Date(sale.created_at).toLocaleString()}</td>
+                    <td className="py-3 text-secondary">
+                      {new Date(sale.created_at).toLocaleString()}
+                    </td>
                     <td className="py-3 text-secondary">{sale.cashier_name}</td>
-                    <td className="py-3 text-right font-bold">EGP {Number(sale.total).toFixed(2)}</td>
+                    <td className="py-3 text-right font-bold">
+                      EGP {Number(sale.total).toFixed(2)}
+                    </td>
                     <td className="py-3 text-right">
                       {sale.print_status === 'pending_print' ? (
-                        <span className="px-2 py-0.5 rounded text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending Print</span>
+                        <span className="px-2 py-0.5 rounded text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          Pending Print
+                        </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-xs bg-slate-500/10 text-secondary border border-slate-500/20">Printed ({sale.print_count})</span>
+                        <span className="px-2 py-0.5 rounded text-xs bg-slate-500/10 text-secondary border border-slate-500/20">
+                          Printed ({sale.print_count})
+                        </span>
                       )}
                     </td>
                     <td className="py-3 text-right">

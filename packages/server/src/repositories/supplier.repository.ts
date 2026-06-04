@@ -49,7 +49,7 @@ export class SupplierRepository {
   async findAll(
     search?: string,
     page = 1,
-    limit = 10
+    limit = 10,
   ): Promise<{ data: Supplier[]; total: number }> {
     const offset = (page - 1) * limit;
 
@@ -67,16 +67,16 @@ export class SupplierRepository {
       .whereNull('suppliers.deleted_at')
       .select(
         'suppliers.*',
-        db.raw('COALESCE(catalog_counts.active_count, 0)::integer as active_catalog_count')
+        db.raw('COALESCE(catalog_counts.active_count, 0)::integer as active_catalog_count'),
       );
 
-    let countQuery = db('suppliers')
-      .whereNull('deleted_at');
+    let countQuery = db('suppliers').whereNull('deleted_at');
 
     if (search) {
       const cleanSearch = search.trim();
       const searchFilter = (builder: Knex.QueryBuilder) => {
-        builder.where('suppliers.name', 'ilike', `%${cleanSearch}%`)
+        builder
+          .where('suppliers.name', 'ilike', `%${cleanSearch}%`)
           .orWhere('suppliers.supplier_code', 'ilike', `%${cleanSearch}%`)
           .orWhere('suppliers.phone', 'like', `%${cleanSearch}%`)
           .orWhere('suppliers.contact_name', 'ilike', `%${cleanSearch}%`);
@@ -88,10 +88,7 @@ export class SupplierRepository {
     const [totalRow] = await countQuery.count('id as total');
     const total = totalRow ? Number(totalRow.total) : 0;
 
-    const data = await baseQuery
-      .orderBy('suppliers.name', 'asc')
-      .limit(limit)
-      .offset(offset);
+    const data = await baseQuery.orderBy('suppliers.name', 'asc').limit(limit).offset(offset);
 
     return { data, total };
   }
@@ -100,10 +97,7 @@ export class SupplierRepository {
    * Find supplier by ID.
    */
   async findById(id: number): Promise<Supplier | null> {
-    const supplier = await db('suppliers')
-      .where('id', id)
-      .whereNull('deleted_at')
-      .first();
+    const supplier = await db('suppliers').where('id', id).whereNull('deleted_at').first();
 
     return supplier || null;
   }
@@ -117,7 +111,7 @@ export class SupplierRepository {
       .select(
         'products.*',
         'inventory.quantity as inventory_quantity',
-        'inventory.reserved_quantity as inventory_reserved_quantity'
+        'inventory.reserved_quantity as inventory_reserved_quantity',
       )
       .where('products.supplier_id', supplierId)
       .whereNull('products.deleted_at')
@@ -127,7 +121,10 @@ export class SupplierRepository {
   /**
    * Register a new supplier.
    */
-  async create(input: CreateSupplierInput, createdByUserId: number | null = null): Promise<Supplier> {
+  async create(
+    input: CreateSupplierInput,
+    createdByUserId: number | null = null,
+  ): Promise<Supplier> {
     return db.transaction(async (trx) => {
       // Auto-generate supplier code if not provided
       let supplierCode = input.supplier_code;
@@ -166,7 +163,11 @@ export class SupplierRepository {
   /**
    * Update supplier details.
    */
-  async update(id: number, input: UpdateSupplierInput, updatedByUserId: number | null = null): Promise<Supplier> {
+  async update(
+    id: number,
+    input: UpdateSupplierInput,
+    updatedByUserId: number | null = null,
+  ): Promise<Supplier> {
     return db.transaction(async (trx) => {
       const [row] = await trx('suppliers')
         .where('id', id)
@@ -190,13 +191,11 @@ export class SupplierRepository {
    * Soft delete supplier.
    */
   async softDelete(id: number): Promise<void> {
-    const rowsAffected = await db('suppliers')
-      .where('id', id)
-      .update({
-        deleted_at: db.fn.now(),
-        status: 'inactive', // Deactivate on deletion
-        updated_at: db.fn.now(),
-      });
+    const rowsAffected = await db('suppliers').where('id', id).update({
+      deleted_at: db.fn.now(),
+      status: 'inactive', // Deactivate on deletion
+      updated_at: db.fn.now(),
+    });
 
     if (rowsAffected === 0) {
       throw new Error(`Supplier with ID ${id} not found or already deleted.`);

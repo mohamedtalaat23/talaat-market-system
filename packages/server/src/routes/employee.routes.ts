@@ -23,20 +23,17 @@ employeeRouter.get(
   '/',
   requireRoles('admin', 'manager'),
   validate({ query: employeeQuerySchema }),
-  controller.getEmployees
+  controller.getEmployees,
 );
 // GET /employees/managers - Retrieve active managers and admins (Authenticated only)
-employeeRouter.get(
-  '/managers',
-  controller.getActiveManagers
-);
+employeeRouter.get('/managers', controller.getActiveManagers);
 
 // GET /employees/:id - Retrieve employee profile detail (Admin & Manager only)
 employeeRouter.get(
   '/:id',
   requireRoles('admin', 'manager'),
   validate({ params: employeeIdParamSchema }),
-  controller.getEmployeeById
+  controller.getEmployeeById,
 );
 
 // POST /employees - Register a new employee (Admin only)
@@ -44,7 +41,7 @@ employeeRouter.post(
   '/',
   requireRoles('admin'),
   validate({ body: createEmployeeSchema }),
-  controller.createEmployee
+  controller.createEmployee,
 );
 
 // PUT /employees/:id - Update employee details (Admin only)
@@ -52,7 +49,7 @@ employeeRouter.put(
   '/:id',
   requireRoles('admin'),
   validate({ params: employeeIdParamSchema, body: updateEmployeeSchema }),
-  controller.updateEmployee
+  controller.updateEmployee,
 );
 
 // DELETE /employees/:id - Soft-delete employee account (Admin only)
@@ -60,13 +57,10 @@ employeeRouter.delete(
   '/:id',
   requireRoles('admin'),
   validate({ params: employeeIdParamSchema }),
-  controller.deleteEmployee
+  controller.deleteEmployee,
 );
 
 // POST /employees/verify-pin - Verify a manager PIN securely (Authenticated only)
-employeeRouter.post(
-  '/verify-pin',
-  controller.verifyManagerPin
-);
+employeeRouter.post('/verify-pin', controller.verifyManagerPin);
 
 export { employeeRouter };

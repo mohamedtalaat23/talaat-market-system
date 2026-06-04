@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
 
     // Get token directly from the Zustand store state
     const token = useAuthStore.getState().token;
-    
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,7 +35,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor to handle errors globally, including automatic logouts on 401 responses
@@ -50,13 +50,14 @@ apiClient.interceptors.response.use(
         useAuthStore.getState().logout();
       }
     }
-    
+
     // Extract server error messages if available
-    const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    const message =
+      error.response?.data?.message || error.message || 'An unexpected error occurred';
     const serverError = new Error(message);
     (serverError as any).status = error.response?.status;
     (serverError as any).code = error.response?.data?.code;
-    
+
     return Promise.reject(serverError);
-  }
+  },
 );

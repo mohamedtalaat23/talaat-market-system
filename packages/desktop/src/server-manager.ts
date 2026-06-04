@@ -12,7 +12,9 @@ function findAvailablePort(startPort: number): Promise<number> {
       server.close(() => resolve(port));
     });
     server.on('error', () => {
-      findAvailablePort(startPort + 1).then(resolve).catch(reject);
+      findAvailablePort(startPort + 1)
+        .then(resolve)
+        .catch(reject);
     });
   });
 }
@@ -60,8 +62,18 @@ export class ServerManager {
       return;
     }
 
-    await this.runNodeChild(this.getServerAssetPath('database/migrate.js'), [], extraEnv, 'migrations');
-    await this.runNodeChild(this.getServerAssetPath('database/bootstrap.js'), [], extraEnv, 'bootstrap');
+    await this.runNodeChild(
+      this.getServerAssetPath('database/migrate.js'),
+      [],
+      extraEnv,
+      'migrations',
+    );
+    await this.runNodeChild(
+      this.getServerAssetPath('database/bootstrap.js'),
+      [],
+      extraEnv,
+      'bootstrap',
+    );
   }
 
   private async startProductionServer(extraEnv: Record<string, string>): Promise<number> {
@@ -115,7 +127,9 @@ export class ServerManager {
           if (this.restartAttempts < this.maxRestartAttempts) {
             this.restartAttempts++;
             const delay = Math.min(1000 * Math.pow(2, this.restartAttempts), 10000);
-            logger.info(`[ServerManager] Restarting server in ${delay}ms (attempt ${this.restartAttempts}/${this.maxRestartAttempts})`);
+            logger.info(
+              `[ServerManager] Restarting server in ${delay}ms (attempt ${this.restartAttempts}/${this.maxRestartAttempts})`,
+            );
             this.restartTimeout = setTimeout(() => spawn(), delay);
           } else {
             logger.error('[ServerManager] Max restart attempts reached. Server will not restart.');

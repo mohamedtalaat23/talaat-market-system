@@ -43,8 +43,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
           <p className="text-neutral-400 text-sm max-w-md mb-6">
-            An unexpected error occurred in this section of the application. 
-            The issue has been logged. You can try reloading this view.
+            An unexpected error occurred in this section of the application. The issue has been
+            logged. You can try reloading this view.
           </p>
           <div className="p-4 bg-black/40 rounded-lg text-left overflow-auto max-w-2xl w-full mb-6 border border-neutral-800">
             <pre className="text-rose-400 text-xs font-mono whitespace-pre-wrap">

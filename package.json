@@ -23,6 +23,8 @@
     "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,css}\"",
     "typecheck": "npm run typecheck --workspace=packages/server && npm run typecheck --workspace=packages/client && npm run typecheck --workspace=packages/desktop",
+    "test:client": "npm run test --workspace=packages/client",
+    "test:e2e": "npm run test:e2e --workspace=packages/client",
     "db:migrate": "npm run migrate --workspace=packages/server",
     "db:rollback": "npm run migrate:rollback --workspace=packages/server",
     "db:seed": "npm run seed --workspace=packages/server",

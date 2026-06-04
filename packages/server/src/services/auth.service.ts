@@ -22,7 +22,10 @@ export class AuthService {
    * Enforces status checks (active and non-deleted).
    */
   async login(username: string, password?: string, pin?: string): Promise<LoginResult> {
-    logger.debug('Attempting login authentication', { username, method: password ? 'password' : 'pin' });
+    logger.debug('Attempting login authentication', {
+      username,
+      method: password ? 'password' : 'pin',
+    });
 
     // 1. Fetch credentials (including hashes) from database
     const user = await employeeRepository.getPasswordAndPinHash(username);
@@ -39,9 +42,13 @@ export class AuthService {
 
     // 2.5 Check if account is locked
     if (user.locked_until && new Date() < new Date(user.locked_until)) {
-      const remainingMinutes = Math.ceil((new Date(user.locked_until).getTime() - new Date().getTime()) / 60000);
+      const remainingMinutes = Math.ceil(
+        (new Date(user.locked_until).getTime() - new Date().getTime()) / 60000,
+      );
       logger.warn('Login blocked: Account is locked due to too many failed attempts', { username });
-      throw new AuthenticationError(`Account is locked due to too many failed attempts. Please try again in ${remainingMinutes} minutes.`);
+      throw new AuthenticationError(
+        `Account is locked due to too many failed attempts. Please try again in ${remainingMinutes} minutes.`,
+      );
     }
 
     // 3. Verify credentials
@@ -58,7 +65,7 @@ export class AuthService {
 
     if (!isMatch) {
       logger.warn('Login failed: Invalid credentials provided', { username });
-      
+
       const MAX_ATTEMPTS = 5;
       const LOCKOUT_DURATION_MINUTES = 15;
       const newAttempts = user.failed_login_attempts + 1;
@@ -67,7 +74,9 @@ export class AuthService {
         const lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
         await employeeRepository.lockAccount(user.id, lockoutUntil);
         logger.warn('Account locked due to max failed attempts', { username, lockoutUntil });
-        throw new AuthenticationError(`Account locked due to too many failed attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`);
+        throw new AuthenticationError(
+          `Account locked due to too many failed attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`,
+        );
       } else {
         await employeeRepository.incrementFailedLoginAttempts(user.id);
       }
@@ -89,7 +98,7 @@ export class AuthService {
         role: user.role as Role,
       },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN as any }
+      { expiresIn: env.JWT_EXPIRES_IN as any },
     );
 
     // 6. Audit logging for logins

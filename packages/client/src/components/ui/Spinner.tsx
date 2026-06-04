@@ -1,4 +1,4 @@
-import { cn } from "@/utils/cn"
+import { cn } from '@/utils/cn';
 
 interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg';
@@ -15,9 +15,9 @@ export function Spinner({ size = 'md', className, ...props }: SpinnerProps) {
     <div
       role="status"
       className={cn(
-        "animate-spin rounded-full border-solid border-neutral-800 border-t-primary",
+        'animate-spin rounded-full border-solid border-neutral-800 border-t-primary',
         sizeClasses[size],
-        className
+        className,
       )}
       {...props}
     >

@@ -16,68 +16,70 @@ export function POSKeyboardHandler() {
   const canExit = user?.role === 'admin' || user?.role === 'manager';
 
   // Scanner detection logic
-  const handleScan = useCallback(async (barcode: string) => {
-    if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
+  const handleScan = useCallback(
+    async (barcode: string) => {
+      if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
 
-    const loadingToastId = toast.loading(`Looking up barcode: ${barcode}`);
-    
-    try {
-      const response = await apiClient.get<{ success: boolean; data: any }>(`/products/barcode/${barcode}`);
-      
-      toast.dismiss(loadingToastId);
+      const loadingToastId = toast.loading(`Looking up barcode: ${barcode}`);
 
-      if (response.data?.success && response.data?.data) {
-        const product = response.data.data;
-        
-        // Handle inactive product
-        if (!product.is_active) {
-          toast.error(`Product "${product.name}" is inactive and cannot be sold`);
-          return;
+      try {
+        const response = await apiClient.get<{ success: boolean; data: any }>(
+          `/products/barcode/${barcode}`,
+        );
+
+        toast.dismiss(loadingToastId);
+
+        if (response.data?.success && response.data?.data) {
+          const product = response.data.data;
+
+          // Handle inactive product
+          if (!product.is_active) {
+            toast.error(`Product "${product.name}" is inactive and cannot be sold`);
+            return;
+          }
+
+          addItem({
+            product_id: product.id,
+            barcode: product.barcode,
+            name: product.name,
+            name_ar: product.name_ar,
+            unit_price: product.selling_price,
+            quantity: 1,
+            discount: 0,
+            unit: product.unit,
+            inventory_quantity: product.inventory_quantity || 0,
+          });
+
+          toast.success(`Added ${product.name} to cart`);
+        } else {
+          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          openModal('pos_product_search', { initialSearch: barcode });
         }
-
-
-
-        addItem({
-          product_id: product.id,
-          barcode: product.barcode,
-          name: product.name,
-          name_ar: product.name_ar,
-          unit_price: product.selling_price,
-          quantity: 1,
-          discount: 0,
-          unit: product.unit,
-          inventory_quantity: product.inventory_quantity || 0
-        });
-        
-        toast.success(`Added ${product.name} to cart`);
-      } else {
-        toast.error(`Barcode "${barcode}" not found. Opening search...`);
-        openModal('pos_product_search', { initialSearch: barcode });
+      } catch (error: any) {
+        toast.dismiss(loadingToastId);
+        if (error.status === 404) {
+          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          openModal('pos_product_search', { initialSearch: barcode });
+        } else {
+          console.error('Failed to lookup product barcode:', error);
+          toast.error(error.message || 'Error looking up barcode');
+        }
       }
-    } catch (error: any) {
-      toast.dismiss(loadingToastId);
-      if (error.status === 404) {
-        toast.error(`Barcode "${barcode}" not found. Opening search...`);
-        openModal('pos_product_search', { initialSearch: barcode });
-      } else {
-        console.error('Failed to lookup product barcode:', error);
-        toast.error(error.message || 'Error looking up barcode');
-      }
-    }
-  }, [addItem, openModal]);
+    },
+    [addItem, openModal],
+  );
 
   // Hook up scanner detection with <30ms threshold
   useScannerDetection({ onScan: handleScan, timeThreshold: 30 });
-
 
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = usePOSStore.getState();
-      
+
       // Block all shortcuts if a modal is open to prevent background actions and payload overwrites
       const activeModals = useModalStore.getState().activeModals;
-      if (Object.values(activeModals).some(isOpen => isOpen)) return;
+      if (Object.values(activeModals).some((isOpen) => isOpen)) return;
 
       // Block all shortcuts if no active shift, EXCEPT F12 (Exit POS)
       if (!state.activeShift && e.key !== 'F12') return;
@@ -94,12 +96,13 @@ export function POSKeyboardHandler() {
           e.preventDefault();
           const lastSaleId = state.lastSaleId;
           if (lastSaleId) {
-            apiClient.get(`/pos/receipts/${lastSaleId}`)
-              .then(res => {
+            apiClient
+              .get(`/pos/receipts/${lastSaleId}`)
+              .then((res) => {
                 if (res.data?.success) {
-                   printerService.printReceipt(res.data.data).then(() => {
-                     apiClient.post(`/pos/receipts/${lastSaleId}/print`);
-                   });
+                  printerService.printReceipt(res.data.data).then(() => {
+                    apiClient.post(`/pos/receipts/${lastSaleId}/print`);
+                  });
                 }
               })
               .catch(() => toast.error('Failed to load last receipt for printing'));
@@ -116,16 +119,16 @@ export function POSKeyboardHandler() {
             openModal('pos_manager_override', {
               action: 'reprint_receipt',
               onSuccess: async () => {
-                 try {
-                   await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`);
-                   const res = await apiClient.get(`/pos/receipts/${lastSaleId}`);
-                   if (res.data?.success) {
-                      printerService.printReceipt(res.data.data, true);
-                   }
-                 } catch (error) {
-                   toast.error('Reprint failed');
-                 }
-              }
+                try {
+                  await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`);
+                  const res = await apiClient.get(`/pos/receipts/${lastSaleId}`);
+                  if (res.data?.success) {
+                    printerService.printReceipt(res.data.data, true);
+                  }
+                } catch (error) {
+                  toast.error('Reprint failed');
+                }
+              },
             });
           } else {
             toast.error('No recent receipt to reprint');
@@ -135,17 +138,18 @@ export function POSKeyboardHandler() {
       }
 
       const cartLength = state.cart.length;
-      const isInput = e.target instanceof HTMLInputElement || 
-                      e.target instanceof HTMLTextAreaElement || 
-                      (e.target instanceof HTMLElement && e.target.isContentEditable);
+      const isInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
 
       switch (e.key) {
         case 'F1':
         case ' ':
           // Only capture Spacebar if not typing in an input field
           if (!isInput) {
-             e.preventDefault();
-             openModal('pos_payment');
+            e.preventDefault();
+            openModal('pos_payment');
           }
           break;
         case 'F2':
@@ -172,7 +176,7 @@ export function POSKeyboardHandler() {
         case 'F12':
           openModal('pos_manager_override', {
             action: 'exit_pos',
-            onSuccess: () => navigate('/')
+            onSuccess: () => navigate('/'),
           });
           break;
         case 'ArrowUp':
@@ -206,7 +210,7 @@ export function POSKeyboardHandler() {
           break;
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canExit, navigate, openModal]);
@@ -214,4 +218,3 @@ export function POSKeyboardHandler() {
   // This is a logic-only component that manages focus and shortcuts globally
   return null;
 }
-

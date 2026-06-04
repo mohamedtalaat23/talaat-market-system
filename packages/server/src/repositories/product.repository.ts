@@ -79,7 +79,7 @@ export class ProductRepository {
         'inventory.quantity as inventory_quantity',
         'inventory.reserved_quantity as inventory_reserved_quantity',
         'suppliers.name as supplier_name',
-        'suppliers.supplier_code as supplier_code'
+        'suppliers.supplier_code as supplier_code',
       )
       .whereNull('products.deleted_at'); // Filter out soft-deleted products
   }
@@ -112,7 +112,14 @@ export class ProductRepository {
     }
 
     // Sorting (with column whitelist to prevent SQL injection)
-    const allowedSortFields = ['id', 'name', 'cost_price', 'selling_price', 'created_at', 'updated_at'];
+    const allowedSortFields = [
+      'id',
+      'name',
+      'cost_price',
+      'selling_price',
+      'created_at',
+      'updated_at',
+    ];
     const sortField = allowedSortFields.includes(filters.sortBy)
       ? `products.${filters.sortBy}`
       : 'products.created_at';
@@ -132,10 +139,10 @@ export class ProductRepository {
   /**
    * Count total products matching filters (ignoring limit/offset).
    */
-  async countAll(filters: Omit<ProductFilters, 'page' | 'limit' | 'sortBy' | 'sortOrder'>): Promise<number> {
-    const query = db('products')
-      .whereNull('products.deleted_at')
-      .count({ count: 'products.id' });
+  async countAll(
+    filters: Omit<ProductFilters, 'page' | 'limit' | 'sortBy' | 'sortOrder'>,
+  ): Promise<number> {
+    const query = db('products').whereNull('products.deleted_at').count({ count: 'products.id' });
 
     if (filters.category_id) {
       query.where('products.category_id', filters.category_id);
@@ -196,13 +203,13 @@ export class ProductRepository {
   async createInventory(
     product_id: number,
     quantity: number,
-    trx?: Knex.Transaction
+    trx?: Knex.Transaction,
   ): Promise<void> {
     const queryBuilder = trx ? trx('inventory') : db('inventory');
     await queryBuilder.insert({
       product_id,
       quantity,
-      reserved_quantity: 0.000,
+      reserved_quantity: 0.0,
       last_counted_at: new Date(),
     });
   }
@@ -221,12 +228,10 @@ export class ProductRepository {
    */
   async softDelete(id: number, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('products') : db('products');
-    await queryBuilder
-      .where('id', id)
-      .update({
-        deleted_at: new Date(),
-        is_active: false, // Deactivate on deletion
-      });
+    await queryBuilder.where('id', id).update({
+      deleted_at: new Date(),
+      is_active: false, // Deactivate on deletion
+    });
   }
 
   /**
@@ -239,8 +244,12 @@ export class ProductRepository {
       selling_price: Number(row.selling_price),
       min_stock_level: Number(row.min_stock_level),
       max_stock_level: Number(row.max_stock_level),
-      inventory_quantity: row.inventory_quantity !== null ? Number(row.inventory_quantity) : undefined,
-      inventory_reserved_quantity: row.inventory_reserved_quantity !== null ? Number(row.inventory_reserved_quantity) : undefined,
+      inventory_quantity:
+        row.inventory_quantity !== null ? Number(row.inventory_quantity) : undefined,
+      inventory_reserved_quantity:
+        row.inventory_reserved_quantity !== null
+          ? Number(row.inventory_reserved_quantity)
+          : undefined,
     };
   }
 }

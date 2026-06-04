@@ -1,16 +1,30 @@
 import { useState } from 'react';
 import { useWeeklyReport } from '../hooks/useReportsQueries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { Printer, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useTranslation } from '@/hooks/useTranslation';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
 } from 'recharts';
 
 export function WeeklyReportScreen() {
@@ -22,7 +36,7 @@ export function WeeklyReportScreen() {
     const monday = new Date(now.setDate(diff));
     return monday.toISOString().substring(0, 10);
   });
-  
+
   const [weekEnd, setWeekEnd] = useState(() => {
     const start = new Date(weekStart);
     start.setDate(start.getDate() + 6);
@@ -69,22 +83,18 @@ export function WeeklyReportScreen() {
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
               <label className="text-sm text-secondary">{t('reports.weekStart')}</label>
-              <Input 
-                type="date" 
-                value={weekStart} 
-                onChange={(e) => setWeekStart(e.target.value)} 
-              />
+              <Input type="date" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} />
             </div>
             <div className="space-y-1">
               <label className="text-sm text-secondary">{t('reports.weekEnd')}</label>
-              <Input 
-                type="date" 
-                value={weekEnd} 
-                onChange={(e) => setWeekEnd(e.target.value)} 
-              />
+              <Input type="date" value={weekEnd} onChange={(e) => setWeekEnd(e.target.value)} />
             </div>
             <Button onClick={handleLoad}>{t('reports.loadReport')}</Button>
-            <Button variant="outline" className="ml-auto flex items-center gap-2" onClick={handlePrint}>
+            <Button
+              variant="outline"
+              className="ml-auto flex items-center gap-2"
+              onClick={handlePrint}
+            >
               <Printer size={16} /> {t('reports.print')}
             </Button>
           </div>
@@ -93,13 +103,19 @@ export function WeeklyReportScreen() {
 
       <div id="print-area" className="space-y-6">
         <h2 className="text-2xl font-bold hidden print:block mb-4">
-          {t('reports.weeklyReportTitle').replace('{start}', activeQuery.weekStart).replace('{end}', activeQuery.weekEnd)}
+          {t('reports.weeklyReportTitle')
+            .replace('{start}', activeQuery.weekStart)
+            .replace('{end}', activeQuery.weekEnd)}
         </h2>
 
         {isLoading ? (
-          <div className="flex justify-center p-12"><Spinner size="lg" /></div>
+          <div className="flex justify-center p-12">
+            <Spinner size="lg" />
+          </div>
         ) : isError || !data?.data ? (
-          <div className="p-6 text-center text-destructive">{t('reports.failedToLoadWeeklyReport')}</div>
+          <div className="p-6 text-center text-destructive">
+            {t('reports.failedToLoadWeeklyReport')}
+          </div>
         ) : (
           <>
             {/* Daily Revenue Chart */}
@@ -113,42 +129,60 @@ export function WeeklyReportScreen() {
               <CardContent>
                 <div className="h-[300px] w-full mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.data.days} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart
+                      data={data.data.days}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--color-primary-500)" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0}/>
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-primary-500)"
+                            stopOpacity={0.3}
+                          />
+                          <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-800)" vertical={false} />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="var(--color-neutral-500)" 
-                        fontSize={12} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="var(--color-neutral-800)"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        stroke="var(--color-neutral-500)"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
                         tickFormatter={(val) => val.substring(5)}
                       />
-                      <YAxis 
-                        stroke="var(--color-neutral-500)" 
-                        fontSize={12} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <YAxis
+                        stroke="var(--color-neutral-500)"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
                         tickFormatter={(val) => `$${val}`}
                       />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-modal)',
+                          borderColor: 'var(--color-neutral-700)',
+                          borderRadius: '8px',
+                        }}
                         itemStyle={{ color: 'var(--color-primary-400)', fontWeight: 'bold' }}
                         labelStyle={{ color: 'var(--color-neutral-400)', marginBottom: '4px' }}
-                        formatter={(value: number) => [formatCurrency(value), t('reports.netRevenue')]}
+                        formatter={(value: number) => [
+                          formatCurrency(value),
+                          t('reports.netRevenue'),
+                        ]}
                       />
-                      <Area 
-                        type="monotone" 
-                        dataKey="net_revenue" 
-                        stroke="var(--color-primary-500)" 
+                      <Area
+                        type="monotone"
+                        dataKey="net_revenue"
+                        stroke="var(--color-primary-500)"
                         strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
+                        fillOpacity={1}
+                        fill="url(#colorRevenue)"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -177,9 +211,13 @@ export function WeeklyReportScreen() {
                       <TableRow key={day.date}>
                         <TableCell className="font-medium">{day.date}</TableCell>
                         <TableCell className="text-right">{day.transaction_count}</TableCell>
-                        <TableCell className="text-right font-mono">{formatCurrency(day.total_revenue)}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(day.total_revenue)}
+                        </TableCell>
                         <TableCell className="text-right font-mono text-warning">
-                          {day.total_discounts > 0 ? `-${formatCurrency(day.total_discounts)}` : '-'}
+                          {day.total_discounts > 0
+                            ? `-${formatCurrency(day.total_discounts)}`
+                            : '-'}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold text-success">
                           {formatCurrency(day.net_revenue)}
@@ -188,10 +226,16 @@ export function WeeklyReportScreen() {
                     ))}
                     <TableRow className="bg-card-hover border-t-2 border-border">
                       <TableCell className="font-bold text-lg">{t('reports.totals')}</TableCell>
-                      <TableCell className="text-right font-bold">{data.data.totals.transaction_count}</TableCell>
-                      <TableCell className="text-right font-mono font-bold">{formatCurrency(data.data.totals.total_revenue)}</TableCell>
+                      <TableCell className="text-right font-bold">
+                        {data.data.totals.transaction_count}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-bold">
+                        {formatCurrency(data.data.totals.total_revenue)}
+                      </TableCell>
                       <TableCell className="text-right font-mono font-bold text-warning">
-                        {data.data.totals.total_discounts > 0 ? `-${formatCurrency(data.data.totals.total_discounts)}` : '-'}
+                        {data.data.totals.total_discounts > 0
+                          ? `-${formatCurrency(data.data.totals.total_discounts)}`
+                          : '-'}
                       </TableCell>
                       <TableCell className="text-right font-mono font-bold text-success text-lg">
                         {formatCurrency(data.data.totals.net_revenue)}
@@ -209,7 +253,9 @@ export function WeeklyReportScreen() {
               </CardHeader>
               <CardContent>
                 {data.data.top_products.length === 0 ? (
-                  <div className="text-center py-6 text-neutral-500 italic">{t('reports.noProductsSold')}</div>
+                  <div className="text-center py-6 text-neutral-500 italic">
+                    {t('reports.noProductsSold')}
+                  </div>
                 ) : (
                   <div className="grid md:grid-cols-2 gap-8">
                     <div>
@@ -225,10 +271,16 @@ export function WeeklyReportScreen() {
                         <TableBody>
                           {data.data.top_products.map((prod, index) => (
                             <TableRow key={index}>
-                              <TableCell className="text-center font-bold text-secondary">#{index + 1}</TableCell>
+                              <TableCell className="text-center font-bold text-secondary">
+                                #{index + 1}
+                              </TableCell>
                               <TableCell className="font-medium">{prod.product_name}</TableCell>
-                              <TableCell className="text-right">{prod.total_quantity_sold}</TableCell>
-                              <TableCell className="text-right font-mono">{formatCurrency(prod.total_revenue)}</TableCell>
+                              <TableCell className="text-right">
+                                {prod.total_quantity_sold}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {formatCurrency(prod.total_revenue)}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -236,24 +288,41 @@ export function WeeklyReportScreen() {
                     </div>
                     <div className="h-[300px] no-print">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data.data.top_products} layout="vertical" margin={{ top: 0, right: 0, left: 30, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-800)" horizontal={false} />
-                          <XAxis type="number" hide />
-                          <YAxis 
-                            type="category" 
-                            dataKey="product_name" 
-                            width={120} 
-                            stroke="var(--color-neutral-400)" 
-                            fontSize={12} 
-                            tickLine={false} 
-                            axisLine={false} 
+                        <BarChart
+                          data={data.data.top_products}
+                          layout="vertical"
+                          margin={{ top: 0, right: 0, left: 30, bottom: 0 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="var(--color-neutral-800)"
+                            horizontal={false}
                           />
-                          <Tooltip 
-                            cursor={{fill: 'var(--color-neutral-800)'}}
-                            contentStyle={{ backgroundColor: 'var(--bg-modal)', borderColor: 'var(--color-neutral-700)', borderRadius: '8px' }}
+                          <XAxis type="number" hide />
+                          <YAxis
+                            type="category"
+                            dataKey="product_name"
+                            width={120}
+                            stroke="var(--color-neutral-400)"
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <Tooltip
+                            cursor={{ fill: 'var(--color-neutral-800)' }}
+                            contentStyle={{
+                              backgroundColor: 'var(--bg-modal)',
+                              borderColor: 'var(--color-neutral-700)',
+                              borderRadius: '8px',
+                            }}
                             formatter={(value: number) => [value, t('reports.unitsSold')]}
                           />
-                          <Bar dataKey="total_quantity_sold" fill="var(--color-primary-500)" radius={[0, 4, 4, 0]} barSize={20} />
+                          <Bar
+                            dataKey="total_quantity_sold"
+                            fill="var(--color-primary-500)"
+                            radius={[0, 4, 4, 0]}
+                            barSize={20}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

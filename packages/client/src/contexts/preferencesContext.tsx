@@ -17,12 +17,12 @@ const PreferencesContext = createContext<PreferencesContextType | undefined>(und
 export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('talaat_theme');
-    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+    return saved === 'light' || saved === 'dark' ? saved : 'dark';
   });
 
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('talaat_lang');
-    return (saved === 'en' || saved === 'ar') ? saved : 'ar';
+    return saved === 'en' || saved === 'ar' ? saved : 'ar';
   });
 
   // Apply theme side effects

@@ -33,32 +33,37 @@ import toast from 'react-hot-toast';
 import { GlobalErrorBoundary } from '@/components/ui/GlobalErrorBoundary';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',      path: '/',           icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
-  { label: 'Point of Sale',  path: '/pos',        icon: ShoppingCart,    roles: ['admin', 'manager', 'cashier'] },
-  { label: 'Products',       path: '/products',   icon: Package,         roles: ['admin', 'manager'] },
-  { label: 'Inventory',      path: '/inventory',  icon: BarChart3,       roles: ['admin', 'manager'] },
-  { label: 'Suppliers',      path: '/suppliers',  icon: Truck,           roles: ['admin', 'manager'] },
-  { label: 'Purchases',      path: '/purchases',  icon: ClipboardList,   roles: ['admin', 'manager'] },
-  { label: 'Customers',      path: '/customers',  icon: Users,           roles: ['admin', 'manager', 'cashier'] },
-  { label: 'Employees',      path: '/employees',  icon: UserCog,         roles: ['admin'] },
-  { label: 'Reports',        path: '/reports',    icon: TrendingUp,      roles: ['admin', 'manager'] },
-  { label: 'Settings',       path: '/settings',   icon: Settings,        roles: ['admin'] },
+  { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['admin', 'manager', 'cashier'] },
+  {
+    label: 'Point of Sale',
+    path: '/pos',
+    icon: ShoppingCart,
+    roles: ['admin', 'manager', 'cashier'],
+  },
+  { label: 'Products', path: '/products', icon: Package, roles: ['admin', 'manager'] },
+  { label: 'Inventory', path: '/inventory', icon: BarChart3, roles: ['admin', 'manager'] },
+  { label: 'Suppliers', path: '/suppliers', icon: Truck, roles: ['admin', 'manager'] },
+  { label: 'Purchases', path: '/purchases', icon: ClipboardList, roles: ['admin', 'manager'] },
+  { label: 'Customers', path: '/customers', icon: Users, roles: ['admin', 'manager', 'cashier'] },
+  { label: 'Employees', path: '/employees', icon: UserCog, roles: ['admin'] },
+  { label: 'Reports', path: '/reports', icon: TrendingUp, roles: ['admin', 'manager'] },
+  { label: 'Settings', path: '/settings', icon: Settings, roles: ['admin'] },
 ] as const;
 
 import React from 'react';
 
 const getTranslationKey = (label: string): any => {
   const mapping: Record<string, string> = {
-    'Dashboard': 'nav.dashboard',
+    Dashboard: 'nav.dashboard',
     'Point of Sale': 'nav.pos',
-    'Products': 'nav.products',
-    'Inventory': 'nav.inventory',
-    'Suppliers': 'nav.suppliers',
-    'Purchases': 'nav.purchases',
-    'Customers': 'nav.customers',
-    'Employees': 'nav.employees',
-    'Reports': 'nav.reports',
-    'Settings': 'nav.settings',
+    Products: 'nav.products',
+    Inventory: 'nav.inventory',
+    Suppliers: 'nav.suppliers',
+    Purchases: 'nav.purchases',
+    Customers: 'nav.customers',
+    Employees: 'nav.employees',
+    Reports: 'nav.reports',
+    Settings: 'nav.settings',
   };
   return mapping[label] || label;
 };
@@ -89,11 +94,11 @@ export const AppLayout = React.memo(() => {
   // Filter navigation items by employee role
   const userRole = user?.role || 'cashier';
   const visibleNavItems = NAV_ITEMS.filter((item) =>
-    (item.roles as readonly string[]).includes(userRole)
+    (item.roles as readonly string[]).includes(userRole),
   );
 
   const currentPage = NAV_ITEMS.find((item) =>
-    item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
+    item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path),
   );
 
   return (
@@ -111,8 +116,12 @@ export const AppLayout = React.memo(() => {
           </div>
           {!collapsed && (
             <div className="flex flex-col text-left rtl:text-right leading-none">
-              <span className="text-sm font-bold tracking-tight text-foreground">{t('login.subtitle')}</span>
-              <span className="text-[10px] text-neutral-400 font-medium">{t('topbar.station')}</span>
+              <span className="text-sm font-bold tracking-tight text-foreground">
+                {t('login.subtitle')}
+              </span>
+              <span className="text-[10px] text-neutral-400 font-medium">
+                {t('topbar.station')}
+              </span>
             </div>
           )}
         </div>
@@ -150,12 +159,19 @@ export const AppLayout = React.memo(() => {
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed 
-              ? (language === 'ar' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />) 
-              : (language === 'ar' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />)
-            }
+            {collapsed ? (
+              language === 'ar' ? (
+                <ChevronLeft size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )
+            ) : language === 'ar' ? (
+              <ChevronRight size={16} />
+            ) : (
+              <ChevronLeft size={16} />
+            )}
           </button>
-          
+
           {!collapsed && (
             <div className="flex items-center justify-between text-[11px] text-secondary font-mono px-1">
               <span>Station 1</span>
@@ -201,7 +217,9 @@ export const AppLayout = React.memo(() => {
                 <>
                   <div className="h-3 w-[1px] bg-border mx-1" />
                   <RefreshCw size={12} className="text-amber-500 animate-spin" />
-                  <span className="text-amber-400 font-semibold">{offlineSales.length} {t('topbar.syncing')}</span>
+                  <span className="text-amber-400 font-semibold">
+                    {offlineSales.length} {t('topbar.syncing')}
+                  </span>
                 </>
               )}
             </div>
@@ -209,7 +227,7 @@ export const AppLayout = React.memo(() => {
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold border border-border bg-transparent hover:bg-card-hover text-foreground hover:text-primary transition-all duration-150 uppercase"
+              className="px-3 py-1.5 rounded-lg text-xs font-bold border border-primary/35 bg-primary/10 hover:bg-primary/20 text-primary transition-all duration-150 uppercase shadow-sm"
               title={language === 'ar' ? 'Switch to English' : 'تحويل للغة العربية'}
             >
               {language === 'ar' ? 'EN' : 'عربي'}
@@ -246,11 +264,11 @@ export const AppLayout = React.memo(() => {
                   {user?.full_name || user?.username}
                 </span>
                 <span className="text-[10px] text-secondary font-medium uppercase tracking-wider">
-                  {user?.role === 'admin' 
-                    ? t('dashboard.roleAdmin') 
-                    : user?.role === 'manager' 
-                    ? t('dashboard.roleManager') 
-                    : t('dashboard.roleCashier')}
+                  {user?.role === 'admin'
+                    ? t('dashboard.roleAdmin')
+                    : user?.role === 'manager'
+                      ? t('dashboard.roleManager')
+                      : t('dashboard.roleCashier')}
                 </span>
               </div>
             </div>

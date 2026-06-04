@@ -23,11 +23,11 @@ interface SelectedItem {
 
 export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormModalProps) {
   const createPO = useCreatePurchaseOrder();
-  
+
   // Suppliers lookup
   const { data: suppliersData } = useSuppliers('', 1, 100);
   const suppliers = suppliersData?.items || [];
-  
+
   const [supplierId, setSupplierId] = useState<number | ''>('');
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [taxAmount, setTaxAmount] = useState<number>(0);
@@ -51,38 +51,43 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
   const handleAddProduct = (prod: Product) => {
     // Prevent duplicate additions
-    if (items.some(item => item.product_id === prod.id)) {
+    if (items.some((item) => item.product_id === prod.id)) {
       toast.error('Product already added to this purchase order');
       return;
     }
 
-    setItems([...items, {
-      product_id: prod.id,
-      name: prod.name,
-      barcode: prod.barcode,
-      ordered_quantity: 1,
-      unit_cost: Number(prod.cost_price || 0),
-      current_stock: Number(prod.inventory_quantity || 0)
-    }]);
+    setItems([
+      ...items,
+      {
+        product_id: prod.id,
+        name: prod.name,
+        barcode: prod.barcode,
+        ordered_quantity: 1,
+        unit_cost: Number(prod.cost_price || 0),
+        current_stock: Number(prod.inventory_quantity || 0),
+      },
+    ]);
 
     setProductSearch(''); // Reset search input
   };
 
   const handleRemoveProduct = (productId: number) => {
-    setItems(items.filter(item => item.product_id !== productId));
+    setItems(items.filter((item) => item.product_id !== productId));
   };
 
   const handleUpdateItem = (productId: number, field: keyof SelectedItem, val: number) => {
-    setItems(items.map(item => {
-      if (item.product_id === productId) {
-        return { ...item, [field]: val };
-      }
-      return item;
-    }));
+    setItems(
+      items.map((item) => {
+        if (item.product_id === productId) {
+          return { ...item, [field]: val };
+        }
+        return item;
+      }),
+    );
   };
 
   // Calculations
-  const subtotal = items.reduce((sum, item) => sum + (item.ordered_quantity * item.unit_cost), 0);
+  const subtotal = items.reduce((sum, item) => sum + item.ordered_quantity * item.unit_cost, 0);
   const total = Math.max(0, subtotal - discountAmount + taxAmount);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -115,17 +120,17 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
       discount_amount: Number(discountAmount),
       tax_amount: Number(taxAmount),
       notes: notes || null,
-      items: items.map(item => ({
+      items: items.map((item) => ({
         product_id: item.product_id,
         ordered_quantity: item.ordered_quantity,
-        unit_cost: item.unit_cost
-      }))
+        unit_cost: item.unit_cost,
+      })),
     };
 
     createPO.mutate(payload, {
       onSuccess: () => {
         onClose();
-      }
+      },
     });
   };
 
@@ -210,7 +215,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             {productSearch.trim().length > 0 && (
               <div className="absolute left-0 right-0 z-10 max-h-48 overflow-y-auto bg-neutral-900 border border-border rounded-lg shadow-xl divide-y divide-neutral-950">
                 {matchingProducts.length === 0 ? (
-                  <div className="p-3 text-sm text-neutral-500 text-center">No matching products found</div>
+                  <div className="p-3 text-sm text-neutral-500 text-center">
+                    No matching products found
+                  </div>
                 ) : (
                   matchingProducts.map((prod) => (
                     <div
@@ -227,7 +234,11 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                       <div className="flex items-center space-x-4 text-xs font-mono">
                         <span className="text-secondary">Stock: {prod.inventory_quantity}</span>
                         <span className="text-emerald-500 font-bold">{prod.selling_price} EGP</span>
-                        <Button size="sm" variant="ghost" className="text-emerald-500 hover:bg-emerald-950/20">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-emerald-500 hover:bg-emerald-950/20"
+                        >
                           <Plus size={14} />
                         </Button>
                       </div>
@@ -263,8 +274,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                   items.map((item) => (
                     <tr key={item.product_id} className="hover:bg-neutral-900/10 text-neutral-300">
                       <td className="py-2 px-3 font-semibold text-neutral-200">{item.name}</td>
-                      <td className="py-2 px-3 text-center font-mono text-neutral-500">{item.barcode || 'N/A'}</td>
-                      <td className="py-2 px-3 text-center font-mono text-secondary">{item.current_stock}</td>
+                      <td className="py-2 px-3 text-center font-mono text-neutral-500">
+                        {item.barcode || 'N/A'}
+                      </td>
+                      <td className="py-2 px-3 text-center font-mono text-secondary">
+                        {item.current_stock}
+                      </td>
                       <td className="py-2 px-3 text-center">
                         <Input
                           type="number"
@@ -272,7 +287,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                           step="0.01"
                           required
                           value={item.unit_cost || ''}
-                          onChange={(e) => handleUpdateItem(item.product_id, 'unit_cost', Number(e.target.value))}
+                          onChange={(e) =>
+                            handleUpdateItem(item.product_id, 'unit_cost', Number(e.target.value))
+                          }
                           className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold text-emerald-500"
                         />
                       </td>
@@ -283,12 +300,21 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                           step="any"
                           required
                           value={item.ordered_quantity || ''}
-                          onChange={(e) => handleUpdateItem(item.product_id, 'ordered_quantity', Number(e.target.value))}
+                          onChange={(e) =>
+                            handleUpdateItem(
+                              item.product_id,
+                              'ordered_quantity',
+                              Number(e.target.value),
+                            )
+                          }
                           className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold"
                         />
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-bold text-neutral-100">
-                        {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(item.ordered_quantity * item.unit_cost)}
+                        {new Intl.NumberFormat('en-EG', {
+                          style: 'currency',
+                          currency: 'EGP',
+                        }).format(item.ordered_quantity * item.unit_cost)}
                       </td>
                       <td className="py-2 px-3 text-center">
                         <button
@@ -308,7 +334,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
           {/* Notes area */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-xs font-semibold text-secondary">Order Notes / Audit Explanations</label>
+            <label className="text-xs font-semibold text-secondary">
+              Order Notes / Audit Explanations
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -323,10 +351,20 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
         <div className="flex items-center justify-between p-4 border-t border-border bg-neutral-900/40">
           <div className="flex items-center space-x-6 text-sm font-mono">
             <div className="text-secondary">
-              Subtotal: <span className="font-semibold text-neutral-200">{new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(subtotal)}</span>
+              Subtotal:{' '}
+              <span className="font-semibold text-neutral-200">
+                {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
+                  subtotal,
+                )}
+              </span>
             </div>
             <div className="text-neutral-100 font-bold text-base">
-              Grand Total: <span className="text-emerald-500">{new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(total)}</span>
+              Grand Total:{' '}
+              <span className="text-emerald-500">
+                {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
+                  total,
+                )}
+              </span>
             </div>
           </div>
           <div className="flex space-x-3">

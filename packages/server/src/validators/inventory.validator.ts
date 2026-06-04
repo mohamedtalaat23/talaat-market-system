@@ -10,15 +10,12 @@ export const updateInventorySchema = z.object({
 
 export const adjustInventorySchema = z.object({
   product_id: z.number().int().positive('Invalid product ID'),
-  adjustment_type: z.enum([
-    'stock_addition',
-    'stock_removal',
-    'damaged',
-    'expired',
-    'manual_correction',
-  ], {
-    errorMap: () => ({ message: 'Invalid adjustment type' }),
-  }),
+  adjustment_type: z.enum(
+    ['stock_addition', 'stock_removal', 'damaged', 'expired', 'manual_correction'],
+    {
+      errorMap: () => ({ message: 'Invalid adjustment type' }),
+    },
+  ),
   quantity_change: z.coerce.number({
     invalid_type_error: 'Quantity change must be a number',
   }),

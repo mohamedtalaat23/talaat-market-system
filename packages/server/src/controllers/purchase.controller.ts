@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { purchaseRepository, CreatePOInput, UpdatePOInput } from '../repositories/purchase.repository';
+import {
+  purchaseRepository,
+  CreatePOInput,
+  UpdatePOInput,
+} from '../repositories/purchase.repository';
 import { createPOSchema, updatePOSchema, receivePOSchema } from '../validators/purchase.validator';
 import { logger } from '../middleware/logger';
 
@@ -32,7 +36,9 @@ export class PurchaseController {
       res.json({ status: 'success', ...result });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller list:', error);
@@ -54,7 +60,9 @@ export class PurchaseController {
       res.json({ status: 'success', data: po });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller detail:', error);
@@ -90,7 +98,9 @@ export class PurchaseController {
       res.status(211).json({ status: 'success', data: po });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller create:', error);
@@ -122,7 +132,9 @@ export class PurchaseController {
       res.json({ status: 'success', data: po });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller update:', error);
@@ -140,7 +152,9 @@ export class PurchaseController {
       res.json({ status: 'success', message: 'Purchase order placed successfully' });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller order:', error);
@@ -158,7 +172,9 @@ export class PurchaseController {
       res.json({ status: 'success', message: 'Purchase order cancelled successfully' });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
         return;
       }
       logger.error('Error in purchase controller cancel:', error);
@@ -179,10 +195,19 @@ export class PurchaseController {
         return;
       }
       await purchaseRepository.receiveGoods(id, payload.items, receiverId);
-      res.json({ status: 'success', message: 'Goods receipt processed successfully, inventory updated' });
+      res.json({
+        status: 'success',
+        message: 'Goods receipt processed successfully, inventory updated',
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ status: 'error', message: 'Invalid goods receipt payload', errors: error.errors });
+        res
+          .status(400)
+          .json({
+            status: 'error',
+            message: 'Invalid goods receipt payload',
+            errors: error.errors,
+          });
         return;
       }
       logger.error('Error in purchase controller receive:', error);

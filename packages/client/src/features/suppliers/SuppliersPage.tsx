@@ -1,12 +1,23 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { useSuppliers, useDeleteSupplier, type Supplier } from './hooks/useSupplierQueries';
 import { SupplierFormModal } from './components/SupplierFormModal';
-import { Plus, Search, Edit2, Trash2, Eye, AlertTriangle, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  Eye,
+  AlertTriangle,
+  ShieldAlert,
+  CheckCircle2,
+} from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function SuppliersPage() {
   const navigate = useNavigate();
@@ -59,73 +70,86 @@ export function SuppliersPage() {
   const isAdminOrManager = ['admin', 'manager'].includes(currentUserRole || '');
 
   // Derived totals for the active list page
-  const pageActiveCount = items.filter(s => s.status === 'active').length;
-  const pageInactiveCount = items.filter(s => s.status === 'inactive').length;
-  const pageSuspendedCount = items.filter(s => s.status === 'suspended').length;
+  const pageActiveCount = items.filter((s) => s.status === 'active').length;
+  const pageInactiveCount = items.filter((s) => s.status === 'inactive').length;
+  const pageSuspendedCount = items.filter((s) => s.status === 'suspended').length;
+
+  const { t } = useTranslation();
 
   return (
     <PageContainer
-      title="Suppliers Management"
-      description="Manage supplier profiles, contact details, status, and catalog distribution networks."
+      title={t('suppliers.title')}
+      description={t('suppliers.description')}
       loading={isLoading && page === 1}
       error={error as Error}
       refetch={refetch}
       actions={
-        <Button onClick={handleCreate} className="flex items-center space-x-1.5 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">
+        <Button
+          onClick={handleCreate}
+          className="flex items-center space-x-1.5 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white"
+        >
           <Plus size={16} />
-          <span>Register Supplier</span>
+          <span>{t('suppliers.registerSupplier')}</span>
         </Button>
       }
     >
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Card 1: Total Registered */}
-        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Total Suppliers</span>
+        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+            {t('suppliers.totalSuppliers')}
+          </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-neutral-100">{meta.total}</span>
-            <span className="text-xs text-neutral-500 font-mono">Registered Profiles</span>
+            <span className="text-3xl font-bold tracking-tight text-foreground">{meta.total}</span>
+            <span className="text-xs text-neutral-500">{t('suppliers.registeredProfiles')}</span>
           </div>
         </div>
 
         {/* Card 2: Catalog Integration */}
-        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Catalog Coverage</span>
+        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+            {t('suppliers.catalogCoverage')}
+          </span>
           <div className="flex items-baseline justify-between">
             <span className="text-3xl font-bold tracking-tight text-emerald-500">
               {items.reduce((sum, item) => sum + (item.active_catalog_count || 0), 0)}
             </span>
-            <span className="text-xs text-neutral-500 font-mono">Assigned Products (Page)</span>
+            <span className="text-xs text-neutral-500 font-mono">
+              {t('suppliers.assignedProducts')}
+            </span>
           </div>
         </div>
 
         {/* Card 3: Status Breakdown */}
-        <div className="rounded-xl border border-border bg-neutral-900/50 p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">Directory Health (Page)</span>
+        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+            {t('suppliers.directoryHealth')}
+          </span>
           <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center space-x-3 text-xs">
-              <span className="flex items-center text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5" />
-                {pageActiveCount} Active
+            <div className="flex items-center gap-3 text-xs flex-wrap">
+              <span className="flex items-center text-emerald-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                {pageActiveCount} {t('suppliers.active')}
               </span>
-              <span className="flex items-center text-amber-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 mr-1.5" />
-                {pageInactiveCount} Inactive
+              <span className="flex items-center text-amber-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                {pageInactiveCount} {t('suppliers.inactive')}
               </span>
               <span className="flex items-center text-rose-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mr-1.5" />
-                {pageSuspendedCount} Suspended
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                {pageSuspendedCount} {t('suppliers.suspended')}
               </span>
             </div>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-neutral-800 text-secondary border border-border">
-              ERP States
+            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-card-hover text-secondary border border-border">
+              {t('suppliers.erpStates')}
             </span>
           </div>
         </div>
       </div>
 
       {/* Filter / Search section */}
-      <div className="flex items-center rounded-lg border border-border bg-neutral-900/40 p-4 mb-6">
+      <div className="flex items-center rounded-lg border border-border bg-card/40 p-4 mb-6">
         <div className="relative w-full max-w-md">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
             <Search size={18} />
@@ -134,64 +158,66 @@ export function SuppliersPage() {
             type="text"
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by code, name, contact, or phone..."
-            className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
+            placeholder={t('suppliers.searchPlaceholder')}
+            className="w-full rounded-lg border border-border bg-input py-2.5 pl-10 pr-4 text-sm text-foreground placeholder-neutral-500 focus:border-emerald-500 focus:outline-none transition-colors"
           />
         </div>
       </div>
 
       {/* Main List */}
-      <div className="rounded-xl border border-border bg-neutral-900/20 overflow-hidden">
+      <div className="rounded-xl border border-border bg-card/20 overflow-hidden">
         {isLoading && page > 1 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500/20 border-t-emerald-500" />
-            <span className="mt-3 text-sm text-secondary font-mono">Fetching suppliers list...</span>
+            <span className="mt-3 text-sm text-secondary font-mono">{t('common.loading')}</span>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 border border-border text-secondary mb-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-card border border-border text-secondary mb-4">
               <AlertTriangle size={24} />
             </div>
-            <h3 className="text-base font-semibold text-neutral-200">No Suppliers Found</h3>
-            <p className="text-sm text-neutral-500 mt-1 max-w-sm mx-auto">
-              Try adjusting your search query or register a new supplier profile.
+            <h3 className="text-base font-semibold text-foreground">
+              {t('suppliers.noSuppliers')}
+            </h3>
+            <p className="text-sm text-secondary mt-1 max-w-sm mx-auto">
+              {t('suppliers.noSuppliersDesc')}
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left rtl:text-right border-collapse">
               <thead>
-                <tr className="border-b border-border bg-input text-xs font-semibold uppercase tracking-wider text-secondary">
-                  <th className="px-6 py-4">Code</th>
-                  <th className="px-6 py-4">Supplier Name</th>
-                  <th className="px-6 py-4">Representative</th>
-                  <th className="px-6 py-4">Phone</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-center">Catalog Products</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                <tr className="border-b border-border bg-card text-xs font-semibold uppercase tracking-wider text-secondary">
+                  <th className="px-6 py-4">{t('suppliers.code')}</th>
+                  <th className="px-6 py-4">{t('purchases.supplier')}</th>
+                  <th className="px-6 py-4">{t('suppliers.representative')}</th>
+                  <th className="px-6 py-4">{t('customers.phone')}</th>
+                  <th className="px-6 py-4">{t('suppliers.email')}</th>
+                  <th className="px-6 py-4">{t('common.status')}</th>
+                  <th className="px-6 py-4 text-center">{t('suppliers.catalogProducts')}</th>
+                  <th className="px-6 py-4 text-right rtl:text-left">{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800">
+              <tbody className="divide-y divide-border">
                 {items.map((supplier) => (
-                  <tr key={supplier.id} className="hover:bg-neutral-850/40 transition-colors group">
+                  <tr key={supplier.id} className="hover:bg-card-hover/40 transition-colors group">
                     {/* Code */}
                     <td className="px-6 py-4 font-mono text-xs font-semibold text-secondary">
                       {supplier.supplier_code}
                     </td>
 
                     {/* Name */}
-                    <td className="px-6 py-4 font-semibold text-neutral-100">
+                    <td className="px-6 py-4 font-semibold text-foreground">
                       <button
                         onClick={() => navigate(`/suppliers/${supplier.id}`)}
-                        className="hover:underline text-left font-semibold text-neutral-200 hover:text-emerald-400 focus:outline-none transition-colors"
+                        className="hover:underline text-left rtl:text-right font-semibold text-foreground hover:text-emerald-500 focus:outline-none transition-colors"
                       >
                         {supplier.name}
                       </button>
                     </td>
 
                     {/* Contact Person */}
-                    <td className="px-6 py-4 text-sm text-neutral-300">
+                    <td className="px-6 py-4 text-sm text-foreground">
                       {supplier.contact_name || <span className="text-neutral-600">—</span>}
                     </td>
 
@@ -208,55 +234,63 @@ export function SuppliersPage() {
                     {/* Status Badge */}
                     <td className="px-6 py-4 text-sm">
                       {supplier.status === 'active' ? (
-                        <span className="inline-flex items-center rounded-md bg-emerald-950/40 border border-emerald-900/30 px-2 py-1 text-xs font-medium text-emerald-400">
-                          <CheckCircle2 size={12} className="mr-1.5" />
-                          Active
+                        <span className="inline-flex items-center rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2 size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                          {t('suppliers.active')}
                         </span>
                       ) : supplier.status === 'inactive' ? (
-                        <span className="inline-flex items-center rounded-md bg-amber-950/40 border border-amber-900/30 px-2 py-1 text-xs font-medium text-amber-400">
-                          <AlertTriangle size={12} className="mr-1.5" />
-                          Inactive
+                        <span className="inline-flex items-center rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                          <AlertTriangle size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                          {t('suppliers.inactive')}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-md bg-rose-950/40 border border-rose-900/30 px-2 py-1 text-xs font-medium text-rose-400">
-                          <ShieldAlert size={12} className="mr-1.5" />
-                          Suspended
+                        <span className="inline-flex items-center rounded-md bg-rose-500/10 border border-rose-500/20 px-2 py-1 text-xs font-medium text-rose-600 dark:text-rose-400">
+                          <ShieldAlert size={12} className="mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                          {t('suppliers.suspended')}
                         </span>
                       )}
                     </td>
 
                     {/* Catalog Products */}
-                    <td className="px-6 py-4 text-sm text-center font-semibold text-neutral-300">
-                      <span className="inline-block px-2.5 py-0.5 rounded bg-neutral-850 border border-neutral-750 text-neutral-300 font-mono">
+                    <td className="px-6 py-4 text-sm text-center font-semibold text-foreground">
+                      <span className="inline-block px-2.5 py-0.5 rounded bg-card border border-border text-foreground font-mono">
                         {supplier.active_catalog_count}
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td className="px-6 py-4 text-sm text-right space-x-2">
-                      <button
-                        onClick={() => navigate(`/suppliers/${supplier.id}`)}
-                        className="inline-flex items-center rounded bg-neutral-850 hover:bg-card-hover border border-neutral-750 px-2.5 py-1.5 text-xs font-semibold text-neutral-200 hover:text-neutral-100 transition-colors"
-                      >
-                        <Eye size={12} className="mr-1" />
-                        Details
-                      </button>
-                      <button
-                        onClick={() => handleEdit(supplier)}
-                        className="inline-flex items-center rounded bg-neutral-850 hover:bg-card-hover border border-neutral-750 px-2.5 py-1.5 text-xs font-semibold text-neutral-200 hover:text-neutral-100 transition-colors"
-                      >
-                        <Edit2 size={12} className="mr-1" />
-                        Edit
-                      </button>
-                      {isAdminOrManager && (
-                        <button
-                          onClick={() => handleDeleteClick(supplier)}
-                          className="inline-flex items-center rounded bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 hover:text-rose-300 border border-rose-900/30 px-2.5 py-1.5 text-xs font-semibold transition-colors"
+                    <td className="px-6 py-4 text-sm text-right rtl:text-left">
+                      <div className="flex gap-2 justify-end rtl:justify-start">
+                        <Button
+                          onClick={() => navigate(`/suppliers/${supplier.id}`)}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs font-semibold"
                         >
-                          <Trash2 size={12} className="mr-1" />
-                          Delete
-                        </button>
-                      )}
+                          <Eye size={12} className="mr-1 rtl:ml-1 rtl:mr-0" />
+                          {t('customers.details')}
+                        </Button>
+                        <Button
+                          onClick={() => handleEdit(supplier)}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs font-semibold"
+                        >
+                          <Edit2 size={12} className="mr-1 rtl:ml-1 rtl:mr-0" />
+                          {t('common.edit')}
+                        </Button>
+                        {isAdminOrManager && (
+                          <Button
+                            onClick={() => handleDeleteClick(supplier)}
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs font-semibold bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
+                          >
+                            <Trash2 size={12} className="mr-1 rtl:ml-1 rtl:mr-0" />
+                            {t('common.delete')}
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -291,48 +325,58 @@ export function SuppliersPage() {
       />
 
       {/* Deletion Warning & Safety Modal */}
-      {supplierToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-xl border border-rose-900/30 bg-neutral-900 shadow-2xl p-6 text-neutral-100 border border-border">
-            <div className="flex items-start space-x-3">
-              <div className="rounded-full bg-rose-950/50 p-2 text-rose-500 border border-rose-900/30">
-                <AlertTriangle size={24} />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold tracking-wide text-neutral-200">Confirm Soft Deletion</h3>
-                <p className="text-sm text-secondary leading-relaxed">
-                  Are you sure you want to delete supplier <span className="font-semibold text-neutral-100">"{supplierToDelete.name}"</span> ({supplierToDelete.supplier_code})?
-                </p>
+      {supplierToDelete &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl p-6 text-foreground">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-destructive/10 p-2 text-destructive border border-destructive/20 shrink-0">
+                  <AlertTriangle size={24} />
+                </div>
+                <div className="space-y-2 flex-1 text-left rtl:text-right">
+                  <h3 className="text-lg font-semibold tracking-wide text-foreground">
+                    {t('common.confirm')}
+                  </h3>
+                  <p className="text-sm text-secondary leading-relaxed">
+                    {t('suppliers.deleteConfirmDesc')
+                      .replace('{name}', supplierToDelete.name)
+                      .replace('{code}', supplierToDelete.supplier_code)}
+                  </p>
 
-                {supplierToDelete.active_catalog_count > 0 && (
-                  <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-300 leading-relaxed">
-                    <span className="font-semibold block mb-1">⚠️ Active Catalog Link Warning:</span>
-                    This supplier is currently linked to <span className="font-semibold underline">{supplierToDelete.active_catalog_count} active product(s)</span>.
-                    If you proceed, those products will remain in the catalog, but their primary supplier connection will be set to <span className="font-mono bg-input px-1 rounded text-neutral-300">NULL</span>.
-                  </div>
-                )}
+                  {supplierToDelete.active_catalog_count > 0 && (
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 leading-relaxed">
+                      <span className="font-semibold block mb-1">
+                        {t('suppliers.activeCatalogWarningTitle')}
+                      </span>
+                      {t('suppliers.activeCatalogWarningDesc').replace(
+                        '{count}',
+                        String(supplierToDelete.active_catalog_count),
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-border pt-4 mt-6">
+                <Button
+                  onClick={() => setSupplierToDelete(null)}
+                  disabled={deleteSupplier.isPending}
+                  variant="outline"
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  onClick={confirmDelete}
+                  disabled={deleteSupplier.isPending}
+                  className="bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors shadow-lg shadow-rose-950/20"
+                >
+                  {deleteSupplier.isPending ? t('common.loading') : t('common.delete')}
+                </Button>
               </div>
             </div>
-
-            <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
-              <button
-                onClick={() => setSupplierToDelete(null)}
-                disabled={deleteSupplier.isPending}
-                className="rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteSupplier.isPending}
-                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors shadow-lg shadow-rose-950/20"
-              >
-                {deleteSupplier.isPending ? 'Deleting...' : 'Proceed Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </PageContainer>
   );
 }

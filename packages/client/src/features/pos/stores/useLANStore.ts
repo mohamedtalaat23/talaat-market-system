@@ -66,7 +66,7 @@ interface LANState {
   status: LANStatus;
   offlineSales: OfflineSale[];
   offlineShiftClosures: OfflineShiftClosure[];
-  
+
   // Actions
   setMode: (mode: LANMode) => void;
   setHostAddress: (address: string) => void;
@@ -98,8 +98,8 @@ const customElectronStorage: StateStorage = {
         return JSON.stringify({
           state: {
             ...parsed.state,
-            offlineSales: offlineSales
-          }
+            offlineSales: offlineSales,
+          },
         });
       } catch (error) {
         console.error('[Store] Failed to load offline sales from Electron Store:', error);
@@ -124,7 +124,7 @@ const customElectronStorage: StateStorage = {
 
   removeItem: async (name: string): Promise<void> => {
     localStorage.removeItem(name);
-  }
+  },
 };
 
 export const useLANStore = create<LANState>()(
@@ -135,7 +135,7 @@ export const useLANStore = create<LANState>()(
       status: 'online',
       offlineSales: [],
       offlineShiftClosures: [],
- 
+
       setMode: (mode) => set({ mode }),
       setHostAddress: (hostAddress) => set({ hostAddress }),
       setStatus: (status) => set({ status }),
@@ -143,27 +143,35 @@ export const useLANStore = create<LANState>()(
         // Persist the new sale directly to Electron store if available and hydrated.
         // This avoids a full O(n) diff on every state write (the old setItem approach).
         if (isHydrated && window.electronAPI?.persistOfflineSale) {
-          void window.electronAPI.persistOfflineSale(sale)
-            .catch((err: unknown) => console.error('[LAN] Failed to persist offline sale to Electron Store:', err));
+          void window.electronAPI
+            .persistOfflineSale(sale)
+            .catch((err: unknown) =>
+              console.error('[LAN] Failed to persist offline sale to Electron Store:', err),
+            );
         }
         set((state) => ({ offlineSales: [...state.offlineSales, sale] }));
       },
       removeOfflineSale: (id) => {
         // Remove the sale directly from Electron store if available and hydrated.
         if (isHydrated && window.electronAPI?.removeOfflineSale) {
-          void window.electronAPI.removeOfflineSale(id)
-            .catch((err: unknown) => console.error('[LAN] Failed to remove offline sale from Electron Store:', err));
+          void window.electronAPI
+            .removeOfflineSale(id)
+            .catch((err: unknown) =>
+              console.error('[LAN] Failed to remove offline sale from Electron Store:', err),
+            );
         }
         set((state) => ({ offlineSales: state.offlineSales.filter((sale) => sale.id !== id) }));
       },
       clearOfflineSales: () => set({ offlineSales: [] }),
-      addOfflineShiftClosure: (closure) => set((state) => ({
-        offlineShiftClosures: [...state.offlineShiftClosures, closure]
-      })),
-      removeOfflineShiftClosure: (id) => set((state) => ({
-        offlineShiftClosures: state.offlineShiftClosures.filter((c) => c.id !== id)
-      })),
-      clearOfflineShiftClosures: () => set({ offlineShiftClosures: [] })
+      addOfflineShiftClosure: (closure) =>
+        set((state) => ({
+          offlineShiftClosures: [...state.offlineShiftClosures, closure],
+        })),
+      removeOfflineShiftClosure: (id) =>
+        set((state) => ({
+          offlineShiftClosures: state.offlineShiftClosures.filter((c) => c.id !== id),
+        })),
+      clearOfflineShiftClosures: () => set({ offlineShiftClosures: [] }),
     }),
     {
       name: 'talaat-pos-lan-storage',
@@ -175,6 +183,6 @@ export const useLANStore = create<LANState>()(
         offlineSales: state.offlineSales,
         offlineShiftClosures: state.offlineShiftClosures,
       }),
-    }
-  )
+    },
+  ),
 );

@@ -5,7 +5,7 @@ import { db } from '../config/database';
 import { pinService } from '../services/pin.service';
 
 const reprintSchema = z.object({
-  manager_pin: z.string().min(4).max(6)
+  manager_pin: z.string().min(4).max(6),
 });
 
 const checkoutSchema = z.object({
@@ -23,29 +23,41 @@ const checkoutSchema = z.object({
   customer_id: z.number().optional(),
   manager_pin: z.string().optional(),
   manager_id: z.number().optional(),
-  items: z.array(z.object({
-    product_id: z.number(),
-    quantity: z.number().positive(),
-    unit_price: z.number().min(0),
-    discount: z.number().min(0)
-  })).min(1)
+  items: z
+    .array(
+      z.object({
+        product_id: z.number(),
+        quantity: z.number().positive(),
+        unit_price: z.number().min(0),
+        discount: z.number().min(0),
+      }),
+    )
+    .min(1),
 });
 
 export class POSController {
   checkout = async (req: Request, res: Response) => {
     try {
       const payload = checkoutSchema.parse(req.body);
-      const cashierId = (req as any).user.id; 
+      const cashierId = (req as any).user.id;
 
       let bypassInventoryCheck = false;
 
       // If a manager PIN is supplied, authenticate it securely with lockout protection
       if (payload.manager_pin) {
         if (!payload.manager_id) {
-          return res.status(400).json({ success: false, message: 'Manager ID is required for PIN authorization override.' });
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: 'Manager ID is required for PIN authorization override.',
+            });
         }
 
-        const verification = await pinService.verifyPin(Number(payload.manager_id), String(payload.manager_pin));
+        const verification = await pinService.verifyPin(
+          Number(payload.manager_id),
+          String(payload.manager_pin),
+        );
         if (!verification.success) {
           return res.status(403).json({ success: false, message: verification.message });
         }
@@ -56,7 +68,9 @@ export class POSController {
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ success: false, message: 'Invalid payload', errors: error.errors });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.errors });
       }
 
       // Bubble up the specific inventory underflow error code to trigger the frontend Modal
@@ -65,20 +79,20 @@ export class POSController {
           success: false,
           code: 'INVENTORY_UNDERFLOW',
           product_id: error.product_id,
-          message: error.message || 'Inventory underflow.'
+          message: error.message || 'Inventory underflow.',
         });
       }
 
       return res.status(400).json({ success: false, message: error.message || 'Checkout failed.' });
     }
-  }
+  };
 
   openShift = async (req: Request, res: Response) => {
     try {
       const startingCash = Number(req.body.starting_cash) || 0;
       const registerId = Number(req.body.register_id) || 1;
       const cashierId = (req as any).user.id;
-      
+
       const existing = await posRepository.getCurrentShift(cashierId);
       if (existing) {
         return res.status(400).json({ success: false, message: 'You already have an open shift.' });
@@ -89,7 +103,7 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   closeShift = async (req: Request, res: Response) => {
     try {
@@ -99,7 +113,7 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   getCurrentShift = async (req: Request, res: Response) => {
     try {
@@ -109,7 +123,7 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   getShiftSummary = async (req: Request, res: Response) => {
     try {
@@ -126,7 +140,7 @@ export class POSController {
       if (user.role === 'cashier' && shift.employee_id !== user.id) {
         return res.status(403).json({
           success: false,
-          message: 'Access denied. You are only authorized to query your own shift summary.'
+          message: 'Access denied. You are only authorized to query your own shift summary.',
         });
       }
 
@@ -135,7 +149,7 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   markReceiptPrinted = async (req: Request, res: Response) => {
     try {
@@ -145,14 +159,14 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   reprintReceipt = async (req: Request, res: Response) => {
     try {
       const saleId = String(req.params.id);
       const managerId = (req as any).user.id;
       const managerRole = (req as any).user.role;
-      
+
       const { manager_pin } = reprintSchema.parse(req.body);
 
       if (!['manager', 'admin'].includes(managerRole)) {
@@ -168,11 +182,13 @@ export class POSController {
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ success: false, message: 'Invalid payload', errors: error.errors });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.errors });
       }
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   searchSales = async (req: Request, res: Response) => {
     try {
@@ -182,7 +198,7 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   getReceipt = async (req: Request, res: Response) => {
     try {
@@ -195,12 +211,12 @@ export class POSController {
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
   syncOffline = async (req: Request, res: Response) => {
     try {
       const syncSchema = z.object({
-        transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty')
+        transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
       });
       const { transactions } = syncSchema.parse(req.body);
       const cashierId = (req as any).user.id;
@@ -209,11 +225,15 @@ export class POSController {
       return res.status(200).json({ success: true, ...result });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ success: false, message: 'Invalid sync payload', errors: error.errors });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid sync payload', errors: error.errors });
       }
-      return res.status(400).json({ success: false, message: error.message || 'Offline sync failed' });
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Offline sync failed' });
     }
-  }
+  };
 
   /**
    * GET /pos/products/search?q=…&limit=…
@@ -233,10 +253,11 @@ export class POSController {
       const products = await posRepository.searchProducts(search, limit);
       return res.status(200).json({ success: true, data: products });
     } catch (error: any) {
-      return res.status(400).json({ success: false, message: error.message || 'Product search failed.' });
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Product search failed.' });
     }
-  }
+  };
 }
 
 export const posController = new POSController();
-

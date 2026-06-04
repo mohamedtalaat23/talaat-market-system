@@ -50,7 +50,7 @@ export class PinService {
 
     if (!isMatch) {
       const attempts = (record ? record.attempts : 0) + 1;
-      
+
       if (attempts >= MAX_ATTEMPTS) {
         failedAttempts.set(managerId, {
           attempts,
@@ -58,7 +58,8 @@ export class PinService {
         });
         return {
           success: false,
-          message: 'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
+          message:
+            'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
         };
       } else {
         failedAttempts.set(managerId, { attempts });

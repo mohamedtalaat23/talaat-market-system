@@ -4,6 +4,7 @@ import { useSuppliers } from '@/features/suppliers/hooks/useSupplierQueries';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProductFormProps {
   initialData?: Product | undefined;
@@ -20,6 +21,7 @@ export function ProductForm({
   mode,
   onCancel,
 }: ProductFormProps) {
+  const { t, language } = useTranslation();
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
 
   // Handle standard React input state management
@@ -28,17 +30,25 @@ export function ProductForm({
   const [nameAr, setNameAr] = useState(initialData?.name_ar || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [categoryId, setCategoryId] = useState<string>(
-    initialData?.category_id ? String(initialData.category_id) : ''
+    initialData?.category_id ? String(initialData.category_id) : '',
   );
   const [unit, setUnit] = useState(initialData?.unit || 'pcs');
-  const [costPrice, setCostPrice] = useState(initialData?.cost_price ? String(initialData.cost_price) : '0');
-  const [sellingPrice, setSellingPrice] = useState(initialData?.selling_price ? String(initialData.selling_price) : '0');
-  const [minStockLevel, setMinStockLevel] = useState(initialData?.min_stock_level ? String(initialData.min_stock_level) : '0');
-  const [maxStockLevel, setMaxStockLevel] = useState(initialData?.max_stock_level ? String(initialData.max_stock_level) : '0');
+  const [costPrice, setCostPrice] = useState(
+    initialData?.cost_price ? String(initialData.cost_price) : '0',
+  );
+  const [sellingPrice, setSellingPrice] = useState(
+    initialData?.selling_price ? String(initialData.selling_price) : '0',
+  );
+  const [minStockLevel, setMinStockLevel] = useState(
+    initialData?.min_stock_level ? String(initialData.min_stock_level) : '0',
+  );
+  const [maxStockLevel, setMaxStockLevel] = useState(
+    initialData?.max_stock_level ? String(initialData.max_stock_level) : '0',
+  );
   const [initialQuantity, setInitialQuantity] = useState('0');
   const [isActive, setIsActive] = useState<boolean>(initialData ? initialData.is_active : true);
   const [supplierId, setSupplierId] = useState<string>(
-    initialData?.supplier_id ? String(initialData.supplier_id) : ''
+    initialData?.supplier_id ? String(initialData.supplier_id) : '',
   );
   const [supplierSearch, setSupplierSearch] = useState('');
 
@@ -54,18 +64,18 @@ export function ProductForm({
     setFormError(null);
 
     if (!name.trim()) {
-      setFormError('Product name is required');
+      setFormError(t('products.nameRequired'));
       return;
     }
 
     const costVal = parseFloat(costPrice);
     const sellVal = parseFloat(sellingPrice);
     if (isNaN(costVal) || costVal < 0) {
-      setFormError('Cost price must be a non-negative number');
+      setFormError(t('products.costInvalid'));
       return;
     }
     if (isNaN(sellVal) || sellVal < 0) {
-      setFormError('Selling price must be a non-negative number');
+      setFormError(t('products.sellingInvalid'));
       return;
     }
 
@@ -102,12 +112,12 @@ export function ProductForm({
       {/* Grid containing primary fields */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor="name" className="text-xs font-semibold text-neutral-300">
-            Product Name (English) *
+          <label htmlFor="name" className="text-xs font-semibold text-secondary">
+            {t('products.nameEnglish')} *
           </label>
           <Input
             id="name"
-            placeholder="e.g. Sliced Toast Bread"
+            placeholder={t('products.placeholderNameEn')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isLoading}
@@ -116,13 +126,13 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="nameAr" className="text-xs font-semibold text-neutral-300">
-            Product Name (Arabic)
+          <label htmlFor="nameAr" className="text-xs font-semibold text-secondary">
+            {t('products.nameArabic')}
           </label>
           <Input
             id="nameAr"
-            placeholder="مثال: توست شرائح"
-            className="text-right"
+            placeholder={t('products.placeholderNameAr')}
+            className="text-start"
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
             disabled={isLoading}
@@ -130,12 +140,12 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="barcode" className="text-xs font-semibold text-neutral-300">
-            Barcode / PLU
+          <label htmlFor="barcode" className="text-xs font-semibold text-secondary">
+            {t('products.barcodePLU')}
           </label>
           <Input
             id="barcode"
-            placeholder="Leave blank for loose produce"
+            placeholder={t('products.placeholderBarcode')}
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
             disabled={isLoading}
@@ -143,12 +153,12 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="categoryId" className="text-xs font-semibold text-neutral-300">
-            Category
+          <label htmlFor="categoryId" className="text-xs font-semibold text-secondary">
+            {t('products.category').replace(':', '')}
           </label>
           {isLoadingCategories ? (
-            <div className="flex h-10 w-full items-center justify-center rounded-md border border-border bg-neutral-900/50 text-xs text-neutral-500">
-              Loading categories...
+            <div className="flex h-10 w-full items-center justify-center rounded-md border border-border bg-input text-xs text-neutral-500">
+              {t('products.loadingTags')}
             </div>
           ) : (
             <select
@@ -156,12 +166,12 @@ export function ProductForm({
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               disabled={isLoading}
-              className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             >
-              <option value="">No Category Selected</option>
+              <option value="">{t('products.noCategory')}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.name} {cat.name_ar ? `(${cat.name_ar})` : ''}
+                  {language === 'ar' && cat.name_ar ? cat.name_ar : cat.name}
                 </option>
               ))}
             </select>
@@ -169,66 +179,67 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="supplierId" className="text-xs font-semibold text-neutral-300">
-            Primary Supplier
+          <label htmlFor="supplierId" className="text-xs font-semibold text-secondary">
+            {t('products.supplierLabel')}
           </label>
-          <div className="flex space-x-2">
+          <div className="flex gap-2">
             <select
               id="supplierId"
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
               disabled={isLoading}
-              className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             >
-              <option value="">No Supplier Assigned</option>
+              <option value="">{t('products.noSupplier')}</option>
               {suppliers.map((sup) => (
-                <option
-                  key={sup.id}
-                  value={sup.id}
-                  disabled={sup.status === 'suspended'}
-                >
-                  {sup.name} ({sup.supplier_code}){sup.status === 'suspended' ? ' [Suspended]' : sup.status === 'inactive' ? ' [Inactive]' : ''}
+                <option key={sup.id} value={sup.id} disabled={sup.status === 'suspended'}>
+                  {sup.name} ({sup.supplier_code})
+                  {sup.status === 'suspended'
+                    ? ` [${t('suppliers.suspended')}]`
+                    : sup.status === 'inactive'
+                      ? ` [${t('suppliers.inactive')}]`
+                      : ''}
                 </option>
               ))}
             </select>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('products.searchSupplier')}
               value={supplierSearch}
               onChange={(e) => setSupplierSearch(e.target.value)}
-              className="w-1/3 h-10 rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-xs text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-1/3 h-10 rounded-md border border-border bg-input px-3 py-2 text-xs text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               title="Filter suppliers by name or code"
             />
           </div>
           {selectedSupplier && selectedSupplier.status === 'inactive' && (
             <p className="text-[10px] text-amber-500 font-medium mt-1">
-              ⚠️ Inactive supplier chosen.
+              ⚠️ {t('products.inactiveSupplierWarning')}
             </p>
           )}
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="unit" className="text-xs font-semibold text-neutral-300">
-            Unit
+          <label htmlFor="unit" className="text-xs font-semibold text-secondary">
+            {t('products.unit')}
           </label>
           <select
             id="unit"
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           >
-            <option value="pcs">pcs (pieces)</option>
-            <option value="kg">kg (kilograms)</option>
-            <option value="pack">pack</option>
-            <option value="bottle">bottle</option>
-            <option value="box">box</option>
+            <option value="pcs">{t('products.unitPcs')}</option>
+            <option value="kg">{t('products.unitKg')}</option>
+            <option value="pack">{t('products.unitPack')}</option>
+            <option value="bottle">{t('products.unitBottle')}</option>
+            <option value="box">{t('products.unitBox')}</option>
           </select>
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="costPrice" className="text-xs font-semibold text-neutral-300">
-            Cost Price (EGP) *
+          <label htmlFor="costPrice" className="text-xs font-semibold text-secondary">
+            {t('products.costPrice')} *
           </label>
           <Input
             id="costPrice"
@@ -243,8 +254,8 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="sellingPrice" className="text-xs font-semibold text-neutral-300">
-            Selling Price (EGP) *
+          <label htmlFor="sellingPrice" className="text-xs font-semibold text-secondary">
+            {t('products.sellingPrice')} *
           </label>
           <Input
             id="sellingPrice"
@@ -260,8 +271,8 @@ export function ProductForm({
 
         {mode === 'create' && (
           <div className="space-y-1">
-            <label htmlFor="initialQuantity" className="text-xs font-semibold text-neutral-300">
-              Initial Stock Level *
+            <label htmlFor="initialQuantity" className="text-xs font-semibold text-secondary">
+              {t('products.initialStockLabel')} *
             </label>
             <Input
               id="initialQuantity"
@@ -277,8 +288,8 @@ export function ProductForm({
         )}
 
         <div className="space-y-1">
-          <label htmlFor="minStock" className="text-xs font-semibold text-neutral-300">
-            Min. Stock Alert Level
+          <label htmlFor="minStock" className="text-xs font-semibold text-secondary">
+            {t('products.minStockLabel')}
           </label>
           <Input
             id="minStock"
@@ -292,8 +303,8 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="maxStock" className="text-xs font-semibold text-neutral-300">
-            Max. Stock Alert Level
+          <label htmlFor="maxStock" className="text-xs font-semibold text-secondary">
+            {t('products.maxStockLabel')}
           </label>
           <Input
             id="maxStock"
@@ -308,55 +319,46 @@ export function ProductForm({
       </div>
 
       <div className="space-y-2 pt-2">
-        <label htmlFor="description" className="text-xs font-semibold text-neutral-300">
-          Description
+        <label htmlFor="description" className="text-xs font-semibold text-secondary">
+          {t('products.descLabel')}
         </label>
         <textarea
           id="description"
           rows={2}
-          placeholder="Product details, storage instructions, etc."
+          placeholder={t('products.placeholderDesc')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={isLoading}
-          className="flex w-full rounded-md border border-border bg-neutral-900/50 px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          className="flex w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />
       </div>
 
-      <div className="flex items-center space-x-2 py-2">
+      <div className="flex items-center gap-2 py-2">
         <input
           id="isActive"
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-border bg-neutral-800 text-primary focus:ring-primary focus:ring-offset-0"
+          className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0"
         />
-        <label htmlFor="isActive" className="text-sm font-semibold text-neutral-200 cursor-pointer">
-          Available for sale (Active)
+        <label htmlFor="isActive" className="text-sm font-semibold text-foreground cursor-pointer">
+          {t('products.activeLabel')}
         </label>
       </div>
 
-      <div className="flex justify-end space-x-2 border-t border-border pt-4 mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Cancel
+      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          {t('common.cancel')}
         </Button>
-        <Button
-          type="submit"
-          className="font-medium min-w-[80px]"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="font-medium min-w-[80px]" disabled={isLoading}>
           {isLoading ? (
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center gap-1.5">
               <Spinner size="sm" />
-              <span>Saving...</span>
+              <span>{t('products.saving')}</span>
             </div>
           ) : (
-            <span>Save Product</span>
+            <span>{t('products.saveProduct')}</span>
           )}
         </Button>
       </div>

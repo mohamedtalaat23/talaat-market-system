@@ -15,8 +15,8 @@ jest.mock('../../middleware/logger', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
-  }
+    error: jest.fn(),
+  },
 }));
 
 describe('InventoryService', () => {
@@ -30,23 +30,25 @@ describe('InventoryService', () => {
       const mockTrx: any = jest.fn();
       mockTrx.mockReturnValue(mockTrx);
       mockTrx.where = jest.fn().mockReturnValue(mockTrx);
+      mockTrx.forUpdate = jest.fn().mockReturnValue(mockTrx);
       mockTrx.first = jest.fn().mockResolvedValue({ quantity: 5 });
-      
+
       (db.transaction as jest.Mock).mockImplementation(async (cb) => {
         return cb(mockTrx);
       });
 
-      await expect(
-        inventoryService.adjustStock(1, 'stock_removal', -10)
-      ).rejects.toThrow(ConflictError);
+      await expect(inventoryService.adjustStock(1, 'stock_removal', -10)).rejects.toThrow(
+        ConflictError,
+      );
     });
 
     it('should successfully adjust stock and log adjustment', async () => {
       const mockTrx: any = jest.fn();
       mockTrx.mockReturnValue(mockTrx);
       mockTrx.where = jest.fn().mockReturnValue(mockTrx);
+      mockTrx.forUpdate = jest.fn().mockReturnValue(mockTrx);
       mockTrx.first = jest.fn().mockResolvedValue({ quantity: 10 });
-      
+
       (db.transaction as jest.Mock).mockImplementation(async (cb) => {
         return cb(mockTrx);
       });
@@ -67,7 +69,7 @@ describe('InventoryService', () => {
           old_quantity: 10,
           new_quantity: 5,
         }),
-        mockTrx
+        mockTrx,
       );
       expect(result.quantity).toBe(5);
     });
@@ -76,15 +78,16 @@ describe('InventoryService', () => {
       const mockTrx: any = jest.fn();
       mockTrx.mockReturnValue(mockTrx);
       mockTrx.where = jest.fn().mockReturnValue(mockTrx);
+      mockTrx.forUpdate = jest.fn().mockReturnValue(mockTrx);
       mockTrx.first = jest.fn().mockResolvedValue(null);
-      
+
       (db.transaction as jest.Mock).mockImplementation(async (cb) => {
         return cb(mockTrx);
       });
 
-      await expect(
-        inventoryService.adjustStock(999, 'stock_removal', -5)
-      ).rejects.toThrow(NotFoundError);
+      await expect(inventoryService.adjustStock(999, 'stock_removal', -5)).rejects.toThrow(
+        NotFoundError,
+      );
     });
   });
 });

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface PaginatedResponse<T> {
   success?: boolean;
@@ -21,7 +22,7 @@ export interface PaginatedResponse<T> {
 export function useGenericListQuery<TEntity, TFilters extends Record<string, any>>(
   queryKey: string,
   endpoint: string,
-  filters: TFilters
+  filters: TFilters,
 ) {
   return useQuery<PaginatedResponse<TEntity>>({
     queryKey: [queryKey, filters],
@@ -38,15 +39,13 @@ export function useGenericListQuery<TEntity, TFilters extends Record<string, any
 /**
  * Generic query to fetch single item detail by ID.
  */
-export function useGenericDetailQuery<TEntity>(
-  queryKey: string,
-  endpoint: string,
-  id: number
-) {
+export function useGenericDetailQuery<TEntity>(queryKey: string, endpoint: string, id: number) {
   return useQuery<TEntity>({
     queryKey: [queryKey, id],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ success?: boolean; status?: string; data: TEntity }>(`${endpoint}/${id}`);
+      const { data } = await apiClient.get<{ success?: boolean; status?: string; data: TEntity }>(
+        `${endpoint}/${id}`,
+      );
       return data.data;
     },
     enabled: !isNaN(id) && id > 0,
@@ -59,22 +58,26 @@ export function useGenericDetailQuery<TEntity>(
 export function useGenericCreateMutation<TPayload, TEntity>(
   queryKey: string,
   endpoint: string,
-  successMessage = 'Record created successfully'
+  successMessage = 'Record created successfully',
 ) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async (payload: TPayload) => {
-      const { data } = await apiClient.post<{ success?: boolean; status?: string; data: TEntity }>(endpoint, payload);
+      const { data } = await apiClient.post<{ success?: boolean; status?: string; data: TEntity }>(
+        endpoint,
+        payload,
+      );
       return data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
-      toast.success(successMessage);
+      toast.success(t(successMessage));
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.message || 'Failed to create record';
-      toast.error(message);
+      toast.error(t(message));
     },
   });
 }
@@ -85,23 +88,27 @@ export function useGenericCreateMutation<TPayload, TEntity>(
 export function useGenericUpdateMutation<TPayload, TEntity>(
   queryKey: string,
   endpoint: string,
-  successMessage = 'Record updated successfully'
+  successMessage = 'Record updated successfully',
 ) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async ({ id, payload }: { id: number; payload: TPayload }) => {
-      const { data } = await apiClient.put<{ success?: boolean; status?: string; data: TEntity }>(`${endpoint}/${id}`, payload);
+      const { data } = await apiClient.put<{ success?: boolean; status?: string; data: TEntity }>(
+        `${endpoint}/${id}`,
+        payload,
+      );
       return data.data;
     },
     onSuccess: (updatedEntity, variables) => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       queryClient.setQueryData([queryKey, variables.id], updatedEntity);
-      toast.success(successMessage);
+      toast.success(t(successMessage));
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.message || 'Failed to update record';
-      toast.error(message);
+      toast.error(t(message));
     },
   });
 }
@@ -112,22 +119,27 @@ export function useGenericUpdateMutation<TPayload, TEntity>(
 export function useGenericDeleteMutation(
   queryKey: string,
   endpoint: string,
-  successMessage = 'Record deleted successfully'
+  successMessage = 'Record deleted successfully',
 ) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async (id: number) => {
-      const { data } = await apiClient.delete<{ success?: boolean; status?: string; message?: string }>(`${endpoint}/${id}`);
+      const { data } = await apiClient.delete<{
+        success?: boolean;
+        status?: string;
+        message?: string;
+      }>(`${endpoint}/${id}`);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
-      toast.success(successMessage);
+      toast.success(t(successMessage));
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.message || 'Failed to delete record';
-      toast.error(message);
+      toast.error(t(message));
     },
   });
 }

@@ -8,10 +8,7 @@ export function ReportsLayout() {
   const { t } = useTranslation();
 
   return (
-    <PageContainer
-      title={t('reports.title')}
-      description={t('reports.subtitle')}
-    >
+    <PageContainer title={t('reports.title')} description={t('reports.subtitle')}>
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sidebar Navigation for Reports */}
         <div className="w-full md:w-64 shrink-0">
@@ -30,12 +27,14 @@ export function ReportsLayout() {
                 <FileText size={18} />
                 <span className="font-medium text-sm">{t('reports.shiftReconciliation')}</span>
               </NavLink>
-              
+
               <NavLink
                 to="/reports/weekly"
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                    isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >
@@ -47,7 +46,9 @@ export function ReportsLayout() {
                 to="/reports/overrides"
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                    isActive ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-card-hover hover:text-foreground'
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
                   }`
                 }
               >

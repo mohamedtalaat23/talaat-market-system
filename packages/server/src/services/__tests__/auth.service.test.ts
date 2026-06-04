@@ -12,8 +12,8 @@ jest.mock('../../middleware/logger', () => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
-  }
+    error: jest.fn(),
+  },
 }));
 
 describe('AuthService', () => {
@@ -45,7 +45,7 @@ describe('AuthService', () => {
         deleted_at: null,
         password_hash: 'hash',
         failed_login_attempts: 0,
-        locked_until: null
+        locked_until: null,
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
@@ -61,11 +61,13 @@ describe('AuthService', () => {
         deleted_at: null,
         password_hash: 'hash',
         failed_login_attempts: 4, // 4 + 1 = 5 (max)
-        locked_until: null
+        locked_until: null,
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(authService.login('user', 'wrongpass')).rejects.toThrow(/Account locked due to too many failed attempts/);
+      await expect(authService.login('user', 'wrongpass')).rejects.toThrow(
+        /Account locked due to too many failed attempts/,
+      );
       expect(employeeRepository.lockAccount).toHaveBeenCalledWith(1, expect.any(Date));
     });
 
@@ -76,14 +78,12 @@ describe('AuthService', () => {
         deleted_at: null,
         password_hash: 'hash',
         failed_login_attempts: 5,
-        locked_until: new Date(Date.now() + 600000) // Locked for 10 more minutes
+        locked_until: new Date(Date.now() + 600000), // Locked for 10 more minutes
       });
 
       await expect(authService.login('user', 'pass')).rejects.toThrow(/Account is locked/);
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
-
-
 
     it('should login successfully with correct password', async () => {
       (employeeRepository.getPasswordAndPinHash as jest.Mock).mockResolvedValue({
@@ -94,7 +94,7 @@ describe('AuthService', () => {
         deleted_at: null,
         password_hash: 'hash',
         failed_login_attempts: 2, // Has previous failed attempts
-        locked_until: null
+        locked_until: null,
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (jwt.sign as jest.Mock).mockReturnValue('mocked_token');

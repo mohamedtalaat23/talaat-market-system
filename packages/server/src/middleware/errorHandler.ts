@@ -29,9 +29,7 @@ export class AppError extends Error {
 
 export class NotFoundError extends AppError {
   constructor(entity: string, id?: string | number) {
-    const message = id
-      ? `${entity} with ID '${id}' was not found`
-      : `${entity} was not found`;
+    const message = id ? `${entity} with ID '${id}' was not found` : `${entity} was not found`;
     super('NOT_FOUND', message, HTTP_STATUS.NOT_FOUND);
   }
 }

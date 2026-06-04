@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ token, isLoading: true });
 
       const response = await apiClient.get<{ success: boolean; data: User }>('/auth/me');
-      
+
       if (response.data?.success && response.data?.data) {
         set({
           user: response.data.data,

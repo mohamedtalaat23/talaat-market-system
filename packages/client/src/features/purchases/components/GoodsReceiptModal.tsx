@@ -35,7 +35,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           unit: item.unit,
           ordered_quantity: item.ordered_quantity,
           received_quantity: item.ordered_quantity, // Pre-fill with ordered quantity
-        }))
+        })),
       );
     }
   }, [purchaseOrder]);
@@ -43,8 +43,8 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
   const handleQtyChange = (productId: number, val: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.product_id === productId ? { ...item, received_quantity: Math.max(0, val) } : item
-      )
+        item.product_id === productId ? { ...item, received_quantity: Math.max(0, val) } : item,
+      ),
     );
   };
 
@@ -77,7 +77,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         onSuccess: () => {
           onClose();
         },
-      }
+      },
     );
   };
 
@@ -110,7 +110,10 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
             <div className="space-y-1">
               <span className="font-bold">CRITICAL TRANSACTION WORKFLOW</span>
               <p>
-                Confirming this action will finalize the Purchase Order. This process executes atomic database increments of catalog inventory levels, registers irreversible audit adjustments, and dynamically recalculates catalog item unit costs using Weighted Average Costing (AVCO). This process is permanent and cannot be undone.
+                Confirming this action will finalize the Purchase Order. This process executes
+                atomic database increments of catalog inventory levels, registers irreversible audit
+                adjustments, and dynamically recalculates catalog item unit costs using Weighted
+                Average Costing (AVCO). This process is permanent and cannot be undone.
               </p>
             </div>
           </div>
@@ -118,11 +121,15 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           {/* Supplier Info */}
           <div className="p-3.5 rounded-lg border border-border bg-neutral-900/20 flex flex-col sm:flex-row justify-between text-xs gap-3">
             <div>
-              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">Supplier Name</span>
+              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
+                Supplier Name
+              </span>
               <span className="text-neutral-200 font-bold">{purchaseOrder.supplier_name}</span>
             </div>
             <div className="sm:text-right">
-              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">Supplier Code</span>
+              <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
+                Supplier Code
+              </span>
               <span className="text-neutral-200 font-mono">{purchaseOrder.supplier_code}</span>
             </div>
           </div>
@@ -180,7 +187,9 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
           {/* Notes Area */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-xs font-semibold text-secondary">Receipt Verification Notes</label>
+            <label className="text-xs font-semibold text-secondary">
+              Receipt Verification Notes
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

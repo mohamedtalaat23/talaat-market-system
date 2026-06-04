@@ -70,13 +70,9 @@ apiClient.interceptors.response.use(
       }
 
       // Enrich the error with our server's error code
-      const enrichedError = new Error(
-        responseData?.error?.message ?? error.message,
-      );
-      (enrichedError as any).code =
-        responseData?.error?.code;
-      (enrichedError as any).details =
-        responseData?.error?.details;
+      const enrichedError = new Error(responseData?.error?.message ?? error.message);
+      (enrichedError as any).code = responseData?.error?.code;
+      (enrichedError as any).details = responseData?.error?.details;
 
       return Promise.reject(enrichedError);
     }

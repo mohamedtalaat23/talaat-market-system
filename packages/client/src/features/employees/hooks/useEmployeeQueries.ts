@@ -84,7 +84,10 @@ export function useCreateEmployee() {
   const queryClient = useQueryClient();
   return useMutation<Employee, Error, CreateEmployeeInput>({
     mutationFn: async (input) => {
-      const response = await apiClient.post<{ success: boolean; data: Employee }>('/employees', input);
+      const response = await apiClient.post<{ success: boolean; data: Employee }>(
+        '/employees',
+        input,
+      );
       return response.data.data;
     },
     onSuccess: () => {
@@ -100,7 +103,10 @@ export function useUpdateEmployee() {
   const queryClient = useQueryClient();
   return useMutation<Employee, Error, { id: number; data: UpdateEmployeeInput }>({
     mutationFn: async ({ id, data }) => {
-      const response = await apiClient.put<{ success: boolean; data: Employee }>(`/employees/${id}`, data);
+      const response = await apiClient.put<{ success: boolean; data: Employee }>(
+        `/employees/${id}`,
+        data,
+      );
       return response.data.data;
     },
     onSuccess: () => {
@@ -131,7 +137,9 @@ export function useManagers() {
   return useQuery<Employee[]>({
     queryKey: ['active-managers'],
     queryFn: async () => {
-      const response = await apiClient.get<{ success: boolean; data: Employee[] }>('/employees/managers');
+      const response = await apiClient.get<{ success: boolean; data: Employee[] }>(
+        '/employees/managers',
+      );
       return response.data.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes stale time is completely safe since manager configurations are static

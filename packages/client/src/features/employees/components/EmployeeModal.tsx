@@ -5,6 +5,7 @@ import { useCreateEmployee, useUpdateEmployee } from '../hooks/useEmployeeQuerie
 import toast from 'react-hot-toast';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * EmployeeModal overlay.
@@ -12,6 +13,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
  * Implements WAI-ARIA and focus trapping for accessibility.
  */
 export function EmployeeModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.employee_form);
   const payload = useModalStore((state) => state.modalPayloads.employee_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -45,20 +47,20 @@ export function EmployeeModal() {
     try {
       if (mode === 'create') {
         await createMutation.mutateAsync(formData);
-        toast.success('Employee registered successfully');
+        toast.success(t('employees.createSuccess'));
       } else if (mode === 'edit' && employee) {
         await updateMutation.mutateAsync({
           id: employee.id,
           data: formData,
         });
-        toast.success('Employee account updated successfully');
+        toast.success(t('employees.updateSuccess'));
       }
       closeModal();
     } catch (error: any) {
       // Expose generic errors rather than detailed leaks
       const message = error.message || 'Operation failed. Verify parameters.';
       if (message.toLowerCase().includes('username')) {
-        toast.error('The selected username is already taken. Please choose another one.');
+        toast.error(t('employees.usernameTaken'));
       } else {
         toast.error(message);
       }
@@ -70,23 +72,25 @@ export function EmployeeModal() {
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop click close */}
-      <div 
-        className="absolute inset-0" 
-        onClick={isSaving ? undefined : closeModal} 
+      <div
+        className="absolute inset-0"
+        onClick={isSaving ? undefined : closeModal}
         aria-hidden="true"
       />
 
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-lg border border-border bg-input p-6 shadow-xl relative z-10 animate-fade-in"
+        className="w-full max-w-2xl rounded-lg border border-border bg-modal text-foreground p-6 shadow-xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="employee-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4 select-none">
           <h3 id="employee-modal-title" className="text-lg font-bold text-foreground">
-            {mode === 'create' ? 'Register New Staff Member' : `Edit Account: ${employee?.full_name}`}
+            {mode === 'create'
+              ? t('employees.registerTitle')
+              : t('employees.editTitle').replace('{name}', employee?.full_name || '')}
           </h3>
           <button
             onClick={closeModal}

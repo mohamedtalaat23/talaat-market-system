@@ -68,9 +68,7 @@ export class EmployeeRepository {
    * Find employees with pagination and filters. Excludes hashes.
    */
   async findAll(filters: EmployeeFilters): Promise<Employee[]> {
-    const query = db('employees')
-      .select(this.defaultSelect)
-      .whereNull('deleted_at'); // Exclude soft-deleted
+    const query = db('employees').select(this.defaultSelect).whereNull('deleted_at'); // Exclude soft-deleted
 
     if (filters.role) {
       query.where('role', filters.role);
@@ -91,9 +89,7 @@ export class EmployeeRepository {
    * Count total employees matching filters (ignoring limit/offset).
    */
   async countAll(filters: Omit<EmployeeFilters, 'page' | 'limit'>): Promise<number> {
-    const query = db('employees')
-      .whereNull('deleted_at')
-      .count({ count: 'id' });
+    const query = db('employees').whereNull('deleted_at').count({ count: 'id' });
 
     if (filters.role) {
       query.where('role', filters.role);
@@ -139,7 +135,17 @@ export class EmployeeRepository {
    */
   async getPasswordAndPinHash(username: string): Promise<EmployeeAuthDetails | null> {
     const row = await db('employees')
-      .select('id', 'username', 'password_hash', 'pin_hash', 'role', 'is_active', 'deleted_at', 'failed_login_attempts', 'locked_until')
+      .select(
+        'id',
+        'username',
+        'password_hash',
+        'pin_hash',
+        'role',
+        'is_active',
+        'deleted_at',
+        'failed_login_attempts',
+        'locked_until',
+      )
       .where('username', username)
       .first();
 
@@ -169,12 +175,10 @@ export class EmployeeRepository {
    */
   async softDelete(id: number, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
-    await queryBuilder
-      .where('id', id)
-      .update({
-        deleted_at: new Date(),
-        is_active: false, // Deactivate on delete
-      });
+    await queryBuilder.where('id', id).update({
+      deleted_at: new Date(),
+      is_active: false, // Deactivate on delete
+    });
   }
 
   /**
@@ -182,9 +186,7 @@ export class EmployeeRepository {
    */
   async updateLastLogin(id: number, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
-    await queryBuilder
-      .where('id', id)
-      .update({ last_login: new Date() });
+    await queryBuilder.where('id', id).update({ last_login: new Date() });
   }
 
   /**
@@ -192,9 +194,7 @@ export class EmployeeRepository {
    */
   async incrementFailedLoginAttempts(id: number, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
-    await queryBuilder
-      .where('id', id)
-      .increment('failed_login_attempts', 1);
+    await queryBuilder.where('id', id).increment('failed_login_attempts', 1);
   }
 
   /**
@@ -202,9 +202,7 @@ export class EmployeeRepository {
    */
   async lockAccount(id: number, until: Date, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
-    await queryBuilder
-      .where('id', id)
-      .update({ locked_until: until });
+    await queryBuilder.where('id', id).update({ locked_until: until });
   }
 
   /**
@@ -212,12 +210,10 @@ export class EmployeeRepository {
    */
   async resetFailedLoginAttempts(id: number, trx?: Knex.Transaction): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
-    await queryBuilder
-      .where('id', id)
-      .update({
-        failed_login_attempts: 0,
-        locked_until: null,
-      });
+    await queryBuilder.where('id', id).update({
+      failed_login_attempts: 0,
+      locked_until: null,
+    });
   }
 
   /**

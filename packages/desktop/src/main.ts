@@ -6,8 +6,8 @@ import { registerIpcHandlers } from './ipc/handlers';
 
 // ── Logger (simple console wrapper for main process) ────────────────────────
 export const logger = {
-  info:  (msg: string, ...args: unknown[]) => console.log(`[Main] ℹ️  ${msg}`, ...args),
-  warn:  (msg: string, ...args: unknown[]) => console.warn(`[Main] ⚠️  ${msg}`, ...args),
+  info: (msg: string, ...args: unknown[]) => console.log(`[Main] ℹ️  ${msg}`, ...args),
+  warn: (msg: string, ...args: unknown[]) => console.warn(`[Main] ⚠️  ${msg}`, ...args),
   error: (msg: string, ...args: unknown[]) => console.error(`[Main] ❌ ${msg}`, ...args),
 };
 
@@ -48,9 +48,9 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
       preload: path.join(__dirname, 'preload.js'),
 
       // SECURITY: These MUST remain false
-      contextIsolation: true,   // Renderer cannot access Node globals
-      nodeIntegration: false,   // Renderer has no Node.js APIs
-      sandbox: false,            // Keep false for preload access; true for max security
+      contextIsolation: true, // Renderer cannot access Node globals
+      nodeIntegration: false, // Renderer has no Node.js APIs
+      sandbox: false, // Keep false for preload access; true for max security
 
       // Allow Vite dev server WebSocket for HMR in development
       webSecurity: !isDev,
@@ -69,8 +69,8 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [cspHeader]
-      }
+        'Content-Security-Policy': [cspHeader],
+      },
     });
   });
 
@@ -99,9 +99,9 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
 
   // Pass the server port to the renderer after load
   win.webContents.on('did-finish-load', () => {
-    win.webContents.executeJavaScript(
-      `window.__SERVER_PORT__ = ${serverPort};`,
-    ).catch(logger.error);
+    win.webContents
+      .executeJavaScript(`window.__SERVER_PORT__ = ${serverPort};`)
+      .catch(logger.error);
   });
 
   win.on('closed', () => {

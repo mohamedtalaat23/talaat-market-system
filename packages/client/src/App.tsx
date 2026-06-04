@@ -79,7 +79,9 @@ export function App() {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-neutral-950 text-foreground">
         <Spinner size="lg" />
-        <span className="mt-4 text-sm text-neutral-400 font-mono">Loading Talaat Market System...</span>
+        <span className="mt-4 text-sm text-neutral-400 font-mono">
+          Loading Talaat Market System...
+        </span>
       </div>
     );
   }
@@ -89,135 +91,135 @@ export function App() {
       <PreferencesProvider>
         <ErrorBoundary>
           <BrowserRouter>
-          <Routes>
-            {/* Public route */}
-            <Route path="login" element={<LoginPage />} />
+            <Routes>
+              {/* Public route */}
+              <Route path="login" element={<LoginPage />} />
 
-            {/* Point of Sale (POS) - Cashier, Manager, Admin allowed - Full screen shell */}
-            <Route
-              path="pos"
-              element={
-                <ProtectedRoute>
-                  <POSPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Authenticated layout shell */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayoutRoute />
-                </ProtectedRoute>
-              }
-            >
-              {/* Dashboard */}
-              <Route index element={<DashboardPage />} />
-
-              {/* Products Catalog - Managers and Admin allowed */}
+              {/* Point of Sale (POS) - Cashier, Manager, Admin allowed - Full screen shell */}
               <Route
-                path="products/*"
+                path="pos"
                 element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <ProductsPage />
+                  <ProtectedRoute>
+                    <POSPage />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Inventory Management - Managers and Admin allowed */}
+              {/* Authenticated layout shell */}
               <Route
-                path="inventory/*"
                 element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <InventoryPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Employees - Admin allowed only */}
-              <Route
-                path="employees/*"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <EmployeesPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Other Features - simple placeholders for now */}
-              <Route
-                path="suppliers"
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <SuppliersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="suppliers/:id"
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <SupplierDetailScreen />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="purchases"
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <PurchasesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="purchases/:id"
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <PurchaseOrderDetailScreen />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="customers" element={<CustomersPage />} />
-              <Route path="customers/:id" element={<CustomerDetailScreen />} />
-              <Route
-                path="reports/*"
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                    <ReportsLayout />
+                  <ProtectedRoute>
+                    <AppLayoutRoute />
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<Navigate to="shifts" replace />} />
-                <Route path="shifts" element={<ShiftReconciliationScreen />} />
-                <Route path="shifts/:id" element={<ShiftDetailScreen />} />
-                <Route path="weekly" element={<WeeklyReportScreen />} />
-                <Route path="overrides" element={<OverrideAuditScreen />} />
-              </Route>
-              <Route
-                path="settings/*"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <SettingsLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="general" replace />} />
-                <Route path="general" element={<GeneralSettingsScreen />} />
-                <Route path="pos" element={<POSPreferencesScreen />} />
-                <Route path="receipts" element={<ReceiptSettingsScreen />} />
-                <Route path="registers" element={<RegistersScreen />} />
-                <Route path="printers" element={<PrinterSettingsScreen />} />
-                <Route path="lan" element={<LANSettingsScreen />} />
-              </Route>
+                {/* Dashboard */}
+                <Route index element={<DashboardPage />} />
 
-              {/* 404 fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        <LANSyncManager />
-      </ErrorBoundary>
-    </PreferencesProvider>
+                {/* Products Catalog - Managers and Admin allowed */}
+                <Route
+                  path="products/*"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <ProductsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Inventory Management - Managers and Admin allowed */}
+                <Route
+                  path="inventory/*"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <InventoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Employees - Admin allowed only */}
+                <Route
+                  path="employees/*"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <EmployeesPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Other Features - simple placeholders for now */}
+                <Route
+                  path="suppliers"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <SuppliersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="suppliers/:id"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <SupplierDetailScreen />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="purchases"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <PurchasesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="purchases/:id"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <PurchaseOrderDetailScreen />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="customers" element={<CustomersPage />} />
+                <Route path="customers/:id" element={<CustomerDetailScreen />} />
+                <Route
+                  path="reports/*"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                      <ReportsLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="shifts" replace />} />
+                  <Route path="shifts" element={<ShiftReconciliationScreen />} />
+                  <Route path="shifts/:id" element={<ShiftDetailScreen />} />
+                  <Route path="weekly" element={<WeeklyReportScreen />} />
+                  <Route path="overrides" element={<OverrideAuditScreen />} />
+                </Route>
+                <Route
+                  path="settings/*"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <SettingsLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="general" replace />} />
+                  <Route path="general" element={<GeneralSettingsScreen />} />
+                  <Route path="pos" element={<POSPreferencesScreen />} />
+                  <Route path="receipts" element={<ReceiptSettingsScreen />} />
+                  <Route path="registers" element={<RegistersScreen />} />
+                  <Route path="printers" element={<PrinterSettingsScreen />} />
+                  <Route path="lan" element={<LANSettingsScreen />} />
+                </Route>
+
+                {/* 404 fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+          <LANSyncManager />
+        </ErrorBoundary>
+      </PreferencesProvider>
 
       {/* Toast notifications */}
       <Toaster

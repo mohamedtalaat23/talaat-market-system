@@ -4,7 +4,14 @@ import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/services/api-client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/Card';
 import { Store, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -61,7 +68,7 @@ export function LoginPage() {
 
     try {
       // Artificial delay to prevent timing attacks and show loading state cleanly
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       const response = await apiClient.post<LoginResponse>('/auth/login', {
         username,
@@ -99,12 +106,12 @@ export function LoginPage() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
             <Store className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight mt-3">{t('login.title')}</CardTitle>
-          <CardDescription className="text-secondary">
-            {t('login.subtitle')}
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold tracking-tight mt-3">
+            {t('login.title')}
+          </CardTitle>
+          <CardDescription className="text-secondary">{t('login.subtitle')}</CardDescription>
         </CardHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
@@ -113,7 +120,7 @@ export function LoginPage() {
                 <span>{error}</span>
               </div>
             )}
-            
+
             <div className="space-y-1.5 text-left rtl:text-right">
               <label htmlFor="username" className="text-sm font-medium text-secondary">
                 {t('login.username')}
@@ -146,7 +153,7 @@ export function LoginPage() {
                 </span>
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   className="pl-10 pr-10"
                   value={password}
@@ -158,24 +165,16 @@ export function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center pr-3 rtl:pr-0 rtl:pl-3 text-secondary hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
           </CardContent>
 
           <CardFooter className="pt-2">
-            <Button
-              type="submit"
-              className="w-full font-semibold"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
               {isLoading ? t('login.submitting') : t('login.submit')}
             </Button>
           </CardFooter>

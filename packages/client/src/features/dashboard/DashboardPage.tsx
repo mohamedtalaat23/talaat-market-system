@@ -62,9 +62,7 @@ export function DashboardPage() {
             <div className="text-3xl font-bold font-mono">
               {isLoading ? '...' : stats?.productsCount}
             </div>
-            <p className="text-xs text-secondary mt-1">
-              {t('dashboard.registeredItems')}
-            </p>
+            <p className="text-xs text-secondary mt-1">{t('dashboard.registeredItems')}</p>
           </CardContent>
         </Card>
 
@@ -80,9 +78,7 @@ export function DashboardPage() {
             <div className="text-3xl font-bold font-mono">
               {isLoading ? '...' : stats?.lowStockCount}
             </div>
-            <p className="text-xs text-secondary mt-1">
-              {t('dashboard.belowThreshold')}
-            </p>
+            <p className="text-xs text-secondary mt-1">{t('dashboard.belowThreshold')}</p>
           </CardContent>
         </Card>
 
@@ -98,9 +94,7 @@ export function DashboardPage() {
             <div className="text-3xl font-bold font-mono">
               {isLoading ? '...' : stats?.employeesCount}
             </div>
-            <p className="text-xs text-secondary mt-1">
-              {t('dashboard.activeCashiers')}
-            </p>
+            <p className="text-xs text-secondary mt-1">{t('dashboard.activeCashiers')}</p>
           </CardContent>
         </Card>
       </div>
@@ -120,7 +114,9 @@ export function DashboardPage() {
             >
               <ShoppingCart className="h-5 w-5 text-primary" />
               <div className="text-left">
-                <span className="text-sm font-semibold block text-foreground">{t('dashboard.launchPos')}</span>
+                <span className="text-sm font-semibold block text-foreground">
+                  {t('dashboard.launchPos')}
+                </span>
                 <span className="text-xs text-secondary">{t('dashboard.processCart')}</span>
               </div>
             </Link>
@@ -130,7 +126,9 @@ export function DashboardPage() {
             >
               <Package className="h-5 w-5 text-primary" />
               <div className="text-left">
-                <span className="text-sm font-semibold block text-foreground">{t('dashboard.manageCatalog')}</span>
+                <span className="text-sm font-semibold block text-foreground">
+                  {t('dashboard.manageCatalog')}
+                </span>
                 <span className="text-xs text-secondary">{t('dashboard.editProducts')}</span>
               </div>
             </Link>
@@ -164,11 +162,11 @@ export function DashboardPage() {
               <div className="flex items-center space-x-1.5">
                 <ShieldAlert size={14} className="text-primary" />
                 <span className="font-semibold text-primary uppercase text-xs">
-                  {user?.role === 'admin' 
-                    ? t('dashboard.roleAdmin') 
-                    : user?.role === 'manager' 
-                    ? t('dashboard.roleManager') 
-                    : t('dashboard.roleCashier')}
+                  {user?.role === 'admin'
+                    ? t('dashboard.roleAdmin')
+                    : user?.role === 'manager'
+                      ? t('dashboard.roleManager')
+                      : t('dashboard.roleCashier')}
                 </span>
               </div>
             </div>

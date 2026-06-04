@@ -15,7 +15,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ShieldAlert,
-  Archive
+  Archive,
 } from 'lucide-react';
 
 export function SupplierDetailScreen() {
@@ -51,7 +51,9 @@ export function SupplierDetailScreen() {
     return (
       <div className="flex h-96 flex-col items-center justify-center font-sans text-neutral-100">
         <Spinner size="md" />
-        <span className="mt-3 text-sm text-secondary font-mono">Loading supplier profile & catalog...</span>
+        <span className="mt-3 text-sm text-secondary font-mono">
+          Loading supplier profile & catalog...
+        </span>
       </div>
     );
   }
@@ -75,7 +77,9 @@ export function SupplierDetailScreen() {
 
   // Calculate live low stock count inside supplier catalog
   const catalog = supplier.catalog || [];
-  const lowStockItems = catalog.filter((product) => product.inventory_quantity <= product.min_stock_level);
+  const lowStockItems = catalog.filter(
+    (product) => product.inventory_quantity <= product.min_stock_level,
+  );
 
   return (
     <div className="space-y-6 font-sans text-neutral-100 p-6 max-w-7xl mx-auto">
@@ -92,7 +96,9 @@ export function SupplierDetailScreen() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-neutral-100">{supplier.name}</h1>
             <div className="flex items-center space-x-2.5 mt-1">
-              <span className="text-xs font-mono text-neutral-500">Supplier: {supplier.supplier_code}</span>
+              <span className="text-xs font-mono text-neutral-500">
+                Supplier: {supplier.supplier_code}
+              </span>
               <span className="h-1 w-1 rounded-full bg-neutral-700" />
               {supplier.status === 'active' ? (
                 <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400">
@@ -142,12 +148,20 @@ export function SupplierDetailScreen() {
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Catalog Products</span>
-                <span className="text-xl font-bold font-mono text-neutral-100">{catalog.length}</span>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Catalog Products
+                </span>
+                <span className="text-xl font-bold font-mono text-neutral-100">
+                  {catalog.length}
+                </span>
               </div>
               <div>
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Low Stock Alerts</span>
-                <span className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-amber-500' : 'text-secondary'}`}>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Low Stock Alerts
+                </span>
+                <span
+                  className={`text-xl font-bold font-mono ${lowStockItems.length > 0 ? 'text-amber-500' : 'text-secondary'}`}
+                >
                   {lowStockItems.length}
                 </span>
               </div>
@@ -155,13 +169,17 @@ export function SupplierDetailScreen() {
             {supplier.status === 'inactive' && (
               <div className="rounded-lg border border-amber-900/30 bg-amber-950/15 p-2.5 text-xs text-amber-400 flex items-start space-x-2">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-                <span>Supplier is marked inactive. Warnings will display if active products are chosen.</span>
+                <span>
+                  Supplier is marked inactive. Warnings will display if active products are chosen.
+                </span>
               </div>
             )}
             {supplier.status === 'suspended' && (
               <div className="rounded-lg border border-rose-900/30 bg-rose-950/15 p-2.5 text-xs text-rose-400 flex items-start space-x-2">
                 <ShieldAlert size={15} className="mt-0.5 shrink-0" />
-                <span>Supplier is suspended. Newly created products cannot be assigned to this supplier.</span>
+                <span>
+                  Supplier is suspended. Newly created products cannot be assigned to this supplier.
+                </span>
               </div>
             )}
           </div>
@@ -173,28 +191,59 @@ export function SupplierDetailScreen() {
             </h3>
             <div className="space-y-4 text-sm">
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Representative Name</span>
-                <div className="font-semibold text-neutral-200">{supplier.contact_name || <span className="text-neutral-600 font-normal italic">Not Specified</span>}</div>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Representative Name
+                </span>
+                <div className="font-semibold text-neutral-200">
+                  {supplier.contact_name || (
+                    <span className="text-neutral-600 font-normal italic">Not Specified</span>
+                  )}
+                </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Phone Number</span>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Phone Number
+                </span>
                 <div className="font-semibold font-mono text-neutral-200 flex items-center space-x-1.5">
                   <Phone size={13} className="text-neutral-500" />
-                  <span>{supplier.phone || <span className="text-neutral-600 font-normal italic font-sans">Not Specified</span>}</span>
+                  <span>
+                    {supplier.phone || (
+                      <span className="text-neutral-600 font-normal italic font-sans">
+                        Not Specified
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Email Address</span>
-                <div className="font-semibold font-mono text-neutral-200 flex items-center space-x-1.5 truncate" title={supplier.email || ''}>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Email Address
+                </span>
+                <div
+                  className="font-semibold font-mono text-neutral-200 flex items-center space-x-1.5 truncate"
+                  title={supplier.email || ''}
+                >
                   <Mail size={13} className="text-neutral-500 animate-none shrink-0" />
-                  <span className="truncate">{supplier.email || <span className="text-neutral-600 font-normal italic font-sans">Not Specified</span>}</span>
+                  <span className="truncate">
+                    {supplier.email || (
+                      <span className="text-neutral-600 font-normal italic font-sans">
+                        Not Specified
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">Office Address</span>
+                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                  Office Address
+                </span>
                 <div className="font-semibold text-neutral-300 flex items-start space-x-1.5 leading-relaxed">
                   <MapPin size={13} className="text-neutral-500 mt-1 shrink-0" />
-                  <span>{supplier.address || <span className="text-neutral-600 font-normal italic">Not Specified</span>}</span>
+                  <span>
+                    {supplier.address || (
+                      <span className="text-neutral-600 font-normal italic">Not Specified</span>
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -207,7 +256,8 @@ export function SupplierDetailScreen() {
               <span>Internal Procurement Notes</span>
             </h3>
             <div className="text-secondary italic bg-input p-3 rounded-lg border border-border text-xs leading-relaxed max-w-full break-words">
-              {supplier.notes || 'No custom procurement notes registered for this supplier profile.'}
+              {supplier.notes ||
+                'No custom procurement notes registered for this supplier profile.'}
             </div>
           </div>
         </div>
@@ -254,7 +304,9 @@ export function SupplierDetailScreen() {
                         <tr key={product.id} className="hover:bg-neutral-850/20 transition-colors">
                           {/* Barcode */}
                           <td className="px-6 py-4 text-xs font-mono text-secondary">
-                            {product.barcode || <span className="text-neutral-600 font-sans italic">No Barcode</span>}
+                            {product.barcode || (
+                              <span className="text-neutral-600 font-sans italic">No Barcode</span>
+                            )}
                           </td>
 
                           {/* Product Name */}
@@ -286,7 +338,9 @@ export function SupplierDetailScreen() {
 
                           {/* Live Inventory Quantity */}
                           <td className="px-6 py-4 text-xs text-center font-mono">
-                            <span className={`font-semibold px-2 py-0.5 rounded ${isLowStock ? 'text-amber-500 bg-amber-950/25 border border-amber-900/30' : 'text-neutral-300 bg-neutral-850'}`}>
+                            <span
+                              className={`font-semibold px-2 py-0.5 rounded ${isLowStock ? 'text-amber-500 bg-amber-950/25 border border-amber-900/30' : 'text-neutral-300 bg-neutral-850'}`}
+                            >
                               {product.inventory_quantity}
                             </span>
                           </td>
@@ -334,16 +388,27 @@ export function SupplierDetailScreen() {
                 <AlertTriangle size={24} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold tracking-wide text-neutral-200">Confirm Soft Deletion</h3>
+                <h3 className="text-lg font-semibold tracking-wide text-neutral-200">
+                  Confirm Soft Deletion
+                </h3>
                 <p className="text-sm text-secondary leading-relaxed font-sans">
-                  Are you sure you want to delete supplier <span className="font-semibold text-neutral-100">"{supplier.name}"</span> ({supplier.supplier_code})?
+                  Are you sure you want to delete supplier{' '}
+                  <span className="font-semibold text-neutral-100">"{supplier.name}"</span> (
+                  {supplier.supplier_code})?
                 </p>
 
                 {catalog.length > 0 && (
                   <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-300 leading-relaxed font-sans">
-                    <span className="font-semibold block mb-1">⚠️ Active Catalog Link Warning:</span>
-                    This supplier is currently linked to <span className="font-semibold underline">{catalog.length} active product(s)</span>.
-                    If you proceed, those products will remain in the catalog, but their primary supplier connection will be set to <span className="font-mono bg-input px-1 rounded text-neutral-300">NULL</span>.
+                    <span className="font-semibold block mb-1">
+                      ⚠️ Active Catalog Link Warning:
+                    </span>
+                    This supplier is currently linked to{' '}
+                    <span className="font-semibold underline">
+                      {catalog.length} active product(s)
+                    </span>
+                    . If you proceed, those products will remain in the catalog, but their primary
+                    supplier connection will be set to{' '}
+                    <span className="font-mono bg-input px-1 rounded text-neutral-300">NULL</span>.
                   </div>
                 )}
               </div>

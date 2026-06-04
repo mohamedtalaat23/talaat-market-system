@@ -31,7 +31,7 @@ export class ReportsRepository {
         'cs.expected_cash',
         'cs.ending_cash',
         'cs.notes',
-        db.raw('CAST(cs.ending_cash AS NUMERIC) - CAST(cs.expected_cash AS NUMERIC) as variance')
+        db.raw('CAST(cs.ending_cash AS NUMERIC) - CAST(cs.expected_cash AS NUMERIC) as variance'),
       );
 
     if (filters.cashier_id) {
@@ -44,7 +44,7 @@ export class ReportsRepository {
     const shifts = await query.orderBy('cs.end_time', 'desc').limit(limit).offset(offset);
 
     // Ensure numeric fields are returned as numbers
-    const items = shifts.map(s => ({
+    const items = shifts.map((s) => ({
       ...s,
       starting_cash: Number(s.starting_cash),
       expected_cash: s.expected_cash !== null ? Number(s.expected_cash) : null,
@@ -54,7 +54,7 @@ export class ReportsRepository {
 
     return {
       items,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -78,7 +78,7 @@ export class ReportsRepository {
         'cs.*',
         'e.full_name as cashier_name',
         'r.name as register_name',
-        db.raw('CAST(cs.ending_cash AS NUMERIC) - CAST(cs.expected_cash AS NUMERIC) as variance')
+        db.raw('CAST(cs.ending_cash AS NUMERIC) - CAST(cs.expected_cash AS NUMERIC) as variance'),
       )
       .first();
 
@@ -110,20 +110,17 @@ export class ReportsRepository {
           'sales.status',
           'sales.print_count',
           'sales.created_at',
-          'employees.full_name as cashier_name'
+          'employees.full_name as cashier_name',
         )
         .orderBy('sales.created_at', 'desc')
         .limit(safeTxLimit)
         .offset(txOffset),
-      db('sales')
-        .where('shift_id', id)
-        .count({ count: 'id' })
-        .first(),
+      db('sales').where('shift_id', id).count({ count: 'id' }).first(),
     ]);
 
     const txTotal = Number(txCountResult?.count ?? 0);
 
-    const transactions = transactionsRaw.map(t => ({
+    const transactions = transactionsRaw.map((t) => ({
       ...t,
       total: Number(t.total),
       discount_amount: Number(t.discount_amount),
@@ -144,7 +141,7 @@ export class ReportsRepository {
         'mo.reference_id',
         'mo.details',
         'm.full_name as manager_name',
-        'mo.created_at'
+        'mo.created_at',
       )
       .orderBy('mo.created_at', 'desc');
 
@@ -152,10 +149,16 @@ export class ReportsRepository {
       .where('shift_id', id)
       .andWhere('status', '!=', 'voided')
       .select(
-        db.raw("COALESCE(SUM(total), 0) as total_revenue"),
-        db.raw("COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts"),
-        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales_total"),
-        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales_total")
+        db.raw('COALESCE(SUM(total), 0) as total_revenue'),
+        db.raw(
+          'COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts',
+        ),
+        db.raw(
+          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales_total",
+        ),
+        db.raw(
+          "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales_total",
+        ),
       )
       .first();
 
@@ -163,16 +166,22 @@ export class ReportsRepository {
       .where('shift_id', id)
       .andWhere('transaction_type', 'payment')
       .select(
-        db.raw("COALESCE(SUM(amount), 0) as payment_amount"),
-        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END), 0) as cash_payments"),
-        db.raw("COALESCE(SUM(CASE WHEN payment_method = 'card' THEN amount ELSE 0 END), 0) as card_payments")
+        db.raw('COALESCE(SUM(amount), 0) as payment_amount'),
+        db.raw(
+          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END), 0) as cash_payments",
+        ),
+        db.raw(
+          "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN amount ELSE 0 END), 0) as card_payments",
+        ),
       )
       .first();
 
     const totalRevenue = Number(salesSummary.total_revenue) + Number(paymentSummary.payment_amount);
     const totalDiscounts = Number(salesSummary.total_discounts);
-    const cashSalesTotal = Number(salesSummary.cash_sales_total) + Number(paymentSummary.cash_payments);
-    const cardSalesTotal = Number(salesSummary.card_sales_total) + Number(paymentSummary.card_payments);
+    const cashSalesTotal =
+      Number(salesSummary.cash_sales_total) + Number(paymentSummary.cash_payments);
+    const cardSalesTotal =
+      Number(salesSummary.card_sales_total) + Number(paymentSummary.card_payments);
 
     return {
       shift,
@@ -192,7 +201,7 @@ export class ReportsRepository {
         total_discounts: totalDiscounts,
         cash_sales_total: cashSalesTotal,
         card_sales_total: cardSalesTotal,
-      }
+      },
     };
   }
 
@@ -207,20 +216,21 @@ export class ReportsRepository {
         db.raw('DATE(created_at) as sale_date'),
         db.raw('COUNT(id) as tx_count'),
         db.raw('COALESCE(SUM(total), 0) as total_rev'),
-        db.raw('COALESCE(SUM(discount_amount + global_discount), 0) as total_disc')
+        db.raw('COALESCE(SUM(discount_amount + global_discount), 0) as total_disc'),
       )
       .groupByRaw('DATE(created_at)');
 
     const salesByDate: Record<string, any> = {};
     for (const row of rawSales) {
       // row.sale_date can be a Date object in pg
-      const dateStr = typeof row.sale_date === 'string' 
-        ? row.sale_date.substring(0, 10) 
-        : row.sale_date.toISOString().substring(0, 10);
+      const dateStr =
+        typeof row.sale_date === 'string'
+          ? row.sale_date.substring(0, 10)
+          : row.sale_date.toISOString().substring(0, 10);
       salesByDate[dateStr] = {
         tx_count: Number(row.tx_count),
         total_rev: Number(row.total_rev),
-        total_disc: Number(row.total_disc)
+        total_disc: Number(row.total_disc),
       };
     }
 
@@ -234,7 +244,7 @@ export class ReportsRepository {
       const d = new Date(start);
       d.setDate(d.getDate() + i);
       const dateStr = d.toISOString().substring(0, 10);
-      
+
       const dayData = salesByDate[dateStr] || { tx_count: 0, total_rev: 0, total_disc: 0 };
       const net = dayData.total_rev - dayData.total_disc;
 
@@ -243,7 +253,7 @@ export class ReportsRepository {
         transaction_count: dayData.tx_count,
         total_revenue: dayData.total_rev,
         total_discounts: dayData.total_disc,
-        net_revenue: net
+        net_revenue: net,
       });
 
       weekTx += dayData.tx_count;
@@ -259,16 +269,16 @@ export class ReportsRepository {
       .select(
         'p.name as product_name',
         db.raw('SUM(si.quantity) as total_quantity_sold'),
-        db.raw('COALESCE(SUM(si.line_total), 0) as total_revenue')
+        db.raw('COALESCE(SUM(si.line_total), 0) as total_revenue'),
       )
       .groupBy('p.name')
       .orderBy('total_quantity_sold', 'desc')
       .limit(10);
 
-    const top_products = topProductsRaw.map(p => ({
+    const top_products = topProductsRaw.map((p) => ({
       product_name: p.product_name,
       total_quantity_sold: Number(p.total_quantity_sold),
-      total_revenue: Number(p.total_revenue)
+      total_revenue: Number(p.total_revenue),
     }));
 
     return {
@@ -277,9 +287,9 @@ export class ReportsRepository {
         transaction_count: weekTx,
         total_revenue: weekRev,
         total_discounts: weekDisc,
-        net_revenue: weekRev - weekDisc
+        net_revenue: weekRev - weekDisc,
       },
-      top_products
+      top_products,
     };
   }
 
@@ -301,7 +311,7 @@ export class ReportsRepository {
         'mo.details',
         'mo.created_at',
         'm.full_name as manager_name',
-        'c.full_name as cashier_name'
+        'c.full_name as cashier_name',
       );
 
     if (filters.date_from) {
@@ -318,7 +328,7 @@ export class ReportsRepository {
 
     return {
       items,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 }

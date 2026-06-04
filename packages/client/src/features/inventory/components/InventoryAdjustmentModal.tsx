@@ -5,6 +5,7 @@ import { useAdjustStock } from '../hooks/useInventoryQueries';
 import toast from 'react-hot-toast';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * InventoryAdjustmentModal overlay.
@@ -12,6 +13,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
  * Implements WAI-ARIA and focus trapping for high accessibility.
  */
 export function InventoryAdjustmentModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.inventory_adjust);
   const payload = useModalStore((state) => state.modalPayloads.inventory_adjust);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -39,7 +41,11 @@ export function InventoryAdjustmentModal() {
 
   const item = payload;
 
-  const handleSubmit = async (formData: { adjustment_type: any; quantity_change: number; notes: string }) => {
+  const handleSubmit = async (formData: {
+    adjustment_type: any;
+    quantity_change: number;
+    notes: string;
+  }) => {
     try {
       await adjustMutation.mutateAsync({
         product_id: item.product_id,
@@ -48,10 +54,10 @@ export function InventoryAdjustmentModal() {
         notes: formData.notes,
       });
 
-      toast.success('Stock adjusted successfully');
+      toast.success(t('inventory.adjustSuccess'));
       closeModal();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to adjust stock level');
+      toast.error(error.message || t('inventory.adjustFailed'));
     }
   };
 
@@ -60,9 +66,9 @@ export function InventoryAdjustmentModal() {
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop click close hook */}
-      <div 
-        className="absolute inset-0" 
-        onClick={isSaving ? undefined : closeModal} 
+      <div
+        className="absolute inset-0"
+        onClick={isSaving ? undefined : closeModal}
         aria-hidden="true"
       />
 
@@ -76,13 +82,13 @@ export function InventoryAdjustmentModal() {
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-4 select-none">
           <h3 id="adjust-modal-title" className="text-lg font-bold text-foreground">
-            Perform Stock Adjustment
+            {t('inventory.performAdjustment')}
           </h3>
           <button
             onClick={closeModal}
             disabled={isSaving}
             className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Close modal"
+            aria-label={t('products.closeModal')}
           >
             <X size={18} />
           </button>

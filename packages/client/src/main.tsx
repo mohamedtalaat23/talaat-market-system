@@ -20,9 +20,7 @@ import './styles/globals.css';
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error(
-    'Root element #root not found. Check your index.html has <div id="root"></div>.',
-  );
+  throw new Error('Root element #root not found. Check your index.html has <div id="root"></div>.');
 }
 
 ReactDOM.createRoot(rootElement).render(

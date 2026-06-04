@@ -104,7 +104,9 @@ function findAvailablePort(startPort: number): Promise<number> {
       server.close(() => resolve(address.port));
     });
     server.on('error', () => {
-      findAvailablePort(startPort + 1).then(resolve).catch(reject);
+      findAvailablePort(startPort + 1)
+        .then(resolve)
+        .catch(reject);
     });
   });
 }
@@ -131,7 +133,9 @@ export class PostgresManager {
 
     // If external database hook is active, bypass local binary resolution and server startup
     if (existingConfig['DB_EXTERNAL'] === 'true') {
-      logger.info('[PostgresManager] External database hook active. Skipping local PostgreSQL startup.');
+      logger.info(
+        '[PostgresManager] External database hook active. Skipping local PostgreSQL startup.',
+      );
       return {
         configPath: this.configPath,
         env: {
@@ -151,15 +155,12 @@ export class PostgresManager {
     if (firstRun) {
       logger.info('[PostgresManager] Initializing bundled PostgreSQL data directory');
       fs.mkdirSync(this.dataDir, { recursive: true });
-      await runCommand(runtime.initdb, [
-        '-D',
-        this.dataDir,
-        '-U',
-        SUPERUSER,
-        '--encoding=UTF8',
-        '--locale=C',
-        '--auth=trust',
-      ], this.runtimeEnv(runtime), 120_000);
+      await runCommand(
+        runtime.initdb,
+        ['-D', this.dataDir, '-U', SUPERUSER, '--encoding=UTF8', '--locale=C', '--auth=trust'],
+        this.runtimeEnv(runtime),
+        120_000,
+      );
     }
 
     // Stop any orphaned PostgreSQL process that might be locking the data directory
@@ -178,7 +179,8 @@ export class PostgresManager {
     await this.startServer(runtime, port);
 
     const dbPassword = existingConfig['DB_PASSWORD'] || crypto.randomBytes(24).toString('hex');
-    const sessionSecret = existingConfig['SESSION_SECRET'] || crypto.randomBytes(48).toString('hex');
+    const sessionSecret =
+      existingConfig['SESSION_SECRET'] || crypto.randomBytes(48).toString('hex');
     const jwtSecret = existingConfig['JWT_SECRET'] || crypto.randomBytes(48).toString('hex');
 
     if (firstRun) {
@@ -224,10 +226,14 @@ export class PostgresManager {
     if (!this.isStarted) return;
 
     const runtime = this.getRuntime();
-    await runCommand(runtime.pgCtl, ['stop', '-D', this.dataDir, '-m', 'fast', '-w'], this.runtimeEnv(runtime), 30_000)
-      .catch((error) => {
-        logger.warn(`[PostgresManager] pg_ctl stop failed: ${error.message}`);
-      });
+    await runCommand(
+      runtime.pgCtl,
+      ['stop', '-D', this.dataDir, '-m', 'fast', '-w'],
+      this.runtimeEnv(runtime),
+      30_000,
+    ).catch((error) => {
+      logger.warn(`[PostgresManager] pg_ctl stop failed: ${error.message}`);
+    });
 
     this.isStarted = false;
   }
@@ -263,16 +269,12 @@ export class PostgresManager {
   }
 
   private async startServer(runtime: PostgresRuntime, port: number): Promise<void> {
-    await runCommand(runtime.pgCtl, [
-      'start',
-      '-D',
-      this.dataDir,
-      '-l',
-      this.logPath,
-      '-o',
-      `-p ${port} -h 127.0.0.1`,
-      '-w',
-    ], this.runtimeEnv(runtime), 120_000);
+    await runCommand(
+      runtime.pgCtl,
+      ['start', '-D', this.dataDir, '-l', this.logPath, '-o', `-p ${port} -h 127.0.0.1`, '-w'],
+      this.runtimeEnv(runtime),
+      120_000,
+    );
     this.isStarted = true;
   }
 
@@ -284,31 +286,34 @@ export class PostgresManager {
     const env = this.runtimeEnv(runtime);
     const connectionArgs = ['-h', '127.0.0.1', '-p', String(port), '-U', SUPERUSER];
 
-    await runCommand(runtime.psql, [
-      ...connectionArgs,
-      '-d',
-      'postgres',
-      '-v',
-      'ON_ERROR_STOP=1',
-      '-c',
-      `CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${quoteSql(dbPassword)}';`,
-    ], env);
+    await runCommand(
+      runtime.psql,
+      [
+        ...connectionArgs,
+        '-d',
+        'postgres',
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-c',
+        `CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${quoteSql(dbPassword)}';`,
+      ],
+      env,
+    );
 
-    await runCommand(runtime.createdb, [
-      ...connectionArgs,
-      '-O',
-      DB_USER,
-      DB_NAME,
-    ], env);
+    await runCommand(runtime.createdb, [...connectionArgs, '-O', DB_USER, DB_NAME], env);
 
-    await runCommand(runtime.psql, [
-      ...connectionArgs,
-      '-d',
-      DB_NAME,
-      '-v',
-      'ON_ERROR_STOP=1',
-      '-c',
-      'CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS pgcrypto;',
-    ], env);
+    await runCommand(
+      runtime.psql,
+      [
+        ...connectionArgs,
+        '-d',
+        DB_NAME,
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-c',
+        'CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS pgcrypto;',
+      ],
+      env,
+    );
   }
 }

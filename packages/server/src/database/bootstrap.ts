@@ -8,9 +8,7 @@ async function run(): Promise<void> {
   try {
     await connectDatabase();
 
-    const existingAdmin = await db('employees')
-      .where({ username: 'admin' })
-      .first();
+    const existingAdmin = await db('employees').where({ username: 'admin' }).first();
 
     if (existingAdmin) {
       logger.info('Bootstrap admin account already exists; skipping creation.');

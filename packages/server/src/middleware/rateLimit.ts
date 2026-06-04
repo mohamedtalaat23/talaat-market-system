@@ -7,8 +7,8 @@ export const standardRateLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req: any) => {
     // Key by the authenticated Employee ID if present, fallback to IP for unauthenticated requests
-    return req.user?.id ? `emp_${req.user.id}` : (req.ip || '');
-  }
+    return req.user?.id ? `emp_${req.user.id}` : req.ip || '';
+  },
 });
 
 // Stricter rate limiter for authentication endpoints (login, password checks)

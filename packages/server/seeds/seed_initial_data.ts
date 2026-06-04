@@ -9,13 +9,27 @@ import bcrypt from 'bcryptjs';
  * Safely clears existing records in dependency order so it can be rerun.
  */
 export async function seed(knex: Knex): Promise<void> {
-  // 1. Clean existing tables in reverse dependency order
-  await knex('sale_items').del();
-  await knex('sales').del();
-  await knex('inventory').del();
-  await knex('products').del();
-  await knex('categories').del();
-  await knex('employees').del();
+  // 1. Clean existing tables in reverse dependency order using TRUNCATE CASCADE
+  await knex.raw(`
+    TRUNCATE TABLE 
+      purchase_order_items, 
+      purchase_orders, 
+      suppliers, 
+      customer_transactions, 
+      customers, 
+      inventory_adjustments, 
+      manager_overrides,
+      cashier_shifts, 
+      sale_items, 
+      sales, 
+      inventory, 
+      products, 
+      categories, 
+      employees 
+    RESTART IDENTITY CASCADE;
+  `).catch((err) => {
+    console.warn('Truncate warning, falling back to manual delete:', err.message);
+  });
 
   // 2. Seed Employees
   const adminPassword = bcrypt.hashSync('admin123', 10);

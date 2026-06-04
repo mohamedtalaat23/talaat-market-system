@@ -57,6 +57,40 @@ export interface CurrentUser {
   role: Role;
 }
 
+/**
+ * The active cashier shift record stored in the POS store.
+ * Shape mirrors the server response from POST /pos/shifts/open
+ * and GET /pos/shifts/:id/summary.
+ */
+export interface ActiveShift {
+  id: number;
+  register_id: number;
+  opened_by: number;
+  opened_at: string;
+  closed_at: string | null;
+  starting_cash: number;
+  ending_cash: number | null;
+  cash_sales: number;
+  card_sales: number;
+  total_discounts: number;
+  expected_cash: number | null;
+  status: 'open' | 'closed';
+}
+
+/**
+ * A customer record selected and attached to an active POS cart.
+ * Shape mirrors the customer API response from GET /customers.
+ */
+export interface POSCustomer {
+  id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  balance: number;
+  loyalty_points: number;
+  notes: string | null;
+}
+
 // ─── Server Info ──────────────────────────────────────────────────────────────
 
 /** Health check response data */
@@ -178,8 +212,22 @@ export interface ElectronAPI {
   // Durable Offline Storage (C-2)
   // Uses a structural type instead of importing OfflineSale to avoid
   // circular dependency between types/index.ts and the store module.
-  persistOfflineSale: (sale: { id: string; idempotency_key: string; payload: unknown; saleData: unknown; timestamp: string }) => Promise<void>;
-  getOfflineSales: () => Promise<{ id: string; idempotency_key: string; payload: unknown; saleData: unknown; timestamp: string }[]>;
+  persistOfflineSale: (sale: {
+    id: string;
+    idempotency_key: string;
+    payload: unknown;
+    saleData: unknown;
+    timestamp: string;
+  }) => Promise<void>;
+  getOfflineSales: () => Promise<
+    {
+      id: string;
+      idempotency_key: string;
+      payload: unknown;
+      saleData: unknown;
+      timestamp: string;
+    }[]
+  >;
   removeOfflineSale: (id: string) => Promise<void>;
 }
 

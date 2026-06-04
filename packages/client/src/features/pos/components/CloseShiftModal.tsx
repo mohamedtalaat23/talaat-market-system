@@ -14,7 +14,7 @@ export function CloseShiftModal() {
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
   const heldCarts = usePOSStore((state) => state.heldCarts);
   const user = useAuthStore((state) => state.user);
-  
+
   const [endingCash, setEndingCash] = useState<string>('');
   const [summary, setSummary] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +37,11 @@ export function CloseShiftModal() {
   }, [isOpen, needsOverride, modalPayloads.pos_close_shift]);
 
   const fetchSummary = async () => {
+    if (!activeShift) return;
     setIsLoading(true);
     try {
       const { status } = useLANStore.getState();
-      
+
       // Resilient offline calculations using active shift running tallies
       if (status === 'offline') {
         const localSummary = {
@@ -49,12 +50,13 @@ export function CloseShiftModal() {
           cash_sales: Number(activeShift.cash_sales || 0),
           card_sales: Number(activeShift.card_sales || 0),
           total_discounts: Number(activeShift.total_discounts || 0),
-          expected_cash: Number(activeShift.starting_cash || 0) + Number(activeShift.cash_sales || 0),
-          pending_prints: 0
+          expected_cash:
+            Number(activeShift.starting_cash || 0) + Number(activeShift.cash_sales || 0),
+          pending_prints: 0,
         };
         setSummary(localSummary);
-        
-        const myHeldCarts = heldCarts.filter(c => c.cashier_id === user?.id);
+
+        const myHeldCarts = heldCarts.filter((c) => c.cashier_id === user?.id);
         if (myHeldCarts.length > 0) {
           setNeedsOverride(true);
         }
@@ -62,13 +64,15 @@ export function CloseShiftModal() {
         return;
       }
 
-      const response = await apiClient.get<{ success: boolean; data: any }>(`/pos/shifts/${activeShift.id}/summary`);
+      const response = await apiClient.get<{ success: boolean; data: any }>(
+        `/pos/shifts/${activeShift.id}/summary`,
+      );
       if (response.data?.success) {
         const data = response.data.data;
         setSummary(data);
-        
+
         // Safety Validation
-        const myHeldCarts = heldCarts.filter(c => c.cashier_id === user?.id);
+        const myHeldCarts = heldCarts.filter((c) => c.cashier_id === user?.id);
         if (data.pending_prints > 0 || myHeldCarts.length > 0) {
           setNeedsOverride(true);
         }
@@ -83,13 +87,14 @@ export function CloseShiftModal() {
   if (!isOpen) return null;
 
   const handleCloseShift = async () => {
+    if (!activeShift) return;
     if (needsOverride) {
-      openModal('pos_manager_override', { 
+      openModal('pos_manager_override', {
         action: 'force_close_shift',
         onSuccess: () => {
           // Setting this payload allows the useEffect to clear needsOverride
           openModal('pos_close_shift', { override_granted: true });
-        }
+        },
       });
       return;
     }
@@ -111,12 +116,15 @@ export function CloseShiftModal() {
           shift_id: activeShift.id,
           ending_cash: cash,
           expected_cash: summary?.expected_cash || 0,
-          notes: 'Offline cashier shift closure'
+          notes: 'Offline cashier shift closure',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
-      toast.success('Shift closed locally. Synching in background...', { icon: '💾', duration: 4000 });
+
+      toast.success('Shift closed locally. Synching in background...', {
+        icon: '💾',
+        duration: 4000,
+      });
       setActiveShift(null);
       closeModal('pos_close_shift');
       setIsSubmitting(false);
@@ -128,7 +136,7 @@ export function CloseShiftModal() {
         shift_id: activeShift.id,
         ending_cash: cash,
         expected_cash: summary?.expected_cash || 0,
-        notes: ''
+        notes: '',
       });
 
       if (response.data?.success) {
@@ -137,10 +145,17 @@ export function CloseShiftModal() {
         closeModal('pos_close_shift');
       }
     } catch (error: any) {
-      const isNetworkError = !error.response || error.message?.includes('Network Error') || error.status === undefined || error.status >= 500;
-      
+      const isNetworkError =
+        !error.response ||
+        error.message?.includes('Network Error') ||
+        error.status === undefined ||
+        error.status >= 500;
+
       if (mode === 'client' && isNetworkError) {
-        toast.error('Network connection to Master server failed. Routing to local shift buffer...', { duration: 4000 });
+        toast.error(
+          'Network connection to Master server failed. Routing to local shift buffer...',
+          { duration: 4000 },
+        );
         setStatus('offline');
         addOfflineShiftClosure({
           id: crypto.randomUUID(),
@@ -148,9 +163,9 @@ export function CloseShiftModal() {
             shift_id: activeShift.id,
             ending_cash: cash,
             expected_cash: summary?.expected_cash || 0,
-            notes: 'Offline shift closure fallback'
+            notes: 'Offline shift closure fallback',
           },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         setActiveShift(null);
         closeModal('pos_close_shift');
@@ -162,7 +177,7 @@ export function CloseShiftModal() {
     }
   };
 
-  const myHeldCarts = heldCarts.filter(c => c.cashier_id === user?.id);
+  const myHeldCarts = heldCarts.filter((c) => c.cashier_id === user?.id);
   const discrepancy = summary ? parseFloat(endingCash || '0') - summary.expected_cash : 0;
 
   return (
@@ -174,7 +189,7 @@ export function CloseShiftModal() {
             <Lock className="w-5 h-5 text-rose-400" />
             <h2 className="text-lg font-semibold text-white">Close Shift Report</h2>
           </div>
-          <button 
+          <button
             onClick={() => closeModal('pos_close_shift')}
             className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
           >
@@ -195,9 +210,15 @@ export function CloseShiftModal() {
                   <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
                   <div className="text-sm space-y-1">
                     <p className="font-semibold text-amber-400">Operational Warnings Detected</p>
-                    {summary.pending_prints > 0 && <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>}
-                    {myHeldCarts.length > 0 && <p>• {myHeldCarts.length} cart(s) currently suspended.</p>}
-                    <p className="pt-2 text-amber-300">Manager override is required to force close this shift.</p>
+                    {summary.pending_prints > 0 && (
+                      <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>
+                    )}
+                    {myHeldCarts.length > 0 && (
+                      <p>• {myHeldCarts.length} cart(s) currently suspended.</p>
+                    )}
+                    <p className="pt-2 text-amber-300">
+                      Manager override is required to force close this shift.
+                    </p>
                   </div>
                 </div>
               )}
@@ -205,19 +226,27 @@ export function CloseShiftModal() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background border border-border rounded-lg p-4 space-y-1">
                   <p className="text-sm text-secondary">Starting Cash</p>
-                  <p className="text-xl font-bold font-mono">EGP {summary.starting_cash.toFixed(2)}</p>
+                  <p className="text-xl font-bold font-mono">
+                    EGP {summary.starting_cash.toFixed(2)}
+                  </p>
                 </div>
                 <div className="bg-background border border-border rounded-lg p-4 space-y-1">
                   <p className="text-sm text-secondary">Cash Sales</p>
-                  <p className="text-xl font-bold text-emerald-400 font-mono">+EGP {summary.cash_sales.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-emerald-400 font-mono">
+                    +EGP {summary.cash_sales.toFixed(2)}
+                  </p>
                 </div>
                 <div className="bg-background border border-border rounded-lg p-4 space-y-1">
                   <p className="text-sm text-secondary">Card Sales</p>
-                  <p className="text-xl font-bold text-blue-400 font-mono">EGP {summary.card_sales.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-blue-400 font-mono">
+                    EGP {summary.card_sales.toFixed(2)}
+                  </p>
                 </div>
                 <div className="bg-background border border-border rounded-lg p-4 space-y-1">
                   <p className="text-sm text-secondary">Expected Cash in Drawer</p>
-                  <p className="text-2xl font-bold text-white font-mono">EGP {summary.expected_cash.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white font-mono">
+                    EGP {summary.expected_cash.toFixed(2)}
+                  </p>
                 </div>
               </div>
 
@@ -225,14 +254,19 @@ export function CloseShiftModal() {
                 <label className="text-sm font-medium text-secondary flex justify-between">
                   <span>Actual Cash Counted (EGP)</span>
                   {endingCash && (
-                    <span className={`font-mono ${discrepancy < 0 ? 'text-rose-400' : discrepancy > 0 ? 'text-emerald-400' : 'text-secondary'}`}>
-                      Diff: {discrepancy > 0 ? '+' : ''}{discrepancy.toFixed(2)}
+                    <span
+                      className={`font-mono ${discrepancy < 0 ? 'text-rose-400' : discrepancy > 0 ? 'text-emerald-400' : 'text-secondary'}`}
+                    >
+                      Diff: {discrepancy > 0 ? '+' : ''}
+                      {discrepancy.toFixed(2)}
                     </span>
                   )}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">EGP</span>
-                  <input 
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">
+                    EGP
+                  </span>
+                  <input
                     type="number"
                     min="0"
                     step="1"
@@ -269,7 +303,11 @@ export function CloseShiftModal() {
               needsOverride ? 'bg-amber-600 hover:bg-amber-500' : 'bg-rose-600 hover:bg-rose-500'
             }`}
           >
-            {isSubmitting ? 'Processing...' : needsOverride ? 'Manager Override Required' : 'Close Shift'}
+            {isSubmitting
+              ? 'Processing...'
+              : needsOverride
+                ? 'Manager Override Required'
+                : 'Close Shift'}
           </button>
         </div>
       </div>

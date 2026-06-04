@@ -1,5 +1,9 @@
 import { db } from '../config/database';
-import { productRepository, type Product, type ProductFilters } from '../repositories/product.repository';
+import {
+  productRepository,
+  type Product,
+  type ProductFilters,
+} from '../repositories/product.repository';
 import { NotFoundError, ConflictError } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
 import { supplierService } from './supplier.service';
@@ -20,7 +24,7 @@ export class ProductService {
    */
   async getProducts(filters: ProductFilters): Promise<PaginatedProducts> {
     logger.debug('Fetching product list with filters', { filters });
-    
+
     const [items, total] = await Promise.all([
       productRepository.findAll(filters),
       productRepository.countAll(filters),
@@ -65,11 +69,9 @@ export class ProductService {
    * Create a product and set its initial inventory stock.
    * Uses Knex transaction to ensure atomicity.
    */
-  async createProduct(
-    data: any & { initial_quantity?: number }
-  ): Promise<Product> {
+  async createProduct(data: any & { initial_quantity?: number }): Promise<Product> {
     const { initial_quantity = 0, ...productData } = data;
-    
+
     logger.info('Creating new product', { name: productData.name, barcode: productData.barcode });
 
     // Validate supplier status if provided
@@ -81,7 +83,9 @@ export class ProductService {
     if (productData.barcode) {
       const existingProduct = await productRepository.findByBarcode(productData.barcode);
       if (existingProduct) {
-        throw new ConflictError('A product with this barcode already exists', { barcode: productData.barcode });
+        throw new ConflictError('A product with this barcode already exists', {
+          barcode: productData.barcode,
+        });
       }
     }
 
@@ -90,9 +94,9 @@ export class ProductService {
       return await db.transaction(async (trx) => {
         const product = await productRepository.create(productData, trx);
         await productRepository.createInventory(product.id, initial_quantity, trx);
-        
+
         logger.info('Product created successfully with inventory', { id: product.id });
-        
+
         // Fetch fully populated product with inventory joined
         const populatedProduct = await productRepository.findById(product.id, trx);
         if (!populatedProduct) {
@@ -102,7 +106,9 @@ export class ProductService {
       });
     } catch (error: any) {
       if (error.code === '23505' && error.message?.includes('barcode')) {
-        throw new ConflictError('A product with this barcode already exists', { barcode: productData.barcode });
+        throw new ConflictError('A product with this barcode already exists', {
+          barcode: productData.barcode,
+        });
       }
       throw error;
     }
@@ -129,7 +135,9 @@ export class ProductService {
     if (data.barcode && data.barcode !== existingProduct.barcode) {
       const duplicateProduct = await productRepository.findByBarcode(data.barcode);
       if (duplicateProduct) {
-        throw new ConflictError('A product with this barcode already exists', { barcode: data.barcode });
+        throw new ConflictError('A product with this barcode already exists', {
+          barcode: data.barcode,
+        });
       }
     }
 

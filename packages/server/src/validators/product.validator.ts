@@ -17,7 +17,10 @@ export const createProductSchema = z.object({
   min_stock_level: z.coerce.number().nonnegative('Min stock level must be non-negative').default(0),
   max_stock_level: z.coerce.number().nonnegative('Max stock level must be non-negative').default(0),
   is_active: z.boolean().default(true),
-  initial_quantity: z.coerce.number().nonnegative('Initial quantity must be non-negative').default(0),
+  initial_quantity: z.coerce
+    .number()
+    .nonnegative('Initial quantity must be non-negative')
+    .default(0),
 });
 
 export const updateProductSchema = z.object({

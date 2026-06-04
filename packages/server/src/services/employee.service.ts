@@ -1,4 +1,8 @@
-import { employeeRepository, type Employee, type EmployeeFilters } from '../repositories/employee.repository';
+import {
+  employeeRepository,
+  type Employee,
+  type EmployeeFilters,
+} from '../repositories/employee.repository';
 import { NotFoundError, ConflictError } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
 import bcrypt from 'bcryptjs';
@@ -20,7 +24,7 @@ export class EmployeeService {
    */
   async getEmployees(filters: EmployeeFilters): Promise<PaginatedEmployees> {
     logger.debug('Fetching employee list with filters', { filters });
-    
+
     const [items, total] = await Promise.all([
       employeeRepository.findAll(filters),
       employeeRepository.countAll(filters),

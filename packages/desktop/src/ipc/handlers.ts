@@ -15,10 +15,7 @@ import Store from 'electron-store';
  *   - The result is returned to the renderer as a resolved promise value
  *   - Throw an Error to reject the promise on the renderer side
  */
-export function registerIpcHandlers(
-  ipcMain: IpcMain,
-  serverPort: number,
-): void {
+export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void {
   // ── System ───────────────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.GET_SERVER_PORT, () => {
@@ -39,8 +36,8 @@ export function registerIpcHandlers(
         show: false,
         webPreferences: {
           nodeIntegration: false,
-          contextIsolation: true
-        }
+          contextIsolation: true,
+        },
       });
 
       let isFinished = false;
@@ -62,22 +59,25 @@ export function registerIpcHandlers(
       printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(data.html)}`);
 
       printWindow.webContents.on('did-finish-load', () => {
-        printWindow.webContents.print({ silent: true, printBackground: true }, (success: boolean, failureReason: string) => {
-          if (isFinished) return;
-          isFinished = true;
-          clearTimeout(timeoutId);
-          try {
-            printWindow.destroy();
-          } catch (e) {
-            // Ignore if window was already destroyed
-          }
-          if (success) {
-            resolve({ success: true });
-          } else {
-            console.error('[IPC] Print failed:', failureReason);
-            reject(new Error(`Printing failed: ${failureReason}`));
-          }
-        });
+        printWindow.webContents.print(
+          { silent: true, printBackground: true },
+          (success: boolean, failureReason: string) => {
+            if (isFinished) return;
+            isFinished = true;
+            clearTimeout(timeoutId);
+            try {
+              printWindow.destroy();
+            } catch (e) {
+              // Ignore if window was already destroyed
+            }
+            if (success) {
+              resolve({ success: true });
+            } else {
+              console.error('[IPC] Print failed:', failureReason);
+              reject(new Error(`Printing failed: ${failureReason}`));
+            }
+          },
+        );
       });
 
       printWindow.webContents.on('did-fail-load', () => {
@@ -181,25 +181,28 @@ export function registerIpcHandlers(
 
   ipcMain.handle(IPC_CHANNELS.SELECT_DIRECTORY, async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
-    const result = await dialog.showOpenDialog(win ?? BrowserWindow.getFocusedWindow() ?? undefined!, {
-      properties: ['openDirectory', 'createDirectory'],
-      title: 'Select Backup Directory',
-    });
-    return result.canceled ? null : result.filePaths[0] ?? null;
+    const result = await dialog.showOpenDialog(
+      win ?? BrowserWindow.getFocusedWindow() ?? undefined!,
+      {
+        properties: ['openDirectory', 'createDirectory'],
+        title: 'Select Backup Directory',
+      },
+    );
+    return result.canceled ? null : (result.filePaths[0] ?? null);
   });
 
-  ipcMain.handle(
-    IPC_CHANNELS.SELECT_FILE,
-    async (event, filters: Electron.FileFilter[]) => {
-      const win = BrowserWindow.fromWebContents(event.sender);
-      const result = await dialog.showOpenDialog(win ?? BrowserWindow.getFocusedWindow() ?? undefined!, {
+  ipcMain.handle(IPC_CHANNELS.SELECT_FILE, async (event, filters: Electron.FileFilter[]) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const result = await dialog.showOpenDialog(
+      win ?? BrowserWindow.getFocusedWindow() ?? undefined!,
+      {
         properties: ['openFile'],
         filters: filters ?? [],
         title: 'Select File',
-      });
-      return result.canceled ? null : result.filePaths[0] ?? null;
-    },
-  );
+      },
+    );
+    return result.canceled ? null : (result.filePaths[0] ?? null);
+  });
 
   // ── Window Management ─────────────────────────────────────────────────────
 
@@ -225,8 +228,8 @@ export function registerIpcHandlers(
   const offlineStore = new Store({
     name: 'offline-sales-store',
     defaults: {
-      offlineSales: []
-    }
+      offlineSales: [],
+    },
   }) as any;
 
   ipcMain.handle(IPC_CHANNELS.PERSIST_OFFLINE_SALE, (_event, sale: any) => {

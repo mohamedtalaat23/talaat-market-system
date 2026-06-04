@@ -95,7 +95,7 @@ export function useCreateSupplier() {
   return useGenericCreateMutation<CreateSupplierPayload, Supplier>(
     'suppliers',
     '/suppliers',
-    'Supplier profile registered'
+    'Supplier profile registered',
   );
 }
 
@@ -107,7 +107,7 @@ export function useUpdateSupplier(id: number) {
   const mutation = useGenericUpdateMutation<UpdateSupplierPayload, Supplier>(
     'suppliers',
     '/suppliers',
-    'Supplier profile updated'
+    'Supplier profile updated',
   );
 
   return {
@@ -123,5 +123,9 @@ export function useUpdateSupplier(id: number) {
  * Soft delete a supplier using the generic delete mutation.
  */
 export function useDeleteSupplier() {
-  return useGenericDeleteMutation('suppliers', '/suppliers', 'Supplier profile deleted successfully');
+  return useGenericDeleteMutation(
+    'suppliers',
+    '/suppliers',
+    'Supplier profile deleted successfully',
+  );
 }

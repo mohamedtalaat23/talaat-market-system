@@ -15,10 +15,7 @@ export class CategoryRepository {
    * Find all active categories, ordered alphabetically by name.
    */
   async findAllActive(): Promise<Category[]> {
-    return await db('categories')
-      .select('*')
-      .where('is_active', true)
-      .orderBy('name', 'asc');
+    return await db('categories').select('*').where('is_active', true).orderBy('name', 'asc');
   }
 }
 

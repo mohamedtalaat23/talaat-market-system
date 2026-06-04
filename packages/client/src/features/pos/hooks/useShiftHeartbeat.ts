@@ -15,18 +15,24 @@ export function useShiftHeartbeat() {
 
     const checkShiftStatus = async () => {
       try {
-        const response = await apiClient.get<{ success: boolean; data: any }>('/pos/shifts/current');
-        
+        const response = await apiClient.get<{ success: boolean; data: any }>(
+          '/pos/shifts/current',
+        );
+
         if (response.data?.success) {
           const serverShift = response.data.data;
-          
+
           // If the server says there is no current open shift for this cashier, or it has been closed
-          if (!serverShift || serverShift.status === 'closed' || serverShift.id !== activeShift.id) {
+          if (
+            !serverShift ||
+            serverShift.status === 'closed' ||
+            serverShift.id !== activeShift.id
+          ) {
             setActiveShift(null);
             toast.error('Active shift has been closed or terminated remotely. Cash-in required.', {
               id: 'shift-heartbeat-terminated',
               icon: '🔒',
-              duration: 6000
+              duration: 6000,
             });
           }
         }

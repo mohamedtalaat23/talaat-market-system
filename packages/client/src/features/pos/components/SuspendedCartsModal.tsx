@@ -14,7 +14,10 @@ interface SuspendedCartItemProps {
 
 const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItemProps) => {
   const { total } = useMemo(() => {
-    const sub = cart.cart.reduce((sum: number, item: any) => sum + (item.quantity * item.unit_price) - item.discount, 0);
+    const sub = cart.cart.reduce(
+      (sum: number, item: any) => sum + item.quantity * item.unit_price - item.discount,
+      0,
+    );
     return { total: sub - cart.globalDiscount };
   }, [cart]);
 
@@ -29,7 +32,8 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
           <span>Cashier ID: {cart.cashier_id}</span>
         </div>
         <div className="font-bold text-white text-lg">
-          {cart.cart.length} items <span className="text-slate-500 font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
+          {cart.cart.length} items{' '}
+          <span className="text-slate-500 font-normal ml-2">Total: EGP {total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -56,11 +60,11 @@ export function SuspendedCartsModal() {
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
   const closeModal = () => closeModalAction('pos_suspended_carts');
-  
+
   const heldCarts = usePOSStore((state) => state.heldCarts);
   const resumeCart = usePOSStore((state) => state.resumeCart);
   const removeHeldCart = usePOSStore((state) => state.removeHeldCart);
-  
+
   const user = useAuthStore((state) => state.user);
 
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
@@ -80,11 +84,11 @@ export function SuspendedCartsModal() {
       closeModal();
       openModalAction('pos_manager_override', {
         action: 'cross_cashier_resume',
-        holdId
+        holdId,
       });
       return;
     }
-    
+
     // Clear current cart if we resume
     const currentCartLength = usePOSStore.getState().cart.length;
     if (currentCartLength > 0) {
@@ -100,7 +104,7 @@ export function SuspendedCartsModal() {
 
   const handleDiscard = (holdId: string, cashierId: number) => {
     if (user?.id !== cashierId && user?.role !== 'admin' && user?.role !== 'manager') {
-      toast.error('Only managers can discard other cashiers\' suspended carts');
+      toast.error("Only managers can discard other cashiers' suspended carts");
       return;
     }
     if (window.confirm('Are you sure you want to permanently delete this suspended cart?')) {
@@ -123,7 +127,10 @@ export function SuspendedCartsModal() {
             <Clock size={24} className="text-amber-500" />
             <span>Suspended Carts</span>
           </h3>
-          <button onClick={closeModal} className="text-secondary hover:text-white transition-colors">
+          <button
+            onClick={closeModal}
+            className="text-secondary hover:text-white transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
@@ -135,11 +142,11 @@ export function SuspendedCartsModal() {
             </div>
           ) : (
             heldCarts.map((cart) => (
-              <SuspendedCartItem 
-                key={cart.hold_id} 
-                cart={cart} 
-                onDiscard={handleDiscard} 
-                onResume={handleResume} 
+              <SuspendedCartItem
+                key={cart.hold_id}
+                cart={cart}
+                onDiscard={handleDiscard}
+                onResume={handleResume}
               />
             ))
           )}

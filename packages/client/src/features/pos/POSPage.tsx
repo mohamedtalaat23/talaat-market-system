@@ -26,13 +26,19 @@ export function POSPage() {
   const navigate = useNavigate();
   const openModal = useModalStore((state) => state.openModal);
 
+  // Expose stores to window for E2E testing inspection/control
+  useEffect(() => {
+    (window as any).__modalStore = useModalStore;
+    (window as any).__posStore = usePOSStore;
+  }, [openModal]);
+
   // Trigger Manager PIN override popup on mount before unlocking page
   useEffect(() => {
     openModal('pos_manager_override', {
       action: 'enter_pos',
       onCancel: () => {
         navigate('/');
-      }
+      },
     });
   }, [openModal, navigate]);
 
@@ -51,7 +57,9 @@ export function POSPage() {
     // Fetch active shift on mount
     const fetchShift = async () => {
       try {
-        const response = await apiClient.get<{ success: boolean; data: any }>('/pos/shifts/current');
+        const response = await apiClient.get<{ success: boolean; data: any }>(
+          '/pos/shifts/current',
+        );
         if (response.data?.success) {
           setActiveShift(response.data.data);
         }
@@ -66,7 +74,7 @@ export function POSPage() {
   return (
     <div className="flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden select-none">
       <POSTopBar />
-      
+
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel: Cart (70% approximation) */}
         <div className="w-8/12 flex flex-col border-r rtl:border-r-0 rtl:border-l border-border bg-card/40">
@@ -75,11 +83,7 @@ export function POSPage() {
 
         {/* Right Panel: Summary & Actions (30% approximation) */}
         <div className="w-4/12 flex flex-col bg-sidebar p-4 space-y-4 justify-between h-full overflow-y-auto">
-          <POSSummary 
-            cart={cart}
-            paymentMethod={paymentMethod}
-            cashReceived={cashReceived}
-          />
+          <POSSummary cart={cart} paymentMethod={paymentMethod} cashReceived={cashReceived} />
           <PrintQueueMonitor />
         </div>
       </div>

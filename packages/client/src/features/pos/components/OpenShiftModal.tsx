@@ -10,7 +10,7 @@ export function OpenShiftModal() {
   const isOpen = activeModals.pos_open_shift;
   const registerId = usePOSStore((state) => state.registerId);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
-  
+
   const [startingCash, setStartingCash] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,7 +27,7 @@ export function OpenShiftModal() {
     try {
       const response = await apiClient.post<{ success: boolean; data: any }>('/pos/shifts/open', {
         starting_cash: cash,
-        register_id: registerId
+        register_id: registerId,
       });
 
       if (response.data?.success) {
@@ -52,7 +52,7 @@ export function OpenShiftModal() {
             <Wallet className="w-5 h-5 text-emerald-400" />
             <h2 className="text-lg font-semibold text-white">Open Register Shift</h2>
           </div>
-          <button 
+          <button
             onClick={() => closeModal('pos_open_shift')}
             className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
           >
@@ -72,8 +72,10 @@ export function OpenShiftModal() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-secondary">Starting Cash Drawer (EGP)</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">£</span>
-              <input 
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">
+                £
+              </span>
+              <input
                 type="number"
                 min="0"
                 step="1"

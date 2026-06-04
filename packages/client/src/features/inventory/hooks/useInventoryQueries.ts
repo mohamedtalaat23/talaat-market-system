@@ -15,6 +15,7 @@ export interface InventoryItem {
   product_min_stock_level: number;
   product_selling_price: number;
   category_name?: string | null;
+  category_name_ar?: string | null;
 }
 
 export interface InventoryAdjustment {
@@ -114,7 +115,10 @@ export function useInventoryCategories() {
   return useQuery<Array<{ id: number; name: string; name_ar: string | null }>>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await apiClient.get<{ success: boolean; data: Array<{ id: number; name: string; name_ar: string | null }> }>('/categories');
+      const response = await apiClient.get<{
+        success: boolean;
+        data: Array<{ id: number; name: string; name_ar: string | null }>;
+      }>('/categories');
       return response.data?.data || [];
     },
     staleTime: 5 * 60 * 1000,
@@ -128,7 +132,10 @@ export function useAdjustStock() {
   const queryClient = useQueryClient();
   return useMutation<InventoryItem, Error, AdjustStockInput>({
     mutationFn: async (input) => {
-      const response = await apiClient.post<{ success: boolean; data: InventoryItem }>('/inventory/adjust', input);
+      const response = await apiClient.post<{ success: boolean; data: InventoryItem }>(
+        '/inventory/adjust',
+        input,
+      );
       return response.data.data;
     },
     onSuccess: () => {
@@ -145,10 +152,13 @@ export function useSetStockDirectly() {
   const queryClient = useQueryClient();
   return useMutation<InventoryItem, Error, DirectStockInput>({
     mutationFn: async ({ productId, quantity, notes }) => {
-      const response = await apiClient.put<{ success: boolean; data: InventoryItem }>(`/inventory/${productId}`, {
-        quantity,
-        notes,
-      });
+      const response = await apiClient.put<{ success: boolean; data: InventoryItem }>(
+        `/inventory/${productId}`,
+        {
+          quantity,
+          notes,
+        },
+      );
       return response.data.data;
     },
     onSuccess: () => {
@@ -161,7 +171,11 @@ export function useSetStockDirectly() {
 /**
  * Hook to query stock adjustments history logs.
  */
-export function useInventoryAdjustments(filters: { page: number; limit: number; product_id?: number | undefined }) {
+export function useInventoryAdjustments(filters: {
+  page: number;
+  limit: number;
+  product_id?: number | undefined;
+}) {
   return useQuery<AdjustmentsResponse>({
     queryKey: ['inventory-adjustments', filters],
     queryFn: async () => {
@@ -174,7 +188,9 @@ export function useInventoryAdjustments(filters: { page: number; limit: number; 
         params.product_id = filters.product_id;
       }
 
-      const response = await apiClient.get<AdjustmentsResponse>('/inventory/adjustments', { params });
+      const response = await apiClient.get<AdjustmentsResponse>('/inventory/adjustments', {
+        params,
+      });
       return response.data;
     },
   });

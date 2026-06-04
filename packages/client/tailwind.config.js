@@ -25,7 +25,7 @@ export default {
           900: "var(--color-primary-900)",
         },
         secondary: {
-          DEFAULT: "var(--color-neutral-700)",
+          DEFAULT: "var(--text-secondary)",
           foreground: "var(--color-neutral-50)",
         },
         destructive: {

@@ -36,7 +36,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
 
     const getFocusableElements = (): HTMLElement[] => {
       const elements = Array.from(
-        container.querySelectorAll<HTMLElement>(focusableSelectors.join(','))
+        container.querySelectorAll<HTMLElement>(focusableSelectors.join(',')),
       );
       // Filter out elements that are hidden (e.g. display: none or parent visibility: hidden)
       return elements.filter((el) => {

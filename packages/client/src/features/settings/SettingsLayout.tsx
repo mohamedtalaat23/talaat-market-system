@@ -1,21 +1,27 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { Store, Receipt, MonitorSpeaker, Printer, Wifi, SlidersHorizontal } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const TABS = [
-  { path: 'general', label: 'General Settings', icon: Store },
-  { path: 'pos', label: 'POS Preferences', icon: SlidersHorizontal },
-  { path: 'receipts', label: 'Receipt Template', icon: Receipt },
-  { path: 'registers', label: 'Terminals & Registers', icon: MonitorSpeaker },
-  { path: 'printers', label: 'Hardware Printers', icon: Printer },
-  { path: 'lan', label: 'LAN & Sync', icon: Wifi },
-];
+  { path: 'general', key: 'settings.general', icon: Store },
+  { path: 'pos', key: 'settings.pos', icon: SlidersHorizontal },
+  { path: 'receipts', key: 'settings.receipts', icon: Receipt },
+  { path: 'registers', key: 'settings.registers', icon: MonitorSpeaker },
+  { path: 'printers', key: 'settings.printers', icon: Printer },
+  { path: 'lan', key: 'settings.lan', icon: Wifi },
+] as const;
+
 export function SettingsLayout() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex h-full gap-6">
       <div className="w-64 shrink-0 flex flex-col gap-2">
-        <h2 className="text-lg font-semibold tracking-tight mb-4 text-foreground px-2">Settings</h2>
+        <h2 className="text-lg font-semibold tracking-tight mb-4 text-foreground px-2">
+          {t('settings.title')}
+        </h2>
         <nav className="flex flex-col gap-1">
-          {TABS.map(({ path, label, icon: Icon }) => (
+          {TABS.map(({ path, key, icon: Icon }) => (
             <NavLink
               key={path}
               to={path}
@@ -28,7 +34,7 @@ export function SettingsLayout() {
               }
             >
               <Icon size={18} />
-              {label}
+              {t(key)}
             </NavLink>
           ))}
         </nav>

@@ -17,12 +17,25 @@ body {
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   color: var(--text-primary);
-  background: radial-gradient(circle at top center, var(--bg-gradient-start) 0%, var(--bg-app) 100%);
+  background: radial-gradient(
+    circle at top center,
+    var(--bg-gradient-start) 0%,
+    var(--bg-app) 100%
+  );
   background-attachment: fixed;
   line-height: var(--leading-normal);
   /* Prevent text selection during rapid interactions (POS use) */
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Force form elements to use main sans font to prevent browser serif fallback */
+input,
+button,
+textarea,
+select,
+optgroup {
+  font-family: var(--font-sans);
 }
 
 /* Allow text selection in inputs and content areas */
@@ -32,6 +45,17 @@ textarea,
 .selectable {
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* Global Cairo Font family override for Arabic Language */
+html[lang="ar"],
+html[lang="ar"] body,
+html[lang="ar"] input,
+html[lang="ar"] button,
+html[lang="ar"] textarea,
+html[lang="ar"] select,
+html[lang="ar"] optgroup {
+  font-family: var(--font-arabic) !important;
 }
 
 /* ── Custom Scrollbar (Webkit) ───────────────────────────────── */
@@ -62,12 +86,30 @@ textarea,
 
 /* ── Typography ─────────────────────────────────────────────── */
 
-h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); }
-h2 { font-size: var(--text-2xl); font-weight: var(--font-semibold); }
-h3 { font-size: var(--text-xl);  font-weight: var(--font-semibold); }
-h4 { font-size: var(--text-lg);  font-weight: var(--font-medium); }
-h5 { font-size: var(--text-base);font-weight: var(--font-medium); }
-h6 { font-size: var(--text-sm);  font-weight: var(--font-medium); }
+h1 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+}
+h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+}
+h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+}
+h4 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+}
+h5 {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+}
+h6 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
 
 /* ── Utility Classes ─────────────────────────────────────────── */
 
@@ -168,29 +210,58 @@ h6 { font-size: var(--text-sm);  font-weight: var(--font-medium); }
 /* ── Animations ─────────────────────────────────────────────── */
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.animate-fade-in   { animation: fadeIn 200ms ease forwards; }
-.animate-slide-in  { animation: slideInLeft 200ms ease forwards; }
-.animate-pulse     { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.animate-spin      { animation: spin 1s linear infinite; }
+.animate-fade-in {
+  animation: fadeIn 200ms ease forwards;
+}
+.animate-slide-in {
+  animation: slideInLeft 200ms ease forwards;
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
 /* ── Print styles ───────────────────────────────────────────── */
 

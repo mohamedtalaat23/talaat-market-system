@@ -4,14 +4,10 @@ import { HTTP_STATUS } from '../config/constants';
 
 /**
  * POST /auth/login
- * 
+ *
  * Authenticates user credentials (password or PIN) and returns a signed JWT.
  */
-export async function login(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { username, password, pin } = req.body;
     const result = await authService.login(username, password, pin);
@@ -26,14 +22,10 @@ export async function login(
 
 /**
  * POST /auth/logout
- * 
+ *
  * Stateless logout endpoint. Simply instructs client to clear token.
  */
-export async function logout(
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // With stateless JWT, server doesn't maintain session storage.
     // Client simply deletes the token from its memory/localstorage.
@@ -48,14 +40,10 @@ export async function logout(
 
 /**
  * GET /auth/me
- * 
+ *
  * Returns the currently authenticated employee details.
  */
-export async function getMe(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // req.user was populated by requireAuth middleware
     res.status(HTTP_STATUS.OK).json({

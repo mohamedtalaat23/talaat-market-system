@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import toast from 'react-hot-toast';
+import type { ActiveShift, POSCustomer } from '@/types';
 
 export interface POSCartItem {
   cart_id: string; // unique ID for the cart row
@@ -30,12 +31,12 @@ export interface POSState {
   activeItemIndex: number;
   globalDiscount: number;
   heldCarts: HeldCart[];
-  activeShift: any | null; // Can type this properly later with a Shift interface
+  activeShift: ActiveShift | null;
   registerId: number;
   autoPrintReceipts: boolean;
   lastSaleId: string | null;
-  selectedCustomer: any | null;
-  
+  selectedCustomer: POSCustomer | null;
+
   // Actions
   addItem: (item: Omit<POSCartItem, 'cart_id'>) => void;
   updateQuantity: (cartId: string, quantity: number) => void;
@@ -49,16 +50,16 @@ export interface POSState {
   holdCurrentCart: (cashierId: number) => void;
   resumeCart: (holdId: string) => void;
   removeHeldCart: (holdId: string) => void;
-  setActiveShift: (shift: any | null) => void;
+  setActiveShift: (shift: ActiveShift | null) => void;
   setRegisterId: (id: number) => void;
   setAutoPrintReceipts: (auto: boolean) => void;
   setLastSaleId: (id: string | null) => void;
-  selectCustomer: (customer: any | null) => void;
+  selectCustomer: (customer: POSCustomer | null) => void;
 }
 
 export const usePOSStore = create<POSState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       cart: [],
       paymentMethod: 'cash',
       cashReceived: 0,
@@ -66,137 +67,169 @@ export const usePOSStore = create<POSState>()(
       globalDiscount: 0,
       heldCarts: [],
       activeShift: null,
-      registerId: 1, // Default local register ID
+      registerId: 1,
       autoPrintReceipts: true,
       lastSaleId: null,
       selectedCustomer: null,
-      
-      addItem: (item) => set((state) => {
-        const existingIndex = state.cart.findIndex(i => i.product_id === item.product_id && i.unit_price === item.unit_price && i.discount === 0);
-        if (existingIndex >= 0 && item.discount === 0) {
-          const existingItem = state.cart[existingIndex];
-          if (!existingItem) return state;
 
-          const nextQuantity = existingItem.quantity + item.quantity;
+      // ── Fix #1: Side-effects (toasts) are computed BEFORE set() ────────────
+      // The set() updater is now a pure function with no side-effects.
+      // This makes actions fully unit-testable and safe under concurrent
+      // rendering or Zustand's internal batching.
 
-          // Non-blocking warning toast if the new total exceeds recorded stock boundaries
-          if (nextQuantity > item.inventory_quantity) {
-            toast.dismiss();
-            toast.error(`Warning: Cart quantity (${nextQuantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
-              icon: '⚠️',
-              duration: 4000
-            });
-          }
+      addItem: (item) => {
+        const state = get();
+        const existingItem = state.cart.find(
+          (i) =>
+            i.product_id === item.product_id &&
+            i.unit_price === item.unit_price &&
+            i.discount === 0,
+        );
 
-          const newCart = [...state.cart];
-          newCart[existingIndex] = {
-            ...existingItem,
-            quantity: nextQuantity
-          };
-          return { cart: newCart, activeItemIndex: existingIndex };
-        }
+        const projectedQty = existingItem ? existingItem.quantity + item.quantity : item.quantity;
 
-        // Check stock boundaries for new item insertion
-        if (item.quantity > item.inventory_quantity) {
+        // Side-effect: inventory boundary warning — lives outside set()
+        if (projectedQty > item.inventory_quantity) {
           toast.dismiss();
-          toast.error(`Warning: Cart quantity (${item.quantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
-            icon: '⚠️',
-            duration: 4000
-          });
+          toast.error(
+            `Warning: Cart quantity (${projectedQty}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`,
+            { icon: '⚠️', duration: 4000 },
+          );
         }
 
-        const newCart = [...state.cart, { ...item, cart_id: crypto.randomUUID() }];
-        return { cart: newCart, activeItemIndex: newCart.length - 1 };
-      }),
-      
-      updateQuantity: (cartId, quantity) => set((state) => {
-        const newCart = state.cart.map(item => {
-          if (item.cart_id === cartId) {
-            // Trigger non-blocking warning toast on manually updated quantity overstock
-            if (quantity > item.inventory_quantity) {
-              toast.dismiss();
-              toast.error(`Warning: Cart quantity (${quantity}) exceeds recorded inventory (${item.inventory_quantity}) for "${item.name}".`, {
-                icon: '⚠️',
-                duration: 4000
-              });
-            }
-            return { ...item, quantity };
+        // Pure state update
+        set((state) => {
+          const existingIndex = state.cart.findIndex(
+            (i) =>
+              i.product_id === item.product_id &&
+              i.unit_price === item.unit_price &&
+              i.discount === 0,
+          );
+
+          if (existingIndex >= 0 && item.discount === 0) {
+            const existingItem = state.cart[existingIndex];
+            if (!existingItem) return state;
+            const newCart = [...state.cart];
+            newCart[existingIndex] = { ...existingItem, quantity: projectedQty };
+            return { cart: newCart, activeItemIndex: existingIndex };
           }
-          return item;
+
+          const newCart = [...state.cart, { ...item, cart_id: crypto.randomUUID() }];
+          return { cart: newCart, activeItemIndex: newCart.length - 1 };
         });
-        return { cart: newCart };
-      }),
+      },
 
-      updateItemDiscount: (cartId, discount) => set((state) => ({
-        cart: state.cart.map(item => item.cart_id === cartId ? { ...item, discount } : item)
-      })),
-      
-      removeItem: (cartId) => set((state) => {
-        const newCart = state.cart.filter(item => item.cart_id !== cartId);
-        return { 
-          cart: newCart,
-          activeItemIndex: Math.min(state.activeItemIndex, Math.max(0, newCart.length - 1))
-        };
-      }),
-      
-      clearCart: () => set({ cart: [], cashReceived: 0, paymentMethod: 'cash', activeItemIndex: 0, globalDiscount: 0, selectedCustomer: null }),
-      
-      setPaymentMethod: (method) => set({ paymentMethod: method }),
-      setCashReceived: (amount) => set({ cashReceived: amount }),
-      setActiveItemIndex: (index) => set({ activeItemIndex: index }),
-      setGlobalDiscount: (discount) => set({ globalDiscount: discount }),
+      updateQuantity: (cartId, quantity) => {
+        const state = get();
+        const targetItem = state.cart.find((i) => i.cart_id === cartId);
 
-      holdCurrentCart: (cashierId) => set((state) => {
-        if (state.cart.length === 0) return state;
-        const heldCart: HeldCart = {
-          hold_id: crypto.randomUUID(),
-          cashier_id: cashierId,
-          timestamp: new Date().toISOString(),
-          cart: [...state.cart],
-          globalDiscount: state.globalDiscount,
-        };
-        return {
-          heldCarts: [...state.heldCarts, heldCart],
+        // Side-effect: overstock warning — lives outside set()
+        if (targetItem && quantity > targetItem.inventory_quantity) {
+          toast.dismiss();
+          toast.error(
+            `Warning: Cart quantity (${quantity}) exceeds recorded inventory (${targetItem.inventory_quantity}) for "${targetItem.name}".`,
+            { icon: '⚠️', duration: 4000 },
+          );
+        }
+
+        // Pure state update
+        set((state) => ({
+          cart: state.cart.map((item) => (item.cart_id === cartId ? { ...item, quantity } : item)),
+        }));
+      },
+
+      updateItemDiscount: (cartId, discount) =>
+        set((state) => ({
+          cart: state.cart.map((item) => (item.cart_id === cartId ? { ...item, discount } : item)),
+        })),
+
+      removeItem: (cartId) =>
+        set((state) => {
+          const newCart = state.cart.filter((item) => item.cart_id !== cartId);
+          return {
+            cart: newCart,
+            activeItemIndex: Math.min(state.activeItemIndex, Math.max(0, newCart.length - 1)),
+          };
+        }),
+
+      clearCart: () =>
+        set({
           cart: [],
           cashReceived: 0,
           paymentMethod: 'cash',
           activeItemIndex: 0,
           globalDiscount: 0,
-        };
-      }),
+          selectedCustomer: null,
+        }),
 
-      resumeCart: (holdId) => set((state) => {
-        const heldCart = state.heldCarts.find(h => h.hold_id === holdId);
-        if (!heldCart) return state;
-        
-        let newHeldCarts = state.heldCarts.filter(h => h.hold_id !== holdId);
-        
-        // Auto-shelve the current active cart to prevent data loss
-        if (state.cart.length > 0) {
-          const autoHeldCart: HeldCart = {
+      setPaymentMethod: (method) => set({ paymentMethod: method }),
+      setCashReceived: (amount) => set({ cashReceived: amount }),
+      setActiveItemIndex: (index) => set({ activeItemIndex: index }),
+      setGlobalDiscount: (discount) => set({ globalDiscount: discount }),
+
+      holdCurrentCart: (cashierId) =>
+        set((state) => {
+          if (state.cart.length === 0) return state;
+          const heldCart: HeldCart = {
             hold_id: crypto.randomUUID(),
-            cashier_id: heldCart.cashier_id,
+            cashier_id: cashierId,
             timestamp: new Date().toISOString(),
             cart: [...state.cart],
             globalDiscount: state.globalDiscount,
           };
-          newHeldCarts = [...newHeldCarts, autoHeldCart];
-          toast.success('Active cart suspended to held queue to prevent data loss', { icon: '📥', duration: 4000 });
-        }
-        
-        return {
-          cart: heldCart.cart,
-          globalDiscount: heldCart.globalDiscount,
-          activeItemIndex: 0,
-          cashReceived: 0,
-          paymentMethod: 'cash',
-          heldCarts: newHeldCarts
-        };
-      }),
+          return {
+            heldCarts: [...state.heldCarts, heldCart],
+            cart: [],
+            cashReceived: 0,
+            paymentMethod: 'cash',
+            activeItemIndex: 0,
+            globalDiscount: 0,
+          };
+        }),
 
-      removeHeldCart: (holdId) => set((state) => ({
-        heldCarts: state.heldCarts.filter(h => h.hold_id !== holdId)
-      })),
+      resumeCart: (holdId) => {
+        const state = get();
+        const heldCart = state.heldCarts.find((h) => h.hold_id === holdId);
+        if (!heldCart) return;
+
+        // Side-effect: auto-suspend notification — lives outside set()
+        if (state.cart.length > 0) {
+          toast.success('Active cart suspended to held queue to prevent data loss', {
+            icon: '📥',
+            duration: 4000,
+          });
+        }
+
+        // Pure state update
+        set((state) => {
+          let newHeldCarts = state.heldCarts.filter((h) => h.hold_id !== holdId);
+
+          if (state.cart.length > 0) {
+            const autoHeld: HeldCart = {
+              hold_id: crypto.randomUUID(),
+              cashier_id: heldCart.cashier_id,
+              timestamp: new Date().toISOString(),
+              cart: [...state.cart],
+              globalDiscount: state.globalDiscount,
+            };
+            newHeldCarts = [...newHeldCarts, autoHeld];
+          }
+
+          return {
+            cart: heldCart.cart,
+            globalDiscount: heldCart.globalDiscount,
+            activeItemIndex: 0,
+            cashReceived: 0,
+            paymentMethod: 'cash',
+            heldCarts: newHeldCarts,
+          };
+        });
+      },
+
+      removeHeldCart: (holdId) =>
+        set((state) => ({
+          heldCarts: state.heldCarts.filter((h) => h.hold_id !== holdId),
+        })),
 
       setActiveShift: (shift) => set({ activeShift: shift }),
       setRegisterId: (id) => set({ registerId: id }),
@@ -223,6 +256,6 @@ export const usePOSStore = create<POSState>()(
         selectedCustomer: state.selectedCustomer,
         lastSaleId: state.lastSaleId,
       }),
-    }
-  )
+    },
+  ),
 );

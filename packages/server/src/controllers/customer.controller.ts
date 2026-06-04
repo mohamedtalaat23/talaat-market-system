@@ -16,7 +16,7 @@ export class CustomerController {
       const offset = (page - 1) * limit;
 
       const { data: customers, total } = await customerRepository.findAll(search, limit, offset);
-      
+
       res.status(HTTP_STATUS.OK).json({
         success: true,
         status: 'success',
@@ -26,7 +26,7 @@ export class CustomerController {
           page,
           limit,
           totalPages: Math.ceil(total / limit),
-        }
+        },
       });
     } catch (error) {
       logger.error('Error listing customers:', error);
@@ -52,7 +52,9 @@ export class CustomerController {
       }
 
       const { data: ledger, total: ledgerTotal } = await customerRepository.getTransactionLedger(
-        id, ledgerPage, ledgerLimit
+        id,
+        ledgerPage,
+        ledgerLimit,
       );
 
       res.status(HTTP_STATUS.OK).json({
@@ -91,7 +93,9 @@ export class CustomerController {
     } catch (error) {
       // Handle unique phone constraint violation
       if (error instanceof Error && error.message.includes('unique constraint')) {
-        res.status(HTTP_STATUS.BAD_REQUEST).json({ status: 'error', message: 'A customer with this phone number already exists' });
+        res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ status: 'error', message: 'A customer with this phone number already exists' });
         return;
       }
       logger.error('Error creating customer:', error);
@@ -114,7 +118,9 @@ export class CustomerController {
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('unique constraint')) {
-        res.status(HTTP_STATUS.BAD_REQUEST).json({ status: 'error', message: 'A customer with this phone number already exists' });
+        res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ status: 'error', message: 'A customer with this phone number already exists' });
         return;
       }
       logger.error('Error updating customer:', error);
@@ -163,7 +169,7 @@ export class CustomerController {
         userId,
         activeShift?.id || null,
         activeShift?.register_id || null,
-        payment_method
+        payment_method,
       );
 
       res.status(HTTP_STATUS.OK).json({

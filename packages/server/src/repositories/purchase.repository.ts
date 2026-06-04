@@ -79,7 +79,7 @@ export class PurchaseRepository {
         'po.*',
         's.name as supplier_name',
         's.supplier_code as supplier_code',
-        'e.full_name as creator_name'
+        'e.full_name as creator_name',
       );
 
     if (filters.status) {
@@ -105,7 +105,7 @@ export class PurchaseRepository {
 
     return {
       items,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -123,7 +123,7 @@ export class PurchaseRepository {
         's.name as supplier_name',
         's.supplier_code as supplier_code',
         'ec.full_name as creator_name',
-        'er.full_name as receiver_name'
+        'er.full_name as receiver_name',
       )
       .first();
 
@@ -137,7 +137,7 @@ export class PurchaseRepository {
         'p.name as product_name',
         'p.name_ar as product_name_ar',
         'p.barcode as barcode',
-        'p.unit as unit'
+        'p.unit as unit',
       );
 
     return {
@@ -179,17 +179,19 @@ export class PurchaseRepository {
       const poNumber = `PO-${dateStr}-${seq}`;
 
       // 3. Insert Purchase Order Header
-      const [po] = await trx('purchase_orders').insert({
-        po_number: poNumber,
-        supplier_id: input.supplier_id,
-        status: 'draft',
-        subtotal,
-        discount_amount: discount,
-        tax_amount: tax,
-        total,
-        created_by: creatorId,
-        notes: input.notes || null,
-      }).returning('*');
+      const [po] = await trx('purchase_orders')
+        .insert({
+          po_number: poNumber,
+          supplier_id: input.supplier_id,
+          status: 'draft',
+          subtotal,
+          discount_amount: discount,
+          tax_amount: tax,
+          total,
+          created_by: creatorId,
+          notes: input.notes || null,
+        })
+        .returning('*');
 
       // 4. Insert Purchase Order Line Items
       const itemsToInsert = input.items.map((item) => ({
@@ -205,7 +207,7 @@ export class PurchaseRepository {
 
       return {
         ...po,
-        items: insertedItems
+        items: insertedItems,
       };
     });
   }
@@ -239,7 +241,7 @@ export class PurchaseRepository {
           tax_amount: tax,
           total,
           notes: input.notes || null,
-          updated_at: trx.fn.now()
+          updated_at: trx.fn.now(),
         })
         .returning('*');
 
@@ -259,7 +261,7 @@ export class PurchaseRepository {
 
       return {
         ...updatedPo,
-        items: insertedItems
+        items: insertedItems,
       };
     });
   }
@@ -279,18 +281,20 @@ export class PurchaseRepository {
       throw new Error('Only draft purchase orders can be ordered');
     }
 
-    await db('purchase_orders')
-      .where('id', id)
-      .update({
-        status,
-        updated_at: db.fn.now()
-      });
+    await db('purchase_orders').where('id', id).update({
+      status,
+      updated_at: db.fn.now(),
+    });
   }
 
   /**
    * Complete purchase order and increment warehouse inventories (AVCO updates)
    */
-  async receiveGoods(id: number, receivedItems: ReceiveItemInput[], receiverId: number): Promise<void> {
+  async receiveGoods(
+    id: number,
+    receivedItems: ReceiveItemInput[],
+    receiverId: number,
+  ): Promise<void> {
     return await db.transaction(async (trx) => {
       // 1. Lock and verify the purchase order
       const po = await trx('purchase_orders').where({ id }).forUpdate().first();
@@ -320,7 +324,10 @@ export class PurchaseRepository {
 
         // B. Query current physical warehouse stock and catalog costs
         const inv = await trx('inventory').where('product_id', item.product_id).forUpdate().first();
-        const product = await trx('products').where('id', item.product_id).select('cost_price').first();
+        const product = await trx('products')
+          .where('id', item.product_id)
+          .select('cost_price')
+          .first();
 
         const currentStock = inv ? Number(inv.quantity) : 0;
         const currentCost = product ? Number(product.cost_price) : 0;
@@ -329,8 +336,9 @@ export class PurchaseRepository {
 
         // C. AVCO cost price weighted average recalculation with clean rounding
         let finalCostPrice = itemCost;
-        if (currentStock > 0 && (currentStock + addStock) > 0) {
-          finalCostPrice = ((currentStock * currentCost) + (addStock * itemCost)) / (currentStock + addStock);
+        if (currentStock > 0 && currentStock + addStock > 0) {
+          finalCostPrice =
+            (currentStock * currentCost + addStock * itemCost) / (currentStock + addStock);
         }
         finalCostPrice = bankersRound(finalCostPrice);
 
@@ -341,7 +349,7 @@ export class PurchaseRepository {
               product_id: item.product_id,
               quantity: addStock,
               reserved_quantity: 0,
-              updated_at: trx.fn.now()
+              updated_at: trx.fn.now(),
             });
           } else {
             await trx('inventory')
@@ -364,7 +372,7 @@ export class PurchaseRepository {
         // E. Log adjustment record
         await trx('inventory_adjustments').insert({
           product_id: item.product_id,
-          adjustment_type: 'purchase_order_receipt',
+          adjustment_type: 'stock_addition',
           quantity_change: addStock,
           old_quantity: currentStock,
           new_quantity: currentStock + addStock,
@@ -379,14 +387,12 @@ export class PurchaseRepository {
       }
 
       // 3. Finalize PO header state
-      await trx('purchase_orders')
-        .where('id', id)
-        .update({
-          status: 'received',
-          delivery_date: trx.fn.now(),
-          received_by: receiverId,
-          updated_at: trx.fn.now()
-        });
+      await trx('purchase_orders').where('id', id).update({
+        status: 'received',
+        delivery_date: trx.fn.now(),
+        received_by: receiverId,
+        updated_at: trx.fn.now(),
+      });
     });
   }
 }

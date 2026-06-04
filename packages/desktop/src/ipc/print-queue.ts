@@ -39,7 +39,7 @@ export class PrintQueue {
     // Return only non-completed jobs or jobs completed within the last 5 minutes
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     return this.queue.filter(
-      (j) => j.status !== 'completed' || new Date(j.createdAt).getTime() > fiveMinutesAgo
+      (j) => j.status !== 'completed' || new Date(j.createdAt).getTime() > fiveMinutesAgo,
     );
   }
 
@@ -94,9 +94,12 @@ export class PrintQueue {
    */
   public async kickDrawer(): Promise<{ success: boolean; message: string }> {
     console.log('[PrintQueue] High-priority cash drawer kick requested. Bypassing print queue.');
-    
+
     if (this.config.type === 'system') {
-      return { success: false, message: 'Cash drawer kick is not supported by Windows system printer mode' };
+      return {
+        success: false,
+        message: 'Cash drawer kick is not supported by Windows system printer mode',
+      };
     }
 
     let adapter: PrinterAdapter;
@@ -107,7 +110,7 @@ export class PrintQueue {
     }
 
     try {
-      const drawerCmd = new Uint8Array([0x1B, 0x70, 0x00, 0x19, 0xFA]); // ESC p 0 25 250
+      const drawerCmd = new Uint8Array([0x1b, 0x70, 0x00, 0x19, 0xfa]); // ESC p 0 25 250
       await adapter.connect();
       await adapter.write(drawerCmd);
       await adapter.disconnect();
@@ -116,12 +119,12 @@ export class PrintQueue {
     } catch (err: any) {
       console.error('[PrintQueue] Priority cash drawer kick failed:', err);
       const parsedError = err.message || 'Unknown printer hardware error';
-      
+
       let errorCode = 'CASH_DRAWER_FAILED';
       if (parsedError.includes(':')) {
         errorCode = parsedError.split(':')[0];
       }
-      
+
       this.broadcastPrinterError(errorCode, `Cash drawer failed: ${parsedError}`);
       return { success: false, message: `Failed to open cash drawer: ${parsedError}` };
     }
@@ -148,7 +151,10 @@ export class PrintQueue {
     // 2. Perform connection re-initialization and flush physical hardware buffers
     try {
       if (this.config.type === 'system') {
-        return { success: false, message: 'Printer recovery is not required for Windows system printer mode.' };
+        return {
+          success: false,
+          message: 'Printer recovery is not required for Windows system printer mode.',
+        };
       }
 
       let adapter: PrinterAdapter;
@@ -159,10 +165,10 @@ export class PrintQueue {
       }
 
       await adapter.reset();
-      
+
       // 3. Resume the print queue processing loop
       this.triggerProcessing();
-      
+
       console.log('[PrintQueue] Printer recovery sequence completed successfully.');
       return { success: true, message: 'Printer re-initialized and buffer cleared successfully.' };
     } catch (err: any) {
@@ -173,7 +179,7 @@ export class PrintQueue {
 
   private triggerProcessing(): void {
     if (this.isProcessing) return;
-    
+
     setImmediate(() => {
       this.processNext().catch((err) => {
         console.error('[PrintQueue] Critical processor error:', err);
@@ -221,7 +227,7 @@ export class PrintQueue {
       nextJob.status = 'completed';
       nextJob.error = null;
       console.log(`[PrintQueue] Printed successfully: Job ${nextJob.id}`);
-      
+
       // Immediately truncate completed jobs from the in-memory array, keeping only the last 10 completed jobs
       const completedJobs = this.queue.filter((j) => j.status === 'completed');
       if (completedJobs.length > 10) {
@@ -250,8 +256,10 @@ export class PrintQueue {
 
       if (nextJob.attempts < maxRetries) {
         nextJob.status = 'retrying';
-        console.log(`[PrintQueue] Rescheduling job: ${nextJob.id} for retry ${nextJob.attempts}/${maxRetries} in 5 seconds...`);
-        
+        console.log(
+          `[PrintQueue] Rescheduling job: ${nextJob.id} for retry ${nextJob.attempts}/${maxRetries} in 5 seconds...`,
+        );
+
         const runLater = setTimeout;
         runLater(() => {
           if (nextJob.status === 'retrying') {
@@ -265,8 +273,10 @@ export class PrintQueue {
         this.triggerProcessing();
       } else {
         nextJob.status = 'failed';
-        console.error(`[PrintQueue] Job ${nextJob.id} reached maximum attempts (${maxRetries}). Print job failed.`);
-        
+        console.error(
+          `[PrintQueue] Job ${nextJob.id} reached maximum attempts (${maxRetries}). Print job failed.`,
+        );
+
         this.isProcessing = false;
         this.triggerProcessing();
       }
@@ -279,16 +289,19 @@ export class PrintQueue {
   public async testPrinter(tempConfig: PrinterConfig): Promise<PrinterStatus> {
     try {
       if (tempConfig.type === 'system') {
-        await this.printLinesWithSystemPrinter([
-          'TALAAT MARKET SYSTEM',
-          'WINDOWS SYSTEM PRINTER TEST',
-          '--------------------------------',
-          `Time: ${new Date().toLocaleString()}`,
-          `Printer: ${tempConfig.deviceName || 'Default printer'}`,
-          `Width: ${tempConfig.paperWidth}mm`,
-          '--------------------------------',
-          'PRINTER TEST SUCCESSFUL!',
-        ], tempConfig);
+        await this.printLinesWithSystemPrinter(
+          [
+            'TALAAT MARKET SYSTEM',
+            'WINDOWS SYSTEM PRINTER TEST',
+            '--------------------------------',
+            `Time: ${new Date().toLocaleString()}`,
+            `Printer: ${tempConfig.deviceName || 'Default printer'}`,
+            `Width: ${tempConfig.paperWidth}mm`,
+            '--------------------------------',
+            'PRINTER TEST SUCCESSFUL!',
+          ],
+          tempConfig,
+        );
         return { online: true, message: 'Windows system printer test completed successfully' };
       }
 
@@ -300,7 +313,7 @@ export class PrintQueue {
       }
 
       await adapter.connect();
-      
+
       const testLines = [
         'TALAAT MARKET SYSTEM',
         'HARDWARE TEST PRINTER',
@@ -310,9 +323,9 @@ export class PrintQueue {
         `Width: ${tempConfig.paperWidth}mm`,
         '--------------------------------',
         'PRINTER TEST SUCCESSFUL!',
-        'جاهز للعمل'
+        'جاهز للعمل',
       ];
-      
+
       const bytes = EscPosFormatter.format(testLines, false);
       await adapter.write(bytes);
       await adapter.disconnect();
@@ -363,10 +376,7 @@ export class PrintQueue {
       }, 20_000);
 
       const escapedLines = lines.map((line) =>
-        line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
+        line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
       );
       const widthPx = config.paperWidth === 58 ? 219 : 302;
       const html = `

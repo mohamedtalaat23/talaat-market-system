@@ -9,6 +9,7 @@ import { EmployeeFilterBar } from './components/EmployeeFilterBar';
 import { EmployeeGrid } from './components/EmployeeGrid';
 import { Pagination } from '@/components/ui/Pagination';
 import { useModalStore } from '@/stores/modalStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type EmployeeRole = 'admin' | 'manager' | 'cashier';
 
@@ -17,6 +18,7 @@ type EmployeeRole = 'admin' | 'manager' | 'cashier';
  * Keeps directory search, grids, pagination, and overlay triggers clean and maintainable.
  */
 export function EmployeesPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [selectedRole, setSelectedRole] = useState<EmployeeRole | null>(null);
@@ -26,12 +28,15 @@ export function EmployeesPage() {
   const openModal = useModalStore((state) => state.openModal);
 
   // Memoize filters to stabilize reference and prevent infinite render loops
-  const queryFilters = useMemo(() => ({
-    page,
-    limit,
-    role: selectedRole,
-    is_active: selectedStatus,
-  }), [page, limit, selectedRole, selectedStatus]);
+  const queryFilters = useMemo(
+    () => ({
+      page,
+      limit,
+      role: selectedRole,
+      is_active: selectedStatus,
+    }),
+    [page, limit, selectedRole, selectedStatus],
+  );
 
   // Fetch employees data list via custom hooks
   const { data: employeesData, isLoading, error, refetch } = useEmployees(queryFilters);
@@ -42,10 +47,7 @@ export function EmployeesPage() {
   // Client-side search filters for name or username (keeps typing extremely snappy)
   const filteredEmployees = allEmployees.filter((emp) => {
     const term = searchTerm.toLowerCase();
-    return (
-      emp.full_name.toLowerCase().includes(term) ||
-      emp.username.toLowerCase().includes(term)
-    );
+    return emp.full_name.toLowerCase().includes(term) || emp.username.toLowerCase().includes(term);
   });
 
   const handleClearFilters = () => {
@@ -69,15 +71,15 @@ export function EmployeesPage() {
 
   return (
     <PageContainer
-      title="Employee Access Directory"
-      description="Manage supermarket staff login credentials, cashier quick unlock PINs, and system access levels."
+      title={t('employees.title')}
+      description={t('employees.description')}
       loading={isLoading && page === 1}
       error={error as Error}
       refetch={refetch}
       actions={
-        <Button onClick={openCreateModal} className="flex items-center space-x-1.5 font-semibold">
+        <Button onClick={openCreateModal} className="flex items-center gap-1.5 font-semibold">
           <Plus size={16} />
-          <span>Register Staff</span>
+          <span>{t('employees.registerStaff')}</span>
         </Button>
       }
     >
@@ -86,16 +88,22 @@ export function EmployeesPage() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         selectedRole={selectedRole}
-        onSelectRole={(role) => { setSelectedRole(role); setPage(1); }}
+        onSelectRole={(role) => {
+          setSelectedRole(role);
+          setPage(1);
+        }}
         selectedStatus={selectedStatus}
-        onSelectStatus={(status) => { setSelectedStatus(status); setPage(1); }}
+        onSelectStatus={(status) => {
+          setSelectedStatus(status);
+          setPage(1);
+        }}
         onClearFilters={handleClearFilters}
       />
 
       {/* Staff lists card grids */}
       {isLoading && page === 1 ? (
         <div className="flex h-40 w-full items-center justify-center rounded-lg border border-border bg-neutral-900/10">
-          <span className="text-sm text-secondary font-mono">Fetching active access directory...</span>
+          <span className="text-sm text-secondary font-mono">{t('common.loading')}</span>
         </div>
       ) : (
         <EmployeeGrid

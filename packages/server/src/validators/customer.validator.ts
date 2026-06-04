@@ -7,7 +7,11 @@ export const createCustomerSchema = z.object({
   address: z.string().trim().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
   balance: z.coerce.number().optional(),
-  loyalty_points: z.coerce.number().int().nonnegative('Loyalty points must be non-negative').optional(),
+  loyalty_points: z.coerce
+    .number()
+    .int()
+    .nonnegative('Loyalty points must be non-negative')
+    .optional(),
 });
 
 export const updateCustomerSchema = z.object({
@@ -16,7 +20,11 @@ export const updateCustomerSchema = z.object({
   email: z.string().trim().email('Invalid email format').or(z.literal('')).nullable().optional(),
   address: z.string().trim().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
-  loyalty_points: z.coerce.number().int().nonnegative('Loyalty points must be non-negative').optional(),
+  loyalty_points: z.coerce
+    .number()
+    .int()
+    .nonnegative('Loyalty points must be non-negative')
+    .optional(),
 });
 
 export const recordPaymentSchema = z.object({

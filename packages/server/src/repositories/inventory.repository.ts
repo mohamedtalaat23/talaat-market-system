@@ -49,7 +49,7 @@ export class InventoryRepository {
         'products.unit as product_unit',
         'products.min_stock_level as product_min_stock_level',
         'products.selling_price as product_selling_price',
-        'categories.name as category_name'
+        'categories.name as category_name',
       )
       .whereNull('products.deleted_at'); // Filter out soft-deleted products
   }
@@ -131,34 +131,29 @@ export class InventoryRepository {
   /**
    * Update stock quantity (direct set) inside transaction.
    */
-  async updateStock(
-    productId: number,
-    quantity: number,
-    trx: Knex.Transaction
-  ): Promise<void> {
-    await trx('inventory')
-      .where('product_id', productId)
-      .update({
-        quantity,
-        last_counted_at: new Date(),
-        updated_at: new Date(),
-      });
+  async updateStock(productId: number, quantity: number, trx: Knex.Transaction): Promise<void> {
+    await trx('inventory').where('product_id', productId).update({
+      quantity,
+      last_counted_at: new Date(),
+      updated_at: new Date(),
+    });
   }
 
   /**
    * Log inventory adjustment in history table inside transaction.
    */
-  async logAdjustment(
-    data: LogAdjustmentInput,
-    trx: Knex.Transaction
-  ): Promise<void> {
+  async logAdjustment(data: LogAdjustmentInput, trx: Knex.Transaction): Promise<void> {
     await trx('inventory_adjustments').insert(data);
   }
 
   /**
    * Retrieve active adjustments logs with sorting and pagination.
    */
-  async findAdjustments(filters: { page: number; limit: number; product_id?: number | undefined }): Promise<InventoryAdjustment[]> {
+  async findAdjustments(filters: {
+    page: number;
+    limit: number;
+    product_id?: number | undefined;
+  }): Promise<InventoryAdjustment[]> {
     const query = db('inventory_adjustments')
       .join('products', 'products.id', 'inventory_adjustments.product_id')
       .leftJoin('employees', 'employees.id', 'inventory_adjustments.created_by')
@@ -167,7 +162,7 @@ export class InventoryRepository {
         'products.name as product_name',
         'products.barcode as product_barcode',
         'products.unit as product_unit',
-        'employees.full_name as creator_name'
+        'employees.full_name as creator_name',
       );
 
     if (filters.product_id) {

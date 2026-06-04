@@ -14,17 +14,32 @@
 }
 
 /* Sizes */
-.sm .spinner { width: 16px; height: 16px; }
-.md .spinner { width: 32px; height: 32px; border-width: 3px; }
-.lg .spinner { width: 48px; height: 48px; border-width: 4px; }
+.sm .spinner {
+  width: 16px;
+  height: 16px;
+}
+.md .spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+.lg .spinner {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
 
 .label {
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
-.sm .label { display: none; }
+.sm .label {
+  display: none;
+}
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

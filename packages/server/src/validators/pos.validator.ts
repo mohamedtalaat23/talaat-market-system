@@ -17,20 +17,25 @@ export const checkoutSchema = z.object({
   idempotency_key: z.string().trim().min(1, 'Idempotency key is required'),
   global_discount: z.coerce.number().nonnegative('Global discount must be non-negative').optional(),
   customer_id: z.number().int().positive('Customer ID must be positive').optional(),
-  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits').optional(),
+  manager_pin: z
+    .string()
+    .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+    .optional(),
   manager_id: z.number().int().positive('Manager ID must be positive').optional(),
-  items: z.array(
-    z.object({
-      product_id: z.number().int().positive('Product ID must be positive'),
-      quantity: z.coerce.number().positive('Quantity must be positive'),
-      unit_price: z.coerce.number().nonnegative('Unit price must be non-negative'),
-      discount: z.coerce.number().nonnegative('Discount must be non-negative'),
-    })
-  ).min(1, 'At least one item is required in the cart'),
+  items: z
+    .array(
+      z.object({
+        product_id: z.number().int().positive('Product ID must be positive'),
+        quantity: z.coerce.number().positive('Quantity must be positive'),
+        unit_price: z.coerce.number().nonnegative('Unit price must be non-negative'),
+        discount: z.coerce.number().nonnegative('Discount must be non-negative'),
+      }),
+    )
+    .min(1, 'At least one item is required in the cart'),
 });
 
 export const syncOfflineSchema = z.object({
-  transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty')
+  transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
 });
 
 export const posIdParamSchema = z.object({

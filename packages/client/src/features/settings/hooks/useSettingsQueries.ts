@@ -27,7 +27,10 @@ export function useUpdateSettings() {
 
   return useMutation({
     mutationFn: async (payload: Partial<AppSettings>) => {
-      const { data } = await apiClient.put<{ status: string; data: AppSettings }>('/settings', payload);
+      const { data } = await apiClient.put<{ status: string; data: AppSettings }>(
+        '/settings',
+        payload,
+      );
       return data.data;
     },
     onSuccess: (updatedSettings) => {

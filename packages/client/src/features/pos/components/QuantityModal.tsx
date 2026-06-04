@@ -64,11 +64,17 @@ export function QuantityModal() {
         aria-labelledby="quantity-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
-          <h3 id="quantity-modal-title" className="text-xl font-bold text-white flex items-center space-x-2">
+          <h3
+            id="quantity-modal-title"
+            className="text-xl font-bold text-white flex items-center space-x-2"
+          >
             <Hash size={24} className="text-emerald-500" />
             <span>Update Quantity</span>
           </h3>
-          <button onClick={closeModal} className="text-secondary hover:text-white transition-colors">
+          <button
+            onClick={closeModal}
+            className="text-secondary hover:text-white transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
@@ -83,7 +89,10 @@ export function QuantityModal() {
           </div>
 
           <div>
-            <label htmlFor="quantity-input" className="block text-sm font-medium text-secondary mb-1">
+            <label
+              htmlFor="quantity-input"
+              className="block text-sm font-medium text-secondary mb-1"
+            >
               New Quantity ({activeItem.unit})
             </label>
             <input
