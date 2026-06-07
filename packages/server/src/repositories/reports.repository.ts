@@ -154,7 +154,7 @@ export class ReportsRepository {
           'COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts',
         ),
         db.raw(
-          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales_total",
+          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) - COALESCE(change_given, 0) ELSE 0 END), 0) as cash_sales_total",
         ),
         db.raw(
           "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales_total",
@@ -176,7 +176,7 @@ export class ReportsRepository {
       )
       .first();
 
-    const totalRevenue = Number(salesSummary.total_revenue) + Number(paymentSummary.payment_amount);
+    const totalRevenue = Number(salesSummary.total_revenue);
     const totalDiscounts = Number(salesSummary.total_discounts);
     const cashSalesTotal =
       Number(salesSummary.cash_sales_total) + Number(paymentSummary.cash_payments);
@@ -246,14 +246,14 @@ export class ReportsRepository {
       const dateStr = d.toISOString().substring(0, 10);
 
       const dayData = salesByDate[dateStr] || { tx_count: 0, total_rev: 0, total_disc: 0 };
-      const net = dayData.total_rev - dayData.total_disc;
+      const gross = dayData.total_rev + dayData.total_disc;
 
       days.push({
         date: dateStr,
         transaction_count: dayData.tx_count,
-        total_revenue: dayData.total_rev,
+        total_revenue: gross,
         total_discounts: dayData.total_disc,
-        net_revenue: net,
+        net_revenue: dayData.total_rev,
       });
 
       weekTx += dayData.tx_count;
@@ -285,9 +285,9 @@ export class ReportsRepository {
       days,
       totals: {
         transaction_count: weekTx,
-        total_revenue: weekRev,
+        total_revenue: weekRev + weekDisc,
         total_discounts: weekDisc,
-        net_revenue: weekRev - weekDisc,
+        net_revenue: weekRev,
       },
       top_products,
     };

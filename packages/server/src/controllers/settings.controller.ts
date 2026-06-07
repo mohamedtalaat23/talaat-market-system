@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { settingsRepository } from '../repositories/settings.repository';
 import { logger } from '../middleware/logger';
 
-const updateSettingsSchema = z.record(z.any());
+const updateSettingsSchema = z.record(
+  z.string().trim().max(100),
+  z.union([z.string().max(5000), z.number(), z.boolean(), z.null()]),
+);
 
 export class SettingsController {
   async getSettings(_req: Request, res: Response, next: NextFunction): Promise<void> {

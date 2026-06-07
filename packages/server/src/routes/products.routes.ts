@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/product.controller';
 import { validate } from '../middleware/validate';
+import { requireAuth } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   createProductSchema,
@@ -14,6 +15,9 @@ const productsRouter = Router();
 
 // Apply rate limiting
 productsRouter.use(standardRateLimiter);
+
+// Secure all product routes with JWT authentication
+productsRouter.use(requireAuth);
 
 // GET /products - List products with filters and search
 productsRouter.get('/', validate({ query: productQuerySchema }), controller.getProducts);

@@ -29,6 +29,9 @@ export const checkoutSchema = z.object({
         quantity: z.coerce.number().positive('Quantity must be positive'),
         unit_price: z.coerce.number().nonnegative('Unit price must be non-negative'),
         discount: z.coerce.number().nonnegative('Discount must be non-negative'),
+      }).refine((data) => data.discount <= data.quantity * data.unit_price, {
+        message: 'Discount cannot exceed item total',
+        path: ['discount'],
       }),
     )
     .min(1, 'At least one item is required in the cart'),

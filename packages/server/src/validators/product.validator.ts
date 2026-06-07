@@ -17,11 +17,15 @@ export const createProductSchema = z.object({
   min_stock_level: z.coerce.number().nonnegative('Min stock level must be non-negative').default(0),
   max_stock_level: z.coerce.number().nonnegative('Max stock level must be non-negative').default(0),
   is_active: z.boolean().default(true),
-  initial_quantity: z.coerce
-    .number()
-    .nonnegative('Initial quantity must be non-negative')
-    .default(0),
-});
+    initial_quantity: z.coerce
+      .number()
+      .nonnegative('Initial quantity must be non-negative')
+      .default(0),
+  })
+  .refine((data) => data.max_stock_level === 0 || data.min_stock_level <= data.max_stock_level, {
+    message: 'min_stock_level cannot be greater than max_stock_level',
+    path: ['max_stock_level'],
+  });
 
 export const updateProductSchema = z.object({
   barcode: z.string().trim().max(50).nullable().optional(),
@@ -36,7 +40,19 @@ export const updateProductSchema = z.object({
   min_stock_level: z.coerce.number().nonnegative('Min stock level must be non-negative').optional(),
   max_stock_level: z.coerce.number().nonnegative('Max stock level must be non-negative').optional(),
   is_active: z.boolean().optional(),
-});
+})
+.refine(
+  (data) => {
+    if (data.min_stock_level !== undefined && data.max_stock_level !== undefined) {
+      return data.max_stock_level === 0 || data.min_stock_level <= data.max_stock_level;
+    }
+    return true;
+  },
+  {
+    message: 'min_stock_level cannot be greater than max_stock_level',
+    path: ['max_stock_level'],
+  },
+);
 
 export const productQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

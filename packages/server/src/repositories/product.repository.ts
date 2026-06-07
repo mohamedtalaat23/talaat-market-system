@@ -102,7 +102,8 @@ export class ProductRepository {
 
     // Search query (name, name_ar, barcode)
     if (filters.search) {
-      const searchPattern = `%${filters.search}%`;
+      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
           .where('products.name', 'ILIKE', searchPattern)
@@ -153,7 +154,8 @@ export class ProductRepository {
     }
 
     if (filters.search) {
-      const searchPattern = `%${filters.search}%`;
+      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
           .where('products.name', 'ILIKE', searchPattern)

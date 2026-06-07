@@ -91,7 +91,7 @@ export class POSRepository {
       .select(
         db.raw('COUNT(id) as transaction_count'),
         db.raw(
-          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) ELSE 0 END), 0) as cash_sales",
+          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) - COALESCE(change_given, 0) ELSE 0 END), 0) as cash_sales",
         ),
         db.raw(
           "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales",
@@ -181,6 +181,10 @@ export class POSRepository {
         const taxAmount = 0;
         const total = subtotal - discountAmount - globalDiscount + taxAmount;
 
+        if (total < 0) {
+          throw new Error('Sale total cannot be negative.');
+        }
+
         if (payload.payment_method === 'cash') {
           const cashReceived = payload.cash_received || 0;
           if (cashReceived < total) {
@@ -238,6 +242,16 @@ export class POSRepository {
             customer_id: payload.customer_id || null,
           })
           .returning('*');
+
+        if (bypassInventoryCheck && payload.manager_id) {
+          await trx('manager_overrides').insert({
+            manager_id: payload.manager_id,
+            cashier_id: cashierId,
+            action_type: 'inventory_bypass',
+            reference_id: sale.id,
+            details: `Inventory bypass for checkout ${receiptNumber}`,
+          });
+        }
 
         if (payload.payment_method === 'debt' && payload.customer_id) {
           const customer = await trx('customers')
@@ -308,6 +322,15 @@ export class POSRepository {
             affectedRows = await trx('inventory')
               .where('product_id', item.product_id)
               .decrement('quantity', item.quantity);
+              
+            if (affectedRows === 0) {
+              await trx('inventory').insert({
+                product_id: item.product_id,
+                quantity: -item.quantity,
+                reserved_quantity: 0
+              });
+              affectedRows = 1;
+            }
           } else {
             // Enforces strict inventory underflow guard using atomic condition checks
             affectedRows = await trx('inventory')
@@ -530,7 +553,8 @@ export class POSRepository {
    * Use GET /products for the admin catalog with full pagination metadata.
    */
   async searchProducts(search: string, limit: number): Promise<Product[]> {
-    const searchPattern = `%${search}%`;
+    const escapedSearch = search.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+    const searchPattern = `%${escapedSearch}%`;
     const rows = await db('products')
       .leftJoin('inventory', 'inventory.product_id', 'products.id')
       .leftJoin('categories', 'categories.id', 'products.category_id')

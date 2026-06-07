@@ -7,6 +7,7 @@ import {
   updateInventorySchema,
   adjustInventorySchema,
   inventoryQuerySchema,
+  inventoryAdjustmentsQuerySchema,
   productIdParamSchema,
 } from '../validators/inventory.validator';
 
@@ -22,7 +23,11 @@ inventoryRouter.use(requireAuth);
 inventoryRouter.get('/', validate({ query: inventoryQuerySchema }), controller.getInventory);
 
 // GET /inventory/adjustments - Get history of stock adjustments
-inventoryRouter.get('/adjustments', controller.getAdjustments);
+inventoryRouter.get(
+  '/adjustments',
+  validate({ query: inventoryAdjustmentsQuerySchema }),
+  controller.getAdjustments,
+);
 
 // GET /inventory/:productId - Get stock details for a product
 inventoryRouter.get(
