@@ -1,12 +1,14 @@
+import { db } from '../config/database';
 import {
   employeeRepository,
   type Employee,
   type EmployeeFilters,
 } from '../repositories/employee.repository';
-import { NotFoundError, ConflictError } from '../middleware/errorHandler';
+import { NotFoundError, ConflictError, AuthorizationError } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
 import bcrypt from 'bcryptjs';
 import { BCRYPT_ROUNDS } from '../config/constants';
+import { auditService } from './audit.service';
 
 export interface PaginatedEmployees {
   items: Employee[];
@@ -89,13 +91,24 @@ export class EmployeeService {
   /**
    * Update employee details (hashes password/PIN if changed).
    */
-  async updateEmployee(id: number, data: any): Promise<Employee> {
+  async updateEmployee(
+    id: number,
+    data: any,
+    currentUserRole?: string,
+    currentUserId?: number,
+    ipAddress?: string,
+    reason?: string
+  ): Promise<Employee> {
     logger.info('Updating employee details', { id });
 
     // Ensure employee exists
     const existing = await employeeRepository.findById(id);
     if (!existing) {
       throw new NotFoundError('Employee', id);
+    }
+
+    if (existing.role === 'admin' && currentUserRole !== 'admin') {
+      throw new AuthorizationError('You do not have permission to modify an administrator account');
     }
 
     // Check username uniqueness if changed
@@ -123,7 +136,38 @@ export class EmployeeService {
       delete updates.pin;
     }
 
-    const updated = await employeeRepository.update(id, updates);
+    const updated = await db.transaction(async (trx) => {
+      const updatedRow = await employeeRepository.update(id, updates, trx);
+
+      // Audit role and status changes
+      const oldValues: any = {};
+      const newValues: any = {};
+      const auditedFields = ['role', 'is_active'];
+
+      for (const field of auditedFields) {
+        if (data[field] !== undefined && data[field] !== (existing as any)[field]) {
+          oldValues[field] = (existing as any)[field];
+          newValues[field] = data[field];
+        }
+      }
+
+      if (Object.keys(newValues).length > 0) {
+        await auditService.logEvent({
+          entityType: 'employee',
+          entityId: id,
+          action: 'permissions_change',
+          oldValue: oldValues,
+          newValue: newValues,
+          userId: currentUserId,
+          ipAddress: ipAddress,
+          reason: reason || 'Employee permissions/status updated',
+          trx,
+        });
+      }
+      
+      return updatedRow;
+    });
+
     logger.info('Employee account updated successfully', { id });
     return updated;
   }

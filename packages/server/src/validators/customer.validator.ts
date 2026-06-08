@@ -6,7 +6,6 @@ export const createCustomerSchema = z.object({
   email: z.string().trim().email('Invalid email format').or(z.literal('')).nullable().optional(),
   address: z.string().trim().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
-  balance: z.coerce.number().optional(),
   loyalty_points: z.coerce
     .number()
     .int()

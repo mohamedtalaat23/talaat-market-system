@@ -13,6 +13,8 @@ import {
   openShiftSchema,
   closeShiftSchema,
   posProductSearchQuerySchema,
+  refundSaleSchema,
+  voidSaleSchema
 } from '../validators/pos.validator';
 
 const router = Router();
@@ -42,6 +44,19 @@ router.post(
 );
 
 router.get('/receipts/:id', validate({ params: receiptIdParamSchema }), posController.getReceipt);
+
+// Reversals
+router.post(
+  '/sales/:id/refund',
+  validate({ params: receiptIdParamSchema, body: refundSaleSchema }),
+  posController.refundSale,
+);
+
+router.post(
+  '/sales/:id/void',
+  validate({ params: receiptIdParamSchema, body: voidSaleSchema }),
+  posController.voidSale,
+);
 
 router.get('/sales/search', validate({ query: salesQuerySchema }), posController.searchSales);
 

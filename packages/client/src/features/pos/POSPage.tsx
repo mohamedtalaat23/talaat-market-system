@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePOSStore } from './usePOSStore';
 import { apiClient } from '@/services/api-client';
@@ -21,10 +21,15 @@ import { QuantityModal } from './components/QuantityModal';
 import { useModalStore } from '@/stores/modalStore';
 import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
+import toast from 'react-hot-toast';
 
 export function POSPage() {
   const navigate = useNavigate();
   const openModal = useModalStore((state) => state.openModal);
+  const addItem = usePOSStore((state) => state.addItem);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Expose stores to window for E2E testing inspection/control
   useEffect(() => {
@@ -53,6 +58,20 @@ export function POSPage() {
   const activeModals = useModalStore((state) => state.activeModals);
   const closeModal = useModalStore((state) => state.closeModal);
 
+  // Scanner flash effect when an item is added to the cart
+  const cartLength = cart.length;
+  const prevCartLengthRef = useRef(cartLength);
+  const [scannerFlash, setScannerFlash] = useState(false);
+
+  useEffect(() => {
+    if (cart.length > prevCartLengthRef.current) {
+      setScannerFlash(true);
+      const timer = setTimeout(() => setScannerFlash(false), 150);
+      return () => clearTimeout(timer);
+    }
+    prevCartLengthRef.current = cart.length;
+  }, [cart.length]);
+
   useEffect(() => {
     // Fetch active shift on mount
     const fetchShift = async () => {
@@ -71,18 +90,114 @@ export function POSPage() {
     fetchShift();
   }, []);
 
+  // Auto-focus search input on mount and global Esc/F5 presses
+  useEffect(() => {
+    searchInputRef.current?.focus();
+
+    const handleGlobalKeys = (e: KeyboardEvent) => {
+      // Focus search bar on Escape (except inside a modal)
+      const hasActiveModal = Object.values(useModalStore.getState().activeModals).some(isOpen => isOpen);
+      if (e.key === 'Escape' && !hasActiveModal) {
+        searchInputRef.current?.focus();
+      }
+      // Focus search bar on F5 instead of refreshing
+      if (e.key === 'F5' && !hasActiveModal) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeys);
+    return () => window.removeEventListener('keydown', handleGlobalKeys);
+  }, []);
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    const query = searchQuery.trim();
+    setSearchQuery('');
+
+    // Check if no shift is open before looking up product
+    if (!usePOSStore.getState().activeShift) {
+      toast.error('Cannot look up product when shift is closed');
+      return;
+    }
+
+    const loadingToastId = toast.loading(`Looking up: "${query}"`);
+    try {
+      // 1. Try exact barcode match first
+      const response = await apiClient.get<{ success: boolean; data: any }>(
+        `/products/barcode/${query}`,
+      );
+      toast.dismiss(loadingToastId);
+
+      if (response.data?.success && response.data?.data) {
+        const product = response.data.data;
+        if (!product.is_active) {
+          toast.error(`Product "${product.name}" is inactive`);
+          return;
+        }
+
+        addItem({
+          product_id: product.id,
+          barcode: product.barcode,
+          name: product.name,
+          name_ar: product.name_ar,
+          unit_price: product.selling_price,
+          quantity: 1,
+          discount: 0,
+          unit: product.unit,
+          inventory_quantity: product.inventory_quantity || 0,
+        });
+        toast.success(`Added ${product.name}`);
+        searchInputRef.current?.focus();
+        return;
+      }
+    } catch (error) {
+      // Barcode scan failed, fall back to searching products catalog modal
+      toast.dismiss(loadingToastId);
+    }
+
+    // 2. Open search modal with query if not found by barcode
+    openModal('pos_product_search', { initialSearch: query });
+  };
+
   return (
-    <div className="flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden select-none">
+    <div
+      className={`flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden select-none transition-colors duration-fast ${
+        scannerFlash ? 'animate-scanner-flash' : ''
+      }`}
+    >
       <POSTopBar />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel: Cart (70% approximation) */}
-        <div className="w-8/12 flex flex-col border-r rtl:border-r-0 rtl:border-l border-border bg-card/40">
+        {/* Left Panel: Cart & Table (70% - Edge-to-Edge data display) */}
+        <div className="w-[70%] flex flex-col border-r border-border bg-neutral-900 overflow-hidden">
+          {/* Persistent Scan & Lookup Input Bar */}
+          <form onSubmit={handleSearchSubmit} className="p-3 bg-neutral-950 border-b border-border shrink-0">
+            <div className="relative">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Scan barcode or type name to search... (F5)"
+                className="w-full bg-neutral-900 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
+              />
+              <div className="absolute right-3 top-2.5 text-[10px] font-mono font-bold text-neutral-500 border border-neutral-800 bg-neutral-950 px-1.5 py-0.5 rounded">
+                ENTER
+              </div>
+            </div>
+          </form>
+
+          {/* Receipt Data Table */}
           <POSCartList />
         </div>
 
-        {/* Right Panel: Summary & Actions (30% approximation) */}
-        <div className="w-4/12 flex flex-col bg-sidebar p-4 space-y-4 justify-between h-full overflow-y-auto">
+        {/* Right Panel: Summary & Quick Numpad Actions (30%) */}
+        <div className="w-[30%] flex flex-col bg-neutral-950 overflow-hidden h-full">
           <POSSummary cart={cart} paymentMethod={paymentMethod} cashReceived={cashReceived} />
           <PrintQueueMonitor />
         </div>

@@ -217,13 +217,13 @@ export function LANSettingsScreen() {
               className={`p-4 rounded-lg border flex items-start gap-3 ${
                 pingResult.success
                   ? 'bg-success/15 border-success/30 text-success'
-                  : 'bg-red-950/20 border-red-800/80 text-red-300'
+                  : 'bg-danger/10 border-danger/50 text-danger'
               }`}
             >
               {pingResult.success ? (
                 <Wifi size={20} className="text-success mt-0.5 shrink-0" />
               ) : (
-                <WifiOff size={20} className="text-red-400 mt-0.5 shrink-0" />
+                <WifiOff size={20} className="text-danger mt-0.5 shrink-0" />
               )}
               <div>
                 <p className="font-semibold text-sm">
@@ -248,7 +248,7 @@ export function LANSettingsScreen() {
             </span>
             <div className="flex items-center gap-2">
               <span
-                className={`h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-success/90 animate-pulse' : 'bg-red-500'}`}
+                className={`h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-success/90 animate-pulse' : 'bg-danger'}`}
               />
               <span className="text-sm font-bold uppercase tracking-wider">
                 {status === 'online' ? t('settings.onlineSynced') : t('settings.offlineOutage')}
@@ -378,7 +378,7 @@ export function LANSettingsScreen() {
                       {Number(item.line_total).toFixed(2)} EGP
                     </p>
                     {item.discount > 0 && (
-                      <p className="text-[10px] text-red-400">
+                      <p className="text-[10px] text-danger">
                         -{Number(item.discount).toFixed(2)} Discount
                       </p>
                     )}
@@ -395,13 +395,13 @@ export function LANSettingsScreen() {
                 </span>
               </div>
               {selectedSale.saleData.discount_amount > 0 && (
-                <div className="flex justify-between text-red-400">
+                <div className="flex justify-between text-danger">
                   <span>{t('settings.productDiscount')}</span>
                   <span>-{Number(selectedSale.saleData.discount_amount).toFixed(2)} EGP</span>
                 </div>
               )}
               {selectedSale.saleData.global_discount > 0 && (
-                <div className="flex justify-between text-red-400">
+                <div className="flex justify-between text-danger">
                   <span>{t('settings.globalDiscount')}</span>
                   <span>-{Number(selectedSale.saleData.global_discount).toFixed(2)} EGP</span>
                 </div>

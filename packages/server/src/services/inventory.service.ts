@@ -82,7 +82,7 @@ export class InventoryService {
       await inventoryRepository.logAdjustment(
         {
           product_id: productId,
-          adjustment_type: 'manual_correction',
+          adjustment_type: 'manual_adjustment',
           quantity_change: quantityChange,
           old_quantity: oldQuantity,
           new_quantity: newQuantity,
@@ -112,9 +112,14 @@ export class InventoryService {
     adjustmentType:
       | 'stock_addition'
       | 'stock_removal'
-      | 'damaged'
-      | 'expired'
-      | 'manual_correction',
+      | 'damage'
+      | 'expiry'
+      | 'manual_adjustment'
+      | 'sale'
+      | 'return'
+      | 'initial_stock'
+      | 'purchase_receipt'
+      | 'stock_reconciliation',
     quantityChange: number,
     notes?: string | null,
     createdBy: number | null = null,
@@ -156,7 +161,7 @@ export class InventoryService {
       await inventoryRepository.logAdjustment(
         {
           product_id: productId,
-          adjustment_type: adjustmentType,
+          adjustment_type: adjustmentType as any,
           quantity_change: quantityChange,
           old_quantity: oldQuantity,
           new_quantity: newQuantity,

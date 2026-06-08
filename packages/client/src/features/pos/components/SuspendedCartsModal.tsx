@@ -40,7 +40,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
       <div className="flex space-x-2">
         <button
           onClick={() => onDiscard(cart.hold_id, cart.cashier_id)}
-          className="px-4 py-2 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition-colors"
+          className="px-4 py-2 bg-danger/15 text-danger hover:bg-danger/25 rounded transition-colors"
         >
           Discard
         </button>

@@ -153,7 +153,10 @@ export function POSKeyboardHandler() {
           }
           break;
         case 'F2':
-          // We handle this via Enter or mouse now
+          if (cartLength > 0 && !isInput) {
+            e.preventDefault();
+            openModal('pos_quantity');
+          }
           break;
         case 'F3':
           openModal('pos_discount');

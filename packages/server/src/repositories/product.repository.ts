@@ -214,6 +214,18 @@ export class ProductRepository {
       reserved_quantity: 0.0,
       last_counted_at: new Date(),
     });
+
+    if (quantity !== 0) {
+      const adjBuilder = trx ? trx('inventory_adjustments') : db('inventory_adjustments');
+      await adjBuilder.insert({
+        product_id,
+        adjustment_type: 'initial_stock',
+        quantity_change: quantity,
+        old_quantity: 0,
+        new_quantity: quantity,
+        notes: 'Initial stock creation'
+      });
+    }
   }
 
   /**

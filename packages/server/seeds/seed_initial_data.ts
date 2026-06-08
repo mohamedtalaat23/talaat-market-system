@@ -225,7 +225,7 @@ export async function seed(knex: Knex): Promise<void> {
   console.log('Seeding: Historical Sales (Massive Generation)...');
   // 8. Seed Historical Sales
   const salesToInsert = [];
-  const saleItemsToInsert = [];
+  const saleItemsToInsert: any[] = [];
 
   const totalSales = 450; // Generate 450 historical sales
   let currentDate = new Date();

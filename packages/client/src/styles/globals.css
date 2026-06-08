@@ -17,12 +17,7 @@ body {
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   color: var(--text-primary);
-  background: radial-gradient(
-    circle at top center,
-    var(--bg-gradient-start) 0%,
-    var(--bg-app) 100%
-  );
-  background-attachment: fixed;
+  background: var(--bg-app);
   line-height: var(--leading-normal);
   transition: var(--theme-transition);
   /* Prevent text selection during rapid interactions (POS use) */
@@ -272,6 +267,25 @@ h6 {
 }
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+@keyframes scannerFlash {
+  0% { background-color: var(--bg-app); }
+  50% { background-color: var(--color-neutral-850); }
+  100% { background-color: var(--bg-app); }
+}
+
+@keyframes focusRowFlash {
+  0% { background-color: rgba(37, 99, 235, 0.45); }
+  100% { background-color: transparent; }
+}
+
+.animate-scanner-flash {
+  animation: scannerFlash 150ms ease-out;
+}
+
+.animate-focus-row {
+  animation: focusRowFlash 300ms ease-out;
 }
 
 /* ── Print styles ───────────────────────────────────────────── */

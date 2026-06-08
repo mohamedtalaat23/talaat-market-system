@@ -372,7 +372,7 @@ export class PurchaseRepository {
         // E. Log adjustment record
         await trx('inventory_adjustments').insert({
           product_id: item.product_id,
-          adjustment_type: 'stock_addition',
+          adjustment_type: 'purchase_receipt',
           quantity_change: addStock,
           old_quantity: currentStock,
           new_quantity: currentStock + addStock,

@@ -7,6 +7,7 @@ import {
 import { NotFoundError, ConflictError } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
 import { supplierService } from './supplier.service';
+import { auditService } from './audit.service';
 
 export interface PaginatedProducts {
   items: Product[];
@@ -117,7 +118,7 @@ export class ProductService {
   /**
    * Update product details.
    */
-  async updateProduct(id: number, data: any): Promise<Product> {
+  async updateProduct(id: number, data: any, userId?: number, ipAddress?: string, reason?: string): Promise<Product> {
     logger.info('Updating product details', { id });
 
     // Ensure product exists
@@ -141,7 +142,38 @@ export class ProductService {
       }
     }
 
-    const updatedProduct = await productRepository.update(id, data);
+    const updatedProduct = await db.transaction(async (trx) => {
+      const updated = await productRepository.update(id, data, trx);
+
+      // Audit pricing, status, and identifying changes
+      const oldValues: any = {};
+      const newValues: any = {};
+      const auditedFields = ['selling_price', 'cost_price', 'barcode', 'min_stock_level', 'max_stock_level', 'is_active'];
+
+      for (const field of auditedFields) {
+        if (data[field] !== undefined && data[field] !== (existingProduct as any)[field]) {
+          oldValues[field] = (existingProduct as any)[field];
+          newValues[field] = data[field];
+        }
+      }
+
+      if (Object.keys(newValues).length > 0) {
+        await auditService.logEvent({
+          entityType: 'product',
+          entityId: id,
+          action: 'product_update',
+          oldValue: oldValues,
+          newValue: newValues,
+          userId: userId,
+          ipAddress: ipAddress,
+          reason: reason || 'Product details updated',
+          trx,
+        });
+      }
+      
+      return updated;
+    });
+
     logger.info('Product updated successfully', { id });
     return updatedProduct;
   }

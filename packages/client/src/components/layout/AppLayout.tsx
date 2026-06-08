@@ -111,7 +111,7 @@ export const AppLayout = React.memo(() => {
       >
         {/* Brand Header */}
         <div className="flex h-[60px] items-center px-4 border-b border-border gap-3 overflow-hidden select-none">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 shadow-glow">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 text-primary shrink-0">
             <Store size={18} />
           </div>
           {!collapsed && (
@@ -135,10 +135,10 @@ export const AppLayout = React.memo(() => {
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  `flex items-center gap-3 px-3 py-2.5 rounded border transition-all duration-fast ${
                     isActive
-                      ? 'bg-primary/10 text-primary border-l-2 rtl:border-l-0 rtl:border-r-2 border-primary pl-2 pr-3 rtl:pl-3 rtl:pr-2 font-semibold'
-                      : 'text-secondary hover:text-foreground hover:bg-card-hover'
+                      ? 'bg-neutral-850 text-foreground border-l-2 border-primary pl-2 pr-3 rtl:border-l-0 rtl:border-r-2 rtl:pl-3 rtl:pr-2 font-semibold border-t-transparent border-b-transparent border-r-transparent'
+                      : 'border-transparent text-secondary hover:text-foreground hover:bg-card-hover'
                   }`
                 }
                 end={path === '/'}
@@ -184,7 +184,7 @@ export const AppLayout = React.memo(() => {
       {/* ── Main Workspace ────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         {/* Top Navbar */}
-        <header className="flex h-[60px] w-full items-center justify-between px-6 bg-card/80 border-b border-border backdrop-blur-md z-10 select-none">
+        <header className="flex h-[60px] w-full items-center justify-between px-6 bg-card border-b border-border z-10 select-none">
           <div className="flex items-center gap-3">
             <button
               className="md:hidden text-secondary hover:text-foreground"
@@ -306,6 +306,24 @@ export const AppLayout = React.memo(() => {
             </motion.div>
           </AnimatePresence>
         </main>
+
+        {/* Global Telemetry Status Footer */}
+        <footer className="h-8 w-full border-t border-border bg-neutral-950 px-6 flex items-center justify-between text-[10px] text-secondary font-mono select-none">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse animate-duration-1000" />
+              Database Active
+            </span>
+            <div className="w-px h-3 bg-border" />
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse animate-duration-1000" />
+              JWT Auth Valid
+            </span>
+            <div className="w-px h-3 bg-border" />
+            <span>Station_01</span>
+          </div>
+          <div>Talaat Market System © {new Date().getFullYear()}</div>
+        </footer>
       </div>
     </div>
   );

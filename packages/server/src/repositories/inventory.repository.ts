@@ -28,7 +28,7 @@ export interface InventoryFilters {
 
 export interface LogAdjustmentInput {
   product_id: number;
-  adjustment_type: 'stock_addition' | 'stock_removal' | 'damaged' | 'expired' | 'manual_correction';
+  adjustment_type: 'stock_addition' | 'stock_removal' | 'damage' | 'expiry' | 'manual_adjustment' | 'sale' | 'return' | 'initial_stock' | 'purchase_receipt' | 'stock_reconciliation';
   quantity_change: number;
   old_quantity: number;
   new_quantity: number;
@@ -219,7 +219,7 @@ export interface InventoryAdjustment {
   product_name: string;
   product_barcode: string | null;
   product_unit: string;
-  adjustment_type: 'stock_addition' | 'stock_removal' | 'damaged' | 'expired' | 'manual_correction';
+  adjustment_type: 'stock_addition' | 'stock_removal' | 'damage' | 'expiry' | 'manual_adjustment' | 'sale' | 'return' | 'initial_stock' | 'purchase_receipt' | 'stock_reconciliation';
   quantity_change: number;
   old_quantity: number;
   new_quantity: number;

@@ -126,7 +126,7 @@ export class CustomerRepository {
    */
   async create(
     input: CreateCustomerInput,
-    createdByUserId: number | null = null,
+    _createdByUserId: number | null = null,
   ): Promise<Customer> {
     return db.transaction(async (trx) => {
       const [customer] = await trx('customers')
@@ -136,21 +136,10 @@ export class CustomerRepository {
           email: input.email || null,
           address: input.address || null,
           notes: input.notes || null,
-          balance: input.balance || 0.0,
+          balance: 0.0,
           loyalty_points: input.loyalty_points || 0,
         })
         .returning('*');
-
-      // If there is an initial balance, log it as an initial adjustment transaction
-      if (input.balance && input.balance !== 0) {
-        await trx('customer_transactions').insert({
-          customer_id: customer.id,
-          transaction_type: 'adjustment',
-          amount: input.balance,
-          notes: 'Initial account balance setup',
-          created_by: createdByUserId,
-        });
-      }
 
       return customer;
     });

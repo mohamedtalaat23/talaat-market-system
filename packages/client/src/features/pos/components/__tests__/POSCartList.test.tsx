@@ -29,7 +29,7 @@ describe('POSCartList', () => {
     expect(screen.getByText(/pos.searchPrompt/)).toBeInTheDocument();
   });
 
-  it('should render items in the cart', () => {
+  it('should render items in the cart table', () => {
     usePOSStore.setState({
       cart: [
         {
@@ -51,15 +51,15 @@ describe('POSCartList', () => {
     render(<POSCartList />);
 
     expect(screen.getByText('Fresh Milk')).toBeInTheDocument();
+    expect(screen.getByText('حليب طازج')).toBeInTheDocument();
     expect(screen.getByText('111111')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument(); // Quantity
-    expect(screen.getByText('pack x EGP 25.50')).toBeInTheDocument();
-    // total = (25.5 * 2) - 5 = 46
-    expect(screen.getByText('EGP 46.00')).toBeInTheDocument();
-    expect(screen.getByText('pos.itemDiscount: -EGP 5.00')).toBeInTheDocument();
+    expect(screen.getByText('25.50')).toBeInTheDocument(); // Unit price column
+    expect(screen.getByText('46.00')).toBeInTheDocument(); // Total column: (2 * 25.50) - 5.00
+    expect(screen.getByText(/-5.00 EGP.*pos.itemDiscount/)).toBeInTheDocument();
   });
 
-  it('should change the active item when a row is clicked', () => {
+  it('should change the active item when a table row is clicked', () => {
     usePOSStore.setState({
       cart: [
         {
@@ -92,89 +92,11 @@ describe('POSCartList', () => {
 
     render(<POSCartList />);
 
-    const appleRow = screen.getByText('Apple').closest('div');
+    const appleRow = screen.getByText('Apple').closest('tr');
     expect(appleRow).toBeDefined();
 
     // Click Second Item
     fireEvent.click(appleRow!);
     expect(usePOSStore.getState().activeItemIndex).toBe(1);
-  });
-
-  it('should call updateQuantity with currentQuantity + 1 when plus is clicked', () => {
-    usePOSStore.setState({
-      cart: [
-        {
-          cart_id: 'item-1',
-          product_id: 101,
-          barcode: '111111',
-          name: 'Fresh Milk',
-          name_ar: 'حليب طازج',
-          unit_price: 25.5,
-          quantity: 2,
-          discount: 0,
-          unit: 'pack',
-          inventory_quantity: 10,
-        },
-      ],
-    });
-
-    render(<POSCartList />);
-
-    const plusButton = screen.getAllByRole('button')[1]; // second button is plus (minus is first)
-    fireEvent.click(plusButton);
-
-    expect(usePOSStore.getState().cart[0].quantity).toBe(3);
-  });
-
-  it('should call updateQuantity with currentQuantity - 1 when minus is clicked and quantity > 1', () => {
-    usePOSStore.setState({
-      cart: [
-        {
-          cart_id: 'item-1',
-          product_id: 101,
-          barcode: '111111',
-          name: 'Fresh Milk',
-          name_ar: 'حليب طازج',
-          unit_price: 25.5,
-          quantity: 5,
-          discount: 0,
-          unit: 'pack',
-          inventory_quantity: 10,
-        },
-      ],
-    });
-
-    render(<POSCartList />);
-
-    const minusButton = screen.getAllByRole('button')[0]; // first button is minus
-    fireEvent.click(minusButton);
-
-    expect(usePOSStore.getState().cart[0].quantity).toBe(4);
-  });
-
-  it('should call removeItem when minus is clicked and quantity is 1', () => {
-    usePOSStore.setState({
-      cart: [
-        {
-          cart_id: 'item-1',
-          product_id: 101,
-          barcode: '111111',
-          name: 'Fresh Milk',
-          name_ar: 'حليب طازج',
-          unit_price: 25.5,
-          quantity: 1,
-          discount: 0,
-          unit: 'pack',
-          inventory_quantity: 10,
-        },
-      ],
-    });
-
-    render(<POSCartList />);
-
-    const minusButton = screen.getAllByRole('button')[0];
-    fireEvent.click(minusButton);
-
-    expect(usePOSStore.getState().cart.length).toBe(0);
   });
 });

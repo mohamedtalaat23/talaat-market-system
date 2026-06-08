@@ -8,7 +8,7 @@ export const checkoutSchema = z.object({
   id: z.string().uuid('Invalid receipt UUID').optional(),
   receipt_number: z.string().trim().optional(),
   created_at: z.string().optional(), // Allow ISO date string
-  shift_id: z.number().int().positive('Shift ID must be positive'),
+  shift_id: z.number().int().positive('Shift ID is required'),
   register_id: z.number().int().positive('Register ID must be positive'),
   payment_method: z.enum(['cash', 'card', 'split', 'debt']),
   cash_received: z.coerce.number().nonnegative('Cash received must be non-negative').optional(),
@@ -29,9 +29,6 @@ export const checkoutSchema = z.object({
         quantity: z.coerce.number().positive('Quantity must be positive'),
         unit_price: z.coerce.number().nonnegative('Unit price must be non-negative'),
         discount: z.coerce.number().nonnegative('Discount must be non-negative'),
-      }).refine((data) => data.discount <= data.quantity * data.unit_price, {
-        message: 'Discount cannot exceed item total',
-        path: ['discount'],
       }),
     )
     .min(1, 'At least one item is required in the cart'),
@@ -70,6 +67,22 @@ export const openShiftSchema = z.object({
 export const closeShiftSchema = z.object({
   shift_id: z.coerce.number().int().positive('Shift ID must be positive'),
   ending_cash: z.coerce.number().nonnegative('Ending cash must be non-negative'),
-  expected_cash: z.coerce.number().nonnegative('Expected cash must be non-negative'),
   notes: z.string().trim().nullable().optional(),
+});
+
+export const voidSaleSchema = z.object({
+  manager_id: z.number().int().positive('Manager ID is required'),
+  reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
+});
+
+export const refundSaleSchema = z.object({
+  manager_id: z.number().int().positive('Manager ID is required'),
+  reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
+  items: z.array(
+    z.object({
+      sale_item_id: z.string().uuid('Invalid sale item UUID'),
+      quantity: z.coerce.number().positive('Quantity must be positive'),
+      restock_inventory: z.boolean().default(true),
+    })
+  ).min(1, 'At least one item is required for refund'),
 });

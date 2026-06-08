@@ -3,37 +3,7 @@ import { posRepository } from '../repositories/pos.repository';
 import { z } from 'zod';
 import { db } from '../config/database';
 import { pinService } from '../services/pin.service';
-
-const reprintSchema = z.object({
-  manager_pin: z.string().min(4).max(6),
-});
-
-const checkoutSchema = z.object({
-  id: z.string().uuid().optional(),
-  receipt_number: z.string().optional(),
-  created_at: z.string().optional(),
-  shift_id: z.number(),
-  register_id: z.number(),
-  payment_method: z.enum(['cash', 'card', 'split', 'debt']),
-  cash_received: z.number().optional(),
-  cash_amount: z.number().optional(),
-  card_amount: z.number().optional(),
-  idempotency_key: z.string(),
-  global_discount: z.number().min(0).optional(),
-  customer_id: z.number().optional(),
-  manager_pin: z.string().optional(),
-  manager_id: z.number().optional(),
-  items: z
-    .array(
-      z.object({
-        product_id: z.number(),
-        quantity: z.number().positive(),
-        unit_price: z.number().min(0),
-        discount: z.number().min(0),
-      }),
-    )
-    .min(1),
-});
+import { checkoutSchema, reprintSchema, refundSaleSchema, voidSaleSchema } from '../validators/pos.validator';
 
 export class POSController {
   checkout = async (req: Request, res: Response) => {
@@ -57,6 +27,8 @@ export class POSController {
         const verification = await pinService.verifyPin(
           Number(payload.manager_id),
           String(payload.manager_pin),
+          cashierId,
+          req.ip
         );
         if (!verification.success) {
           return res.status(403).json({ success: false, message: verification.message });
@@ -107,8 +79,9 @@ export class POSController {
 
   closeShift = async (req: Request, res: Response) => {
     try {
-      const { shift_id, ending_cash, expected_cash, notes } = req.body;
-      const shift = await posRepository.closeShift(shift_id, ending_cash, expected_cash, notes);
+      const { shift_id, ending_cash, notes } = req.body;
+      const cashierId = (req as any).user.id;
+      const shift = await posRepository.closeShift(shift_id, cashierId, ending_cash, notes);
       return res.status(200).json({ success: true, data: shift });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -173,7 +146,7 @@ export class POSController {
         return res.status(403).json({ success: false, message: 'Manager authorization required' });
       }
 
-      const verification = await pinService.verifyPin(managerId, manager_pin);
+      const verification = await pinService.verifyPin(managerId, manager_pin, managerId, req.ip);
       if (!verification.success) {
         return res.status(403).json({ success: false, message: verification.message });
       }
@@ -256,6 +229,71 @@ export class POSController {
       return res
         .status(400)
         .json({ success: false, message: error.message || 'Product search failed.' });
+    }
+  };
+
+  refundSale = async (req: Request, res: Response) => {
+    try {
+      const saleId = String(req.params.id);
+      const payload = refundSaleSchema.parse(req.body);
+
+      const result = await posRepository.processRefund({
+        sale_id: saleId,
+        manager_id: payload.manager_id,
+        reason: payload.reason,
+        items: payload.items,
+        refund_type: 'partial',
+      });
+
+      return res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+      }
+      return res.status(400).json({ success: false, message: error.message || 'Refund failed.' });
+    }
+  };
+
+  voidSale = async (req: Request, res: Response) => {
+    try {
+      const saleId = String(req.params.id);
+      const payload = voidSaleSchema.parse(req.body);
+
+      const sale = await posRepository.getReceiptById(saleId);
+      if (!sale) throw new Error('Sale not found');
+
+      const itemsToRefund = sale.items
+        .map((i: any) => ({
+          sale_item_id: i.id,
+          quantity: Number(i.quantity) - Number(i.refunded_quantity),
+          restock_inventory: true,
+        }))
+        .filter((i: any) => i.quantity > 0);
+
+      if (itemsToRefund.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Sale is already fully refunded or voided.' });
+      }
+
+      const result = await posRepository.processRefund({
+        sale_id: saleId,
+        manager_id: payload.manager_id,
+        reason: payload.reason,
+        items: itemsToRefund,
+        refund_type: 'void',
+      });
+
+      return res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+      }
+      return res.status(400).json({ success: false, message: error.message || 'Void failed.' });
     }
   };
 }

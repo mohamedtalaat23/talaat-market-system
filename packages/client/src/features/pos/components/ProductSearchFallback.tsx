@@ -206,7 +206,7 @@ export function ProductSearchFallback() {
                   Type at least 2 characters to search products by name, SKU, or barcode...
                 </div>
               ) : products.length === 0 ? (
-                <div className="p-3 text-red-400 text-sm text-center mt-16 font-mono">
+                <div className="p-3 text-danger text-sm text-center mt-16 font-mono">
                   No products found for "{debouncedSearch}"
                 </div>
               ) : (
@@ -259,7 +259,7 @@ export function ProductSearchFallback() {
                         </div>
                         <div className="flex flex-col space-y-1">
                           {isInactive && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/20">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-danger/15 text-danger border border-danger/20">
                               INACTIVE
                             </span>
                           )}

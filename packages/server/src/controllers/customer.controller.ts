@@ -158,6 +158,14 @@ export class CustomerController {
       // Query the active cashier shift to link repayment cash to the drawer
       const activeShift = userId ? await posRepository.getCurrentShift(userId) : null;
 
+      if (!activeShift) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: 'error',
+          message: 'An active shift is required to record customer payments.',
+        });
+        return;
+      }
+
       // When recording a payment, the customer is paying the store, so they add credit/reduce debt.
       // This means we increment their balance (amount is positive).
       const updatedCustomer = await customerRepository.recordTransaction(

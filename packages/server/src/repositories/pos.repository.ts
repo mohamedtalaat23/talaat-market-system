@@ -1,5 +1,21 @@
 import { db } from '../config/database';
 import type { Product } from './product.repository';
+import { customerRepository } from './customer.repository';
+import { auditService } from '../services/audit.service';
+
+export interface RefundItemInput {
+  sale_item_id: string;
+  quantity: number;
+  restock_inventory: boolean;
+}
+
+export interface RefundInput {
+  sale_id: string;
+  manager_id: number;
+  reason: string;
+  items: RefundItemInput[];
+  refund_type: 'full' | 'partial' | 'void';
+}
 
 export class InventoryUnderflowError extends Error {
   public code = 'INVENTORY_UNDERFLOW';
@@ -218,6 +234,22 @@ export class POSRepository {
           changeGiven = Math.min(changeGiven, payload.cash_amount || 0); // Can't give back more change than cash provided
         }
 
+        // Compute Effective Tenders
+        let cashPaid = 0;
+        let cardPaid = 0;
+        let debtPaid = 0;
+        
+        if (payload.payment_method === 'cash') {
+          cashPaid = total;
+        } else if (payload.payment_method === 'card') {
+          cardPaid = total;
+        } else if (payload.payment_method === 'debt') {
+          debtPaid = total;
+        } else if (payload.payment_method === 'split') {
+          cashPaid = (payload.cash_amount || 0) - changeGiven;
+          cardPaid = payload.card_amount || 0;
+        }
+
         const [sale] = await trx('sales')
           .insert({
             id: payload.id || trx.raw('gen_random_uuid()'),
@@ -235,6 +267,9 @@ export class POSRepository {
             cash_amount: payload.payment_method === 'split' ? payload.cash_amount || null : null,
             card_amount: payload.payment_method === 'split' ? payload.card_amount || null : null,
             change_given: changeGiven,
+            cash_paid: cashPaid,
+            card_paid: cardPaid,
+            debt_paid: debtPaid,
             status: 'completed',
             print_status: 'pending_print',
             print_count: 0,
@@ -589,6 +624,197 @@ export class POSRepository {
           ? Number(row.inventory_reserved_quantity)
           : undefined,
     })) as Product[];
+  }
+
+  async processRefund(input: RefundInput) {
+    return db.transaction(async (trx) => {
+      // 1. Lock sales row
+      const sale = await trx('sales').where('id', input.sale_id).forUpdate().first();
+      if (!sale) throw new Error('Sale not found');
+      if (sale.status === 'voided') throw new Error('Sale is already voided');
+
+      const originalSaleTotal = Number(sale.total);
+      const alreadyRefundedAmount = Number(sale.refunded_amount);
+
+      // 2. Lock sale_items rows
+      const itemIds = input.items.map(i => i.sale_item_id);
+      const saleItems = await trx('sale_items')
+        .whereIn('id', itemIds)
+        .andWhere('sale_id', input.sale_id)
+        .forUpdate();
+
+      const saleItemsMap = new Map(saleItems.map(item => [item.id, item]));
+
+      let totalRefundAmount = 0;
+      const refundItemsToInsert = [];
+
+      // Process each item
+      for (const reqItem of input.items) {
+        const dbItem = saleItemsMap.get(reqItem.sale_item_id);
+        if (!dbItem) throw new Error(`Sale item ${reqItem.sale_item_id} not found on this receipt`);
+
+        const availableQty = Number(dbItem.quantity) - Number(dbItem.refunded_quantity);
+        if (reqItem.quantity > availableQty) {
+          throw new Error(`Cannot refund ${reqItem.quantity} of item. Only ${availableQty} available.`);
+        }
+
+        // Proportional refund for the item
+        const itemRefundAmount = (Number(dbItem.line_total) / Number(dbItem.quantity)) * reqItem.quantity;
+        totalRefundAmount += itemRefundAmount;
+
+        refundItemsToInsert.push({
+          sale_item_id: dbItem.id,
+          product_id: dbItem.product_id,
+          quantity_refunded: reqItem.quantity,
+          refund_amount: itemRefundAmount,
+          restock_inventory: reqItem.restock_inventory
+        });
+
+        // Update sale_items aggregate
+        await trx('sale_items')
+          .where('id', dbItem.id)
+          .increment('refunded_quantity', reqItem.quantity)
+          .update({ updated_at: trx.fn.now() });
+        
+        // Handle Inventory Restock
+        if (reqItem.restock_inventory) {
+          await trx('inventory').where('product_id', dbItem.product_id).increment('quantity', reqItem.quantity).update({ updated_at: trx.fn.now() });
+          await trx('inventory_adjustments').insert({
+            product_id: dbItem.product_id,
+            adjustment_type: 'return',
+            quantity_change: reqItem.quantity,
+            new_quantity: 0, 
+            old_quantity: 0, 
+            notes: `Refund restock for sale ${sale.receipt_number}`,
+            created_by: input.manager_id,
+          });
+        } else {
+          await trx('inventory_adjustments').insert({
+            product_id: dbItem.product_id,
+            adjustment_type: 'damage',
+            quantity_change: 0,
+            new_quantity: 0,
+            old_quantity: 0,
+            notes: `Damaged return for sale ${sale.receipt_number}`,
+            created_by: input.manager_id,
+          });
+        }
+      }
+
+      // Protect against monetary over-refund
+      if (totalRefundAmount + alreadyRefundedAmount > originalSaleTotal + 0.01) { // 0.01 for rounding
+        throw new Error(`Total refund amount exceeds original sale total.`);
+      }
+
+      // 3. Proportional Split-Payment amounts
+      const cashPaid = Number(sale.cash_paid);
+      const cardPaid = Number(sale.card_paid);
+      const debtPaid = Number(sale.debt_paid);
+      
+      // Proportions
+      let cashRefunded = 0;
+      let cardRefunded = 0;
+      let debtReversed = 0;
+
+      if (originalSaleTotal > 0) {
+        const cashRatio = cashPaid / originalSaleTotal;
+        const cardRatio = cardPaid / originalSaleTotal;
+        const debtRatio = debtPaid / originalSaleTotal;
+        cashRefunded = totalRefundAmount * cashRatio;
+        cardRefunded = totalRefundAmount * cardRatio;
+        debtReversed = totalRefundAmount * debtRatio;
+      }
+
+      // Insert refund record
+      const rawResult = await trx.raw(`SELECT nextval('refund_receipt_number_seq') as seq`);
+      const refundReceiptNum = rawResult.rows[0];
+      const formattedRefundReceipt = `RF-${new Date().getFullYear()}-${String(refundReceiptNum.seq).padStart(6, '0')}`;
+
+      const [refund] = await trx('refunds').insert({
+        sale_id: sale.id,
+        refund_receipt_number: formattedRefundReceipt,
+        manager_id: input.manager_id,
+        shift_id: sale.shift_id,
+        refund_type: input.refund_type,
+        original_sale_total: originalSaleTotal,
+        total_refunded: totalRefundAmount,
+        cash_refunded: cashRefunded,
+        card_refunded: cardRefunded,
+        debt_reversed: debtReversed,
+        reason: input.reason,
+        status: 'completed'
+      }).returning('*');
+
+      const mappedRefundItems = refundItemsToInsert.map(ri => ({
+        ...ri,
+        refund_id: refund.id
+      }));
+
+      await trx('refund_items').insert(mappedRefundItems);
+
+      // Increment aggregated refund on sale
+      await trx('sales').where('id', sale.id).increment('refunded_amount', totalRefundAmount).update({ updated_at: trx.fn.now() });
+
+      // Deduct cash from shift if applicable
+      if (cashRefunded > 0 && sale.shift_id) {
+        await trx('cashier_shifts')
+          .where('id', sale.shift_id)
+          .decrement('expected_cash', cashRefunded)
+          .update({ updated_at: trx.fn.now() });
+      }
+
+      // Reverse customer debt if applicable
+      if (debtReversed > 0 && sale.customer_id) {
+        await customerRepository.recordTransaction(
+          sale.customer_id,
+          debtReversed, // Positive amount to credit their balance back (reduce debt)
+          'adjustment',
+          formattedRefundReceipt,
+          `Refund for sale ${sale.receipt_number}`,
+          input.manager_id,
+          sale.shift_id,
+          sale.register_id,
+          'cash', 
+          trx
+        );
+      }
+
+      // Update Sales status state machine
+      let newStatus = sale.status;
+      if (input.refund_type === 'void') {
+        newStatus = 'voided';
+      } else {
+        const finalRefundedAmount = alreadyRefundedAmount + totalRefundAmount;
+        if (Math.abs(finalRefundedAmount - originalSaleTotal) < 0.01) {
+          newStatus = 'refunded';
+        } else {
+          newStatus = 'partially_refunded';
+        }
+      }
+
+      if (newStatus !== sale.status) {
+        await trx('sales').where('id', sale.id).update({ status: newStatus, updated_at: trx.fn.now() });
+      }
+
+      // Audit Logging
+      await auditService.logEvent({
+        entityType: 'sales',
+        entityId: sale.id,
+        action: input.refund_type === 'void' ? 'sale_voided' : 'sale_refunded',
+        oldValue: { status: sale.status, refunded_amount: alreadyRefundedAmount, sale_id: sale.id },
+        newValue: { status: newStatus, refunded_amount: alreadyRefundedAmount + totalRefundAmount, refund_receipt: formattedRefundReceipt, sale_id: sale.id },
+        userId: input.manager_id,
+        reason: input.reason,
+        trx: trx
+      });
+
+      return {
+        refund_id: refund.id,
+        refund_receipt_number: formattedRefundReceipt,
+        total_refunded: totalRefundAmount,
+        status: newStatus
+      };
+    });
   }
 }
 
