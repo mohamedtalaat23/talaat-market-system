@@ -59,6 +59,15 @@ export const posProductSearchQuerySchema = z.object({
   q: z.string().trim().min(2, 'Search query must be at least 2 characters').max(100),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
+export const drawerAdjustmentSchema = z.object({
+  manager_id: z.number().int().positive('Manager ID is required'),
+  type: z.enum(['safe_drop', 'change_replenishment', 'petty_cash', 'vendor_payment', 'owner_withdrawal', 'cash_correction_in', 'cash_correction_out']),
+  amount: z.coerce.number().positive('Amount must be positive'),
+  reason_code: z.enum(['SAFE_DROP', 'CHANGE_REPLENISHMENT', 'PETTY_CASH', 'VENDOR_PAYMENT', 'OWNER_WITHDRAWAL', 'CASH_CORRECTION_IN', 'CASH_CORRECTION_OUT']),
+  reason_notes: z.string().trim().nullable().optional(),
+});
+
 export const openShiftSchema = z.object({
   starting_cash: z.coerce.number().nonnegative('Starting cash must be non-negative').default(0),
   register_id: z.coerce.number().int().positive('Register ID must be positive').default(1),

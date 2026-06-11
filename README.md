@@ -10,11 +10,28 @@
 
 ---
 
-## Overview
+## Table of Contents
+1. [Overview & Philosophy](#overview--philosophy)
+2. [Core Features](#core-features)
+3. [Financial Integrity & Reversals](#financial-integrity--reversals)
+4. [Security & Auditability](#security--auditability)
+5. [Keyboard Shortcuts Map](#keyboard-shortcuts-map)
+6. [Quick Start](#quick-start)
+7. [Packaged Windows App](#packaged-windows-app)
+8. [System Architecture](#system-architecture)
+9. [Project Structure](#project-structure)
+10. [Available Commands](#available-commands)
+11. [PostgreSQL Installation](#postgresql-installation)
+12. [License](#license)
+
+---
+
+## Overview & Philosophy
 
 Talaat Market is a fully offline, high-performance retail POS and ERP system engineered specifically for family supermarkets. Designed for intense daily retail work, it combines keyboard-first speed and native hardware interfaces with robust PostgreSQL database transactions and strict administrative audits.
 
 **Architecture Philosophy:** 
+- **Financial Integrity First**: Mathematically sound reconciliation ledgers that track physical cash variances immutably.
 - **Local-First & Offline Resilient**: Runs entirely on localhost or a local LAN, protecting operations against internet drops.
 - **Decoupled Workspaces**: Utilizes `npm Workspaces` to separate the React client, Express API server, and Electron native desktop shell.
 
@@ -23,26 +40,49 @@ Talaat Market is a fully offline, high-performance retail POS and ERP system eng
 ## Core Features
 
 - **🛒 Keyboard-First POS Checkout**: Under 1.5-second checkout transactions. Monitors physical USB barcode scanners using capture-phase keyboard timings (<30ms burst detection) to read barcodes even if fields are unfocused.
-- **👥 Customer Credit Profiles**: Signed accounts balances tracking credit debt (negative balance) and deposits (positive store credit), with chronological double-entry transaction histories and F7 customer selections.
-- **🔑 PIN Override Protections**: Restricted areas and cashier locks. Delicate POS activities (discounts, reprints, voids) trigger a prompt requesting a Manager's 4-digit bcrypt-hashed PIN.
-- **🖨️ Silent Thermal Receipt Printing**: Generates 80mm receipts utilizing Electron's native print API or an iframe fallback, featuring a reprint audit counter to prevent cashier fraud.
-- **📊 Financial Analytics & Reports**: Multi-screen `/reports` dashboard tracking closed cashier shifts (starting cash vs ending cash variance), override audits, and printable weekly sales metrics.
-- **⚙️ Store Configuration & Registers**: Global control of currency, tax rates, thermal printer templates, and physical registers to lay the groundwork for a LAN multi-terminal model.
-- 🔋 **Idempotent Checkout**: Client-side transaction UUID keys protect database actions against double-billing and inventory duplicates.
-- 📦 **Purchase Orders & AVCO Costing**: Logistics control from draft POs to manager placement and physical receipt. Dynamically recalculates product cost price using the Weighted Average Cost (AVCO) formula on stock receipt.
+- **👥 Customer Credit Profiles**: Signed accounts balances tracking credit debt (negative balance) and deposits (positive store credit), with chronological double-entry transaction histories.
+- **🖨️ Silent Thermal Receipt Printing**: Generates 80mm receipts utilizing Electron's native print API or an iframe fallback.
+- **📊 Reports & Shifts**: Multi-screen `/reports` dashboard tracking closed cashier shifts (starting cash vs ending cash variance).
+- **⚙️ Store Configuration**: Global control of currency, tax rates, thermal printer templates, and physical registers.
+- 📦 **Purchase Orders & AVCO Costing**: Logistics control from draft POs to manager placement and physical receipt. Dynamically recalculates product cost price using the Weighted Average Cost (AVCO) formula.
 
 ---
 
-## Prerequisites
+## Financial Integrity & Reversals
 
-Before setting up the project, ensure you have:
+The system was rebuilt with an enterprise-grade financial core.
 
-| Software | Version | Install |
-|----------|---------|---------|
-| **Node.js** | ≥ 20.0.0 | [nodejs.org](https://nodejs.org) or `nvm install --lts` |
-| **npm** | ≥ 10.0.0 | Included with Node.js |
-| **PostgreSQL** | ≥ 14 | See [PostgreSQL install guide](#postgresql-installation) |
-| **Git** | Any | [git-scm.com](https://git-scm.com) |
+- **Reversal Engine**: Full support for **Partial Refunds** and **Void Sales**. Cashiers can look up past transactions by receipt number and initiate item-level returns.
+- **Restock vs. Write-Off**: During a refund, cashiers specify if the returned item is undamaged (Restock) or damaged (Write-Off), maintaining perfect physical inventory parity.
+- **Immutable Cash Drawer Ledger**: Physical cash movements—such as Safe Drops, Petty Cash withdrawals, Change Replenishments, and Cash Corrections—are logged to an append-only, immutable database ledger (`cash_drawer_adjustments`).
+- **Shift Reconciliation**: Physical shift counting algorithms mathematically compare the live `expected_cash` (Starting Cash + Cash Sales - Cash Refunds + Pay Ins - Pay Outs) against the cashier's physical blind count to catch theft or discrepancies down to the penny.
+
+---
+
+## Security & Auditability
+
+- **Contextual Manager Overrides**: Delicate POS activities (refunds, voids, large discounts, cash drops) trigger a prompt requesting a Manager's 4-digit bcrypt-hashed PIN. The UI employs "Override Context" to display the exact financial impact (e.g., `WRITE-OFF (Contains Damage)`) to the manager *before* they authorize the action, preventing authorization blindness.
+- **Idempotency Protections**: Network boundaries are guarded by client-generated UUID idempotency keys. If a cashier accidentally double-taps "Checkout" or a network retry fires, the database intercepts the duplicate idempotency key and prevents double-billing the customer or double-deducting inventory.
+- **Immutable DB Triggers**: Financial tables are locked down at the PostgreSQL trigger level to forbid `UPDATE` or `DELETE` actions, ensuring the audit trail cannot be scrubbed.
+
+---
+
+## Keyboard Shortcuts Map
+
+The POS screen is designed to operate 100% without a mouse:
+
+| Key | Action |
+|-----|--------|
+| `F1` / `SPACE` | Open Payment Modal |
+| `F2` | Edit Quantity (if item selected) |
+| `F3` | Apply Discount |
+| `F4` | Transaction Search / Past Sales (Entry for Refund/Void) |
+| `F5` | Open Product Catalog Search |
+| `F6` | Suspended Carts Management (Hold / Resume) |
+| `F7` | Attach Customer Profile |
+| `F8` | Clear Active Cart (Wipe unsaved items) |
+| `F9` | Drawer Actions (Safe Drop, Petty Cash) |
+| `F12` | Exit POS (Requires Manager PIN) |
 
 ---
 
@@ -61,29 +101,12 @@ cd "Talaat Market System"
 npm install
 ```
 
-This installs dependencies for all three packages (`client`, `server`, `desktop`) in one command via npm workspaces.
-
 ### 3. Set up environment
 
 ```bash
 cp .env.example .env
 ```
-
 Edit `.env` and fill in your database credentials and session secret.
-
-**Required values:**
-```env
-DB_NAME=talaat_market
-DB_USER=talaat_user
-DB_PASSWORD=your_secure_password
-SESSION_SECRET=a_very_long_random_string_at_least_32_chars
-JWT_SECRET=your_jwt_signing_token_secret
-```
-
-Generate a secure session/JWT secret:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
 
 ### 4. Set up the database
 
@@ -93,12 +116,14 @@ chmod +x scripts/setup-db.sh
 ./scripts/setup-db.sh
 ```
 
-> **Windows users:** Create the user and database manually using `psql` or pgAdmin — see [Windows setup](#windows-setup).
-
-### 5. Run database migrations
+### 5. Run database migrations & Seed Data
 
 ```bash
+# Apply schemas
 npm run migrate --workspace=packages/server
+
+# Insert baseline dummy data and admin accounts
+npm run seed --workspace=packages/server
 ```
 
 ### 6. Start development
@@ -107,140 +132,26 @@ npm run migrate --workspace=packages/server
 npm run dev
 ```
 
-This starts all three packages concurrently:
-- 🟢 **Server** — Express API on `http://localhost:3001`
-- 🔵 **Client** — Vite React dev server on `http://localhost:5173`
-- 🟡 **Electron** — Desktop shell (waits for server + client to be ready)
-
 ---
 
 ## Packaged Windows App
 
-The Windows installer is designed to run out of the box without a separate
-PostgreSQL installation. Electron starts a bundled PostgreSQL runtime, stores
-the database under the Windows user profile, runs migrations, creates the
-baseline admin account, and then starts the local API server.
+The Windows installer is designed to run out of the box without a separate PostgreSQL installation. Electron starts a bundled PostgreSQL runtime, stores the database under the Windows user profile, runs migrations, creates the baseline admin account, and then starts the local API server.
 
-Before building the Windows installer, place the PostgreSQL Windows x64 runtime
-under:
+Before building the Windows installer, place the PostgreSQL Windows x64 runtime under `vendor/postgres/win-x64`.
 
-```text
-vendor/postgres/win-x64
-```
-
-The required runtime layout is documented in
-`vendor/postgres/win-x64/README.md`. The installer packages that directory into
-`resources/postgres/win-x64`.
-
-On first launch, the app creates:
-
-```text
-%APPDATA%/Talaat Market/postgres-data
-%APPDATA%/Talaat Market/config.env
-%APPDATA%/Talaat Market/logs
-%APPDATA%/Talaat Market/backups
-```
-
-The generated `config.env` contains local database credentials and generated
-session/JWT secrets. Keep it private.
+On first launch, the app creates `%APPDATA%/Talaat Market/postgres-data`.
 
 Default first-run admin account:
-
-```text
-Username: admin
-Password: admin123
-PIN: 1111
-```
-
-Change this password immediately after first login.
-
----
-
-## Project Structure
-
-```
-talaat-market/
-├── package.json                  # Root workspace configuration
-├── tsconfig.base.json            # Shared TypeScript configuration
-├── eslint.config.js              # ESLint flat config (v9)
-├── .prettierrc                   # Prettier formatting config
-├── .env.example                  # Environment variable template
-│
-├── packages/
-│   ├── client/                   # React frontend (Vite)
-│   │   ├── src/
-│   │   │   ├── main.tsx          # React entry point
-│   │   │   ├── App.tsx           # Router + query client
-│   │   │   ├── components/       # Common Layout (AppLayout) & UI Kits
-│   │   │   ├── features/         # Feature domains (POS, inventory, customers)
-│   │   │   ├── services/         # Axios API client wrapper
-│   │   │   ├── stores/           # Zustand stores (usePOSStore, authStore)
-│   │   │   └── styles/           # Vanilla CSS + Tailwind theme setup
-│   │
-│   ├── server/                   # Express.js API
-│   │   ├── src/
-│   │   │   ├── index.ts          # Server entry point
-│   │   │   ├── config/           # Database configurations & env validations
-│   │   │   ├── middleware/       # RBAC & unified error-boundary mapping
-│   │   │   ├── routes/           # Routing groups namespaced under /api/v1
-│   │   │   ├── controllers/      # Request handlers (Zod parsing)
-│   │   │   └── repositories/     # Data layers (raw Knex SQL operations)
-│   │   └── migrations/           # Knex SQL Schema migration history
-│   │
-│   └── desktop/                  # Electron desktop wrapper
-│       ├── src/
-│       │   ├── main.ts           # Electron main process (lifecycle & server spawn)
-│       │   ├── preload.ts        # IPC bridge (contextBridge)
-│       │   └── server-manager.ts # ESM-compliant background server launcher
-│
-└── scripts/
-    └── setup-db.sh               # Database creation script
-```
-
----
-
-## Available Commands
-
-### Development
-
-```bash
-# Start everything concurrently
-npm run dev
-
-# Start individual packages
-npm run dev:server    # Express API only
-npm run dev:client    # Vite dev server only
-npm run dev:desktop   # Electron only (requires server + client running)
-```
-
-### Code Quality & Validation
-
-```bash
-# TypeScript type checking
-npm run typecheck
-
-# Lint files
-npm run lint
-
-# Format codebase
-npm run format
-```
-
-### Building & Packaging
-
-```bash
-# Build all packages for production
-npm run build
-
-# Package Electron app
-npm run package --workspace=packages/desktop
-```
+- **Username**: `admin`
+- **Password**: `admin123`
+- **PIN**: `1111`
 
 ---
 
 ## System Architecture
 
-```
+```text
 Electron (Main Process)
     ├── Spawns Express.js background server
     ├── Creates secure sandboxed window
@@ -249,15 +160,7 @@ Electron (Main Process)
 React Client (Renderer)
     ├── Communicates with Express via HTTP REST
     ├── State: Zustand (Local Persistent Cart) + TanStack Query (Server Cache)
-    └── Binds global hotkeys:
-          - F1 / Space : Checkout Pay
-          - F3 : Cart Discounts
-          - F4 : Cart Hold / Resume
-          - F5 : Product Catalog Lookup
-          - F6 : Receipt Transaction Search
-          - F7 : Link Customer Account
-          - F8 : Void Transaction
-          - F12: Exit POS (Manager only)
+    └── Active Cart Overwrite Protection (Prevents silent cart destruction)
 
 Express.js Server
     ├── REST API on localhost:3001
@@ -265,7 +168,42 @@ Express.js Server
     └── Zod validator parameters
 
 PostgreSQL
-    └── Double-entry ledger tables & checks (inventory.quantity >= 0)
+    ├── Double-entry ledger tables & checks (inventory.quantity >= 0)
+    ├── Append-only immutable triggers (cash_drawer_adjustments, audit_logs)
+    └── Idempotency key tracking
+```
+
+---
+
+## Project Structure
+
+```
+talaat-market/
+├── package.json                  # Root workspace configuration
+├── packages/
+│   ├── client/                   # React frontend (Vite)
+│   ├── server/                   # Express.js API & Knex migrations
+│   └── desktop/                  # Electron desktop wrapper
+└── scripts/
+    └── setup-db.sh               # Database creation script
+```
+
+---
+
+## Available Commands
+
+```bash
+# Start everything concurrently
+npm run dev
+
+# Code Quality & Validation
+npm run typecheck
+npm run lint
+npm run format
+
+# Building & Packaging
+npm run build
+npm run package --workspace=packages/desktop
 ```
 
 ---
@@ -273,63 +211,23 @@ PostgreSQL
 ## PostgreSQL Installation
 
 ### Ubuntu / Debian
-
 ```bash
 sudo apt update
 sudo apt install postgresql postgresql-client
-
-# Start PostgreSQL service
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
-
-# Run setup script
-./scripts/setup-db.sh
-```
-
-### Fedora / RHEL
-
-```bash
-sudo dnf install postgresql postgresql-server
-sudo postgresql-setup --initdb
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
 ./scripts/setup-db.sh
 ```
 
 ### Windows Setup
-
 1. Download PostgreSQL from [postgresql.org/download/windows](https://www.postgresql.org/download/windows/)
 2. Run the installer (remember your `postgres` superuser password)
-3. Add PostgreSQL `bin` directory to your System PATH:
-   `C:\Program Files\PostgreSQL\<version>\bin`
-4. Open PowerShell as Administrator:
+3. Open PowerShell as Administrator and run:
    ```powershell
    psql -U postgres -c "CREATE USER talaat_user WITH PASSWORD 'your_password';"
    psql -U postgres -c "CREATE DATABASE talaat_market OWNER talaat_user;"
    psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE talaat_market TO talaat_user;"
    ```
-
----
-
-## Development Phases & Status
-
-| Phase | Feature Description | Status |
-|-------|---------------------|--------|
-| **Phase 1** | Project scaffolding, DB migration schema, & basic layouts | ✅ Complete |
-| **Phase 2** | Keyboard-driven POS checkout, barcode scan parser, Zustand cart | ✅ Complete |
-| **Phase 3** | Suspended carts (Hold/Resume) and persistent local storage | ✅ Complete |
-| **Phase 4** | Manager override locks and cash calculators | ✅ Complete |
-| **Phase 5** | Cashier enclosures, lock-in routing rules | ✅ Complete |
-| **Phase 6** | Silent 80mm receipt printing and secure shift audits | ✅ Complete |
-| **Phase 7** | Real-Time Inventory & Adjustment Logs | ✅ Complete |
-| **Phase 8** | Shift variance reconciliation and weekly profit reports | ✅ Complete |
-| **Phase 9** | Global Settings dashboard & Registers management for LAN | ✅ Complete |
-| **Phase 10**| Customer Credit accounts, ledger auditing, POS F7 link | ✅ Complete |
-| **Phase 11**| Suppliers Directory & Catalog Management | ✅ Complete |
-| **Phase 12**| Native USB ESC/POS direct printing (bypassing OS drivers) | ✅ Complete |
-| **Phase 13**| Multi-terminal LAN synchronization (Outage buffers) | ✅ Complete |
-| **Phase 14**| Purchase Orders & Supplier Stock Influx | ✅ Complete |
 
 ---
 

@@ -154,22 +154,22 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
       <div className="bg-neutral-900 rounded border border-border p-3 shrink-0">
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => openModal('pos_suspended_carts')}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F4] SUSPEND
-          </button>
-          <button
-            onClick={() => openModal('pos_manager_override', { action: 'void_transaction' })}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F8] VOID CART
-          </button>
-          <button
             onClick={() => openModal('pos_transaction_search')}
             className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
           >
-            [F6] REPRINT
+            [F4] PAST SALES
+          </button>
+          <button
+            onClick={() => openModal('pos_manager_override', { action: 'clear_cart' })}
+            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
+          >
+            [F8] CLEAR CART
+          </button>
+          <button
+            onClick={() => openModal('pos_suspended_carts')}
+            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
+          >
+            [F6] SUSPEND
           </button>
           <button
             onClick={() => {

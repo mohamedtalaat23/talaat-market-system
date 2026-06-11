@@ -80,8 +80,8 @@ export class POSController {
   closeShift = async (req: Request, res: Response) => {
     try {
       const { shift_id, ending_cash, notes } = req.body;
-      const cashierId = (req as any).user.id;
-      const shift = await posRepository.closeShift(shift_id, cashierId, ending_cash, notes);
+      const summary = await posRepository.getShiftSummary(shift_id);
+      const shift = await posRepository.closeShift(shift_id, ending_cash, summary.expected_cash, notes);
       return res.status(200).json({ success: true, data: shift });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -119,6 +119,20 @@ export class POSController {
 
       const summary = await posRepository.getShiftSummary(shiftId);
       return res.status(200).json({ success: true, data: summary });
+    } catch (error: any) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+  };
+
+  createDrawerAdjustment = async (req: Request, res: Response) => {
+    try {
+      const shiftId = Number(req.params.id);
+      const payload = req.body;
+      const adjustment = await posRepository.createDrawerAdjustment({
+        shift_id: shiftId,
+        ...payload
+      });
+      return res.status(201).json({ success: true, data: adjustment });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
     }

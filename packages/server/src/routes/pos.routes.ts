@@ -14,7 +14,8 @@ import {
   closeShiftSchema,
   posProductSearchQuerySchema,
   refundSaleSchema,
-  voidSaleSchema
+  voidSaleSchema,
+  drawerAdjustmentSchema
 } from '../validators/pos.validator';
 
 const router = Router();
@@ -78,6 +79,12 @@ router.get(
   '/shifts/:id/summary',
   validate({ params: posIdParamSchema }),
   posController.getShiftSummary,
+);
+
+router.post(
+  '/shifts/:id/adjustments',
+  validate({ params: posIdParamSchema, body: drawerAdjustmentSchema }),
+  posController.createDrawerAdjustment,
 );
 
 export default router;

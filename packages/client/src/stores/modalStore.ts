@@ -16,6 +16,8 @@ export type ModalType =
   | 'pos_open_shift'
   | 'pos_close_shift'
   | 'pos_transaction_search'
+  | 'pos_refund'
+  | 'pos_drawer_adjustment'
   | 'pos_customer_select'
   | 'pos_quantity';
 
@@ -48,6 +50,8 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_open_shift: false,
     pos_close_shift: false,
     pos_transaction_search: false,
+    pos_refund: false,
+    pos_drawer_adjustment: false,
     pos_customer_select: false,
     pos_quantity: false,
   },
@@ -67,6 +71,8 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_open_shift: null,
     pos_close_shift: null,
     pos_transaction_search: null,
+    pos_refund: null,
+    pos_drawer_adjustment: null,
     pos_customer_select: null,
     pos_quantity: null,
   },
@@ -102,6 +108,8 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_open_shift: false,
         pos_close_shift: false,
         pos_transaction_search: false,
+        pos_refund: false, // from closeAll
+        pos_drawer_adjustment: false, // from closeAll
         pos_customer_select: false,
         pos_quantity: false,
       },
@@ -121,6 +129,8 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_open_shift: null,
         pos_close_shift: null,
         pos_transaction_search: null,
+        pos_refund: null, // from closeAll
+        pos_drawer_adjustment: null, // from closeAll
         pos_customer_select: null,
         pos_quantity: null,
       },

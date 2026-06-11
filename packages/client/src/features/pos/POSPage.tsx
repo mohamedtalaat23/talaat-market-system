@@ -16,6 +16,8 @@ import { NoShiftOverlay } from './components/NoShiftOverlay';
 import { OpenShiftModal } from './components/OpenShiftModal';
 import { CloseShiftModal } from './components/CloseShiftModal';
 import TransactionSearchModal from './components/TransactionSearchModal';
+import { RefundModal } from './components/RefundModal';
+import { DrawerAdjustmentModal } from './components/DrawerAdjustmentModal';
 import { CustomerSelectModal } from './components/CustomerSelectModal';
 import { QuantityModal } from './components/QuantityModal';
 import { useModalStore } from '@/stores/modalStore';
@@ -211,6 +213,8 @@ export function POSPage() {
       <OpenShiftModal />
       <CloseShiftModal />
       <TransactionSearchModal />
+      <RefundModal />
+      <DrawerAdjustmentModal />
       <ProductSearchFallback />
       <ManagerOverrideModal />
       <PaymentModal />

@@ -72,6 +72,71 @@ export class POSRepository {
   /**
    * Close a shift.
    */
+
+  /**
+   * Create a Cash Drawer Adjustment
+   */
+  async createDrawerAdjustment(payload: { shift_id: number, manager_id: number, type: string, amount: number, reason_code: string, reason_notes?: string }) {
+    return await db.transaction(async (trx) => {
+      // Verify shift is open
+      const shift = await trx('cashier_shifts').where({ id: payload.shift_id, status: 'open' }).first();
+      if (!shift) {
+        throw new Error('Shift must be open to perform drawer adjustments.');
+      }
+
+      // Verify manager
+      const manager = await trx('employees').where({ id: payload.manager_id, role: 'manager' }).first();
+      if (!manager) {
+        throw new Error('Valid manager authorization is required for drawer adjustments.');
+      }
+
+      let direction = 'OUT';
+      if (['change_replenishment'].includes(payload.type)) {
+        direction = 'IN';
+      } else if (payload.type === 'cash_correction') {
+        // If cash_correction, we look at the reason_code. For simplicity, just use reason_code to denote direction or accept the type mapping.
+        // Wait, if amount is always positive, how do we denote cash_correction direction?
+        // Let's rely on reason_code or type. We can use 'cash_correction_in' and 'cash_correction_out' for the API type.
+      }
+
+      // Wait! The user's requested types are: safe_drop, change_replenishment, petty_cash, vendor_payment, owner_withdrawal, cash_correction.
+      // If it's a cash_correction, let's look at the payload.type if we updated it, or we just rely on the controller logic.
+      
+      const inTypes = ['change_replenishment', 'cash_correction_in'];
+      direction = inTypes.includes(payload.type) ? 'IN' : 'OUT';
+
+      const [adj] = await trx('cash_drawer_adjustments').insert({
+        shift_id: payload.shift_id,
+        cashier_id: shift.employee_id,
+        manager_id: payload.manager_id,
+        adjustment_type: direction,
+        amount: payload.amount,
+        reason_code: payload.reason_code,
+        reason_notes: payload.reason_notes || null
+      }).returning('*');
+
+      // Update shift expected cash
+      if (direction === 'IN') {
+        await trx('cashier_shifts').where('id', shift.id).increment('expected_cash', payload.amount).update({ updated_at: trx.fn.now() });
+      } else {
+        await trx('cashier_shifts').where('id', shift.id).decrement('expected_cash', payload.amount).update({ updated_at: trx.fn.now() });
+      }
+
+      // Audit Log
+      await trx('audit_logs').insert({
+        entity_type: 'cash_drawer_adjustments',
+        entity_id: String(adj.id),
+        action: 'drawer_adjustment_created',
+        old_value: null,
+        new_value: JSON.stringify(adj),
+        user_id: payload.manager_id,
+        reason: payload.reason_notes || payload.reason_code
+      });
+
+      return adj;
+    });
+  }
+
   async closeShift(shiftId: number, endingCash: number, expectedCash: number, notes?: string) {
     const [shift] = await db('cashier_shifts')
       .where({ id: shiftId, status: 'open' })
@@ -103,15 +168,11 @@ export class POSRepository {
 
     const salesSummary = await db('sales')
       .where('shift_id', shiftId)
-      .andWhere('status', 'completed')
+      .whereIn('status', ['completed', 'partially_refunded', 'refunded', 'voided'])
       .select(
         db.raw('COUNT(id) as transaction_count'),
-        db.raw(
-          "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total WHEN payment_method = 'split' THEN COALESCE(cash_amount, 0) - COALESCE(change_given, 0) ELSE 0 END), 0) as cash_sales",
-        ),
-        db.raw(
-          "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN total WHEN payment_method = 'split' THEN COALESCE(card_amount, 0) ELSE 0 END), 0) as card_sales",
-        ),
+        db.raw("COALESCE(SUM(cash_paid), 0) as cash_sales"),
+        db.raw("COALESCE(SUM(card_paid), 0) as card_sales"),
         db.raw(
           'COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts',
         ),
@@ -120,6 +181,27 @@ export class POSRepository {
         ),
       )
       .first();
+
+    const refundsSummary = await db('refunds')
+      .join('sales', 'sales.id', 'refunds.sale_id')
+      .where('sales.shift_id', shiftId)
+      .select(
+        db.raw("COALESCE(SUM(refunds.cash_refunded), 0) as cash_refunds"),
+        db.raw("COALESCE(SUM(refunds.card_refunded), 0) as card_refunds")
+      )
+      .first();
+
+    
+    const adjustmentSummary = await db('cash_drawer_adjustments')
+      .where('shift_id', shiftId)
+      .select(
+        db.raw("COALESCE(SUM(CASE WHEN adjustment_type = 'IN' THEN amount ELSE 0 END), 0) as total_pay_ins"),
+        db.raw("COALESCE(SUM(CASE WHEN adjustment_type = 'OUT' THEN amount ELSE 0 END), 0) as total_pay_outs")
+      )
+      .first();
+
+    const payIns = Number(adjustmentSummary?.total_pay_ins || 0);
+    const payOuts = Number(adjustmentSummary?.total_pay_outs || 0);
 
     const paymentSummary = await db('customer_transactions')
       .where('shift_id', shiftId)
@@ -134,8 +216,8 @@ export class POSRepository {
       )
       .first();
 
-    const cashSales = Number(salesSummary.cash_sales) + Number(paymentSummary.cash_payments);
-    const cardSales = Number(salesSummary.card_sales) + Number(paymentSummary.card_payments);
+    const cashSales = Number(salesSummary.cash_sales) + Number(paymentSummary.cash_payments) - Number(refundsSummary?.cash_refunds || 0) + payIns - payOuts;
+    const cardSales = Number(salesSummary.card_sales) + Number(paymentSummary.card_payments) - Number(refundsSummary?.card_refunds || 0);
     const totalDiscounts = Number(salesSummary.total_discounts);
     const expectedCash = Number(shift.starting_cash) + cashSales;
 
@@ -148,6 +230,8 @@ export class POSRepository {
       expected_cash: expectedCash,
       transaction_count: Number(salesSummary.transaction_count),
       pending_prints: Number(salesSummary.pending_prints),
+      total_pay_ins: payIns,
+      total_pay_outs: payOuts
     };
   }
 
@@ -383,6 +467,14 @@ export class POSRepository {
         }
 
         const insertedItems = await trx('sale_items').insert(saleItemsToInsert).returning('*');
+
+        // Update live shift tracker with incoming cash
+        if (cashPaid > 0 && payload.shift_id) {
+          await trx('cashier_shifts')
+            .where('id', payload.shift_id)
+            .increment('expected_cash', cashPaid)
+            .update({ updated_at: trx.fn.now() });
+        }
 
         return { ...sale, items: insertedItems };
       });

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useModalStore } from '@/stores/modalStore';
+import { RefreshCcw } from 'lucide-react';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import { Search, X, Printer, RefreshCw } from 'lucide-react';
@@ -119,7 +120,7 @@ const TransactionSearchModal = () => {
                   <th className="pb-2 font-medium">Cashier</th>
                   <th className="pb-2 font-medium text-right">Total</th>
                   <th className="pb-2 font-medium text-right">Status</th>
-                  <th className="pb-2 font-medium text-right">Action</th>
+                  <th className="pb-2 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,13 +149,24 @@ const TransactionSearchModal = () => {
                       )}
                     </td>
                     <td className="py-3 text-right">
-                      <button
-                        onClick={() => handleReprintRequest(sale)}
-                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-card-hover hover:bg-primary/20 text-primary rounded transition-colors text-xs font-medium"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>Reprint</span>
-                      </button>
+                      <div className="flex justify-end space-x-2">
+                        {['completed', 'partially_refunded'].includes(sale.status) && (
+                          <button
+                            onClick={() => openModal('pos_refund', { sale })}
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 bg-warning/10 hover:bg-warning/20 text-warning border border-warning/20 rounded transition-colors text-xs font-medium"
+                          >
+                            <RefreshCcw className="w-3.5 h-3.5" />
+                            <span>Refund / Void</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleReprintRequest(sale)}
+                          className="inline-flex items-center space-x-1 px-3 py-1.5 bg-card-hover hover:bg-primary/20 text-primary rounded transition-colors text-xs font-medium"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Reprint</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

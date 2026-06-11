@@ -49,7 +49,10 @@ export function ManagerOverrideModal() {
 
   // Map action key → translation key
   const actionKeyMap: Record<string, string> = {
+    clear_cart: 'pos.actionClearCart',
     void_transaction: 'pos.actionVoidTransaction',
+    refund_transaction: 'pos.actionRefundTransaction',
+    drawer_adjustment: 'pos.actionDrawerAdjustment',
     large_discount: 'pos.actionLargeDiscount',
     price_override: 'pos.actionPriceOverride',
     cross_cashier_resume: 'pos.actionCrossCashierResume',
@@ -80,10 +83,10 @@ export function ManagerOverrideModal() {
         const state = usePOSStore.getState();
 
         if (payload?.onSuccess) {
-          payload.onSuccess();
-        } else if (payload?.action === 'void_transaction') {
+          payload.onSuccess(selectedManagerId);
+        } else if (payload?.action === 'clear_cart') {
           state.clearCart();
-          toast.error(t('pos.transactionVoided'));
+          toast.error(t('pos.cartCleared'));
         } else if (payload?.action === 'large_discount') {
           if (payload.target === 'cart') {
             state.setGlobalDiscount(payload.discountValue);
@@ -130,6 +133,46 @@ export function ManagerOverrideModal() {
             {t('pos.managerAuthTitle')}
           </h3>
           <p className="text-secondary text-sm mt-1 text-center">{actionName}</p>
+
+          {payload?.displayMetadata && (
+            <div className="mt-4 w-full bg-neutral-900 border border-border rounded-md p-3 text-sm">
+              <div className="font-semibold text-primary mb-2 text-center border-b border-border pb-1">
+                {payload.displayMetadata.title}
+              </div>
+              <div className="space-y-1.5">
+                {payload.displayMetadata.customer && (
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Customer:</span>
+                    <span className="text-foreground">{payload.displayMetadata.customer}</span>
+                  </div>
+                )}
+                {payload.displayMetadata.amount !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Amount:</span>
+                    <span className="font-mono text-foreground font-bold">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
+                  </div>
+                )}
+                {payload.displayMetadata.actionType && (
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Type:</span>
+                    <span className="text-foreground">{payload.displayMetadata.actionType}</span>
+                  </div>
+                )}
+                {payload.displayMetadata.direction && (
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Direction:</span>
+                    <span className={`font-bold ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}>{payload.displayMetadata.direction}</span>
+                  </div>
+                )}
+                {payload.displayMetadata.inventoryEffect && (
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Inventory:</span>
+                    <span className={`font-bold ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}>{payload.displayMetadata.inventoryEffect}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <button
           onClick={closeModal}

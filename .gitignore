@@ -62,3 +62,10 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Temporary Automation & Audit Files
+scratch_*.ts
+patch_*.ts
+fix_*.ts
+test_*.tmp
+*.patch

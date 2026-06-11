@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, Printer, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ArrowLeft, LogOut, Printer, ToggleLeft, ToggleRight, Vault } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -77,6 +77,14 @@ export const POSTopBar = React.memo(function POSTopBar() {
         {activeShift && (
           <>
             <div className="w-px h-4 bg-border"></div>
+            <button
+              onClick={() => openModal('pos_drawer_adjustment')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-warning/15 hover:bg-warning/25 text-warning transition-colors text-xs font-medium border border-warning/30 hover:border-warning/45 focus:outline-none"
+              title="Drawer Actions (F9)"
+            >
+              <Vault className="w-3.5 h-3.5" />
+              <span>Drawer</span>
+            </button>
             <button
               onClick={() => openModal('pos_close_shift')}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-danger/15 hover:bg-danger/25 text-danger transition-colors text-xs font-medium border border-danger/30 hover:border-danger/45 focus:outline-none"

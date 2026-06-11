@@ -85,7 +85,7 @@ export function POSKeyboardHandler() {
       if (!state.activeShift && e.key !== 'F12') return;
 
       // Prevent browser default behaviors for specific intercepted POS F-keys
-      const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F12'];
+      const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F12'];
       if (interceptedFKeys.includes(e.key)) {
         e.preventDefault();
       }
@@ -162,19 +162,22 @@ export function POSKeyboardHandler() {
           openModal('pos_discount');
           break;
         case 'F4':
-          openModal('pos_suspended_carts');
+          openModal('pos_transaction_search');
           break;
         case 'F5':
           openModal('pos_product_search');
           break;
         case 'F6':
-          openModal('pos_transaction_search');
+          openModal('pos_suspended_carts');
           break;
         case 'F7':
           openModal('pos_customer_select');
           break;
         case 'F8':
-          openModal('pos_manager_override', { action: 'void_transaction' });
+          openModal('pos_manager_override', { action: 'clear_cart' });
+          break;
+        case 'F9':
+          openModal('pos_drawer_adjustment');
           break;
         case 'F12':
           openModal('pos_manager_override', {
