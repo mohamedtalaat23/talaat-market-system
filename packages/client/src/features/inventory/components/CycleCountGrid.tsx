@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCycleCount, useUpdateCycleCountItem, usePostCycleCount, useCancelCycleCount, useScanCycleCountItem } from '../hooks/useCycleCounts';
-import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import { Check, X, AlertTriangle, Scan, Search } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';

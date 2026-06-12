@@ -53,7 +53,7 @@ describe('POSCartList', () => {
     expect(screen.getByText('Fresh Milk')).toBeInTheDocument();
     expect(screen.getByText('حليب طازج')).toBeInTheDocument();
     expect(screen.getByText('111111')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument(); // Quantity
+    expect(screen.getAllByText('2')[0]).toBeInTheDocument(); // Quantity
     expect(screen.getByText('25.50')).toBeInTheDocument(); // Unit price column
     expect(screen.getByText('46.00')).toBeInTheDocument(); // Total column: (2 * 25.50) - 5.00
     expect(screen.getByText(/-5.00 EGP.*pos.itemDiscount/)).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('POSCartList', () => {
 
     render(<POSCartList />);
 
-    const appleRow = screen.getByText('Apple').closest('tr');
+    const appleRow = screen.getByText('Apple').closest('.cart-item-row');
     expect(appleRow).toBeDefined();
 
     // Click Second Item

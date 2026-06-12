@@ -8,10 +8,25 @@ export const POSCartList = React.memo(() => {
   const cart = usePOSStore((state) => state.cart);
   const activeItemIndex = usePOSStore((state) => state.activeItemIndex);
   const setActiveItemIndex = usePOSStore((state) => state.setActiveItemIndex);
+  const updateQuantity = usePOSStore((state) => state.updateQuantity);
+  const removeItem = usePOSStore((state) => state.removeItem);
 
-  const listRef = useRef<HTMLTableSectionElement>(null);
+
+  const listRef = useRef<HTMLDivElement>(null);
   const [lastUpdatedCartId, setLastUpdatedCartId] = useState<string | null>(null);
+  const [editingCartId, setEditingCartId] = useState<string | null>(null);
+  const [editQtyStr, setEditQtyStr] = useState('');
   const prevCartRef = useRef<POSCartItem[]>(cart);
+
+  const handleQtySubmit = (cartId: string) => {
+    const qty = parseInt(editQtyStr, 10);
+    if (!isNaN(qty) && qty > 0) {
+      updateQuantity(cartId, qty);
+    } else if (qty === 0) {
+      removeItem(cartId);
+    }
+    setEditingCartId(null);
+  };
 
   // Auto-scroll to active item row
   useEffect(() => {
@@ -49,111 +64,127 @@ export const POSCartList = React.memo(() => {
     prevCartRef.current = cart;
   }, [cart]);
 
-
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full overflow-hidden select-none border border-border/60 bg-neutral-50/30 rounded">
       {cart.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-secondary bg-neutral-50 gap-4 py-16 px-8">
-          {/* Icon anchor */}
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white border border-border">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-neutral-500"
-              aria-hidden="true"
-            >
-              {/* Barcode icon lines */}
-              <path d="M3 5v14M7 5v14M11 5v14M15 5v6M15 14v5M19 5v14" />
-            </svg>
-          </div>
-          {/* Primary instruction */}
-          <div className="text-center">
-            <p className="text-base font-bold text-foreground">
-              {t('pos.scanPrompt')}
-            </p>
-            {/* Secondary hint */}
-            <p className="text-xs text-neutral-500 mt-2">
-              {t('pos.searchPrompt')}{' '}
-              <kbd className="inline-flex items-center px-1.5 py-0.5 bg-white rounded text-secondary border border-border font-mono text-xs font-semibold">
-                {t('pos.searchKey')}
-              </kbd>{' '}
-              {t('pos.searchPromptSuffix')}
-            </p>
-          </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-secondary bg-neutral-50/50 p-6 text-center select-none">
+          <h3 className="text-sm font-bold text-neutral-400 mb-1">{t('pos.scanPrompt')}</h3>
+          <p className="text-xs text-neutral-400/70 max-w-[220px]">
+            {t('pos.searchPrompt')}
+          </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full text-left rtl:text-right border-collapse select-none">
-            <thead className="sticky top-0 z-10 bg-neutral-100 border-b border-border">
-              <tr className="h-10 text-xs font-bold uppercase tracking-wider text-secondary font-sans select-none">
-                <th className="px-3 w-[4%]">#</th>
-                <th className="px-3 w-[55%]">Item</th>
-                <th className="px-3 w-[11%] text-right">Qty</th>
-                <th className="px-3 w-[12%] text-right">Price</th>
-                <th className="px-3 w-[18%] text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody ref={listRef} className="divide-y divide-border">
-              {cart.map((item, index) => {
-                const isActive = index === activeItemIndex;
-                const isFlash = item.cart_id === lastUpdatedCartId;
-                const itemTotal = item.quantity * item.unit_price - item.discount;
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Header Row */}
+          <div className="grid grid-cols-[1fr_4.5rem_4.5rem_5.5rem] gap-2 px-3 py-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-b border-border/60 bg-neutral-100/50 shrink-0">
+            <span className="pl-6">Item</span>
+            <span className="text-center">Qty</span>
+            <span className="text-right">Price</span>
+            <span className="text-right pr-2">Total</span>
+          </div>
 
-                return (
-                  <tr
-                    key={item.cart_id}
-                    onClick={() => setActiveItemIndex(index)}
-                    className={`group h-12 cursor-pointer transition-all duration-fast select-none relative ${
-                      isActive
-                        ? 'bg-primary-50 text-foreground border-l-2 border-primary pl-2'
-                        : 'bg-white text-secondary hover:bg-neutral-50'
-                    } ${isFlash ? 'animate-focus-row' : ''}`}
-                  >
-                    <td className="px-3 font-mono text-xs text-secondary text-left select-none">
-                      {index + 1}
-                    </td>
-                    <td className="px-3 select-none">
-                      <div className="flex flex-col">
-                        <span className="font-sans font-semibold text-sm text-foreground">
+          <div ref={listRef} className="flex-1 overflow-y-auto divide-y divide-border/40">
+            {cart.map((item, index) => {
+              const isActive = index === activeItemIndex;
+              const isFlash = item.cart_id === lastUpdatedCartId;
+              const itemTotal = item.quantity * item.unit_price - item.discount;
+
+              let badgeClass = "text-foreground font-black";
+              if (item.quantity >= 20) badgeClass = "bg-danger text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm";
+              else if (item.quantity >= 10) badgeClass = "bg-orange-500 text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm";
+              else if (item.quantity >= 5) badgeClass = "bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold text-[10px] shadow-sm";
+
+              return (
+                <div
+                  key={item.cart_id}
+                  onClick={() => {
+                    setActiveItemIndex(index);
+                    if (editingCartId && editingCartId !== item.cart_id) {
+                      handleQtySubmit(editingCartId);
+                    }
+                  }}
+                  onDoubleClick={() => {
+                    setEditingCartId(item.cart_id);
+                    setEditQtyStr(String(item.quantity));
+                  }}
+                  className={`cart-item-row px-3 h-12 flex items-center cursor-pointer transition-colors border-l-[4px] ${
+                    isActive
+                      ? 'bg-primary/5 border-l-primary shadow-inner'
+                      : 'bg-white hover:bg-neutral-50 border-l-transparent'
+                  } text-sm select-none relative ${
+                    isFlash ? 'animate-focus-row' : ''
+                  }`}
+                >
+                  <div className="grid grid-cols-[1fr_4.5rem_4.5rem_5.5rem] gap-2 items-center w-full min-w-0">
+                    {/* Column 1: Item Name */}
+                    <div className="flex items-center gap-2 min-w-0 pr-2">
+                      <span className="font-mono text-[10px] font-bold text-neutral-400 shrink-0 select-none w-4 text-right">
+                        {index + 1}
+                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className={`font-bold truncate leading-tight ${isActive ? 'text-primary' : 'text-foreground'}`}>
                           {item.name}
                         </span>
-                        {/* Barcode as subtext — replaces standalone SKU column */}
-                        <span className="font-mono text-xs text-neutral-500 leading-tight">
-                          {item.barcode || '—'}
-                        </span>
-                        {item.name_ar && (
-                          <span className="font-arabic text-xs text-secondary leading-tight">
-                            {item.name_ar}
+                        {item.discount > 0 ? (
+                          <span className="text-[10px] text-danger font-mono font-medium leading-none mt-0.5 truncate">
+                            Disc: -{item.discount.toFixed(2)}
                           </span>
-                        )}
-                        {item.discount > 0 && (
-                          <span className="text-xs text-danger font-mono font-medium">
-                            -{item.discount.toFixed(2)} EGP ({t('pos.itemDiscount')})
+                        ) : item.barcode && isActive ? (
+                          <span className="text-[9px] text-neutral-400 font-mono leading-none mt-0.5 truncate">
+                            {item.barcode}
                           </span>
-                        )}
+                        ) : null}
                       </div>
-                    </td>
-                    <td className="px-3 font-mono text-sm text-right text-foreground select-none">
-                      <span className="font-bold">{item.quantity}</span>
-                      <span className="text-xs text-secondary ml-1 select-none">{item.unit}</span>
-                    </td>
-                    <td className="px-3 font-mono text-sm text-right text-secondary select-none">
+                    </div>
+
+                    {/* Column 2: Quantity */}
+                    <div className="text-center shrink-0">
+                      {editingCartId === item.cart_id ? (
+                        <input
+                          autoFocus
+                          type="number"
+                          className="w-12 h-7 text-center text-xs font-bold border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white shadow-inner"
+                          value={editQtyStr}
+                          onChange={(e) => setEditQtyStr(e.target.value)}
+                          onBlur={() => handleQtySubmit(item.cart_id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleQtySubmit(item.cart_id);
+                            if (e.key === 'Escape') setEditingCartId(null);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <div 
+                          className="flex justify-center items-center h-full w-full"
+                          onClick={(e) => {
+                            if (isActive) {
+                              e.stopPropagation();
+                              setEditingCartId(item.cart_id);
+                              setEditQtyStr(String(item.quantity));
+                            }
+                          }}
+                        >
+                          <span className={`${badgeClass} transition-colors inline-block min-w-[1.5rem]`}>
+                            {item.quantity}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Column 3: Price */}
+                    <div className={`font-mono text-xs text-right shrink-0 ${isActive ? 'text-foreground font-semibold' : 'text-secondary'}`}>
                       {item.unit_price.toFixed(2)}
-                    </td>
-                    <td className="px-3 font-mono text-sm text-right font-bold text-foreground select-none">
+                    </div>
+
+                    {/* Column 4: Total */}
+                    <div className={`font-mono text-right pr-2 shrink-0 truncate ${isActive ? 'text-primary font-black text-[14px]' : 'text-foreground font-bold text-[13px]'}`}>
                       {itemTotal.toFixed(2)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePOSStore } from './usePOSStore';
 import { apiClient } from '@/services/api-client';
-import { POSCartList } from './components/POSCartList';
 import { POSSummary } from './components/POSSummary';
 import { POSTopBar } from './components/POSTopBar';
 import { POSKeyboardHandler } from './components/POSKeyboardHandler';
@@ -25,15 +24,25 @@ import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
 import { useIdleTimer } from '@/hooks/useIdleTimer';
 import { FastPinLockscreen } from './components/FastPinLockscreen';
+import { useCategories, useProducts, type Product } from '@/features/products/hooks/useProductQueries';
 import toast from 'react-hot-toast';
 
 export function POSPage() {
   const navigate = useNavigate();
   const openModal = useModalStore((state) => state.openModal);
+  const activeModals = useModalStore((state) => state.activeModals);
+  const closeModal = useModalStore((state) => state.closeModal);
   const addItem = usePOSStore((state) => state.addItem);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [scannerMultiplier, setScannerMultiplier] = useState<number | null>(null);
+
+  // 1. Category and Product States
+  const [selectedCategory, setSelectedCategory] = useState<'all' | number>('all');
+  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
+  // Widget expand states removed in UI.6 Rework
 
   // Expose stores to window for E2E testing inspection/control
   useEffect(() => {
@@ -67,8 +76,10 @@ export function POSPage() {
   const paymentMethod = usePOSStore((state) => state.paymentMethod);
   const cashReceived = usePOSStore((state) => state.cashReceived);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
-  const activeModals = useModalStore((state) => state.activeModals);
-  const closeModal = useModalStore((state) => state.closeModal);
+  const activeShift = usePOSStore((state) => state.activeShift);
+  const lastSaleId = usePOSStore((state) => state.lastSaleId);
+  const heldCarts = usePOSStore((state) => state.heldCarts);
+  const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
   const idleTimeoutMs = usePOSStore((state) => state.idleTimeoutMs);
 
   // Initialize auto-lock idle timer
@@ -94,8 +105,23 @@ export function POSPage() {
     prevCartLengthRef.current = cart.length;
   }, [cart.length]);
 
+  // Refocus Search Input Scanner Workflow
+  const focusSearchInput = () => {
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 50);
+  };
+
+  // Enforce autofocus after modal closures, customer selection, or item changes
   useEffect(() => {
-    // Fetch active shift on mount
+    const hasActiveModal = Object.values(activeModals).some((isOpen) => isOpen);
+    if (!hasActiveModal) {
+      focusSearchInput();
+    }
+  }, [activeModals, cart.length, heldCarts.length, selectedCustomer]);
+
+  // Fetch initial shift
+  useEffect(() => {
     const fetchShift = async () => {
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
@@ -112,17 +138,97 @@ export function POSPage() {
     fetchShift();
   }, []);
 
+  // Shift summary fetching removed in UI.6 Rework
+
+  // Fetch categories using React Query hook
+  const { data: categories = [] } = useCategories();
+
+  // Fetch products for current active category (max 24)
+  const { data: categoryProductsData, isLoading: isProductsLoading } = useProducts({
+    page: 1,
+    limit: 24,
+    category_id: selectedCategory === 'all' ? null : selectedCategory,
+  });
+  const products = categoryProductsData?.data || [];
+
+  // Fetch recent sales and aggregate top selling products for the empty grid state
+  const loadRecentActivities = async () => {
+    try {
+      // Fetch larger sample for accurate top-selling data
+      const salesResponse = await apiClient.get<{ success: boolean; data: any[] }>(
+        '/pos/sales/search?limit=100'
+      );
+      if (salesResponse.data?.success && salesResponse.data?.data) {
+        const sales = salesResponse.data.data;
+
+        const frequencyMap = new Map<number, number>();
+        const productMap = new Map<number, Product>();
+        const recentOrder: number[] = [];
+
+        sales.forEach((sale: any) => {
+          sale.items?.forEach((item: any) => {
+            const id = item.product_id;
+            frequencyMap.set(id, (frequencyMap.get(id) || 0) + Number(item.quantity));
+            
+            if (!productMap.has(id)) {
+              productMap.set(id, {
+                id: item.product_id,
+                barcode: item.barcode,
+                name: item.product_name,
+                name_ar: item.name_ar || null,
+                selling_price: Number(item.unit_price),
+                unit: item.unit || 'pcs',
+                inventory_quantity: item.inventory_quantity || 100,
+                cost_price: 0,
+                min_stock_level: 0,
+                max_stock_level: 0,
+                is_active: true,
+                created_at: '',
+                updated_at: '',
+                description: null,
+                category_id: null,
+              });
+            }
+            if (!recentOrder.includes(id)) {
+              recentOrder.push(id);
+            }
+          });
+        });
+
+        // Top 4 selling products
+        const topSellingIds = Array.from(frequencyMap.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4)
+          .map(entry => entry[0]);
+        
+        setFavoriteProducts(topSellingIds.map(id => productMap.get(id)!));
+
+        // Top 4 recent products (excluding favorites)
+        const recentIds = recentOrder
+          .filter(id => !topSellingIds.includes(id))
+          .slice(0, 4);
+          
+        setRecentProducts(recentIds.map(id => productMap.get(id)!));
+      }
+    } catch (err) {
+      console.error('Failed to load recent activities:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadRecentActivities();
+  }, [lastSaleId]);
+
   // Auto-focus search input on mount and global Esc/F5 presses
   useEffect(() => {
     searchInputRef.current?.focus();
 
     const handleGlobalKeys = (e: KeyboardEvent) => {
-      // Focus search bar on Escape (except inside a modal)
       const hasActiveModal = Object.values(useModalStore.getState().activeModals).some(isOpen => isOpen);
       if (e.key === 'Escape' && !hasActiveModal) {
         searchInputRef.current?.focus();
+        setScannerMultiplier(null);
       }
-      // Focus search bar on F5 instead of refreshing
       if (e.key === 'F5' && !hasActiveModal) {
         e.preventDefault();
         searchInputRef.current?.focus();
@@ -138,10 +244,27 @@ export function POSPage() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    const query = searchQuery.trim();
+    let query = searchQuery.trim();
     setSearchQuery('');
 
-    // Check if no shift is open before looking up product
+    // Check for standalone multiplier (e.g. "12*" or "24x")
+    const standaloneMatch = query.match(/^(\d+)[*xX]$/);
+    if (standaloneMatch && standaloneMatch[1]) {
+      setScannerMultiplier(parseInt(standaloneMatch[1], 10));
+      return; // Wait for the next scan
+    }
+
+    // Check for combined multiplier + barcode (e.g. "12*628123")
+    let quantity = scannerMultiplier || 1;
+    const combinedMatch = query.match(/^(\d+)[*xX](.+)$/);
+    if (combinedMatch && combinedMatch[1] && combinedMatch[2]) {
+      quantity = parseInt(combinedMatch[1], 10);
+      query = combinedMatch[2].trim();
+    }
+    
+    // reset multiplier after extraction
+    setScannerMultiplier(null);
+
     if (!usePOSStore.getState().activeShift) {
       toast.error('Cannot look up product when shift is closed');
       return;
@@ -149,7 +272,6 @@ export function POSPage() {
 
     const loadingToastId = toast.loading(`Looking up: "${query}"`);
     try {
-      // 1. Try exact barcode match first
       const response = await apiClient.get<{ success: boolean; data: any }>(
         `/products/barcode/${query}`,
       );
@@ -168,23 +290,58 @@ export function POSPage() {
           name: product.name,
           name_ar: product.name_ar,
           unit_price: product.selling_price,
-          quantity: 1,
+          quantity: quantity,
           discount: 0,
           unit: product.unit,
           inventory_quantity: product.inventory_quantity || 0,
         });
         toast.success(`Added ${product.name}`);
-        searchInputRef.current?.focus();
+        focusSearchInput();
         return;
       }
     } catch (error) {
-      // Barcode scan failed, fall back to searching products catalog modal
       toast.dismiss(loadingToastId);
     }
 
-    // 2. Open search modal with query if not found by barcode
     openModal('pos_product_search', { initialSearch: query });
   };
+
+  // Keyboard navigation inside Category Strip
+  const handleCategoryKeyDown = (e: React.KeyboardEvent, index: number, total: number) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % total;
+      const nextBtn = document.getElementById(`cat-btn-${nextIndex}`) as HTMLButtonElement;
+      nextBtn?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + total) % total;
+      const prevBtn = document.getElementById(`cat-btn-${prevIndex}`) as HTMLButtonElement;
+      prevBtn?.focus();
+    }
+  };
+
+  const handleAddProduct = (product: Product) => {
+    if (!activeShift) {
+      toast.error('Shift is not open.');
+      return;
+    }
+    addItem({
+      product_id: product.id,
+      barcode: product.barcode,
+      name: product.name,
+      name_ar: product.name_ar,
+      unit_price: product.selling_price,
+      quantity: 1,
+      discount: 0,
+      unit: product.unit,
+      inventory_quantity: product.inventory_quantity || 0,
+    });
+    toast.success(`Added ${product.name}`);
+    focusSearchInput();
+  };
+
+  const categoriesWithAll = [{ id: 'all' as any, name: 'All Products', name_ar: 'الكل' }, ...categories];
 
   return (
     <div
@@ -197,34 +354,171 @@ export function POSPage() {
       <POSTopBar />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel: Cart & Table (70% - Edge-to-Edge data display) */}
-        <div className="w-[70%] flex flex-col border-r border-border bg-neutral-50 overflow-hidden">
-          {/* Persistent Scan & Lookup Input Bar */}
-          <form onSubmit={handleSearchSubmit} className="p-3 bg-white border-b border-border shrink-0">
+        
+        {/* ── Left Panel (65% width) - Main Workspace ── */}
+        <div className="w-[65%] flex flex-col h-full border-r border-border bg-neutral-50 overflow-hidden">
+          
+          {/* Search bar input (Scanner focus target) */}
+          <form onSubmit={handleSearchSubmit} className="p-2.5 bg-white border-b border-border shrink-0">
             <div className="relative">
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Scan barcode or type name to search... (F5)"
-                className="w-full bg-neutral-100 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
+                placeholder={scannerMultiplier ? `${scannerMultiplier}x Next Scan... (Esc to cancel)` : "Scan barcode or type name to search... (F5)"}
+                className="w-full bg-neutral-100 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
               />
-              <div className="absolute right-3 top-2.5 text-xs font-mono font-bold text-neutral-500 border border-neutral-300 bg-white px-1.5 py-0.5 rounded">
+              <div className="absolute right-3 top-2 text-xs font-mono font-bold text-neutral-500 border border-neutral-300 bg-white px-1.5 py-0.5 rounded">
                 ENTER
               </div>
             </div>
           </form>
 
-          {/* Receipt Data Table */}
-          <POSCartList />
+          {/* Independently Scrollable Left Container */}
+          <div className="flex-1 overflow-y-auto p-2.5 space-y-3 min-h-0">
+            
+            {/* Horizontal Category Strip */}
+            <div className="shrink-0 flex items-center gap-1.5 overflow-x-auto pb-1">
+              {categoriesWithAll.map((cat, idx) => {
+                const isActive = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    id={`cat-btn-${idx}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      focusSearchInput();
+                    }}
+                    onKeyDown={(e) => handleCategoryKeyDown(e, idx, categoriesWithAll.length)}
+                    className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
+                      isActive
+                        ? 'bg-primary text-white'
+                        : 'bg-white hover:bg-neutral-100 text-secondary border border-border'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Touch Products Panel */}
+            <div>
+              {isProductsLoading && products.length === 0 ? (
+                <div className="grid grid-cols-3 xl:grid-cols-4 gap-2 animate-pulse">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="bg-white border border-border rounded h-[80px]" />
+                  ))}
+                </div>
+              ) : selectedCategory === 'all' ? (
+                <div className="space-y-6">
+                  {/* Favorites Grid */}
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3 flex items-center gap-1.5">
+                      <span className="text-yellow-500">⭐</span> Favorites
+                    </h3>
+                    {favoriteProducts.length === 0 ? (
+                      <div className="text-xs text-secondary italic">Building favorites from sales data...</div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {favoriteProducts.map((prod) => (
+                          <button
+                            key={`fav-${prod.id}`}
+                            type="button"
+                            onClick={() => handleAddProduct(prod)}
+                            className="bg-yellow-50/40 border border-yellow-200/60 hover:border-yellow-400 hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 shadow-xs"
+                          >
+                            <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-90 drop-shadow-sm">
+                              ⭐
+                            </div>
+                            <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
+                              {prod.name}
+                            </span>
+                            <span className="font-mono font-black text-primary text-base">
+                              EGP {prod.selling_price.toFixed(2)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Recent Grid */}
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3 flex items-center gap-1.5">
+                      <span className="text-blue-500">🕒</span> Recent Scans
+                    </h3>
+                    {recentProducts.length === 0 ? (
+                      <div className="text-xs text-secondary italic">Scan items to build recency...</div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {recentProducts.map((prod) => (
+                          <button
+                            key={`rec-${prod.id}`}
+                            type="button"
+                            onClick={() => handleAddProduct(prod)}
+                            className="bg-white border border-border hover:border-primary hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-primary shadow-xs"
+                          >
+                            <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-80">
+                              🕒
+                            </div>
+                            <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
+                              {prod.name}
+                            </span>
+                            <span className="font-mono font-black text-primary text-base">
+                              EGP {prod.selling_price.toFixed(2)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : products.length === 0 ? (
+                <div className="bg-white border border-border rounded-lg p-6 text-center text-xs text-secondary">
+                  No products loaded in this category.
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3">
+                    Category Products
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {products.map((prod) => (
+                      <button
+                        key={prod.id}
+                        type="button"
+                        onClick={() => handleAddProduct(prod)}
+                        className="bg-white border border-border hover:border-primary hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-primary shadow-xs"
+                      >
+                        <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-80">
+                          📦
+                        </div>
+                        <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
+                          {prod.name}
+                        </span>
+                        <span className="font-mono font-black text-primary text-base">
+                          EGP {prod.selling_price.toFixed(2)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Right Panel: Summary & Quick Numpad Actions (30%) */}
-        <div className="w-[30%] flex flex-col bg-white overflow-hidden h-full">
+        {/* ── Right Panel (35% width) - Checkout ── */}
+        <div className="w-[35%] flex flex-col bg-white overflow-hidden h-full">
           <POSSummary cart={cart} paymentMethod={paymentMethod} cashReceived={cashReceived} />
           <PrintQueueMonitor />
         </div>
+
       </div>
 
       {/* Invisible global keyboard listener for shortcuts and barcode scanning */}

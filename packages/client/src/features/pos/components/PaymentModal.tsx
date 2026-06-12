@@ -43,8 +43,8 @@ export function PaymentModal() {
   useEffect(() => {
     if (isOpen) {
       setCashReceivedStr('');
-      setCashPortionStr(String(Math.floor(total / 2)));
-      setCardPortionStr(String(total - Math.floor(total / 2)));
+      setCashPortionStr('0');
+      setCardPortionStr(String(total));
       idempotencyKeyRef.current = crypto.randomUUID();
     }
   }, [isOpen, total]);

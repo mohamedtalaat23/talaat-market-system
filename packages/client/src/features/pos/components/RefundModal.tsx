@@ -20,11 +20,9 @@ export function RefundModal() {
 
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
-  if (!isOpen || !sale) return null;
+  const isEligibleForVoid = sale?.status === 'completed';
 
-  const isEligibleForVoid = sale.status === 'completed';
-
-  const items = sale.items || [];
+  const items = sale?.items || [];
   
   const refundTotal = useMemo(() => {
     return items.reduce((total: number, item: any) => {
@@ -58,7 +56,7 @@ export function RefundModal() {
     }));
 
   const handleProcessRefund = async () => {
-    if (itemsToRefund.length === 0) return;
+    if (itemsToRefund.length === 0 || !sale) return;
     if (!pin || managerId === '') {
       import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
       return;
@@ -122,6 +120,7 @@ export function RefundModal() {
   };
 
   const handleVoidSale = async () => {
+    if (!sale) return;
     if (!pin || managerId === '') {
       import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
       return;
@@ -257,6 +256,8 @@ export function RefundModal() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, items, focusedRowIndex, quantitiesToRefund, reason]);
+
+  if (!isOpen || !sale) return null;
 
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-input-text">
