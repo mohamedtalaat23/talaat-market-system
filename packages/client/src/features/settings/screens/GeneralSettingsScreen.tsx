@@ -87,7 +87,7 @@ export function GeneralSettingsScreen() {
       </h3>
       <form onSubmit={handleSubmit} className="space-y-8 select-text">
         {/* Company Details */}
-        <div className="space-y-4 pb-6 border-b border-border">
+        <div className="space-y-4 pb-6 border-b border-input-border">
           <h4 className="text-xs font-bold text-secondary uppercase tracking-wider select-none">
             {t('settings.companyDetails')}
           </h4>
@@ -98,7 +98,7 @@ export function GeneralSettingsScreen() {
               </label>
               <input
                 type="text"
-                className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans select-text"
+                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
                 value={form.store_name}
                 onChange={(e) => setForm({ ...form, store_name: e.target.value })}
                 required
@@ -110,7 +110,7 @@ export function GeneralSettingsScreen() {
               </label>
               <input
                 type="text"
-                className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans select-text"
+                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
                 value={form.store_phone}
                 onChange={(e) => setForm({ ...form, store_phone: e.target.value })}
                 placeholder={t('settings.placeholderPhone')}
@@ -121,7 +121,7 @@ export function GeneralSettingsScreen() {
                 {t('settings.storeAddress')}
               </label>
               <textarea
-                className="w-full bg-neutral-900 border border-border rounded p-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans resize-none h-20 select-text"
+                className="w-full bg-input-bg border border-input-border rounded p-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans resize-none h-20 select-text"
                 value={form.store_address}
                 onChange={(e) => setForm({ ...form, store_address: e.target.value })}
                 placeholder={t('settings.placeholderAddress')}
@@ -133,7 +133,7 @@ export function GeneralSettingsScreen() {
               </label>
               <input
                 type="text"
-                className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans select-text"
+                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
                 value={form.tax_id}
                 onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
                 placeholder={t('settings.placeholderTaxId')}
@@ -154,7 +154,7 @@ export function GeneralSettingsScreen() {
               </label>
               <input
                 type="text"
-                className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono select-text"
+                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono select-text"
                 value={form.currency_symbol}
                 onChange={(e) => setForm({ ...form, currency_symbol: e.target.value })}
               />
@@ -167,7 +167,7 @@ export function GeneralSettingsScreen() {
                 type="number"
                 step="0.01"
                 min="0"
-                className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono select-text"
+                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono select-text"
                 value={form.tax_rate}
                 onChange={(e) => setForm({ ...form, tax_rate: Number(e.target.value) })}
               />
@@ -178,7 +178,7 @@ export function GeneralSettingsScreen() {
               </label>
               <div className="relative">
                 <select
-                  className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans appearance-none select-text"
+                  className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans appearance-none select-text placeholder:text-input-placeholder"
                   value={form.timezone}
                   onChange={(e) => setForm({ ...form, timezone: e.target.value })}
                 >
@@ -199,7 +199,7 @@ export function GeneralSettingsScreen() {
               </label>
               <div className="relative">
                 <select
-                  className="w-full bg-neutral-900 border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono appearance-none select-text"
+                  className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono appearance-none select-text placeholder:text-input-placeholder"
                   value={form.date_format}
                   onChange={(e) => setForm({ ...form, date_format: e.target.value })}
                 >
@@ -217,22 +217,22 @@ export function GeneralSettingsScreen() {
 
         {/* ── Sticky Unsaved Changes Action Bar ── */}
         {isDirty && (
-          <div className="sticky bottom-4 left-0 right-0 bg-neutral-950 border border-border rounded p-3.5 flex items-center justify-between shadow-2xl animate-fade-in z-20 select-none">
-            <span className="text-xs font-semibold text-neutral-300">
+          <div className="sticky bottom-4 left-0 right-0 bg-white border border-border rounded p-3.5 flex items-center justify-between shadow-2xl animate-fade-in z-20 select-none">
+            <span className="text-xs font-semibold text-foreground">
               You have unsaved changes to your general settings
             </span>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="px-4 h-8 bg-transparent hover:bg-neutral-900 border border-border text-secondary hover:text-foreground text-[10px] font-bold uppercase tracking-wider rounded transition-colors focus:outline-none"
+                className="px-4 h-8 bg-transparent hover:bg-neutral-100 border border-border text-secondary hover:text-foreground text-xs font-bold uppercase tracking-wider rounded transition-colors focus:outline-none"
               >
                 Discard
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-4 h-8 bg-primary hover:bg-primary-600 text-white text-[10px] font-bold uppercase tracking-wider rounded transition-colors focus:outline-none disabled:opacity-50"
+                className="px-4 h-8 bg-primary hover:bg-primary-600 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors focus:outline-none disabled:opacity-50"
               >
                 {isPending ? 'Saving...' : 'Save Changes'}
               </button>

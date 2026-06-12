@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, Printer, ToggleLeft, ToggleRight, Vault } from 'lucide-react';
+import { ArrowLeft, LogOut, Printer, ToggleLeft, ToggleRight, Vault, Lock } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -15,6 +15,13 @@ export const POSTopBar = React.memo(function POSTopBar() {
   const autoPrintReceipts = usePOSStore((state) => state.autoPrintReceipts);
   const setAutoPrintReceipts = usePOSStore((state) => state.setAutoPrintReceipts);
   const { t } = useTranslation();
+
+  // We can trigger the lock screen by temporarily setting idleTimeoutMs to a very short time
+  // OR simply emitting a custom window event that the lockscreen or POSPage listens to.
+  // Actually, setting the POSPage's isIdle state manually is easiest via window event
+  const handleManualLock = () => {
+    window.dispatchEvent(new Event('pos:manual-lock'));
+  };
 
   return (
     <div className="h-14 flex items-center justify-between px-6 bg-card border-b border-border">
@@ -71,6 +78,13 @@ export const POSTopBar = React.memo(function POSTopBar() {
           <span className="text-foreground font-semibold">
             {user?.full_name || user?.username || 'Cashier'}
           </span>
+          <button
+            onClick={handleManualLock}
+            className="ml-2 inline-flex items-center justify-center p-1 rounded-md text-secondary hover:bg-card-hover hover:text-foreground transition-colors"
+            title="Lock POS (Switch User)"
+          >
+            <Lock className="w-3.5 h-3.5" />
+          </button>
         </div>
         <div className="w-px h-4 bg-border"></div>
         <div>{new Date().toLocaleTimeString()}</div>

@@ -23,6 +23,8 @@ import { QuantityModal } from './components/QuantityModal';
 import { useModalStore } from '@/stores/modalStore';
 import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
+import { useIdleTimer } from '@/hooks/useIdleTimer';
+import { FastPinLockscreen } from './components/FastPinLockscreen';
 import toast from 'react-hot-toast';
 
 export function POSPage() {
@@ -49,6 +51,14 @@ export function POSPage() {
     });
   }, [openModal, navigate]);
 
+  // Open transaction search modal on mount if specified in URL query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('modal') === 'transaction_search') {
+      openModal('pos_transaction_search');
+    }
+  }, [openModal]);
+
   // Activate shift heartbeat validation poller
   useShiftHeartbeat();
 
@@ -59,6 +69,16 @@ export function POSPage() {
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
   const activeModals = useModalStore((state) => state.activeModals);
   const closeModal = useModalStore((state) => state.closeModal);
+  const idleTimeoutMs = usePOSStore((state) => state.idleTimeoutMs);
+
+  // Initialize auto-lock idle timer
+  const { isIdle, resetTimer, setIsIdle } = useIdleTimer(idleTimeoutMs);
+
+  useEffect(() => {
+    const handleManualLock = () => setIsIdle(true);
+    window.addEventListener('pos:manual-lock', handleManualLock);
+    return () => window.removeEventListener('pos:manual-lock', handleManualLock);
+  }, [setIsIdle]);
 
   // Scanner flash effect when an item is added to the cart
   const cartLength = cart.length;
@@ -172,13 +192,15 @@ export function POSPage() {
         scannerFlash ? 'animate-scanner-flash' : ''
       }`}
     >
+      <FastPinLockscreen isOpen={isIdle} onSuccess={resetTimer} />
+      
       <POSTopBar />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel: Cart & Table (70% - Edge-to-Edge data display) */}
-        <div className="w-[70%] flex flex-col border-r border-border bg-neutral-900 overflow-hidden">
+        <div className="w-[70%] flex flex-col border-r border-border bg-neutral-50 overflow-hidden">
           {/* Persistent Scan & Lookup Input Bar */}
-          <form onSubmit={handleSearchSubmit} className="p-3 bg-neutral-950 border-b border-border shrink-0">
+          <form onSubmit={handleSearchSubmit} className="p-3 bg-white border-b border-border shrink-0">
             <div className="relative">
               <input
                 ref={searchInputRef}
@@ -186,9 +208,9 @@ export function POSPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Scan barcode or type name to search... (F5)"
-                className="w-full bg-neutral-900 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
+                className="w-full bg-neutral-100 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
               />
-              <div className="absolute right-3 top-2.5 text-[10px] font-mono font-bold text-neutral-500 border border-neutral-800 bg-neutral-950 px-1.5 py-0.5 rounded">
+              <div className="absolute right-3 top-2.5 text-xs font-mono font-bold text-neutral-500 border border-neutral-300 bg-white px-1.5 py-0.5 rounded">
                 ENTER
               </div>
             </div>
@@ -199,7 +221,7 @@ export function POSPage() {
         </div>
 
         {/* Right Panel: Summary & Quick Numpad Actions (30%) */}
-        <div className="w-[30%] flex flex-col bg-neutral-950 overflow-hidden h-full">
+        <div className="w-[30%] flex flex-col bg-white overflow-hidden h-full">
           <POSSummary cart={cart} paymentMethod={paymentMethod} cashReceived={cashReceived} />
           <PrintQueueMonitor />
         </div>

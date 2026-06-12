@@ -49,7 +49,7 @@ export function SupplierDetailScreen() {
 
   if (isLoading) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center font-sans text-neutral-100">
+      <div className="flex h-96 flex-col items-center justify-center font-sans text-input-text">
         <Spinner size="md" />
         <span className="mt-3 text-sm text-secondary font-mono">
           Loading supplier profile & catalog...
@@ -60,14 +60,14 @@ export function SupplierDetailScreen() {
 
   if (error || !supplier) {
     return (
-      <div className="text-center py-12 font-sans text-neutral-100">
+      <div className="text-center py-12 font-sans text-input-text">
         <h3 className="text-lg font-semibold text-danger">Supplier Profile Not Found</h3>
         <p className="text-sm text-neutral-500 mt-2">
           The requested supplier directory profile does not exist or has been deleted.
         </p>
         <button
           onClick={() => navigate('/suppliers')}
-          className="mt-6 rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover hover:text-neutral-100 transition-colors"
+          className="mt-6 rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold hover:bg-card-hover hover:text-input-text transition-colors"
         >
           Back to Suppliers Directory
         </button>
@@ -82,34 +82,34 @@ export function SupplierDetailScreen() {
   );
 
   return (
-    <div className="space-y-6 font-sans text-neutral-100 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 font-sans text-input-text p-6 max-w-7xl mx-auto">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-input-border pb-5">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate('/suppliers')}
-            className="rounded-lg p-1.5 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors border border-border"
+            className="rounded-lg p-1.5 text-secondary hover:bg-card-hover hover:text-input-text transition-colors border border-input-border"
             title="Back to Directory"
           >
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-100">{supplier.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-input-text">{supplier.name}</h1>
             <div className="flex items-center space-x-2.5 mt-1">
               <span className="text-xs font-mono text-neutral-500">
                 Supplier: {supplier.supplier_code}
               </span>
               <span className="h-1 w-1 rounded-full bg-neutral-700" />
               {supplier.status === 'active' ? (
-                <span className="inline-flex items-center text-[11px] font-semibold text-success">
+                <span className="inline-flex items-center text-xs font-semibold text-success">
                   <CheckCircle2 size={11} className="mr-1" /> Active
                 </span>
               ) : supplier.status === 'inactive' ? (
-                <span className="inline-flex items-center text-[11px] font-semibold text-warning">
+                <span className="inline-flex items-center text-xs font-semibold text-warning">
                   <AlertTriangle size={11} className="mr-1" /> Inactive
                 </span>
               ) : (
-                <span className="inline-flex items-center text-[11px] font-semibold text-danger">
+                <span className="inline-flex items-center text-xs font-semibold text-danger">
                   <ShieldAlert size={11} className="mr-1" /> Suspended
                 </span>
               )}
@@ -119,7 +119,7 @@ export function SupplierDetailScreen() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsFormOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-neutral-800 hover:bg-neutral-750 px-4 py-2.5 text-sm font-semibold hover:text-neutral-100 transition-colors border border-neutral-750"
+            className="inline-flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-750 px-4 py-2.5 text-sm font-semibold hover:text-input-text transition-colors border border-neutral-750"
           >
             <Edit2 size={14} className="mr-1.5" />
             Edit Profile
@@ -141,22 +141,22 @@ export function SupplierDetailScreen() {
         {/* Left Side: Contact Information Summary */}
         <div className="space-y-6">
           {/* Supplier Stats summary */}
-          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center justify-between">
+          <div className="rounded-xl border border-input-border bg-white p-6 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-input-border pb-2 flex items-center justify-between">
               <span>Integration Status</span>
               <Archive size={14} className="text-neutral-500" />
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Catalog Products
                 </span>
-                <span className="text-xl font-bold font-mono text-neutral-100">
+                <span className="text-xl font-bold font-mono text-input-text">
                   {catalog.length}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Low Stock Alerts
                 </span>
                 <span
@@ -185,26 +185,26 @@ export function SupplierDetailScreen() {
           </div>
 
           {/* Contact profile card */}
-          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2">
+          <div className="rounded-xl border border-input-border bg-white p-6 space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-input-border pb-2">
               Contact Profile
             </h3>
             <div className="space-y-4 text-sm">
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Representative Name
                 </span>
-                <div className="font-semibold text-neutral-200">
+                <div className="font-semibold text-input-text">
                   {supplier.contact_name || (
                     <span className="text-neutral-600 font-normal italic">Not Specified</span>
                   )}
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Phone Number
                 </span>
-                <div className="font-semibold font-mono text-neutral-200 flex items-center space-x-1.5">
+                <div className="font-semibold font-mono text-input-text flex items-center space-x-1.5">
                   <Phone size={13} className="text-neutral-500" />
                   <span>
                     {supplier.phone || (
@@ -216,11 +216,11 @@ export function SupplierDetailScreen() {
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Email Address
                 </span>
                 <div
-                  className="font-semibold font-mono text-neutral-200 flex items-center space-x-1.5 truncate"
+                  className="font-semibold font-mono text-input-text flex items-center space-x-1.5 truncate"
                   title={supplier.email || ''}
                 >
                   <Mail size={13} className="text-neutral-500 animate-none shrink-0" />
@@ -234,7 +234,7 @@ export function SupplierDetailScreen() {
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-neutral-500 uppercase font-bold block">
+                <span className="text-xs text-neutral-500 uppercase font-bold block">
                   Office Address
                 </span>
                 <div className="font-semibold text-neutral-300 flex items-start space-x-1.5 leading-relaxed">
@@ -250,12 +250,12 @@ export function SupplierDetailScreen() {
           </div>
 
           {/* Supplier Notes */}
-          <div className="rounded-xl border border-border bg-neutral-900/50 p-6 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-border pb-2 flex items-center space-x-1.5">
+          <div className="rounded-xl border border-input-border bg-white p-6 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-secondary border-b border-input-border pb-2 flex items-center space-x-1.5">
               <FileText size={13} className="text-neutral-500" />
               <span>Internal Procurement Notes</span>
             </h3>
-            <div className="text-secondary italic bg-input p-3 rounded-lg border border-border text-xs leading-relaxed max-w-full break-words">
+            <div className="text-secondary italic bg-input-bg p-3 rounded-lg border border-input-border text-xs leading-relaxed max-w-full break-words">
               {supplier.notes ||
                 'No custom procurement notes registered for this supplier profile.'}
             </div>
@@ -264,9 +264,9 @@ export function SupplierDetailScreen() {
 
         {/* Right Side: Supplied Catalog Products */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-xl border border-border bg-neutral-900/20 overflow-hidden">
-            <div className="border-b border-border bg-input px-6 py-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-neutral-200">Linked Catalog Products</h3>
+          <div className="rounded-xl border border-input-border bg-white overflow-hidden">
+            <div className="border-b border-input-border bg-input-bg px-6 py-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-input-text">Linked Catalog Products</h3>
               <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-850 border border-neutral-750 text-secondary">
                 {catalog.length} Products
               </span>
@@ -274,7 +274,7 @@ export function SupplierDetailScreen() {
 
             {catalog.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 border border-border text-secondary mb-3">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-input-bg border border-input-border text-secondary mb-3">
                   <Archive size={18} />
                 </div>
                 <h4 className="text-sm font-semibold text-neutral-300">Catalog is Empty</h4>
@@ -286,7 +286,7 @@ export function SupplierDetailScreen() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-input/40 text-xs font-semibold uppercase tracking-wider text-secondary">
+                    <tr className="border-b border-input-border bg-input-bg/40 text-xs font-semibold uppercase tracking-wider text-secondary">
                       <th className="px-6 py-3.5">Barcode / Code</th>
                       <th className="px-6 py-3.5">Product Name</th>
                       <th className="px-6 py-3.5 text-right">Cost Price</th>
@@ -310,11 +310,11 @@ export function SupplierDetailScreen() {
                           </td>
 
                           {/* Product Name */}
-                          <td className="px-6 py-4 text-xs font-semibold text-neutral-100">
+                          <td className="px-6 py-4 text-xs font-semibold text-input-text">
                             <div className="flex flex-col">
                               <span>{product.name}</span>
                               {product.name_ar && (
-                                <span className="text-[10px] text-neutral-500 font-normal dir-rtl mt-0.5">
+                                <span className="text-xs text-neutral-500 font-normal dir-rtl mt-0.5">
                                   {product.name_ar}
                                 </span>
                               )}
@@ -327,7 +327,7 @@ export function SupplierDetailScreen() {
                           </td>
 
                           {/* Selling Price */}
-                          <td className="px-6 py-4 text-xs font-mono text-right text-neutral-200">
+                          <td className="px-6 py-4 text-xs font-mono text-right text-input-text">
                             {product.selling_price.toFixed(2)} EGP
                           </td>
 
@@ -348,12 +348,12 @@ export function SupplierDetailScreen() {
                           {/* Stock Status Alert */}
                           <td className="px-6 py-4 text-xs text-right">
                             {isLowStock ? (
-                              <span className="inline-flex items-center rounded bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning border border-warning/30">
+                              <span className="inline-flex items-center rounded bg-warning/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-warning border border-warning/30">
                                 <AlertTriangle size={10} className="mr-1 shrink-0" />
                                 Low Stock ({product.min_stock_level})
                               </span>
                             ) : (
-                              <span className="inline-flex items-center rounded bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success border border-success/30">
+                              <span className="inline-flex items-center rounded bg-success/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-success border border-success/30">
                                 Healthy
                               </span>
                             )}
@@ -382,18 +382,18 @@ export function SupplierDetailScreen() {
       {/* Supplier Soft Deletion Safety Confirmation Modal */}
       {isDeleteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-neutral-900 shadow-2xl p-6 text-neutral-100">
+          <div className="w-full max-w-md rounded-xl border border-input-border bg-input-bg shadow-2xl p-6 text-input-text">
             <div className="flex items-start space-x-3">
               <div className="rounded-full bg-danger/15 p-2 text-danger border border-danger/20">
                 <AlertTriangle size={24} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold tracking-wide text-neutral-200">
+                <h3 className="text-lg font-semibold tracking-wide text-input-text">
                   Confirm Soft Deletion
                 </h3>
                 <p className="text-sm text-secondary leading-relaxed font-sans">
                   Are you sure you want to delete supplier{' '}
-                  <span className="font-semibold text-neutral-100">"{supplier.name}"</span> (
+                  <span className="font-semibold text-input-text">"{supplier.name}"</span> (
                   {supplier.supplier_code})?
                 </p>
 
@@ -408,17 +408,17 @@ export function SupplierDetailScreen() {
                     </span>
                     . If you proceed, those products will remain in the catalog, but their primary
                     supplier connection will be set to{' '}
-                    <span className="font-mono bg-input px-1 rounded text-neutral-300">NULL</span>.
+                    <span className="font-mono bg-input-bg px-1 rounded text-neutral-300">NULL</span>.
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 border-t border-border pt-4 mt-6">
+            <div className="flex items-center justify-end space-x-3 border-t border-input-border pt-4 mt-6">
               <button
                 onClick={() => setIsDeleteOpen(false)}
                 disabled={deleteSupplier.isPending}
-                className="rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold hover:bg-card-hover disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>

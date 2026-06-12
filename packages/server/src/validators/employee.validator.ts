@@ -18,6 +18,11 @@ export const loginSchema = z
     path: ['password'],
   });
 
+export const fastPinLoginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+});
+
 export const createEmployeeSchema = z.object({
   full_name: z.string().trim().min(1, 'Full name is required').max(150),
   username: z

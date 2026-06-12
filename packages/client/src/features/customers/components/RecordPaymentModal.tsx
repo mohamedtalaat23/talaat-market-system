@@ -85,13 +85,13 @@ export function RecordPaymentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl border border-border bg-modal shadow-2xl overflow-hidden font-sans text-foreground animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-md rounded-xl border border-input-border bg-modal shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-card px-6 py-4">
+        <div className="flex items-center justify-between border-b border-input-border bg-card px-6 py-4">
           <h3 className="text-lg font-semibold tracking-wide">{t('customers.paymentTitle')}</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-foreground transition-colors"
+            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-input-text transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -107,10 +107,10 @@ export function RecordPaymentModal({
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Info Card */}
-          <div className="rounded-lg bg-input border border-border p-4 space-y-2">
+          <div className="rounded-lg bg-input-bg border border-input-border p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-secondary">{t('customers.customer')}:</span>
-              <span className="font-semibold text-foreground">{customerName}</span>
+              <span className="font-semibold text-input-text">{customerName}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-secondary">{t('customers.currentBalanceLabel')}:</span>
@@ -120,7 +120,7 @@ export function RecordPaymentModal({
                     ? 'text-danger'
                     : numericBalance > 0
                       ? 'text-success'
-                      : 'text-foreground'
+                      : 'text-input-text'
                 }`}
               >
                 {numericBalance.toFixed(2)} EGP
@@ -144,10 +144,10 @@ export function RecordPaymentModal({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={t('customers.paymentPlaceholder')}
-              className={`w-full rounded-lg border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:outline-none transition-colors font-mono ${
+              className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors font-mono ${
                 error
                   ? 'border-danger focus:border-danger'
-                  : 'border-border focus:border-success'
+                  : 'border-input-border focus:border-success'
               }`}
             />
             {error && <p className="text-xs text-danger mt-0.5">{error}</p>}
@@ -163,13 +163,13 @@ export function RecordPaymentModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t('customers.paymentNotesPlaceholder')}
-              className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-neutral-500 focus:border-success focus:outline-none transition-colors"
+              className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:border-success focus:outline-none transition-colors"
             />
           </div>
 
           {/* Projection Calculator */}
           {parsedAmount > 0 && (
-            <div className="rounded-lg bg-input/40 border border-border p-4 flex justify-between items-center text-sm">
+            <div className="rounded-lg bg-input-bg/40 border border-input-border p-4 flex justify-between items-center text-sm">
               <span className="text-secondary">{t('customers.projectedBalance')}:</span>
               <span
                 className={`font-semibold font-mono text-base ${
@@ -177,7 +177,7 @@ export function RecordPaymentModal({
                     ? 'text-danger'
                     : projectedBalance > 0
                       ? 'text-success'
-                      : 'text-foreground'
+                      : 'text-input-text'
                 }`}
               >
                 {projectedBalance.toFixed(2)} EGP
@@ -186,12 +186,12 @@ export function RecordPaymentModal({
           )}
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 border-t border-border pt-4 mt-6">
+          <div className="flex items-center justify-end gap-3 border-t border-input-border pt-4 mt-6">
             <button
               type="button"
               onClick={onClose}
               disabled={recordPayment.isPending}
-              className="rounded-lg bg-card border border-border text-foreground hover:bg-card-hover px-5 py-2.5 text-sm font-semibold disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-card border border-input-border text-input-text hover:bg-card-hover px-5 py-2.5 text-sm font-semibold disabled:opacity-50 transition-colors"
             >
               {t('common.cancel')}
             </button>

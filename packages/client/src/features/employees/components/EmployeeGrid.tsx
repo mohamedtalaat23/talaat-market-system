@@ -102,7 +102,7 @@ export function EmployeeGrid({
                   {emp.is_active ? (
                     <Badge
                       variant="success"
-                      className="text-[10px] select-none flex items-center gap-1"
+                      className="text-xs select-none flex items-center gap-1"
                     >
                       <ShieldCheck size={10} aria-hidden="true" />
                       <span>{t('employees.activeAccess')}</span>
@@ -110,14 +110,14 @@ export function EmployeeGrid({
                   ) : (
                     <Badge
                       variant="outline"
-                      className="text-[10px] text-neutral-500 border-border select-none"
+                      className="text-xs text-neutral-500 border-border select-none"
                     >
                       {t('employees.suspended')}
                     </Badge>
                   )}
                 </div>
 
-                <div className="text-[10px] text-neutral-500 font-mono select-none pt-0.5">
+                <div className="text-xs text-neutral-500 font-mono select-none pt-0.5">
                   {emp.last_login
                     ? t('employees.lastAccess').replace(
                         '{time}',

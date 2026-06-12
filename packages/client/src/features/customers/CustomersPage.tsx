@@ -8,6 +8,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 export function CustomersPage() {
   const navigate = useNavigate();
@@ -17,9 +18,11 @@ export function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentCustomer, setPaymentCustomer] = useState<Customer | null>(null);
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const debouncedSearch = useDebounce(search, 300);
-  const { data: response, isLoading } = useCustomers({ page, limit: 10, search: debouncedSearch });
+  const { data: response, isLoading } = useCustomers({ page, limit: 10, search: debouncedSearch, sortBy, sortOrder });
   const customers = response?.data || [];
   const meta = response?.meta;
   const deleteCustomer = useDeleteCustomer();
@@ -54,6 +57,15 @@ export function CustomersPage() {
   const handleDelete = (id: number, name: string) => {
     if (confirm(t('customers.deleteConfirm').replace('{name}', name))) {
       deleteCustomer.mutate(id);
+    }
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
     }
   };
 
@@ -183,40 +195,64 @@ export function CustomersPage() {
             <table className="w-full text-start border-collapse">
               <thead>
                 <tr className="border-b border-border bg-card text-xs font-semibold uppercase tracking-wider text-secondary">
-                  <th className="px-6 py-4">{t('customers.name')}</th>
-                  <th className="px-6 py-4">{t('customers.phone')}</th>
-                  <th className="px-6 py-4 text-end">{t('customers.balance')}</th>
-                  <th className="px-6 py-4 text-center">{t('customers.loyaltyPoints')}</th>
-                  <th className="px-6 py-4 max-w-xs truncate">{t('customers.notes')}</th>
-                  <th className="px-6 py-4 text-end">{t('common.actions')}</th>
+                  <SortableHeader
+                    label={t('customers.name')}
+                    field="name"
+                    currentSortBy={sortBy}
+                    currentSortOrder={sortOrder}
+                    onSort={handleSort}
+                    className="py-2 px-3 uppercase text-xs"
+                  />
+                  <th className="py-2 px-3 text-start font-semibold">{t('customers.phone')}</th>
+                  <SortableHeader
+                    label={t('customers.balance')}
+                    field="balance"
+                    align="end"
+                    currentSortBy={sortBy}
+                    currentSortOrder={sortOrder}
+                    onSort={handleSort}
+                    className="py-2 px-3 uppercase text-xs"
+                  />
+                  <SortableHeader
+                    label={t('customers.lastActivity') || 'Last Activity'}
+                    field="lastActivity"
+                    align="center"
+                    currentSortBy={sortBy}
+                    currentSortOrder={sortOrder}
+                    onSort={handleSort}
+                    className="py-2 px-3 uppercase text-xs"
+                  />
+                  <th className="py-2 px-3 max-w-xs truncate text-start font-semibold">{t('customers.notes')}</th>
+                  <th className="py-2 px-3 text-end font-semibold">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-card-hover/40 transition-colors group">
                     {/* Name */}
-                    <td className="px-6 py-4 font-semibold text-foreground">
+                    <td className="py-1.5 px-3 font-semibold text-foreground">
                       <button
                         onClick={() => navigate(`/customers/${customer.id}`)}
-                        className="hover:underline text-start font-semibold text-foreground hover:text-success focus:outline-none transition-colors"
+                        className="hover:underline text-start font-semibold text-foreground hover:text-success focus:outline-none transition-colors truncate max-w-[200px]"
+                        title={customer.name}
                       >
                         {customer.name}
                       </button>
                     </td>
 
                     {/* Phone */}
-                    <td className="px-6 py-4 text-sm font-mono text-secondary">
+                    <td className="py-1.5 px-3 text-sm font-mono text-secondary">
                       {customer.phone || '—'}
                     </td>
 
                     {/* Balance */}
-                    <td className="px-6 py-4 text-sm text-end font-mono font-semibold">
+                    <td className="py-1.5 px-3 text-sm text-end font-mono tabular-nums font-semibold">
                       <span
                         className={
                           customer.balance < 0
-                            ? 'text-danger bg-danger/10 border border-danger/20 px-2.5 py-1 rounded-md'
+                            ? 'text-danger bg-danger/10 border border-danger/20 px-2 py-0.5 rounded-md'
                             : customer.balance > 0
-                              ? 'text-success bg-success/90/10 border border-success/20 px-2.5 py-1 rounded-md'
+                              ? 'text-success bg-success/90/10 border border-success/20 px-2 py-0.5 rounded-md'
                               : 'text-secondary'
                         }
                       >
@@ -224,24 +260,24 @@ export function CustomersPage() {
                       </span>
                     </td>
 
-                    {/* Loyalty points */}
-                    <td className="px-6 py-4 text-sm text-center font-semibold text-foreground">
-                      {customer.loyalty_points}
+                    {/* Last Activity */}
+                    <td className="py-1.5 px-3 text-sm text-center font-semibold text-foreground">
+                      {new Date(customer.updated_at).toLocaleDateString()}
                     </td>
 
                     {/* Notes */}
-                    <td className="px-6 py-4 text-sm text-secondary max-w-xs truncate">
+                    <td className="py-1.5 px-3 text-sm text-secondary max-w-[200px] truncate" title={customer.notes || ''}>
                       {customer.notes || '—'}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-6 py-4 text-sm text-end">
+                    <td className="py-1.5 px-3 text-sm text-end">
                       <div className="flex gap-2 justify-end rtl:justify-start">
                         <Button
                           onClick={() => navigate(`/customers/${customer.id}`)}
                           variant="outline"
                           size="sm"
-                          className="h-8 text-xs font-semibold"
+                          className="h-7 px-2 text-xs font-semibold"
                         >
                           {t('customers.details')}
                         </Button>
@@ -249,7 +285,7 @@ export function CustomersPage() {
                           onClick={() => handlePayment(customer)}
                           variant="outline"
                           size="sm"
-                          className="h-8 text-xs font-semibold bg-success/90/10 hover:bg-success/90/20 border-success/20 text-success dark:text-success"
+                          className="h-7 px-2 text-xs font-semibold bg-success/90/10 hover:bg-success/90/20 border-success/20 text-success dark:text-success"
                         >
                           {t('customers.payment')}
                         </Button>
@@ -257,7 +293,7 @@ export function CustomersPage() {
                           onClick={() => handleEdit(customer)}
                           variant="outline"
                           size="sm"
-                          className="h-8 text-xs font-semibold"
+                          className="h-7 px-2 text-xs font-semibold"
                         >
                           {t('common.edit')}
                         </Button>
@@ -266,7 +302,7 @@ export function CustomersPage() {
                             onClick={() => handleDelete(customer.id, customer.name)}
                             variant="outline"
                             size="sm"
-                            className="h-8 text-xs font-semibold bg-destructive/10 hover:bg-destructive/20 border-destructive/20 text-destructive"
+                            className="h-7 px-2 text-xs font-semibold bg-destructive/10 hover:bg-destructive/20 border-destructive/20 text-destructive"
                           >
                             {t('common.delete')}
                           </Button>

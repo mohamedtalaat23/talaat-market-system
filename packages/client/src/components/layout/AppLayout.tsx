@@ -21,8 +21,6 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
-  Sun,
-  Moon,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePreferences } from '@/contexts/preferencesContext';
@@ -74,7 +72,7 @@ export const AppLayout = React.memo(() => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { status: lanStatus, offlineSales } = useLANStore();
-  const { theme, toggleTheme, language, toggleLanguage } = usePreferences();
+  const { language, toggleLanguage } = usePreferences();
   const { t } = useTranslation();
   const hasOfflineSales = offlineSales.length > 0;
 
@@ -105,21 +103,21 @@ export const AppLayout = React.memo(() => {
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground font-sans">
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className={`flex flex-col bg-sidebar border-r rtl:border-r-0 rtl:border-l border-border transition-all duration-300 z-20 shrink-0 ${
+        className={`flex flex-col bg-gradient-to-b from-[#0F2A26] to-[#0B1F1B] border-r rtl:border-r-0 rtl:border-l border-border transition-all duration-300 z-20 shrink-0 ${
           collapsed ? 'w-16' : 'w-[240px]'
         }`}
       >
         {/* Brand Header */}
         <div className="flex h-[60px] items-center px-4 border-b border-border gap-3 overflow-hidden select-none">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 text-primary shrink-0">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#10B981] text-white shrink-0 shadow-sm">
             <Store size={18} />
           </div>
           {!collapsed && (
             <div className="flex flex-col text-left rtl:text-right leading-none">
-              <span className="text-sm font-bold tracking-tight text-foreground">
+              <span className="text-sm font-bold tracking-tight text-white">
                 {t('login.subtitle')}
               </span>
-              <span className="text-[10px] text-neutral-400 font-medium">
+              <span className="text-xs text-white/70 font-medium">
                 {t('topbar.station')}
               </span>
             </div>
@@ -127,7 +125,7 @@ export const AppLayout = React.memo(() => {
         </div>
 
         {/* Sidebar Nav links */}
-        <nav className="flex-1 py-4 overflow-y-auto px-3 space-y-1.5" aria-label="Main Navigation">
+        <nav className="flex-1 py-4 overflow-y-auto px-3 space-y-2" aria-label="Main Navigation">
           {visibleNavItems.map(({ label, path, icon: Icon }) => {
             const translatedLabel = t(getTranslationKey(label));
             return (
@@ -135,10 +133,10 @@ export const AppLayout = React.memo(() => {
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded border transition-all duration-fast ${
+                  `flex items-center gap-3 py-2.5 rounded transition-all duration-fast ${
                     isActive
-                      ? 'bg-neutral-850 text-foreground border-l-2 border-primary pl-2 pr-3 rtl:border-l-0 rtl:border-r-2 rtl:pl-3 rtl:pr-2 font-semibold border-t-transparent border-b-transparent border-r-transparent'
-                      : 'border-transparent text-secondary hover:text-foreground hover:bg-card-hover'
+                      ? 'bg-[#10B981]/15 text-white border-l-[4px] border-l-[#10B981] pl-[12px] pr-4 rtl:border-l-0 rtl:border-r-[4px] rtl:pl-4 rtl:pr-[12px] font-semibold shadow-[0_0_0_1px_rgba(16,185,129,.15),0_4px_12px_rgba(16,185,129,.12)]'
+                      : 'border-l-[4px] border-transparent pl-[12px] pr-4 rtl:border-r-[4px] rtl:pl-4 rtl:pr-[12px] text-white/70 hover:text-white hover:bg-white/5'
                   }`
                 }
                 end={path === '/'}
@@ -155,7 +153,7 @@ export const AppLayout = React.memo(() => {
         <div className="p-3 border-t border-border flex flex-col space-y-3">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center h-9 w-full rounded-md border border-border text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
+            className="flex items-center justify-center h-9 w-full rounded-md border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -173,9 +171,8 @@ export const AppLayout = React.memo(() => {
           </button>
 
           {!collapsed && (
-            <div className="flex items-center justify-between text-[11px] text-secondary font-mono px-1">
+            <div className="flex items-center justify-between text-xs text-white/50 font-mono px-1">
               <span>Station 1</span>
-              <span>v1.0.0</span>
             </div>
           )}
         </div>
@@ -192,7 +189,7 @@ export const AppLayout = React.memo(() => {
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-base font-semibold tracking-tight text-foreground">
+            <h1 className="text-lg font-semibold tracking-tight text-foreground">
               {currentPage ? t(getTranslationKey(currentPage.label)) : 'ERP System'}
             </h1>
           </div>
@@ -233,15 +230,6 @@ export const AppLayout = React.memo(() => {
               {language === 'ar' ? 'EN' : 'عربي'}
             </button>
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-full text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
             {/* Notifications */}
             <button
               className="relative p-1.5 rounded-full text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
@@ -260,10 +248,10 @@ export const AppLayout = React.memo(() => {
                 {user?.username?.charAt(0) || 'U'}
               </div>
               <div className="hidden sm:flex flex-col text-left rtl:text-right">
-                <span className="text-xs font-semibold text-foreground leading-tight">
+                <span className="text-sm font-semibold text-foreground leading-tight">
                   {user?.full_name || user?.username}
                 </span>
-                <span className="text-[10px] text-secondary font-medium uppercase tracking-wider">
+                <span className="text-xs text-secondary font-medium uppercase tracking-wider">
                   {user?.role === 'admin'
                     ? t('dashboard.roleAdmin')
                     : user?.role === 'manager'
@@ -306,24 +294,6 @@ export const AppLayout = React.memo(() => {
             </motion.div>
           </AnimatePresence>
         </main>
-
-        {/* Global Telemetry Status Footer */}
-        <footer className="h-8 w-full border-t border-border bg-neutral-950 px-6 flex items-center justify-between text-[10px] text-secondary font-mono select-none">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse animate-duration-1000" />
-              Database Active
-            </span>
-            <div className="w-px h-3 bg-border" />
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse animate-duration-1000" />
-              JWT Auth Valid
-            </span>
-            <div className="w-px h-3 bg-border" />
-            <span>Station_01</span>
-          </div>
-          <div>Talaat Market System © {new Date().getFullYear()}</div>
-        </footer>
       </div>
     </div>
   );

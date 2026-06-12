@@ -127,35 +127,35 @@ export function ManagerOverrideModal() {
         aria-modal="true"
         aria-labelledby="override-modal-title"
       >
-        <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-border">
+        <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-input-border">
           <ShieldAlert size={48} className="text-danger mb-2" />
-          <h3 id="override-modal-title" className="text-xl font-bold text-foreground text-center">
+          <h3 id="override-modal-title" className="text-xl font-bold text-input-text text-center">
             {t('pos.managerAuthTitle')}
           </h3>
           <p className="text-secondary text-sm mt-1 text-center">{actionName}</p>
 
           {payload?.displayMetadata && (
-            <div className="mt-4 w-full bg-neutral-900 border border-border rounded-md p-3 text-sm">
-              <div className="font-semibold text-primary mb-2 text-center border-b border-border pb-1">
+            <div className="mt-4 w-full bg-neutral-50 border border-input-border rounded-md p-3 text-sm">
+              <div className="font-semibold text-primary mb-2 text-center border-b border-input-border pb-1">
                 {payload.displayMetadata.title}
               </div>
               <div className="space-y-1.5">
                 {payload.displayMetadata.customer && (
                   <div className="flex justify-between">
                     <span className="text-secondary">Customer:</span>
-                    <span className="text-foreground">{payload.displayMetadata.customer}</span>
+                    <span className="text-input-text">{payload.displayMetadata.customer}</span>
                   </div>
                 )}
                 {payload.displayMetadata.amount !== undefined && (
                   <div className="flex justify-between">
                     <span className="text-secondary">Amount:</span>
-                    <span className="font-mono text-foreground font-bold">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
+                    <span className="font-mono text-input-text font-bold">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
                   </div>
                 )}
                 {payload.displayMetadata.actionType && (
                   <div className="flex justify-between">
                     <span className="text-secondary">Type:</span>
-                    <span className="text-foreground">{payload.displayMetadata.actionType}</span>
+                    <span className="text-input-text">{payload.displayMetadata.actionType}</span>
                   </div>
                 )}
                 {payload.displayMetadata.direction && (
@@ -176,7 +176,7 @@ export function ManagerOverrideModal() {
         </div>
         <button
           onClick={closeModal}
-          className="absolute top-4 end-4 rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="absolute top-4 end-4 rounded-md p-1.5 text-secondary hover:text-input-text hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           aria-label={t('common.cancel')}
         >
           <X size={18} />
@@ -194,7 +194,7 @@ export function ManagerOverrideModal() {
               <select
                 id="manager-select"
                 disabled={isSubmitting}
-                className="w-full bg-input border border-border rounded p-3 text-foreground focus:outline-none focus:border-danger text-sm font-semibold"
+                className="w-full bg-input-bg border border-input-border rounded p-3 text-input-text focus:outline-none focus:border-input-focus text-sm font-semibold placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                 value={selectedManagerId}
                 onChange={(e) => setSelectedManagerId(Number(e.target.value))}
               >
@@ -218,7 +218,7 @@ export function ManagerOverrideModal() {
               inputMode="numeric"
               maxLength={6}
               disabled={isSubmitting}
-              className="w-full bg-input border border-border rounded p-3 text-center text-3xl tracking-[1em] text-foreground placeholder-secondary/50 focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger"
+              className="w-full bg-input-bg border border-input-border rounded p-3 text-center text-input-text tracking-[1em] placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
             />

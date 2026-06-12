@@ -84,15 +84,15 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl overflow-hidden font-sans text-foreground animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-lg rounded-xl border border-input-border bg-card shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-input px-6 py-4">
-          <h3 className="text-lg font-semibold tracking-wide text-foreground">
+        <div className="flex items-center justify-between border-b border-input-border bg-input-bg px-6 py-4">
+          <h3 className="text-lg font-semibold tracking-wide text-input-text">
             {supplier ? t('suppliers.editProfile') : t('suppliers.registerNew')}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-foreground transition-colors"
+            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-input-text transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -119,7 +119,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={supplierCode}
                 onChange={(e) => setSupplierCode(e.target.value)}
                 placeholder={t('suppliers.supplierCodePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
               />
             </div>
 
@@ -131,7 +131,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text focus:border-success focus:outline-none transition-colors"
               >
                 <option value="active">{t('suppliers.active')}</option>
                 <option value="inactive">{t('suppliers.statusInactiveLabel')}</option>
@@ -150,7 +150,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('suppliers.supplierNamePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -164,7 +164,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder={t('suppliers.contactPersonPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -178,7 +178,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={t('suppliers.phonePlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -192,7 +192,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('suppliers.emailPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -206,7 +206,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder={t('suppliers.addressPlaceholder')}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors"
               />
             </div>
 
@@ -220,13 +220,13 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('suppliers.notesPlaceholder')}
                 rows={3}
-                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-secondary/50 focus:border-success focus:outline-none transition-colors resize-none"
+                className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder-secondary/50 focus:border-success focus:outline-none transition-colors resize-none"
               />
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 border-t border-border pt-4 mt-6">
+          <div className="flex items-center justify-end gap-3 border-t border-input-border pt-4 mt-6">
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               {t('common.cancel')}
             </Button>

@@ -13,9 +13,11 @@ export class CustomerController {
       const search = (req.query.q as string) || undefined;
       const page = Number(req.query.page);
       const limit = Number(req.query.limit);
+      const sortBy = (req.query.sortBy as string) || 'name';
+      const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
       const offset = (page - 1) * limit;
 
-      const { data: customers, total } = await customerRepository.findAll(search, limit, offset);
+      const { data: customers, total } = await customerRepository.findAll(search, limit, offset, sortBy, sortOrder);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

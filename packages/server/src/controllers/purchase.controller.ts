@@ -13,6 +13,8 @@ const queryFilterSchema = z.object({
   limit: z.coerce.number().int().positive().optional().default(15),
   status: z.string().optional(),
   supplier_id: z.coerce.number().int().positive().optional(),
+  sortBy: z.string().optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 
 export class PurchaseController {
@@ -22,7 +24,7 @@ export class PurchaseController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsedFilters = queryFilterSchema.parse(req.query);
-      const filters: { status?: string; supplier_id?: number; page?: number; limit?: number } = {
+      const filters: { status?: string; supplier_id?: number; page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {
         page: parsedFilters.page,
         limit: parsedFilters.limit,
       };
@@ -31,6 +33,12 @@ export class PurchaseController {
       }
       if (parsedFilters.supplier_id !== undefined) {
         filters.supplier_id = parsedFilters.supplier_id;
+      }
+      if (parsedFilters.sortBy !== undefined) {
+        filters.sortBy = parsedFilters.sortBy;
+      }
+      if (parsedFilters.sortOrder !== undefined) {
+        filters.sortOrder = parsedFilters.sortOrder;
       }
       const result = await purchaseRepository.getList(filters);
       res.json({ status: 'success', ...result });
@@ -194,7 +202,11 @@ export class PurchaseController {
         res.status(401).json({ status: 'error', message: 'Unauthorized' });
         return;
       }
-      await purchaseRepository.receiveGoods(id, payload.items, receiverId);
+      const items = payload.items.map(item => ({
+        ...item,
+        shortage_reason: item.shortage_reason ?? null
+      }));
+      await purchaseRepository.receiveGoods(id, items, receiverId, payload.notes || undefined);
       res.json({
         status: 'success',
         message: 'Goods receipt processed successfully, inventory updated',
@@ -211,6 +223,26 @@ export class PurchaseController {
         return;
       }
       logger.error('Error in purchase controller receive:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Fetch receiving history for a purchase order
+   */
+  async getReceipts(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = z.coerce.number().int().positive().parse(req.params.id);
+      const receipts = await purchaseRepository.getReceipts(id);
+      res.json({ status: 'success', data: receipts });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res
+          .status(400)
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+        return;
+      }
+      logger.error('Error in purchase controller getReceipts:', error);
       next(error);
     }
   }

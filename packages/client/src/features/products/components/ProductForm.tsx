@@ -157,7 +157,7 @@ export function ProductForm({
             {t('products.category').replace(':', '')}
           </label>
           {isLoadingCategories ? (
-            <div className="flex h-10 w-full items-center justify-center rounded-md border border-border bg-input text-xs text-neutral-500">
+            <div className="flex h-10 w-full items-center justify-center rounded-md border border-input-border bg-input-bg text-xs text-neutral-500">
               {t('products.loadingTags')}
             </div>
           ) : (
@@ -166,7 +166,7 @@ export function ProductForm({
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               disabled={isLoading}
-              className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
             >
               <option value="">{t('products.noCategory')}</option>
               {categories.map((cat) => (
@@ -188,7 +188,7 @@ export function ProductForm({
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
               disabled={isLoading}
-              className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
             >
               <option value="">{t('products.noSupplier')}</option>
               {suppliers.map((sup) => (
@@ -207,12 +207,12 @@ export function ProductForm({
               placeholder={t('products.searchSupplier')}
               value={supplierSearch}
               onChange={(e) => setSupplierSearch(e.target.value)}
-              className="w-1/3 h-10 rounded-md border border-border bg-input px-3 py-2 text-xs text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-1/3 h-10 rounded-md border border-input-border bg-input-bg px-3 py-2 text-xs text-input-text placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
               title="Filter suppliers by name or code"
             />
           </div>
           {selectedSupplier && selectedSupplier.status === 'inactive' && (
-            <p className="text-[10px] text-warning font-medium mt-1">
+            <p className="text-xs text-warning font-medium mt-1">
               ⚠️ {t('products.inactiveSupplierWarning')}
             </p>
           )}
@@ -227,7 +227,7 @@ export function ProductForm({
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
           >
             <option value="pcs">{t('products.unitPcs')}</option>
             <option value="kg">{t('products.unitKg')}</option>
@@ -329,7 +329,7 @@ export function ProductForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={isLoading}
-          className="flex w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          className="flex w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
         />
       </div>
 
@@ -340,14 +340,14 @@ export function ProductForm({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0"
+          className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/20 focus:ring-offset-0"
         />
-        <label htmlFor="isActive" className="text-sm font-semibold text-foreground cursor-pointer">
+        <label htmlFor="isActive" className="text-sm font-semibold text-input-text cursor-pointer">
           {t('products.activeLabel')}
         </label>
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+      <div className="flex justify-end gap-2 border-t border-input-border pt-4 mt-6">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           {t('common.cancel')}
         </Button>

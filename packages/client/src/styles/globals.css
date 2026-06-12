@@ -175,30 +175,28 @@ h6 {
 }
 
 .badge--success {
-  background-color: rgb(16 185 129 / 0.15);
-  color: var(--text-success);
+  background-color: var(--status-success-bg);
+  color: var(--status-success-text);
 }
 
 .badge--warning {
-  background-color: rgb(245 158 11 / 0.15);
-  color: var(--text-warning);
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-text);
 }
 
 .badge--danger {
-  background-color: rgb(244 63 94 / 0.15);
-  color: var(--text-danger);
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger-text);
 }
 
 .badge--neutral {
-  background-color: rgb(100 116 139 / 0.15);
-  color: var(--text-secondary);
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-700);
 }
 
 /* Card component base */
 .card {
   background-color: var(--bg-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--card-padding);

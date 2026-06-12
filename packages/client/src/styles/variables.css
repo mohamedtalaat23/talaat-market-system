@@ -1,83 +1,102 @@
 /* ============================================================
  * Talaat Market — CSS Design System Variables
  *
- * All design tokens live here. Components reference these
- * variables — never hardcoded colors or sizes — making
- * theme changes and future dark/light mode switching trivial.
+ * Emerald Enterprise Retail Theme
  * ============================================================ */
 
 :root {
-  color-scheme: dark;
-  /* ── Color Palette ──────────────────────────────────────── */
+  color-scheme: light;
+  
+  /* ── Core Color Palette ──────────────────────────────────────── */
 
-  /* Primary: Linear Indigo (Action, Brand) */
-  --color-primary-50: #EEF0FB;
-  --color-primary-100: #DCDDF6;
-  --color-primary-200: #B7BAED;
-  --color-primary-400: #6D7BE0;
-  --color-primary-500: #5E6AD2;
-  --color-primary-600: #4B55A8;
-  --color-primary-700: #38407E;
-  --color-primary-900: #1B1E3C;
+  /* Primary: Emerald Accent */
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-200: #a7f3d0;
+  --color-primary-400: #34d399;
+  --color-primary-500: #059669; /* Main Primary */
+  --color-primary-600: #047857; /* Hover */
+  --color-primary-700: #065f46;
+  --color-primary-900: #064e3b;
+  
+  --color-accent: #10B981;
 
-  /* Success: Crisp Emerald */
-  --color-success-50: #ecfdf5;
-  --color-success-400: #34d399;
-  --color-success-500: #2E9063;
-  --color-success-600: #24754E;
+  /* Sidebar Palette */
+  --color-sidebar-bg: #111827;
+  --color-sidebar-hover: #1F2937;
+  --color-sidebar-text: #E5E7EB;
+  --color-sidebar-muted: #9CA3AF;
 
-  /* Warning: Amber */
-  --color-warning-50: #fffbeb;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #F5A623;
-  --color-warning-600: #C2831B;
-
-  /* Danger: Stripe Red */
-  --color-danger-50: #fef2f2;
-  --color-danger-400: #f87171;
-  --color-danger-500: #E5484D;
-  --color-danger-600: #B3373B;
-
-  /* Neutral (Cool-Toned Matte Dark Palette for 8-Hour shifts) */
+  /* Neutrals */
   --color-neutral-0: #ffffff;
   --color-neutral-50: #FAFAFA;
-  --color-neutral-100: #F1F5F9;
-  --color-neutral-200: #E2E8F0;
-  --color-neutral-300: #CBD5E1;
-  --color-neutral-400: #94A3B8;
-  --color-neutral-500: #64748B;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1C2431; /* Level 3: Modals / Inputs */
-  --color-neutral-850: #171D26; /* Level 2: Cards / Tables */
-  --color-neutral-900: #11161D; /* Level 1: Sidebar / Header */
-  --color-neutral-950: #0B0F14; /* Level 0: Canvas */
+  --color-neutral-100: #F3F4F6;
+  --color-neutral-200: #E5E7EB;
+  --color-neutral-300: #D1D5DB;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #6B7280;
+  --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #111827;
+  --color-neutral-950: #030712;
 
-  /* ── Semantic Colors (Dark Theme Default) ───────────────── */
-  --bg-app: var(--color-neutral-950);
-  --bg-sidebar: var(--color-neutral-900);
-  --bg-header: var(--color-neutral-900);
-  --bg-card: var(--color-neutral-850);
-  --bg-card-hover: var(--color-neutral-800);
-  --bg-input: var(--color-neutral-800);
-  --bg-modal: var(--color-neutral-800);
-  --bg-tooltip: var(--color-neutral-700);
+  /* Semantic Backgrounds */
+  --bg-app: #EEF2F7;
+  --bg-sidebar: var(--color-sidebar-bg);
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F3F4F6;
+  --bg-input: #FFFFFF;
+  --bg-modal: #FFFFFF;
+  --bg-tooltip: #1F2937;
 
-  /* Alpha blended borders for soft surface transitions */
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-focus: rgba(255, 255, 255, 0.2);
+  /* Form Controls */
+  --input-bg: #FFFFFF;
+  --input-border: var(--color-neutral-300);
+  --input-text: var(--color-neutral-900);
+  --input-placeholder: var(--color-neutral-400);
+  --input-focus: var(--color-primary-500);
 
-  --text-primary: var(--color-neutral-100);
-  --text-secondary: var(--color-neutral-400);
-  --text-muted: var(--color-neutral-500);
-  --text-on-primary: var(--color-neutral-0);
-  --text-on-danger: var(--color-neutral-0);
-  --text-success: var(--color-success-500);
-  --text-warning: var(--color-warning-500);
-  --text-danger: var(--color-danger-500);
+  /* Status Colors */
+  --color-success-50: #DCFCE7;
+  --color-success-400: #4ADE80;
+  --color-success-500: #16A34A;
+  --color-success-600: #15803D;
 
-  --color-accent: var(--color-primary-500);
-  --color-accent-hover: var(--color-primary-600);
+  --color-warning-50: #FEF3C7;
+  --color-warning-400: #FBBF24;
+  --color-warning-500: #D97706;
+  --color-warning-600: #B45309;
+
+  --color-danger-50: #FEE2E2;
+  --color-danger-400: #F87171;
+  --color-danger-500: #DC2626;
+  --color-danger-600: #B91C1C;
+
+  /* Borders */
+  --border-color: #E5E7EB;
+  --border-focus: #059669;
+
+  /* Semantic Text */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --text-on-primary: #FFFFFF;
+  --text-on-danger: #FFFFFF;
+  
+  /* Status Text */
+  --text-success: var(--color-success-600);
+  --text-warning: var(--color-warning-600);
+  --text-danger: var(--color-danger-600);
+
+  /* Unified Status (Background + Text for Badges) */
+  --status-success-bg: #DCFCE7;
+  --status-success-text: #16A34A;
+  --status-warning-bg: #FEF3C7;
+  --status-warning-text: #D97706;
+  --status-danger-bg: #FEE2E2;
+  --status-danger-text: #DC2626;
 
   /* ── Typography ─────────────────────────────────────────── */
   --font-sans: "Inter", "Cairo", system-ui, -apple-system, sans-serif;
@@ -137,12 +156,12 @@
   --radius-full: 9999px;
 
   /* ── Shadows ─────────────────────────────────────────────── */
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.5); /* Ambient modal shadow */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-glow: none;
-  --shadow-card: none; /* No shadow on card, relies entirely on surface contrast and borders */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 
   /* ── Transitions ─────────────────────────────────────────── */
   --transition-fast: 100ms ease;
@@ -158,14 +177,10 @@
   --z-toast: 400;
   --z-tooltip: 500;
 
-  /* ── Background Gradients (Removed for matte feel) ──────── */
   --bg-gradient-start: transparent;
-
-  /* ── Theme Transition ──────────────────────────────────────── */
   --theme-transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* ── Typography Tabular Numerals & Density ──────────────── */
 body {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -176,41 +191,9 @@ h1, h2, h3, h4, h5, h6, .tracking-tight {
 }
 
 :root[data-theme="light"] {
-  color-scheme: light;
+  /* Removed: Using unified retail theme */
+}
 
-  /* Override semantic variables for Light Mode Hierarchy */
-  --bg-app: #F1F5F9; /* Level 0 Canvas */
-  --bg-sidebar: #F8FAFC; /* Level 1 Sidebar */
-  --bg-header: #F8FAFC; /* Level 1 Header */
-  --bg-card: #FFFFFF; /* Level 2 Card */
-  --bg-card-hover: #F8FAFC; 
-  --bg-input: #FFFFFF; /* Level 3 Input */
-  --bg-modal: #FFFFFF;
-  --bg-tooltip: #334155;
-
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-focus: var(--color-primary-500);
-
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-
-  --bg-gradient-start: transparent;
-
-  /* Redefine base status colors in light theme for WCAG contrast */
-  --color-primary-500: var(--color-primary-600);
-  --color-success-500: var(--color-success-600);
-  --color-warning-500: var(--color-warning-600);
-  --color-danger-500: var(--color-danger-600);
-
-  --text-success: var(--color-success-600);
-  --text-warning: var(--color-warning-600);
-  --text-danger: var(--color-danger-600);
-
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.1);
-  --shadow-glow: none;
-  --shadow-card: none;
+:root[data-theme="dark"] {
+  /* Removed: Using unified retail theme */
 }

@@ -18,6 +18,12 @@ export default {
         ring: "var(--border-focus)",
         background: "var(--bg-app)",
         foreground: "var(--text-primary)",
+        sidebar: {
+          DEFAULT: "var(--color-sidebar-bg)",
+          text: "var(--color-sidebar-text)",
+          hover: "var(--color-sidebar-hover)",
+          muted: "var(--color-sidebar-muted)",
+        },
         primary: {
           DEFAULT: "var(--color-primary-500)",
           foreground: "var(--text-on-primary)",
@@ -43,7 +49,7 @@ export default {
           background: "var(--color-neutral-800)",
         },
         accent: {
-          DEFAULT: "var(--color-primary-500)",
+          DEFAULT: "var(--color-accent)",
           foreground: "var(--color-neutral-50)",
         },
         popover: {

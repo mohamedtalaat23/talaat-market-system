@@ -53,11 +53,11 @@ export function POSPreferencesScreen() {
             {t('settings.workflowSecurity')}
           </h4>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="allow_negative_inventory"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.allow_negative_inventory}
               onChange={(e) => setForm({ ...form, allow_negative_inventory: e.target.checked })}
             />
@@ -72,11 +72,11 @@ export function POSPreferencesScreen() {
             </label>
           </div>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="require_manager_pin_voids"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.require_manager_pin_voids}
               onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
             />
@@ -104,7 +104,7 @@ export function POSPreferencesScreen() {
             <input
               type="number"
               min="0"
-              className="w-full bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none max-w-xs"
+              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2 focus:border-input-focus focus:ring-primary/20 outline-none max-w-xs text-input-text placeholder:text-input-placeholder"
               value={form.low_stock_threshold}
               onChange={(e) => setForm({ ...form, low_stock_threshold: Number(e.target.value) })}
             />
@@ -112,7 +112,7 @@ export function POSPreferencesScreen() {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-border">
+        <div className="pt-4 border-t border-input-border">
           <button
             type="submit"
             disabled={isPending}

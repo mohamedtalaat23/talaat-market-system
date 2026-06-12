@@ -14,6 +14,7 @@ export interface InventoryItem {
   product_unit: string;
   product_min_stock_level: number;
   product_selling_price: number;
+  product_cost_price: number;
   category_name?: string | null;
   category_name_ar?: string | null;
 }
@@ -40,6 +41,8 @@ export interface InventoryFilters {
   search?: string;
   category_id?: number | null;
   low_stock_only?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface InventoryResponse {
@@ -99,6 +102,14 @@ export function useInventory(filters: InventoryFilters) {
 
       if (filters.low_stock_only) {
         params.low_stock_only = 'true';
+      }
+
+      if (filters.sortBy) {
+        params.sortBy = filters.sortBy;
+      }
+
+      if (filters.sortOrder) {
+        params.sortOrder = filters.sortOrder;
       }
 
       const response = await apiClient.get<InventoryResponse>('/inventory', { params });

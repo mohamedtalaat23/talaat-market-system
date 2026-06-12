@@ -141,7 +141,7 @@ export function SuppliersPage() {
                 {pageSuspendedCount} {t('suppliers.suspended')}
               </span>
             </div>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-card-hover text-secondary border border-border">
+            <span className="text-xs uppercase font-mono px-2 py-0.5 rounded bg-card-hover text-secondary border border-border">
               {t('suppliers.erpStates')}
             </span>
           </div>

@@ -303,22 +303,22 @@ export function PaymentModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-3xl rounded-lg border border-border bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-3xl rounded-lg border border-input-border bg-card p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="payment-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
+        <div className="flex items-center justify-between border-b border-input-border pb-3 mb-6">
           <h3
             id="payment-modal-title"
-            className="text-2xl font-bold text-foreground flex items-center space-x-2"
+            className="text-2xl font-bold text-input-text flex items-center space-x-2"
           >
             <span>Checkout</span>
           </h3>
           <button
             onClick={closeModal}
             disabled={isSubmitting}
-            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50"
+            className="rounded-md p-1.5 text-secondary hover:text-input-text hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -327,7 +327,7 @@ export function PaymentModal() {
         <div className="grid grid-cols-2 gap-8">
           {/* Left Column: Totals */}
           <div className="space-y-4">
-            <div className="bg-input rounded-lg p-5 border border-border">
+            <div className="bg-input-bg rounded-lg p-5 border border-input-border">
               <div className="flex justify-between text-secondary mb-2 text-lg">
                 <span>Subtotal</span>
                 <span>EGP {subtotal.toFixed(2)}</span>
@@ -337,7 +337,7 @@ export function PaymentModal() {
                 <span>- EGP {(itemDiscounts + globalDiscount).toFixed(2)}</span>
               </div>
               <div className="w-full h-px bg-border my-4"></div>
-              <div className="flex justify-between text-foreground text-4xl font-bold tracking-tight">
+              <div className="flex justify-between text-input-text text-4xl font-bold tracking-tight">
                 <span>Total</span>
                 <span>EGP {total.toFixed(2)}</span>
               </div>
@@ -350,7 +350,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cash')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-success/15 border-success text-success' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-success/15 border-success text-success' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Banknote size={20} />
                 <span className="font-bold text-base">Cash</span>
@@ -358,7 +358,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-primary/15 border-primary text-primary' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-primary/15 border-primary text-primary' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <CreditCard size={20} />
                 <span className="font-bold text-base">Card</span>
@@ -366,7 +366,7 @@ export function PaymentModal() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('split')}
-                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-warning/15 border-warning text-warning' : 'bg-card border-border text-secondary hover:bg-card-hover'}`}
+                className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-warning/15 border-warning text-warning' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Monitor size={20} />
                 <span className="font-bold text-base">Split</span>
@@ -379,8 +379,8 @@ export function PaymentModal() {
                   paymentMethod === 'debt'
                     ? 'bg-danger/15 border-danger text-danger'
                     : selectedCustomer
-                      ? 'bg-card border-border text-secondary hover:bg-card-hover'
-                      : 'bg-input/20 border-border text-muted cursor-not-allowed border-dashed'
+                      ? 'bg-card border-input-border text-secondary hover:bg-card-hover'
+                      : 'bg-input-bg/20 border-input-border text-muted cursor-not-allowed border-dashed'
                 }`}
                 title={
                   selectedCustomer
@@ -416,14 +416,14 @@ export function PaymentModal() {
                     step="0.01"
                     min={0}
                     disabled={isSubmitting}
-                    className="w-full bg-input border border-border rounded p-4 text-3xl font-bold text-foreground placeholder:text-muted focus:outline-none focus:border-success focus:ring-1 focus:ring-success"
+                    className="w-full bg-input-bg border border-input-border rounded p-4 text-input-text font-bold placeholder:text-input-placeholder:text-input-text focus:outline-none focus:border-input-focus focus:ring-primary/20"
                     value={cashReceivedStr}
                     onChange={(e) => setCashReceivedStr(e.target.value)}
                   />
                 </div>
 
                 <div
-                  className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input/40 border-border text-secondary'}`}
+                  className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input-bg/40 border-input-border text-secondary'}`}
                 >
                   <div className="text-sm font-medium mb-1">Change Due</div>
                   <div className="text-4xl font-bold tracking-tight">
@@ -434,7 +434,7 @@ export function PaymentModal() {
             )}
 
             {paymentMethod === 'split' && (
-              <div className="space-y-4 bg-input/45 p-4 border border-border rounded-lg">
+              <div className="space-y-4 bg-input-bg/45 p-4 border border-input-border rounded-lg">
                 <div className="text-sm font-bold text-secondary uppercase tracking-wider mb-2">
                   Split Allocation (EGP)
                 </div>
@@ -452,7 +452,7 @@ export function PaymentModal() {
                       step="0.01"
                       min={0}
                       disabled={isSubmitting}
-                      className="w-full bg-input border border-border rounded px-3 py-2 text-lg font-bold text-foreground focus:outline-none focus:border-success"
+                      className="w-full bg-input-bg border border-input-border rounded px-3 py-2 text-lg font-bold text-input-text focus:outline-none focus:border-input-focus placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                       value={cashPortionStr}
                       onChange={(e) => handleCashPortionChange(e.target.value)}
                     />
@@ -470,7 +470,7 @@ export function PaymentModal() {
                       step="0.01"
                       min={0}
                       disabled={isSubmitting}
-                      className="w-full bg-input border border-border rounded px-3 py-2 text-lg font-bold text-foreground focus:outline-none focus:border-success"
+                      className="w-full bg-input-bg border border-input-border rounded px-3 py-2 text-lg font-bold text-input-text focus:outline-none focus:border-input-focus placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                       value={cardPortionStr}
                       onChange={(e) => handleCardPortionChange(e.target.value)}
                     />
@@ -493,7 +493,7 @@ export function PaymentModal() {
                     The total sum of{' '}
                     <strong className="text-danger font-mono">EGP {total.toFixed(2)}</strong> will
                     be charged to the account of{' '}
-                    <strong className="text-foreground">{selectedCustomer.name}</strong>. Their new
+                    <strong className="text-input-text">{selectedCustomer.name}</strong>. Their new
                     outstanding balance will be{' '}
                     <strong className="text-danger font-mono">
                       EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}

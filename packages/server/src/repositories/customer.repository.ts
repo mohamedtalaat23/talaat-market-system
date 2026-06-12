@@ -58,6 +58,8 @@ export class CustomerRepository {
     search?: string,
     limit = 50,
     offset = 0,
+    sortBy: string = 'name',
+    sortOrder: 'asc' | 'desc' = 'asc',
   ): Promise<{ data: Customer[]; total: number }> {
     let query = db('customers').whereNull('deleted_at');
 
@@ -70,8 +72,21 @@ export class CustomerRepository {
       });
     }
 
+    let sortField = 'name';
+    switch (sortBy) {
+      case 'balance':
+        sortField = 'balance';
+        break;
+      case 'lastActivity':
+        sortField = 'updated_at';
+        break;
+      case 'name':
+      default:
+        sortField = 'name';
+    }
+
     const countQuery = query.clone().clearSelect().count('* as count').first();
-    const dataQuery = query.orderBy('name', 'asc').limit(limit).offset(offset);
+    const dataQuery = query.orderBy(sortField, sortOrder).limit(limit).offset(offset);
 
     const [countResult, data] = await Promise.all([countQuery, dataQuery]);
     const total = countResult ? Number(countResult.count) : 0;

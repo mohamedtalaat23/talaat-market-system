@@ -141,7 +141,7 @@ export function EmployeeForm({
             value={role}
             onChange={(e) => setRole(e.target.value as any)}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
           >
             <option value="cashier">{t('employees.cashierDesc')}</option>
             <option value="manager">{t('employees.managerDesc')}</option>
@@ -192,7 +192,7 @@ export function EmployeeForm({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0"
+          className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/20 focus:ring-offset-0"
         />
         <label
           htmlFor="isEmpActive"
@@ -202,7 +202,7 @@ export function EmployeeForm({
         </label>
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+      <div className="flex justify-end gap-2 border-t border-input-border pt-4 mt-6">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           {t('common.cancel')}
         </Button>

@@ -26,9 +26,13 @@ export const receivePOSchema = z.object({
   items: z
     .array(
       z.object({
+        po_item_id: z.number().int().positive('PO Item ID must be a positive integer'),
         product_id: z.number().int().positive('Product ID must be a positive integer'),
-        received_quantity: z.number().nonnegative('Received quantity cannot be negative'),
+        quantity_to_receive: z.number().nonnegative('Received quantity cannot be negative'),
+        shortage_quantity: z.number().nonnegative('Shortage quantity cannot be negative').optional().default(0),
+        shortage_reason: z.string().nullable().optional(),
       }),
     )
     .min(1, 'Goods receipt must contain at least one verified item'),
+  notes: z.string().nullable().optional(),
 });

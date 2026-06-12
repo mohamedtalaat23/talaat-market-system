@@ -14,6 +14,7 @@ import { PurchaseOrderFormModal } from './components/PurchaseOrderFormModal';
 import { Plus, Eye, XCircle, ShoppingBag, FileText } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export function PurchasesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [supplierFilter, setSupplierFilter] = useState<number | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 10;
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -33,6 +36,8 @@ export function PurchasesPage() {
   if (supplierFilter) {
     queryFilters.supplier_id = supplierFilter;
   }
+  queryFilters.sortBy = sortBy;
+  queryFilters.sortOrder = sortOrder;
 
   // Fetch paginated purchase orders
   const { data, isLoading, error, refetch } = usePurchaseOrders(queryFilters);
@@ -56,6 +61,15 @@ export function PurchasesPage() {
   const handlePlaceOrder = (id: number) => {
     if (window.confirm(t('purchases.confirmPlace'))) {
       placeOrder.mutate(id);
+    }
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
     }
   };
 
@@ -251,12 +265,41 @@ export function PurchasesPage() {
           <table className="w-full text-start border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-input/60 text-secondary font-semibold">
-                <th className="py-3 px-4 text-start">{t('purchases.poNumber')}</th>
-                <th className="py-3 px-4 text-start">{t('purchases.supplier')}</th>
-                <th className="py-3 px-4 text-start">{t('purchases.orderDate')}</th>
-                <th className="py-3 px-4 text-start">{t('common.status')}</th>
-                <th className="py-3 px-4 text-end">{t('purchases.orderTotal')}</th>
-                <th className="py-3 px-4 text-center">{t('common.actions')}</th>
+                <th className="py-2 px-3 text-start">{t('purchases.poNumber')}</th>
+                <SortableHeader
+                  label={t('purchases.supplier')}
+                  field="supplier"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="py-2 px-3"
+                />
+                <SortableHeader
+                  label={t('purchases.orderDate')}
+                  field="date"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="py-2 px-3"
+                />
+                <SortableHeader
+                  label={t('common.status')}
+                  field="status"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="py-2 px-3"
+                />
+                <SortableHeader
+                  label={t('purchases.orderTotal')}
+                  field="total"
+                  align="end"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="py-2 px-3"
+                />
+                <th className="py-2 px-3 text-center">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -271,27 +314,27 @@ export function PurchasesPage() {
                 items.map((po) => (
                   <tr
                     key={po.id}
-                    className="hover:bg-card-hover/10 text-foreground transition-colors"
+                    className="hover:bg-card-hover/10 text-foreground transition-colors group"
                   >
-                    <td className="py-3.5 px-4 font-mono font-bold text-primary">{po.po_number}</td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold">{po.supplier_name}</div>
+                    <td className="py-1.5 px-3 font-mono tabular-nums font-bold text-primary">{po.po_number}</td>
+                    <td className="py-1.5 px-3">
+                      <div className="font-semibold truncate max-w-[200px]" title={po.supplier_name}>{po.supplier_name}</div>
                       <div className="text-xs text-secondary font-mono">{po.supplier_code}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-mono text-secondary">
+                    <td className="py-1.5 px-3 text-xs font-mono text-secondary">
                       {formatDate(po.order_date)}
                     </td>
-                    <td className="py-3.5 px-4">{getStatusBadge(po.status)}</td>
-                    <td className="py-3.5 px-4 text-end font-mono font-bold text-foreground">
+                    <td className="py-1.5 px-3">{getStatusBadge(po.status)}</td>
+                    <td className="py-1.5 px-3 text-end font-mono tabular-nums font-bold text-foreground">
                       {formatCurrency(po.total)}
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-1.5 px-3">
                       <div className="flex items-center justify-center gap-2">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => navigate(`/purchases/${po.id}`)}
-                          className="flex items-center gap-1 text-secondary hover:text-foreground"
+                          className="flex items-center gap-1 text-secondary hover:text-foreground h-7 px-2"
                         >
                           <Eye size={14} />
                           <span>{t('purchases.view')}</span>
@@ -300,7 +343,7 @@ export function PurchasesPage() {
                           <Button
                             size="sm"
                             onClick={() => handlePlaceOrder(po.id)}
-                            className="bg-warning/90 hover:bg-warning text-white font-semibold"
+                            className="bg-warning/90 hover:bg-warning text-white font-semibold h-7 px-2"
                           >
                             {t('purchases.placeOrder')}
                           </Button>
@@ -310,7 +353,7 @@ export function PurchasesPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleCancelOrder(po.id)}
-                            className="text-danger hover:text-danger hover:bg-danger/10"
+                            className="text-danger hover:text-danger hover:bg-danger/10 h-7 px-2"
                             title={t('purchases.cancel')}
                           >
                             <XCircle size={14} />

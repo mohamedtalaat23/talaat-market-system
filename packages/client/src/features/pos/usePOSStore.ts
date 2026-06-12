@@ -36,6 +36,7 @@ export interface POSState {
   autoPrintReceipts: boolean;
   lastSaleId: string | null;
   selectedCustomer: POSCustomer | null;
+  idleTimeoutMs: number | null; // null means 'Never'
 
   // Actions
   addItem: (item: Omit<POSCartItem, 'cart_id'>) => void;
@@ -55,6 +56,7 @@ export interface POSState {
   setAutoPrintReceipts: (auto: boolean) => void;
   setLastSaleId: (id: string | null) => void;
   selectCustomer: (customer: POSCustomer | null) => void;
+  setIdleTimeoutMs: (ms: number | null) => void;
 }
 
 export const usePOSStore = create<POSState>()(
@@ -71,6 +73,7 @@ export const usePOSStore = create<POSState>()(
       autoPrintReceipts: true,
       lastSaleId: null,
       selectedCustomer: null,
+      idleTimeoutMs: 60000, // Default to 60 seconds
 
       // ── Fix #1: Side-effects (toasts) are computed BEFORE set() ────────────
       // The set() updater is now a pure function with no side-effects.
@@ -236,6 +239,7 @@ export const usePOSStore = create<POSState>()(
       setAutoPrintReceipts: (auto) => set({ autoPrintReceipts: auto }),
       setLastSaleId: (id) => set({ lastSaleId: id }),
       selectCustomer: (customer) => set({ selectedCustomer: customer }),
+      setIdleTimeoutMs: (ms) => set({ idleTimeoutMs: ms }),
     }),
     {
       name: 'talaat-pos-cart-storage',
@@ -255,6 +259,7 @@ export const usePOSStore = create<POSState>()(
         paymentMethod: state.paymentMethod,
         selectedCustomer: state.selectedCustomer,
         lastSaleId: state.lastSaleId,
+        idleTimeoutMs: state.idleTimeoutMs,
       }),
     },
   ),

@@ -38,6 +38,8 @@ export interface ProductFilters {
   limit: number;
   search?: string;
   category_id?: number | null;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface ProductsResponse {
@@ -100,6 +102,14 @@ export function useProducts(filters: ProductFilters) {
 
       if (filters.category_id) {
         params.category_id = filters.category_id;
+      }
+
+      if (filters.sortBy) {
+        params.sortBy = filters.sortBy;
+      }
+
+      if (filters.sortOrder) {
+        params.sortOrder = filters.sortOrder;
       }
 
       const response = await apiClient.get<ProductsResponse>('/products', { params });

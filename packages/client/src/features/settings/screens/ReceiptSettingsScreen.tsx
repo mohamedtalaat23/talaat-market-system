@@ -58,7 +58,7 @@ export function ReceiptSettingsScreen() {
         <div>
           <label className="block text-sm font-medium mb-2">{t('settings.receiptHeader')}</label>
           <textarea
-            className="w-full h-24 bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
+            className="w-full h-24 bg-input-bg border border-input-border rounded-lg px-4 py-2 focus:border-input-focus focus:ring-primary/20 outline-none resize-none font-mono text-sm text-input-text placeholder:text-input-placeholder"
             value={form.receipt_header_text}
             onChange={(e) => setForm({ ...form, receipt_header_text: e.target.value })}
             placeholder={t('settings.placeholderHeader')}
@@ -69,7 +69,7 @@ export function ReceiptSettingsScreen() {
         <div>
           <label className="block text-sm font-medium mb-2">{t('settings.receiptFooter')}</label>
           <textarea
-            className="w-full h-24 bg-input border border-border rounded-lg px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none font-mono text-sm"
+            className="w-full h-24 bg-input-bg border border-input-border rounded-lg px-4 py-2 focus:border-input-focus focus:ring-primary/20 outline-none resize-none font-mono text-sm text-input-text placeholder:text-input-placeholder"
             value={form.receipt_footer_text}
             onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })}
             placeholder={t('settings.placeholderFooter')}
@@ -82,11 +82,11 @@ export function ReceiptSettingsScreen() {
             {t('settings.printingOptions')}
           </h4>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="auto_print"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.auto_print}
               onChange={(e) => setForm({ ...form, auto_print: e.target.checked })}
             />
@@ -101,11 +101,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="show_cashier_name"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.show_cashier_name}
               onChange={(e) => setForm({ ...form, show_cashier_name: e.target.checked })}
             />
@@ -120,11 +120,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="show_tax_breakdown"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.show_tax_breakdown}
               onChange={(e) => setForm({ ...form, show_tax_breakdown: e.target.checked })}
             />
@@ -139,11 +139,11 @@ export function ReceiptSettingsScreen() {
             </label>
           </div>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
             <input
               type="checkbox"
               id="include_store_contact"
-              className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-input"
+              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
               checked={form.include_store_contact}
               onChange={(e) => setForm({ ...form, include_store_contact: e.target.checked })}
             />
@@ -159,7 +159,7 @@ export function ReceiptSettingsScreen() {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-border">
+        <div className="pt-4 border-t border-input-border">
           <button
             type="submit"
             disabled={isPending}

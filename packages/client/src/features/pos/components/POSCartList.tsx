@@ -53,30 +53,53 @@ export const POSCartList = React.memo(() => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none">
       {cart.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-secondary p-8 bg-neutral-900">
-          <p className="text-base font-semibold text-neutral-400">{t('pos.scanPrompt')}</p>
-          <p className="text-xs text-neutral-500 mt-2 font-mono">
-            {t('pos.searchPrompt')}{' '}
-            <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-300 border border-neutral-700">
-              {t('pos.searchKey')}
-            </kbd>{' '}
-            {t('pos.searchPromptSuffix')}
-          </p>
+        <div className="flex-1 flex flex-col items-center justify-center text-secondary bg-neutral-50 gap-4 py-16 px-8">
+          {/* Icon anchor */}
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white border border-border">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-neutral-500"
+              aria-hidden="true"
+            >
+              {/* Barcode icon lines */}
+              <path d="M3 5v14M7 5v14M11 5v14M15 5v6M15 14v5M19 5v14" />
+            </svg>
+          </div>
+          {/* Primary instruction */}
+          <div className="text-center">
+            <p className="text-base font-bold text-foreground">
+              {t('pos.scanPrompt')}
+            </p>
+            {/* Secondary hint */}
+            <p className="text-xs text-neutral-500 mt-2">
+              {t('pos.searchPrompt')}{' '}
+              <kbd className="inline-flex items-center px-1.5 py-0.5 bg-white rounded text-secondary border border-border font-mono text-xs font-semibold">
+                {t('pos.searchKey')}
+              </kbd>{' '}
+              {t('pos.searchPromptSuffix')}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto">
           <table className="w-full text-left rtl:text-right border-collapse select-none">
-            <thead className="sticky top-0 z-10 bg-neutral-950 border-b border-border">
-              <tr className="h-10 text-[11px] font-bold uppercase tracking-wider text-secondary font-sans select-none">
-                <th className="px-4 w-[5%]">#</th>
-                <th className="px-4 w-[20%] font-mono">SKU</th>
-                <th className="px-4 w-[45%]">Item Name</th>
-                <th className="px-4 w-[10%] text-right">Qty</th>
-                <th className="px-4 w-[10%] text-right">Price</th>
-                <th className="px-4 w-[10%] text-right">Total</th>
+            <thead className="sticky top-0 z-10 bg-neutral-100 border-b border-border">
+              <tr className="h-10 text-xs font-bold uppercase tracking-wider text-secondary font-sans select-none">
+                <th className="px-3 w-[4%]">#</th>
+                <th className="px-3 w-[55%]">Item</th>
+                <th className="px-3 w-[11%] text-right">Qty</th>
+                <th className="px-3 w-[12%] text-right">Price</th>
+                <th className="px-3 w-[18%] text-right">Total</th>
               </tr>
             </thead>
-            <tbody ref={listRef} className="divide-y divide-[#1F1F1F]">
+            <tbody ref={listRef} className="divide-y divide-border">
               {cart.map((item, index) => {
                 const isActive = index === activeItemIndex;
                 const isFlash = item.cart_id === lastUpdatedCartId;
@@ -88,41 +111,42 @@ export const POSCartList = React.memo(() => {
                     onClick={() => setActiveItemIndex(index)}
                     className={`group h-12 cursor-pointer transition-all duration-fast select-none relative ${
                       isActive
-                        ? 'bg-neutral-800 text-foreground border-l-2 border-primary pl-2'
-                        : 'bg-transparent text-neutral-300 hover:bg-neutral-850'
+                        ? 'bg-primary-50 text-foreground border-l-2 border-primary pl-2'
+                        : 'bg-white text-secondary hover:bg-neutral-50'
                     } ${isFlash ? 'animate-focus-row' : ''}`}
                   >
-                    <td className="px-4 font-mono text-xs text-secondary text-left select-none">
+                    <td className="px-3 font-mono text-xs text-secondary text-left select-none">
                       {index + 1}
                     </td>
-                    <td className="px-4 font-mono text-xs text-secondary select-none">
-                      {item.barcode || 'N/A'}
-                    </td>
-                    <td className="px-4 select-none">
+                    <td className="px-3 select-none">
                       <div className="flex flex-col">
-                        <span className="font-sans font-medium text-sm text-foreground">
+                        <span className="font-sans font-semibold text-sm text-foreground">
                           {item.name}
                         </span>
+                        {/* Barcode as subtext — replaces standalone SKU column */}
+                        <span className="font-mono text-xs text-neutral-500 leading-tight">
+                          {item.barcode || '—'}
+                        </span>
                         {item.name_ar && (
-                          <span className="font-arabic text-xs text-secondary leading-tight mt-0.5">
+                          <span className="font-arabic text-xs text-secondary leading-tight">
                             {item.name_ar}
                           </span>
                         )}
                         {item.discount > 0 && (
-                          <span className="text-[10px] text-danger font-mono font-medium mt-0.5">
+                          <span className="text-xs text-danger font-mono font-medium">
                             -{item.discount.toFixed(2)} EGP ({t('pos.itemDiscount')})
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 font-mono text-sm text-right text-foreground select-none">
+                    <td className="px-3 font-mono text-sm text-right text-foreground select-none">
                       <span className="font-bold">{item.quantity}</span>
-                      <span className="text-[10px] text-secondary ml-1 select-none">{item.unit}</span>
+                      <span className="text-xs text-secondary ml-1 select-none">{item.unit}</span>
                     </td>
-                    <td className="px-4 font-mono text-sm text-right text-secondary select-none">
+                    <td className="px-3 font-mono text-sm text-right text-secondary select-none">
                       {item.unit_price.toFixed(2)}
                     </td>
-                    <td className="px-4 font-mono text-sm text-right font-bold text-foreground select-none">
+                    <td className="px-3 font-mono text-sm text-right font-bold text-foreground select-none">
                       {itemTotal.toFixed(2)}
                     </td>
                   </tr>

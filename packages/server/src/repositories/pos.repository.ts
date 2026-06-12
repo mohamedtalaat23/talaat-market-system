@@ -137,7 +137,7 @@ export class POSRepository {
     });
   }
 
-  async closeShift(shiftId: number, endingCash: number, expectedCash: number, notes?: string) {
+  async closeShift(shiftId: number, endingCash: number, expectedCash: number, notes: string | undefined, userId: number) {
     const [shift] = await db('cashier_shifts')
       .where({ id: shiftId, status: 'open' })
       .update({
@@ -149,14 +149,26 @@ export class POSRepository {
         updated_at: db.fn.now(),
       })
       .returning('*');
+
+    // Log the close shift event
+    await db('audit_logs').insert({
+      entity_type: 'cashier_shifts',
+      entity_id: String(shift.id),
+      action: 'shift_closed',
+      old_value: null,
+      new_value: JSON.stringify({ ending_cash: endingCash, expected_cash: expectedCash, notes }),
+      user_id: userId,
+      reason: notes || 'Shift closed'
+    });
+
     return shift;
   }
 
   /**
-   * Get the current active shift for a cashier.
+   * Get the current active shift for a specific register (Drawer sharing).
    */
-  async getCurrentShift(employeeId: number) {
-    return db('cashier_shifts').where({ employee_id: employeeId, status: 'open' }).first();
+  async getCurrentShift(registerId: number) {
+    return db('cashier_shifts').where({ register_id: registerId, status: 'open' }).first();
   }
 
   /**
@@ -224,6 +236,7 @@ export class POSRepository {
     return {
       shift_id: shiftId,
       starting_cash: Number(shift.starting_cash),
+      employee_id: shift.employee_id,
       cash_sales: cashSales,
       card_sales: cardSales,
       total_discounts: totalDiscounts,

@@ -8,6 +8,8 @@ export interface PurchaseOrderItem {
   product_id: number;
   ordered_quantity: number;
   received_quantity: number;
+  shortage_quantity: number;
+  shortage_reason: string | null;
   unit_cost: number;
   line_total: number;
   product_name: string;
@@ -20,7 +22,7 @@ export interface PurchaseOrder {
   id: number;
   po_number: string;
   supplier_id: number;
-  status: 'draft' | 'ordered' | 'received' | 'cancelled';
+  status: 'draft' | 'ordered' | 'partially_received' | 'received' | 'cancelled';
   order_date: string;
   delivery_date: string | null;
   subtotal: number;
@@ -44,6 +46,8 @@ export interface PurchaseOrderFilters {
   limit: number;
   status?: string;
   supplier_id?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface PaginatedPurchaseOrdersResponse {
@@ -82,9 +86,38 @@ export interface UpdatePOPayload {
 
 export interface ReceivePOPayload {
   items: Array<{
+    po_item_id: number;
     product_id: number;
-    received_quantity: number;
+    quantity_to_receive: number;
+    shortage_quantity?: number;
+    shortage_reason?: string | null;
   }>;
+  notes?: string;
+}
+
+export interface PurchaseReceiptItem {
+  id: number;
+  receipt_id: number;
+  po_item_id: number;
+  product_id: number;
+  quantity_received: number;
+  unit_cost: number;
+  product_name: string;
+  barcode: string | null;
+  unit: string;
+}
+
+export interface PurchaseReceipt {
+  id: number;
+  purchase_order_id: number;
+  receipt_number: string;
+  status: 'draft' | 'posted' | 'voided';
+  received_by: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  receiver_name: string;
+  items: PurchaseReceiptItem[];
 }
 
 /**
@@ -105,6 +138,14 @@ export function usePurchaseOrders(filters: PurchaseOrderFilters) {
 
       if (filters.supplier_id) {
         params.supplier_id = filters.supplier_id;
+      }
+
+      if (filters.sortBy) {
+        params.sortBy = filters.sortBy;
+      }
+
+      if (filters.sortOrder) {
+        params.sortOrder = filters.sortOrder;
       }
 
       const response = await apiClient.get<PaginatedPurchaseOrdersResponse>('/purchases', {
@@ -248,5 +289,21 @@ export function useReceivePurchaseOrder() {
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to process goods receipt');
     },
+  });
+}
+
+/**
+ * Hook to retrieve receiving history for a purchase order
+ */
+export function usePurchaseReceipts(id: number) {
+  return useQuery<{ status: string; data: PurchaseReceipt[] }>({
+    queryKey: ['purchases', id, 'receipts'],
+    queryFn: async () => {
+      const response = await apiClient.get<{ status: string; data: PurchaseReceipt[] }>(
+        `/purchases/${id}/receipts`,
+      );
+      return response.data;
+    },
+    enabled: !!id,
   });
 }

@@ -12,12 +12,18 @@ interface GoodsReceiptModalProps {
 }
 
 interface ReceiptItem {
+  po_item_id: number;
   product_id: number;
   name: string;
   barcode: string | null;
   unit: string;
   ordered_quantity: number;
   received_quantity: number;
+  shortage_quantity: number;
+  remaining_quantity: number;
+  quantity_to_receive: number;
+  new_shortage_quantity: number;
+  shortage_reason: string;
 }
 
 export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsReceiptModalProps) {
@@ -28,14 +34,29 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
   useEffect(() => {
     if (purchaseOrder?.items) {
       setItems(
-        purchaseOrder.items.map((item) => ({
-          product_id: item.product_id,
-          name: item.product_name,
-          barcode: item.barcode,
-          unit: item.unit,
-          ordered_quantity: item.ordered_quantity,
-          received_quantity: item.ordered_quantity, // Pre-fill with ordered quantity
-        })),
+        purchaseOrder.items
+          .filter(item => {
+             const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
+             return resolved < item.ordered_quantity;
+          })
+          .map((item) => {
+            const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
+            const remaining = Math.max(0, item.ordered_quantity - resolved);
+            return {
+              po_item_id: item.id!,
+              product_id: item.product_id,
+              name: item.product_name,
+              barcode: item.barcode,
+              unit: item.unit,
+              ordered_quantity: item.ordered_quantity,
+              received_quantity: item.received_quantity || 0,
+              shortage_quantity: item.shortage_quantity || 0,
+              remaining_quantity: remaining,
+              quantity_to_receive: remaining,
+              new_shortage_quantity: 0,
+              shortage_reason: '',
+            };
+        }),
       );
     }
   }, [purchaseOrder]);
@@ -43,7 +64,23 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
   const handleQtyChange = (productId: number, val: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.product_id === productId ? { ...item, received_quantity: Math.max(0, val) } : item,
+        item.product_id === productId ? { ...item, quantity_to_receive: Math.max(0, val) } : item,
+      ),
+    );
+  };
+
+  const handleShortageChange = (productId: number, val: number) => {
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.product_id === productId ? { ...item, new_shortage_quantity: Math.max(0, val) } : item,
+      ),
+    );
+  };
+
+  const handleReasonChange = (productId: number, val: string) => {
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.product_id === productId ? { ...item, shortage_reason: val } : item,
       ),
     );
   };
@@ -52,24 +89,47 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
     e.preventDefault();
 
     if (items.length === 0) {
-      toast.error('No items to receive');
+      toast.error('No pending items to receive');
       return;
     }
 
     // Validate quantities
     for (const item of items) {
-      if (item.received_quantity < 0) {
+      if (item.quantity_to_receive < 0) {
         toast.error(`Received quantity for "${item.name}" cannot be negative`);
+        return;
+      }
+      if (item.new_shortage_quantity < 0) {
+        toast.error(`Shortage quantity for "${item.name}" cannot be negative`);
+        return;
+      }
+      if (item.quantity_to_receive + item.new_shortage_quantity > item.remaining_quantity) {
+        toast.error(`Total resolution for "${item.name}" cannot exceed the remaining quantity (${item.remaining_quantity})`);
         return;
       }
     }
 
-    const payload = {
+    const payload: {
+      items: any[];
+      notes?: string;
+    } = {
       items: items.map((item) => ({
+        po_item_id: item.po_item_id,
         product_id: item.product_id,
-        received_quantity: item.received_quantity,
-      })),
+        quantity_to_receive: item.quantity_to_receive,
+        shortage_quantity: item.new_shortage_quantity,
+        shortage_reason: item.shortage_reason || null,
+      })).filter(i => i.quantity_to_receive > 0 || i.shortage_quantity > 0),
     };
+
+    if (notes) {
+      payload.notes = notes;
+    }
+
+    if (payload.items.length === 0) {
+      toast.error('You must specify quantities to receive or shortage');
+      return;
+    }
 
     receivePO.mutate(
       { id: purchaseOrder.id, payload },
@@ -85,11 +145,11 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-input border border-border rounded-xl overflow-hidden shadow-2xl">
+      <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-neutral-900/40">
+        <div className="flex items-center justify-between p-4 border-b border-input-border bg-white">
           <div>
-            <h2 className="text-lg font-bold text-neutral-100 flex items-center space-x-2">
+            <h2 className="text-lg font-bold text-input-text flex items-center space-x-2">
               <CheckCircle2 className="h-5 w-5 text-success" />
               <span>Verify Goods Receipt</span>
             </h2>
@@ -97,7 +157,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
               Purchase Order: {purchaseOrder.po_number}
             </p>
           </div>
-          <button onClick={onClose} className="text-secondary hover:text-neutral-200">
+          <button onClick={onClose} className="text-secondary hover:text-input-text">
             <X size={18} />
           </button>
         </div>
@@ -119,65 +179,82 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           </div>
 
           {/* Supplier Info */}
-          <div className="p-3.5 rounded-lg border border-border bg-neutral-900/20 flex flex-col sm:flex-row justify-between text-xs gap-3">
+          <div className="p-3.5 rounded-lg border border-input-border bg-white flex flex-col sm:flex-row justify-between text-xs gap-3">
             <div>
               <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
                 Supplier Name
               </span>
-              <span className="text-neutral-200 font-bold">{purchaseOrder.supplier_name}</span>
+              <span className="text-input-text font-bold">{purchaseOrder.supplier_name}</span>
             </div>
             <div className="sm:text-right">
               <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
                 Supplier Code
               </span>
-              <span className="text-neutral-200 font-mono">{purchaseOrder.supplier_code}</span>
+              <span className="text-input-text font-mono">{purchaseOrder.supplier_code}</span>
             </div>
           </div>
 
           {/* Items Listing */}
-          <div className="rounded-xl border border-border bg-neutral-900/10 overflow-hidden">
+          <div className="rounded-xl border border-input-border bg-white overflow-hidden">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border bg-neutral-900/40 text-secondary font-semibold">
+                <tr className="border-b border-input-border bg-white text-secondary font-semibold">
                   <th className="py-2.5 px-3">Product</th>
-                  <th className="py-2.5 px-3 text-center">Barcode</th>
-                  <th className="py-2.5 px-3 text-center">Ordered Qty</th>
-                  <th className="py-2.5 px-3 text-center w-36">Received Qty *</th>
-                  <th className="py-2.5 px-3 text-center">Unit</th>
+                  <th className="py-2.5 px-3 text-center">Remaining</th>
+                  <th className="py-2.5 px-3 text-center w-28">Receive Qty</th>
+                  <th className="py-2.5 px-3 text-center w-28">Shortage Qty</th>
+                  <th className="py-2.5 px-3 w-36">Reason</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-900">
-                {items.map((item) => (
-                  <tr key={item.product_id} className="hover:bg-neutral-900/10 text-neutral-300">
+                {items.length === 0 ? (
+                  <tr>
+                     <td colSpan={5} className="py-8 text-center text-secondary italic">All items fully resolved for this PO.</td>
+                  </tr>
+                ) : items.map((item) => (
+                  <tr key={item.product_id} className="hover:bg-white text-neutral-300">
                     <td className="py-2.5 px-3">
-                      <div className="font-semibold text-neutral-200">{item.name}</div>
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-mono text-neutral-500">
-                      {item.barcode || 'N/A'}
+                      <div className="font-semibold text-input-text">{item.name}</div>
+                      <div className="text-xs text-secondary font-mono">{item.barcode || 'N/A'} - {item.unit}</div>
                     </td>
                     <td className="py-2.5 px-3 text-center font-mono font-semibold text-secondary">
-                      {item.ordered_quantity}
+                      {item.remaining_quantity}
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="any"
-                          required
-                          value={item.received_quantity}
-                          onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
-                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-bold text-success w-24 focus:border-success"
-                        />
-                        {item.received_quantity !== item.ordered_quantity && (
-                          <span className="text-[10px] font-bold text-warning font-mono uppercase bg-warning/15 px-1 border border-warning/30 rounded shrink-0">
-                            Diff
-                          </span>
-                        )}
-                      </div>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={item.remaining_quantity}
+                        step="any"
+                        value={item.quantity_to_receive}
+                        onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
+                        className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-success w-full focus:border-success"
+                      />
                     </td>
-                    <td className="py-2.5 px-3 text-center text-neutral-500 font-mono uppercase">
-                      {item.unit}
+                    <td className="py-2.5 px-3 text-center">
+                      <Input
+                        type="number"
+                        min="0"
+                        max={item.remaining_quantity}
+                        step="any"
+                        value={item.new_shortage_quantity}
+                        onChange={(e) => handleShortageChange(item.product_id, Number(e.target.value))}
+                        className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-warning w-full focus:border-warning"
+                      />
+                    </td>
+                    <td className="py-2.5 px-3">
+                       <select 
+                          className="bg-input-bg border border-input-border text-input-text text-xs rounded p-1 w-full h-8 placeholder:text-input-placeholder"
+                          value={item.shortage_reason}
+                          onChange={(e) => handleReasonChange(item.product_id, e.target.value)}
+                          disabled={item.new_shortage_quantity <= 0}
+                       >
+                          <option value="">- Select -</option>
+                          <option value="backordered">Backordered</option>
+                          <option value="supplier_cancelled">Supplier Cancelled</option>
+                          <option value="damaged_in_transit">Damaged in Transit</option>
+                          <option value="substituted">Substituted</option>
+                       </select>
                     </td>
                   </tr>
                 ))}
@@ -195,13 +272,13 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g., Shortages noted due to delivery damage, all other items accounted for..."
               rows={2}
-              className="w-full bg-neutral-900 text-neutral-200 border border-border rounded-lg py-2 px-3 focus:outline-none focus:border-primary text-sm"
+              className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
             />
           </div>
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end p-4 border-t border-border bg-neutral-900/40 space-x-3">
+        <div className="flex items-center justify-end p-4 border-t border-input-border bg-white space-x-3">
           <Button variant="ghost" type="button" onClick={onClose}>
             Cancel
           </Button>

@@ -7,7 +7,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <motion.div
       ref={ref as any}
       className={cn(
-        'rounded-xl border border-border/50 bg-card/80 backdrop-blur-md text-foreground shadow-sm transition-all hover:shadow-md',
+        'rounded-xl border border-neutral-200 bg-card text-foreground shadow-sm transition-all hover:shadow-md',
         className,
       )}
       initial={{ opacity: 0, y: 20 }}

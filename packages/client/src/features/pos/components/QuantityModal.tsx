@@ -101,7 +101,7 @@ export function QuantityModal() {
               type="number"
               step="0.01"
               min={0}
-              className="w-full bg-background border border-border rounded p-4 text-3xl font-bold text-foreground focus:border-success focus:ring-1 focus:ring-success"
+              className="w-full bg-input-bg border border-input-border rounded p-4 text-input-text font-bold focus:border-input-focus focus:ring-primary/20 placeholder:text-input-placeholder"
               value={quantityStr}
               onChange={(e) => setQuantityStr(e.target.value)}
             />

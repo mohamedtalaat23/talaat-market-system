@@ -8,7 +8,14 @@ export default {
     extend: {
       colors: {
         border: "var(--border-color)",
-        input: "var(--bg-input)",
+        input: {
+          DEFAULT: "var(--bg-input)",
+          bg: "var(--input-bg)",
+          border: "var(--input-border)",
+          text: "var(--input-text)",
+          placeholder: "var(--input-placeholder)",
+          focus: "var(--input-focus)",
+        },
         ring: "var(--border-focus)",
         background: "var(--bg-app)",
         foreground: "var(--text-primary)",

@@ -164,11 +164,11 @@ export function RefundModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-foreground">
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-input-text">
       <div className="absolute inset-0" onClick={() => closeModal('pos_refund')} />
-      <div ref={focusTrapRef} className="w-full max-w-4xl bg-card border border-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[90vh]">
+      <div ref={focusTrapRef} className="w-full max-w-4xl bg-card border border-input-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[90vh]">
         
-        <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
+        <div className="flex items-center justify-between p-4 border-b border-input-border bg-card-hover/50">
           <div className="flex items-center space-x-3">
             <RefreshCcw className="w-5 h-5 text-warning" />
             <h2 className="text-lg font-semibold">Refund / Void Sale {sale.receipt_number}</h2>
@@ -180,7 +180,7 @@ export function RefundModal() {
 
         <div className="flex-1 overflow-auto p-4 space-y-4">
           
-          <div className="flex justify-between items-center bg-card-hover/30 p-3 rounded-lg border border-border/50">
+          <div className="flex justify-between items-center bg-card-hover/30 p-3 rounded-lg border border-input-border/50">
             <div>
               <p className="text-sm text-secondary">Sale Total</p>
               <p className="text-lg font-bold">EGP {Number(sale.total).toFixed(2)}</p>
@@ -198,7 +198,7 @@ export function RefundModal() {
 
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-border text-secondary">
+              <tr className="border-b border-input-border text-secondary">
                 <th className="pb-2 font-medium">Item</th>
                 <th className="pb-2 font-medium text-center">Unit Price</th>
                 <th className="pb-2 font-medium text-center">Sold</th>
@@ -213,7 +213,7 @@ export function RefundModal() {
                 const isRestock = restockToggles[item.id] ?? true;
                 
                 return (
-                  <tr key={item.id} className="border-b border-border/50">
+                  <tr key={item.id} className="border-b border-input-border/50">
                     <td className="py-3">
                       <div className="font-medium">{item.product_name}</div>
                       <div className="text-xs text-secondary">{item.barcode}</div>
@@ -231,7 +231,7 @@ export function RefundModal() {
                           disabled={refundable <= 0}
                           value={quantitiesToRefund[item.id] || ''}
                           onChange={(e) => handleQtyChange(item.id, refundable, e.target.value)}
-                          className="w-20 bg-input border border-border rounded text-center py-1 focus:outline-none focus:border-primary disabled:opacity-50"
+                          className="w-20 bg-input-bg border border-input-border rounded text-center py-1 focus:outline-none focus:border-input-focus disabled:opacity-50"
                           placeholder="0"
                         />
                       </div>
@@ -260,13 +260,13 @@ export function RefundModal() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Customer Return, Damaged..."
-              className="w-full bg-input border border-border rounded py-2 px-3 text-foreground focus:outline-none focus:border-primary"
+              className="w-full bg-input-bg border border-input-border rounded py-2 px-3 text-input-text focus:outline-none focus:border-input-focus"
             />
           </div>
 
         </div>
 
-        <div className="p-4 border-t border-border bg-card-hover/30 flex items-center justify-between">
+        <div className="p-4 border-t border-input-border bg-card-hover/30 flex items-center justify-between">
           <div>
             <p className="text-sm text-secondary">Refund Total</p>
             <p className="text-2xl font-bold text-warning">EGP {refundTotal.toFixed(2)}</p>

@@ -138,13 +138,13 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-4xl max-h-[85vh] bg-input border border-border rounded-xl overflow-hidden shadow-2xl">
+      <div className="flex flex-col w-full max-w-4xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-neutral-900/40">
-          <h2 className="text-lg font-bold text-neutral-100 flex items-center space-x-2">
+        <div className="flex items-center justify-between p-4 border-b border-input-border bg-white">
+          <h2 className="text-lg font-bold text-input-text flex items-center space-x-2">
             <span>Draft New Purchase Order</span>
           </h2>
-          <button onClick={onClose} className="text-secondary hover:text-neutral-200">
+          <button onClick={onClose} className="text-secondary hover:text-input-text">
             <X size={18} />
           </button>
         </div>
@@ -159,7 +159,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : '')}
                 required
-                className="w-full bg-neutral-900 text-neutral-200 border border-border rounded-lg py-2 px-3 focus:outline-none focus:border-primary text-sm"
+                className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
               >
                 <option value="">Select Supplier</option>
                 {suppliers.map((s) => (
@@ -179,7 +179,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 value={discountAmount || ''}
                 onChange={(e) => setDiscountAmount(Number(e.target.value))}
                 placeholder="0.00"
-                className="bg-neutral-900 border-border"
+                className="bg-input-bg border-input-border"
               />
             </div>
 
@@ -192,7 +192,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 value={taxAmount || ''}
                 onChange={(e) => setTaxAmount(Number(e.target.value))}
                 placeholder="0.00"
-                className="bg-neutral-900 border-border"
+                className="bg-input-bg border-input-border"
               />
             </div>
           </div>
@@ -207,13 +207,13 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 placeholder="Scan barcode or type product name..."
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
-                className="pl-9 bg-neutral-900 border-border focus:border-success"
+                className="pl-9 bg-input-bg border-input-border focus:border-success"
               />
             </div>
 
             {/* Matching Products Search overlay list */}
             {productSearch.trim().length > 0 && (
-              <div className="absolute left-0 right-0 z-10 max-h-48 overflow-y-auto bg-neutral-900 border border-border rounded-lg shadow-xl divide-y divide-neutral-950">
+              <div className="absolute left-0 right-0 z-10 max-h-48 overflow-y-auto bg-input-bg border border-input-border rounded-lg shadow-xl divide-y divide-neutral-950">
                 {matchingProducts.length === 0 ? (
                   <div className="p-3 text-sm text-neutral-500 text-center">
                     No matching products found
@@ -223,7 +223,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                     <div
                       key={prod.id}
                       onClick={() => handleAddProduct(prod)}
-                      className="flex items-center justify-between p-2.5 text-sm hover:bg-card-hover cursor-pointer text-neutral-200 transition-colors"
+                      className="flex items-center justify-between p-2.5 text-sm hover:bg-card-hover cursor-pointer text-input-text transition-colors"
                     >
                       <div>
                         <div className="font-semibold">{prod.name}</div>
@@ -250,10 +250,10 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           </div>
 
           {/* Line Items Table */}
-          <div className="rounded-xl border border-border bg-neutral-900/10 overflow-hidden">
+          <div className="rounded-xl border border-input-border bg-white overflow-hidden">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border bg-neutral-900/40 text-secondary font-semibold">
+                <tr className="border-b border-input-border bg-white text-secondary font-semibold">
                   <th className="py-2.5 px-3">Product</th>
                   <th className="py-2.5 px-3 text-center">Barcode</th>
                   <th className="py-2.5 px-3 text-center">Current Stock</th>
@@ -272,8 +272,8 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                   </tr>
                 ) : (
                   items.map((item) => (
-                    <tr key={item.product_id} className="hover:bg-neutral-900/10 text-neutral-300">
-                      <td className="py-2 px-3 font-semibold text-neutral-200">{item.name}</td>
+                    <tr key={item.product_id} className="hover:bg-white text-neutral-300">
+                      <td className="py-2 px-3 font-semibold text-input-text">{item.name}</td>
                       <td className="py-2 px-3 text-center font-mono text-neutral-500">
                         {item.barcode || 'N/A'}
                       </td>
@@ -290,7 +290,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                           onChange={(e) =>
                             handleUpdateItem(item.product_id, 'unit_cost', Number(e.target.value))
                           }
-                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold text-success"
+                          className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-semibold text-success"
                         />
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -307,10 +307,10 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                               Number(e.target.value),
                             )
                           }
-                          className="bg-input border-border text-center py-1 h-8 text-xs font-mono font-semibold"
+                          className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-semibold"
                         />
                       </td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-neutral-100">
+                      <td className="py-2 px-3 text-right font-mono font-bold text-input-text">
                         {new Intl.NumberFormat('en-EG', {
                           style: 'currency',
                           currency: 'EGP',
@@ -342,23 +342,23 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Provide delivery schedules, terms, or order specifications..."
               rows={2}
-              className="w-full bg-neutral-900 text-neutral-200 border border-border rounded-lg py-2 px-3 focus:outline-none focus:border-primary text-sm"
+              className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
             />
           </div>
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-border bg-neutral-900/40">
+        <div className="flex items-center justify-between p-4 border-t border-input-border bg-white">
           <div className="flex items-center space-x-6 text-sm font-mono">
             <div className="text-secondary">
               Subtotal:{' '}
-              <span className="font-semibold text-neutral-200">
+              <span className="font-semibold text-input-text">
                 {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
                   subtotal,
                 )}
               </span>
             </div>
-            <div className="text-neutral-100 font-bold text-base">
+            <div className="text-input-text font-bold text-base">
               Grand Total:{' '}
               <span className="text-success">
                 {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(

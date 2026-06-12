@@ -115,7 +115,7 @@ export function LANSyncManager() {
       {status === 'online' && !isFlushing && offlineSales.length === 0 && (
         <div className="flex items-center space-x-2 bg-card/80 border border-border/80 text-secondary px-3 py-1.5 rounded-md shadow-md opacity-30 hover:opacity-100 transition-opacity">
           <Wifi size={14} className="text-success" />
-          <span className="text-[10px] font-medium uppercase tracking-wider">Master Online</span>
+          <span className="text-xs font-medium uppercase tracking-wider">Master Online</span>
         </div>
       )}
     </div>

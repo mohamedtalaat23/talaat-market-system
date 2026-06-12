@@ -67,12 +67,20 @@ export class EmployeeService {
       throw new ConflictError('Username is already taken');
     }
 
-    // 2. Hash password and PIN (if provided) using cost factor 12
-    const password_hash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
+    // 2. Hash PIN if provided, and ensure it is unique across active employees
     let pin_hash: string | null = null;
     if (data.pin) {
+      const activeEmployees = await employeeRepository.findAllWithPinHashes();
+      for (const emp of activeEmployees) {
+        if (emp.pin_hash && await bcrypt.compare(data.pin, emp.pin_hash)) {
+          throw new ConflictError('PIN is already in use by another active employee');
+        }
+      }
       pin_hash = await bcrypt.hash(data.pin, BCRYPT_ROUNDS);
     }
+
+    // 3. Hash password
+    const password_hash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 
     // 3. Insert into repository
     const employee = await employeeRepository.create({
@@ -127,8 +135,14 @@ export class EmployeeService {
       delete updates.password;
     }
 
-    // Hash PIN if modified
+    // Hash PIN if modified, and ensure it is unique
     if (data.pin) {
+      const activeEmployees = await employeeRepository.findAllWithPinHashes();
+      for (const emp of activeEmployees) {
+        if (emp.id !== id && emp.pin_hash && await bcrypt.compare(data.pin, emp.pin_hash)) {
+          throw new ConflictError('PIN is already in use by another active employee');
+        }
+      }
       updates.pin_hash = await bcrypt.hash(data.pin, BCRYPT_ROUNDS);
       delete updates.pin;
     } else if (data.pin === null) {

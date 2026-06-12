@@ -178,12 +178,12 @@ export function AdjustmentHistoryViewer() {
                     {/* Stock Shift Indicator */}
                     <div className="flex items-center gap-3 bg-card-hover p-2 rounded border border-border font-mono text-center justify-around">
                       <div>
-                        <div className="text-[9px] text-neutral-500">{t('inventory.previous')}</div>
+                        <div className="text-xs text-neutral-500">{t('inventory.previous')}</div>
                         <div className="font-semibold text-secondary">{log.old_quantity}</div>
                       </div>
                       <ArrowRight size={12} className="text-neutral-600" aria-hidden="true" />
                       <div>
-                        <div className="text-[9px] text-neutral-500">{t('inventory.newStock')}</div>
+                        <div className="text-xs text-neutral-500">{t('inventory.newStock')}</div>
                         <div className="font-semibold text-foreground">{log.new_quantity}</div>
                       </div>
                     </div>
@@ -193,7 +193,7 @@ export function AdjustmentHistoryViewer() {
                       <div className="text-secondary font-medium select-text">
                         {t('inventory.reason')}: {log.notes || t('inventory.noReason')}
                       </div>
-                      <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] pt-1">
+                      <div className="flex items-center gap-1.5 text-neutral-500 text-xs pt-1">
                         <User size={10} aria-hidden="true" />
                         <span>
                           {t('inventory.processedBy')}:{' '}
@@ -213,7 +213,7 @@ export function AdjustmentHistoryViewer() {
         {/* Panel Footer Pagination */}
         {meta.totalPages > 1 && (
           <div className="border-t border-border bg-card-hover/50 p-4 flex items-center justify-between shrink-0 select-none">
-            <div className="text-[10px] text-neutral-500">
+            <div className="text-xs text-neutral-500">
               {t('inventory.totalLogged').replace('{count}', String(meta.total))}
             </div>
             <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export function AdjustmentHistoryViewer() {
               >
                 {t('inventory.prev')}
               </Button>
-              <span className="text-[11px] font-mono text-secondary" aria-current="page">
+              <span className="text-xs font-mono text-secondary" aria-current="page">
                 {t('inventory.pageOf')
                   .replace('{page}', String(meta.page))
                   .replace('{total}', String(meta.totalPages))}

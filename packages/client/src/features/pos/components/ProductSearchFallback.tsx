@@ -188,7 +188,7 @@ export function ProductSearchFallback() {
                 autoFocus
                 type="text"
                 placeholder="Type name, SKU, or Arabic name... (Press Enter to add)"
-                className="w-full bg-background border border-border rounded p-3 text-foreground placeholder-muted focus:outline-none focus:border-success focus:ring-1 focus:ring-success"
+                className="w-full bg-input-bg border border-input-border rounded p-3 text-input-text placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -259,12 +259,12 @@ export function ProductSearchFallback() {
                         </div>
                         <div className="flex flex-col space-y-1">
                           {isInactive && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-danger/15 text-danger border border-danger/20">
+                            <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-danger/15 text-danger border border-danger/20">
                               INACTIVE
                             </span>
                           )}
                           {isOutOfStock && !isInactive && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-warning/15 text-warning border border-warning/20">
+                            <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-warning/15 text-warning border border-warning/20">
                               OUT OF STOCK
                             </span>
                           )}

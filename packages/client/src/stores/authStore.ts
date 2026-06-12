@@ -14,6 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (token: string, user: User) => void;
+  loginWithPin: (pin: string) => Promise<boolean>;
   logout: () => void;
   initializeAuth: () => Promise<void>;
 }
@@ -27,6 +28,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: (token, user) => {
     localStorage.setItem('talaat_token', token);
     set({ token, user, isAuthenticated: true, isLoading: false });
+  },
+
+  loginWithPin: async (pin: string) => {
+    try {
+      const response = await apiClient.post<{ success: boolean; data: { token: string; employee: User } }>('/auth/fast-pin', { pin });
+      if (response.data?.success && response.data.data) {
+        const { token, employee } = response.data.data;
+        localStorage.setItem('talaat_token', token);
+        set({ token, user: employee, isAuthenticated: true, isLoading: false });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
   },
 
   logout: () => {

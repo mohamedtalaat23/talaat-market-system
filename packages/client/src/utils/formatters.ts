@@ -1,5 +1,7 @@
-export function formatCurrency(amount: number): string {
-  return `EGP ${amount.toFixed(2)}`;
+export function formatCurrency(amount: number | string | null | undefined): string {
+  const num = Number(amount);
+  if (isNaN(num)) return 'EGP 0.00';
+  return `EGP ${num.toFixed(2)}`;
 }
 
 export function formatDateTime(date: Date): string {

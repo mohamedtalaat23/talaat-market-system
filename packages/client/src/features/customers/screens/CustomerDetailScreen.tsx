@@ -253,7 +253,7 @@ export function CustomerDetailScreen() {
                         {/* Type */}
                         <td className="px-6 py-4 text-xs">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
+                            className={`px-2 py-0.5 rounded text-xs uppercase font-bold tracking-wider ${
                               tx.transaction_type === 'sale'
                                 ? 'bg-danger/15 text-danger border border-danger/30'
                                 : tx.transaction_type === 'payment'

@@ -138,6 +138,10 @@ export const translations = {
       roleAdmin: 'Administrator',
       roleManager: 'Manager',
       roleCashier: 'Cashier',
+      netSalesToday: 'Net Sales — Today',
+      transactionsToday: 'Transactions — Today',
+      activeShifts: 'Active Shifts',
+      stockAlerts: 'Stock Alerts',
     },
     reports: {
       title: 'Reports & Analytics',
@@ -865,6 +869,10 @@ export const translations = {
       roleAdmin: 'مدير النظام',
       roleManager: 'مدير',
       roleCashier: 'كاشير',
+      netSalesToday: 'صافي المبيعات — اليوم',
+      transactionsToday: 'المعاملات — اليوم',
+      activeShifts: 'الورديات النشطة',
+      stockAlerts: 'تنبيهات المخزون',
     },
     reports: {
       title: 'التقارير والتحليلات',

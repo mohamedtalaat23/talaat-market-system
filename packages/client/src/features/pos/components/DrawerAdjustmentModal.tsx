@@ -88,11 +88,11 @@ export function DrawerAdjustmentModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-foreground">
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-input-text">
       <div className="absolute inset-0" onClick={() => closeModal('pos_drawer_adjustment')} />
-      <div ref={focusTrapRef} className="w-full max-w-md bg-card border border-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col">
+      <div ref={focusTrapRef} className="w-full max-w-md bg-card border border-input-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col">
         
-        <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
+        <div className="flex items-center justify-between p-4 border-b border-input-border bg-card-hover/50">
           <div className="flex items-center space-x-3">
             <Vault className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Drawer Adjustment</h2>
@@ -109,7 +109,7 @@ export function DrawerAdjustmentModal() {
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full bg-input border border-border rounded-lg py-2.5 px-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              className="w-full bg-input-bg border border-input-border rounded-lg py-2.5 px-3 text-input-text focus:outline-none focus:border-input-focus focus:ring-1 focus:ring-primary/20 transition-all"
             >
               <optgroup label="Money Out">
                 {ADJUSTMENT_TYPES.filter(t => t.type === 'out').map(t => (
@@ -138,7 +138,7 @@ export function DrawerAdjustmentModal() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
-                className={`w-full bg-input border ${isOut ? 'border-danger/50 focus:border-danger focus:ring-danger' : 'border-success/50 focus:border-success focus:ring-success'} rounded-lg py-3 pl-12 pr-4 text-foreground text-xl font-mono focus:outline-none focus:ring-1 transition-all`}
+                className={`w-full bg-input-bg border ${isOut ? 'border-danger/50 focus:border-danger focus:ring-danger' : 'border-success/50 focus:border-success focus:ring-success'} rounded-lg py-3 pl-12 pr-4 text-input-text text-xl font-mono focus:outline-none focus:ring-1 transition-all`}
                 placeholder="0.00"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -163,13 +163,13 @@ export function DrawerAdjustmentModal() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                className="w-full bg-input border border-border rounded-lg py-2 pl-9 pr-3 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                className="w-full bg-input-bg border border-input-border rounded-lg py-2 pl-9 pr-3 text-input-text text-sm focus:outline-none focus:border-input-focus focus:ring-1 focus:ring-primary/20 transition-all resize-none"
                 placeholder="Manager authorization required"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border">
+          <div className="pt-4 border-t border-input-border">
             <button
               type="submit"
               disabled={!amount || parseFloat(amount) <= 0}

@@ -21,6 +21,24 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 }
 
 /**
+ * POST /auth/fast-pin
+ *
+ * Fast PIN Switching: Authenticates a cashier purely via a 4-digit PIN.
+ */
+export async function fastPinLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { username, pin } = req.body;
+    const result = await authService.login(username, undefined, pin);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /auth/logout
  *
  * Stateless logout endpoint. Simply instructs client to clear token.

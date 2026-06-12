@@ -17,6 +17,7 @@ purchaseRouter.use(requireAuth);
 // Read-only endpoints accessible by any authenticated employee (including cashiers)
 purchaseRouter.get('/', purchaseController.list);
 purchaseRouter.get('/:id', purchaseController.detail);
+purchaseRouter.get('/:id/receipts', purchaseController.getReceipts);
 
 // State mutators restricted strictly to admin and manager roles
 purchaseRouter.post('/', requireRoles('admin', 'manager'), purchaseController.create);

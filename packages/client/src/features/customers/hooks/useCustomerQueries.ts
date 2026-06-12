@@ -59,6 +59,8 @@ export interface CustomerFilters {
   page: number;
   limit: number;
   search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface UpdateCustomerPayload {
@@ -86,6 +88,12 @@ export function useCustomers(filters: CustomerFilters) {
   };
   if (filters.search) {
     mappedFilters.q = filters.search;
+  }
+  if (filters.sortBy) {
+    mappedFilters.sortBy = filters.sortBy;
+  }
+  if (filters.sortOrder) {
+    mappedFilters.sortOrder = filters.sortOrder;
   }
 
   return useGenericListQuery<Customer, Record<string, any>>(

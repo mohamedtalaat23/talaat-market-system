@@ -24,6 +24,8 @@ export interface InventoryFilters {
   search?: string;
   category_id?: number;
   low_stock_only?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface LogAdjustmentInput {
@@ -49,6 +51,7 @@ export class InventoryRepository {
         'products.unit as product_unit',
         'products.min_stock_level as product_min_stock_level',
         'products.selling_price as product_selling_price',
+        'products.cost_price as product_cost_price',
         'categories.name as category_name',
       )
       .whereNull('products.deleted_at'); // Filter out soft-deleted products
@@ -79,8 +82,24 @@ export class InventoryRepository {
       });
     }
 
-    // Default sorting by product name
-    query.orderBy('products.name', 'asc');
+    // Sorting
+    let sortField = 'products.name';
+    
+    if (filters.sortBy) {
+      switch (filters.sortBy) {
+        case 'stock':
+          sortField = 'inventory.quantity';
+          break;
+        case 'cost':
+          sortField = 'products.cost_price';
+          break;
+        case 'lastUpdated':
+          sortField = 'inventory.updated_at';
+          break;
+      }
+    }
+
+    query.orderBy(sortField, filters.sortOrder || 'asc');
 
     const offset = (filters.page - 1) * filters.limit;
     query.limit(filters.limit).offset(offset);
@@ -209,6 +228,7 @@ export class InventoryRepository {
       reserved_quantity: Number(row.reserved_quantity),
       product_min_stock_level: Number(row.product_min_stock_level),
       product_selling_price: Number(row.product_selling_price),
+      product_cost_price: Number(row.product_cost_price),
     };
   }
 }

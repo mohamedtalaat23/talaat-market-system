@@ -2,6 +2,7 @@ import { Barcode, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { SortableHeader } from '@/components/ui/SortableHeader';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Product } from '../hooks/useProductQueries';
 
@@ -12,6 +13,9 @@ interface ProductTableProps {
   onDelete: (product: Product) => void;
   onClearFilters: () => void;
   hasFilters: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (field: string) => void;
 }
 
 export function ProductTable({
@@ -21,6 +25,9 @@ export function ProductTable({
   onDelete,
   onClearFilters,
   hasFilters,
+  sortBy,
+  sortOrder,
+  onSort,
 }: ProductTableProps) {
   const { t, language } = useTranslation();
 
@@ -35,30 +42,48 @@ export function ProductTable({
           <caption className="sr-only">
             List of store products with names, prices, and stock indicators
           </caption>
-          <thead className="bg-card-hover border-b border-border text-secondary font-semibold select-none">
+          <thead className="bg-neutral-100 border-b border-border text-neutral-700 font-semibold select-none">
             <tr>
-              <th scope="col" className="p-4 font-medium text-start">
-                {t('products.nameDesc')}
-              </th>
-              <th scope="col" className="p-4 font-medium text-start">
+              <SortableHeader
+                label={t('products.nameDesc')}
+                field="name"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort || (() => {})}
+              />
+              <th scope="col" className="py-2 px-3 font-medium text-start">
                 {t('products.barcode')}
               </th>
-              <th scope="col" className="p-4 font-medium text-start">
-                {t('products.category').replace(':', '')}
-              </th>
-              <th scope="col" className="p-4 font-medium text-end">
+              <SortableHeader
+                label={t('products.category').replace(':', '')}
+                field="category"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort || (() => {})}
+              />
+              <th scope="col" className="py-2 px-3 font-medium text-end">
                 {t('products.costPrice')}
               </th>
-              <th scope="col" className="p-4 font-medium text-end">
-                {t('products.sellingPrice')}
-              </th>
-              <th scope="col" className="p-4 font-medium text-end">
-                {t('products.stockQty')}
-              </th>
-              <th scope="col" className="p-4 font-medium text-center">
+              <SortableHeader
+                label={t('products.sellingPrice')}
+                field="selling_price"
+                align="end"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort || (() => {})}
+              />
+              <SortableHeader
+                label={t('products.stockQty')}
+                field="stock"
+                align="end"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort || (() => {})}
+              />
+              <th scope="col" className="py-2 px-3 font-medium text-center">
                 {t('common.status')}
               </th>
-              <th scope="col" className="p-4 font-medium text-center">
+              <th scope="col" className="py-2 px-3 font-medium text-center">
                 {t('common.actions')}
               </th>
             </tr>
@@ -75,23 +100,23 @@ export function ProductTable({
                 const qty = product.inventory_quantity ?? 0;
                 const isLow = qty <= product.min_stock_level;
                 return (
-                  <tr key={product.id} className="hover:bg-card-hover/40 transition-colors">
-                    <td className="p-4">
-                      <div className="font-semibold text-foreground leading-tight">
+                  <tr key={product.id} className="hover:bg-neutral-50 transition-colors bg-white">
+                    <td className="py-1.5 px-3">
+                      <div className="font-semibold text-foreground leading-tight truncate max-w-[200px]" title={product.name}>
                         {product.name}
                       </div>
                       {product.name_ar && (
-                        <div className="text-xs text-secondary font-arabic mt-0.5 text-start select-all">
+                        <div className="text-xs text-secondary font-arabic mt-0.5 text-start select-all truncate max-w-[200px]" title={product.name_ar}>
                           {product.name_ar}
                         </div>
                       )}
                       {product.description && (
-                        <div className="text-xs text-neutral-500 mt-1 truncate max-w-xs">
+                        <div className="text-xs text-neutral-500 mt-0.5 truncate max-w-[200px]" title={product.description}>
                           {product.description}
                         </div>
                       )}
                     </td>
-                    <td className="p-4 font-mono text-foreground">
+                    <td className="py-1.5 px-3 font-mono text-foreground">
                       {product.barcode ? (
                         <div className="flex items-center gap-1.5 select-all">
                           <Barcode size={14} className="text-neutral-500" aria-hidden="true" />
@@ -103,7 +128,7 @@ export function ProductTable({
                         </span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="py-1.5 px-3">
                       <div className="flex flex-col gap-1">
                         <span className="flex items-center gap-1 text-xs text-secondary">
                           <span className="text-primary/75 font-bold me-0.5">#</span>
@@ -115,7 +140,7 @@ export function ProductTable({
                         </span>
                         {product.supplier_name && (
                           <span
-                            className="text-[10px] text-neutral-500 font-mono truncate max-w-[120px]"
+                            className="text-xs text-neutral-500 font-mono truncate max-w-[120px]"
                             title={`${product.supplier_name} (${product.supplier_code})`}
                           >
                             {t('products.supplierLabel')}: {product.supplier_name}
@@ -123,13 +148,13 @@ export function ProductTable({
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-end font-mono text-secondary">
+                    <td className="py-1.5 px-3 text-end font-mono tabular-nums text-secondary">
                       EGP {product.cost_price.toFixed(2)}
                     </td>
-                    <td className="p-4 text-end font-mono font-bold text-foreground">
+                    <td className="py-1.5 px-3 text-end font-mono tabular-nums font-bold text-foreground">
                       EGP {product.selling_price.toFixed(2)}
                     </td>
-                    <td className="p-4 text-end font-mono">
+                    <td className="py-1.5 px-3 text-end font-mono tabular-nums">
                       <div className="flex flex-col items-end">
                         <span
                           className={`font-semibold ${isLow ? 'text-destructive font-bold' : 'text-foreground'}`}
@@ -138,7 +163,7 @@ export function ProductTable({
                         </span>
                         {isLow && (
                           <span
-                            className="flex items-center gap-0.5 text-[9px] text-destructive uppercase tracking-wider mt-0.5 font-bold"
+                            className="flex items-center gap-0.5 text-xs text-destructive uppercase tracking-wider mt-0.5 font-bold"
                             aria-label="Low stock alert"
                           >
                             <ShieldAlert size={10} aria-hidden="true" />
@@ -147,12 +172,12 @@ export function ProductTable({
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="py-1.5 px-3 text-center">
                       <Badge variant={product.is_active ? 'success' : 'outline'}>
                         {product.is_active ? t('products.active') : t('products.inactive')}
                       </Badge>
                     </td>
-                    <td className="p-4">
+                    <td className="py-1.5 px-3">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => onEdit(product)}

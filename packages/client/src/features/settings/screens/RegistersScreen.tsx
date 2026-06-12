@@ -13,9 +13,9 @@ export function RegistersScreen() {
         </button>
       </div>
 
-      <div className="bg-input border border-border rounded-lg overflow-hidden">
+      <div className="bg-input-bg border border-input-border rounded-lg overflow-hidden">
         <table className="w-full text-sm text-start">
-          <thead className="bg-card-hover border-b border-border text-secondary">
+          <thead className="bg-card-hover border-b border-input-border text-secondary">
             <tr>
               <th className="px-6 py-3 font-medium text-start">{t('settings.registerName')}</th>
               <th className="px-6 py-3 font-medium text-start">{t('common.status')}</th>

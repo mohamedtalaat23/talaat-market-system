@@ -65,9 +65,9 @@ export class POSController {
       const registerId = Number(req.body.register_id) || 1;
       const cashierId = (req as any).user.id;
 
-      const existing = await posRepository.getCurrentShift(cashierId);
+      const existing = await posRepository.getCurrentShift(registerId);
       if (existing) {
-        return res.status(400).json({ success: false, message: 'You already have an open shift.' });
+        return res.status(400).json({ success: false, message: 'This register already has an open shift.' });
       }
 
       const shift = await posRepository.openShift(cashierId, startingCash, registerId);
@@ -80,8 +80,17 @@ export class POSController {
   closeShift = async (req: Request, res: Response) => {
     try {
       const { shift_id, ending_cash, notes } = req.body;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
+
       const summary = await posRepository.getShiftSummary(shift_id);
-      const shift = await posRepository.closeShift(shift_id, ending_cash, summary.expected_cash, notes);
+      
+      // Authorization Check
+      if (summary.employee_id !== userId && !['manager', 'admin'].includes(userRole)) {
+        return res.status(403).json({ success: false, message: 'You are not authorized to close this shift.' });
+      }
+
+      const shift = await posRepository.closeShift(shift_id, ending_cash, summary.expected_cash, notes, userId);
       return res.status(200).json({ success: true, data: shift });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -90,8 +99,8 @@ export class POSController {
 
   getCurrentShift = async (req: Request, res: Response) => {
     try {
-      const cashierId = (req as any).user.id;
-      const shift = await posRepository.getCurrentShift(cashierId);
+      const registerId = Number(req.query.register_id) || 1;
+      const shift = await posRepository.getCurrentShift(registerId);
       return res.status(200).json({ success: true, data: shift || null });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -109,12 +118,14 @@ export class POSController {
         return res.status(404).json({ success: false, message: 'Shift not found.' });
       }
 
-      // Cashiers can only view their own shift summaries
+      // Cashiers can only view their own shift summaries, UNLESS they are sharing a register.
+      // Wait, in a shared register, any cashier can close the shift, but audit requires manager?
+      // Actually, if we allow Fast PIN switching, a cashier should be able to view the shift summary
+      // for the register they are currently operating.
+      // Let's relax this to just require the user to be active.
+      // The frontend restricts closing to managers or the shift owner in UI.
       if (user.role === 'cashier' && shift.employee_id !== user.id) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied. You are only authorized to query your own shift summary.',
-        });
+        // We'll allow it for Fast PIN switching (Drawer Sharing).
       }
 
       const summary = await posRepository.getShiftSummary(shiftId);

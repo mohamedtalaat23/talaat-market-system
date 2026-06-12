@@ -141,10 +141,10 @@ export function PrintQueueMonitor() {
   );
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3.5 space-y-3 font-sans select-none text-xs text-secondary">
+    <div className="bg-card border border-input-border rounded-lg p-3.5 space-y-3 font-sans select-none text-xs text-secondary">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-secondary flex items-center space-x-1.5">
+      <div className="flex items-center justify-between border-b border-input-border pb-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center space-x-1.5">
           <Printer size={13} className="text-secondary" />
           <span>{t('pos.receiptPrinterQueue')}</span>
         </span>
@@ -155,7 +155,7 @@ export function PrintQueueMonitor() {
               setShowSettings(!showSettings);
               if (!showSettings) loadPrinterSettings();
             }}
-            className={`p-1 rounded hover:bg-card-hover transition-colors ${showSettings ? 'text-success bg-card-hover/40' : 'text-secondary hover:text-foreground'}`}
+            className={`p-1 rounded hover:bg-card-hover transition-colors ${showSettings ? 'text-success bg-card-hover/40' : 'text-secondary hover:text-input-text'}`}
             title="Printer Settings & Port Re-routing"
           >
             <Settings size={13} />
@@ -164,7 +164,7 @@ export function PrintQueueMonitor() {
             <button
               type="button"
               onClick={handleClearQueue}
-              className="text-[9px] font-semibold text-secondary hover:text-foreground hover:underline transition-colors"
+              className="text-xs font-semibold text-secondary hover:text-input-text hover:underline transition-colors"
               title="Clear Queue History"
             >
               Clear
@@ -175,18 +175,18 @@ export function PrintQueueMonitor() {
 
       {/* Collapsible Printer Settings & Re-routing Board */}
       {showSettings && (
-        <div className="bg-input/60 p-3 rounded-lg border border-border space-y-3 animate-fade-in text-[11px]">
-          <div className="text-[9px] font-bold uppercase tracking-wider text-muted mb-1">
+        <div className="bg-input-bg/60 p-3 rounded-lg border border-input-border space-y-3 animate-fade-in text-xs">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted mb-1">
             Device Routing & Configuration
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">
+              <label className="block text-xs text-secondary font-semibold mb-1">
                 Printer Type
               </label>
               <select
-                className="w-full bg-input border border-border rounded px-2 py-1.5 text-foreground focus:outline-none focus:border-success"
+                className="w-full bg-input-bg border border-input-border rounded px-2 py-1.5 text-input-text focus:outline-none focus:border-input-focus placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                 value={printerConfig.type}
                 onChange={(e) => setPrinterConfig({ ...printerConfig, type: e.target.value })}
               >
@@ -195,11 +195,11 @@ export function PrintQueueMonitor() {
               </select>
             </div>
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">
+              <label className="block text-xs text-secondary font-semibold mb-1">
                 Paper Width
               </label>
               <select
-                className="w-full bg-input border border-border rounded px-2 py-1.5 text-foreground focus:outline-none focus:border-success"
+                className="w-full bg-input-bg border border-input-border rounded px-2 py-1.5 text-input-text focus:outline-none focus:border-input-focus placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                 value={printerConfig.paperWidth}
                 onChange={(e) =>
                   setPrinterConfig({ ...printerConfig, paperWidth: Number(e.target.value) })
@@ -213,12 +213,12 @@ export function PrintQueueMonitor() {
 
           {printerConfig.type === 'usb' && (
             <div>
-              <label className="block text-[9px] text-secondary font-semibold mb-1">
+              <label className="block text-xs text-secondary font-semibold mb-1">
                 Device Path / Port
               </label>
               <input
                 type="text"
-                className="w-full bg-input border border-border rounded px-2.5 py-1.5 text-foreground focus:outline-none focus:border-success mb-1.5"
+                className="w-full bg-input-bg border border-input-border rounded px-2.5 py-1.5 text-input-text focus:outline-none focus:border-input-focus mb-1.5 placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
                 value={printerConfig.devicePath}
                 onChange={(e) => setPrinterConfig({ ...printerConfig, devicePath: e.target.value })}
                 placeholder="/dev/usb/lp0"
@@ -230,11 +230,11 @@ export function PrintQueueMonitor() {
                 ))}
               </datalist>
               {discoveredPorts.length > 0 ? (
-                <div className="text-[9px] text-success italic">
+                <div className="text-xs text-success italic">
                   Discovered Ports: {discoveredPorts.join(', ')}
                 </div>
               ) : (
-                <div className="text-[9px] text-muted italic">
+                <div className="text-xs text-muted italic">
                   No USB printers discovered dynamically. Enter path manually.
                 </div>
               )}
@@ -246,7 +246,7 @@ export function PrintQueueMonitor() {
               type="button"
               disabled={isTesting}
               onClick={handleTestPrinter}
-              className="flex-1 py-1.5 bg-card-hover hover:bg-border disabled:opacity-50 text-secondary hover:text-foreground rounded font-semibold transition-colors flex items-center justify-center space-x-1"
+              className="flex-1 py-1.5 bg-card-hover hover:bg-border disabled:opacity-50 text-secondary hover:text-input-text rounded font-semibold transition-colors flex items-center justify-center space-x-1"
             >
               <Zap size={10} className="text-warning" />
               <span>Test Print</span>
@@ -266,9 +266,9 @@ export function PrintQueueMonitor() {
 
       {/* Diagnostics / Printer status */}
       {status && (
-        <div className="flex items-center justify-between bg-input/40 p-2 rounded border border-border">
+        <div className="flex items-center justify-between bg-input-bg/40 p-2 rounded border border-input-border">
           <span
-            className="text-[10px] text-secondary truncate max-w-[170px]"
+            className="text-xs text-secondary truncate max-w-[170px]"
             title={status.message}
           >
             {status.message}
@@ -278,7 +278,7 @@ export function PrintQueueMonitor() {
               className={`h-1.5 w-1.5 rounded-full ${status.online ? 'bg-success animate-pulse' : 'bg-danger'}`}
             />
             <span
-              className={`text-[9px] font-bold uppercase tracking-wider ${status.online ? 'text-success' : 'text-danger'}`}
+              className={`text-xs font-bold uppercase tracking-wider ${status.online ? 'text-success' : 'text-danger'}`}
             >
               {status.online ? t('settings.online') : t('settings.offline')}
             </span>
@@ -288,7 +288,7 @@ export function PrintQueueMonitor() {
 
       {/* Active Jobs notifications */}
       {activeJobs.length === 0 ? (
-        <div className="flex items-center space-x-2 text-[10px] text-muted italic py-1 pl-1">
+        <div className="flex items-center space-x-2 text-xs text-muted italic py-1 pl-1">
           <CheckCircle2 size={13} className="text-muted" />
           <span>Print spooler is completely empty.</span>
         </div>
@@ -296,12 +296,12 @@ export function PrintQueueMonitor() {
         <div className="space-y-2">
           {/* Spooling Notification */}
           {processingJobs.length > 0 && (
-            <div className="flex items-center justify-between bg-success/10 border border-success/20 text-success p-2 rounded text-[10px]">
+            <div className="flex items-center justify-between bg-success/10 border border-success/20 text-success p-2 rounded text-xs">
               <span className="flex items-center">
                 <RefreshCw size={11} className="mr-1.5 animate-spin" />
                 Spooling {processingJobs.length} active print job(s)...
               </span>
-              <span className="font-mono text-[9px]">ERP QUEUE</span>
+              <span className="font-mono text-xs">ERP QUEUE</span>
             </div>
           )}
 
@@ -313,11 +313,11 @@ export function PrintQueueMonitor() {
             >
               <div className="flex items-start justify-between">
                 <div className="space-y-0.5">
-                  <span className="font-semibold block text-[10px] text-danger">
+                  <span className="font-semibold block text-xs text-danger">
                     Print Failed: {job.receipt.receiptNumber}
                   </span>
                   <span
-                    className="text-[9px] font-mono text-danger/90 block leading-tight truncate max-w-[180px]"
+                    className="text-xs font-mono text-danger/90 block leading-tight truncate max-w-[180px]"
                     title={job.error || ''}
                   >
                     Err: {job.error || 'Hardware connection lost'}
@@ -326,7 +326,7 @@ export function PrintQueueMonitor() {
                 <button
                   type="button"
                   onClick={() => handleRetry(job.id)}
-                  className="rounded bg-danger/15 text-danger hover:bg-danger/25 border border-danger/30 px-2 py-1 text-[9px] font-bold uppercase transition-colors shrink-0"
+                  className="rounded bg-danger/15 text-danger hover:bg-danger/25 border border-danger/30 px-2 py-1 text-xs font-bold uppercase transition-colors shrink-0"
                 >
                   Retry Print
                 </button>

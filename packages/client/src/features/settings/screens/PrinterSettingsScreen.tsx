@@ -97,7 +97,7 @@ export function PrinterSettingsScreen() {
 
   if (!isElectron) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 border border-border rounded-lg bg-input/40 text-center max-w-md mx-auto my-12 text-foreground">
+      <div className="flex flex-col items-center justify-center p-8 border border-input-border rounded-lg bg-input-bg/40 text-center max-w-md mx-auto my-12 text-input-text">
         <Printer className="h-10 w-10 text-secondary mb-3" />
         <h3 className="text-base font-semibold">{t('settings.desktopRequired')}</h3>
         <p className="text-sm text-secondary mt-2 leading-relaxed">
@@ -108,8 +108,8 @@ export function PrinterSettingsScreen() {
   }
 
   return (
-    <div className="max-w-2xl font-sans text-foreground space-y-6 select-text">
-      <div className="flex items-center justify-between border-b border-border pb-4">
+    <div className="max-w-2xl font-sans text-input-text space-y-6 select-text">
+      <div className="flex items-center justify-between border-b border-input-border pb-4">
         <div>
           <h3 className="text-xl font-semibold">{t('settings.printerSetup')}</h3>
           <p className="text-sm text-secondary mt-1">{t('settings.printerSetupDesc')}</p>
@@ -117,7 +117,7 @@ export function PrinterSettingsScreen() {
         <button
           onClick={checkPrinterStatus}
           disabled={isLoadingStatus}
-          className="rounded-lg p-2 text-secondary hover:bg-card-hover hover:text-foreground transition-colors border border-border"
+          className="rounded-lg p-2 text-secondary hover:bg-card-hover hover:text-input-text transition-colors border border-input-border"
           title={t('settings.refreshPrinter')}
         >
           <RefreshCw size={16} className={isLoadingStatus ? 'animate-spin text-success' : ''} />
@@ -153,7 +153,7 @@ export function PrinterSettingsScreen() {
             <select
               value={config.type}
               onChange={(e) => setConfig({ ...config, type: e.target.value as any })}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground"
+              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-input-text"
             >
               <option value="mock">{t('settings.mockPrinter')}</option>
               <option value="usb">{t('settings.usbPrinter')}</option>
@@ -169,7 +169,7 @@ export function PrinterSettingsScreen() {
             <select
               value={config.paperWidth}
               onChange={(e) => setConfig({ ...config, paperWidth: Number(e.target.value) as any })}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground"
+              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-input-text"
             >
               <option value={80}>{t('settings.width80')}</option>
               <option value={58}>{t('settings.width58')}</option>
@@ -182,7 +182,7 @@ export function PrinterSettingsScreen() {
 
         {/* USB Path Selection (Only shown if USB mode selected) */}
         {config.type === 'usb' && (
-          <div className="space-y-3 bg-input/40 p-4 border border-border rounded-xl">
+          <div className="space-y-3 bg-input-bg/40 p-4 border border-input-border rounded-xl">
             <div className="space-y-2">
               <label className="block text-sm font-medium flex items-center gap-1.5">
                 <HardDrive size={16} className="text-secondary" />
@@ -196,7 +196,7 @@ export function PrinterSettingsScreen() {
                   value={config.devicePath}
                   onChange={(e) => setConfig({ ...config, devicePath: e.target.value })}
                   placeholder={t('settings.placeholderPath')}
-                  className="flex-1 bg-input border border-border rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-mono text-foreground"
+                  className="flex-1 bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all font-mono text-input-text"
                 />
 
                 {discoveredPorts.length > 0 && (
@@ -204,7 +204,7 @@ export function PrinterSettingsScreen() {
                     onChange={(e) => {
                       if (e.target.value) setConfig({ ...config, devicePath: e.target.value });
                     }}
-                    className="bg-input border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none"
+                    className="bg-input-bg border border-input-border rounded-lg px-3 py-2 text-xs text-input-text focus:outline-none"
                     value=""
                   >
                     <option value="" disabled>
@@ -233,7 +233,7 @@ export function PrinterSettingsScreen() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-input/20 p-4 border border-border rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-input-bg/20 p-4 border border-input-border rounded-xl">
           {/* Auto Print Toggle */}
           <div className="flex items-start gap-3 pt-1">
             <input
@@ -241,7 +241,7 @@ export function PrinterSettingsScreen() {
               type="checkbox"
               checked={config.autoPrint}
               onChange={(e) => setConfig({ ...config, autoPrint: e.target.checked })}
-              className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-primary focus:ring-offset-0 mt-0.5"
+              className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/20 focus:ring-offset-0 mt-0.5"
             />
             <div className="space-y-1">
               <label htmlFor="autoPrint" className="text-sm font-semibold cursor-pointer">
@@ -265,7 +265,7 @@ export function PrinterSettingsScreen() {
                 onChange={(e) =>
                   setConfig({ ...config, retries: Math.max(0, Number(e.target.value)) })
                 }
-                className="w-24 bg-input border border-border rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-center text-foreground"
+                className="w-24 bg-input-bg border border-input-border rounded-lg px-3 py-1.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-center text-input-text"
               />
               <span className="text-xs text-secondary">{t('settings.attempts')}</span>
             </div>
@@ -276,7 +276,7 @@ export function PrinterSettingsScreen() {
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-5 border-t border-border flex items-center gap-3">
+        <div className="pt-5 border-t border-input-border flex items-center gap-3">
           <button
             type="submit"
             disabled={isSaving}
@@ -289,7 +289,7 @@ export function PrinterSettingsScreen() {
             type="button"
             onClick={handleTestPrint}
             disabled={isTesting}
-            className="flex items-center justify-center rounded-lg bg-card hover:bg-card-hover border border-border px-6 py-2.5 text-sm font-semibold text-foreground disabled:opacity-50 transition-colors"
+            className="flex items-center justify-center rounded-lg bg-card hover:bg-card-hover border border-input-border px-6 py-2.5 text-sm font-semibold text-input-text disabled:opacity-50 transition-colors"
           >
             {isTesting ? t('settings.sendingTest') : t('settings.printTest')}
           </button>

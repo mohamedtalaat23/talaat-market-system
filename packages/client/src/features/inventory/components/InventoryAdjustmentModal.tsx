@@ -75,19 +75,19 @@ export function InventoryAdjustmentModal() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-lg rounded-lg border border-border bg-input p-6 shadow-xl relative z-10 animate-fade-in"
+        className="w-full max-w-lg rounded-lg border border-input-border bg-input-bg p-6 shadow-xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="adjust-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-border pb-3 mb-4 select-none">
-          <h3 id="adjust-modal-title" className="text-lg font-bold text-foreground">
+        <div className="flex items-center justify-between border-b border-input-border pb-3 mb-4 select-none">
+          <h3 id="adjust-modal-title" className="text-lg font-bold text-input-text">
             {t('inventory.performAdjustment')}
           </h3>
           <button
             onClick={closeModal}
             disabled={isSaving}
-            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-md p-1.5 text-secondary hover:text-input-text hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={t('products.closeModal')}
           >
             <X size={18} />

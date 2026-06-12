@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/auth.controller';
 import { validate } from '../middleware/validate';
-import { loginSchema } from '../validators/employee.validator';
+import { loginSchema, fastPinLoginSchema } from '../validators/employee.validator';
 import { requireAuth } from '../middleware/auth';
 import { authRateLimiter } from '../middleware/rateLimit';
 
@@ -12,6 +12,9 @@ authRouter.use(authRateLimiter);
 
 // POST /auth/login - Authenticate credentials and return JWT
 authRouter.post('/login', validate({ body: loginSchema }), controller.login);
+
+// POST /auth/fast-pin - Fast PIN Switching login
+authRouter.post('/fast-pin', validate({ body: fastPinLoginSchema }), controller.fastPinLogin);
 
 // POST /auth/logout - Logout (stateless client-side clearing confirmation)
 authRouter.post('/logout', controller.logout);

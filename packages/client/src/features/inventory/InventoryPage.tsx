@@ -26,6 +26,8 @@ export function InventoryPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [showLowStock, setShowLowStock] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const openModal = useModalStore((state) => state.openModal);
 
@@ -40,8 +42,10 @@ export function InventoryPage() {
       search: debouncedSearch,
       category_id: selectedCategoryId,
       low_stock_only: showLowStock,
+      sortBy,
+      sortOrder,
     }),
-    [page, limit, debouncedSearch, selectedCategoryId, showLowStock],
+    [page, limit, debouncedSearch, selectedCategoryId, showLowStock, sortBy, sortOrder],
   );
 
   const {
@@ -58,7 +62,18 @@ export function InventoryPage() {
     setDebouncedSearch('');
     setSelectedCategoryId(null);
     setShowLowStock(false);
+    setSortBy('name');
+    setSortOrder('asc');
     setPage(1);
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
   };
 
   const handleAdjustClick = (item: InventoryItem) => {
@@ -73,8 +88,8 @@ export function InventoryPage() {
     <PageContainer
       title={t('inventory.title')}
       description={t('inventory.description')}
-      loading={isLoadingInventory && page === 1}
-      error={error as Error}
+      loading={false} // InventoryTable renders its own skeleton in-place
+      error={!isLoadingInventory ? (error as Error) : null}
       refetch={refetch}
       actions={
         <Button
@@ -114,6 +129,9 @@ export function InventoryPage() {
         items={items}
         onAdjust={handleAdjustClick}
         isLoading={isLoadingInventory && page === 1}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
       />
 
       {/* Unified Pagination footer component */}

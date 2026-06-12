@@ -99,7 +99,7 @@ const TransactionSearchModal = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by Receipt Number..."
-              className="w-full bg-background border border-border rounded-lg py-3 pl-10 pr-4 text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all placeholder:text-muted"
+              className="w-full bg-input-bg border border-input-border rounded-lg py-3 pl-10 pr-4 text-input-text focus:outline-none focus:border-input-focus focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-input-placeholder"
             />
           </div>
         </div>

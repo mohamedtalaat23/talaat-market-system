@@ -93,18 +93,18 @@ export function InventoryAdjustmentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 select-text">
       {/* Product Card Header */}
-      <div className="rounded-lg bg-card border border-border p-4 flex flex-col gap-1">
+      <div className="rounded-lg bg-card border border-input-border p-4 flex flex-col gap-1">
         <div className="text-xs text-secondary font-semibold uppercase tracking-wider">
           {t('inventory.itemDetails')}
         </div>
-        <div className="font-bold text-foreground text-sm">{item.product_name}</div>
-        <div className="flex justify-between text-xs text-secondary pt-2 border-t border-border/60 mt-2 font-mono">
+        <div className="font-bold text-input-text text-sm">{item.product_name}</div>
+        <div className="flex justify-between text-xs text-secondary pt-2 border-t border-input-border/60 mt-2 font-mono">
           <span>
             {t('inventory.barcode')}: {item.product_barcode || t('products.looseProduce')}
           </span>
           <span>
             {t('inventory.currentLevel')}:{' '}
-            <strong className="text-foreground">
+            <strong className="text-input-text">
               {item.quantity} {item.product_unit}
             </strong>
           </span>
@@ -131,7 +131,7 @@ export function InventoryAdjustmentForm({
               setChangeValue(''); // Reset inputs
             }}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
           >
             <option value="stock_addition">{t('inventory.stockAddition')}</option>
             <option value="stock_removal">{t('inventory.stockRemoval')}</option>
@@ -164,16 +164,16 @@ export function InventoryAdjustmentForm({
       </div>
 
       {/* Preview Calculations */}
-      <div className="grid grid-cols-3 gap-2 bg-card-hover/40 rounded-lg p-3 border border-border text-center select-none font-mono">
+      <div className="grid grid-cols-3 gap-2 bg-card-hover/40 rounded-lg p-3 border border-input-border text-center select-none font-mono">
         <div>
-          <div className="text-[10px] text-secondary uppercase font-semibold">
+          <div className="text-xs text-secondary uppercase font-semibold">
             {t('inventory.current')}
           </div>
-          <div className="text-sm font-bold text-foreground">{item.quantity}</div>
+          <div className="text-sm font-bold text-input-text">{item.quantity}</div>
         </div>
         <div className="flex items-center justify-center text-neutral-500 text-sm">➔</div>
         <div>
-          <div className="text-[10px] text-secondary uppercase font-semibold">
+          <div className="text-xs text-secondary uppercase font-semibold">
             {t('inventory.expectedNew')}
           </div>
           <div className={`text-sm font-bold ${isFormValid ? 'text-primary' : 'text-destructive'}`}>
@@ -194,11 +194,11 @@ export function InventoryAdjustmentForm({
           onChange={(e) => setNotes(e.target.value)}
           disabled={isLoading}
           required
-          className="flex w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          className="flex w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
         />
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6">
+      <div className="flex justify-end gap-2 border-t border-input-border pt-4 mt-6">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           {t('common.cancel')}
         </Button>

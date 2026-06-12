@@ -258,6 +258,30 @@ export class EmployeeRepository {
       .whereNull('deleted_at')
       .orderBy('full_name', 'asc');
   }
+
+  /**
+   * Find all active employees with a configured PIN hash.
+   * Internal database method — NEVER leaked to API controllers.
+   */
+  async findAllWithPinHashes(): Promise<EmployeeAuthDetails[]> {
+    return db('employees')
+      .select(
+        'id',
+        'username',
+        'password_hash',
+        'pin_hash',
+        'role',
+        'is_active',
+        'deleted_at',
+        'failed_login_attempts',
+        'locked_until',
+        'failed_pin_attempts',
+        'pin_locked_until'
+      )
+      .where('is_active', true)
+      .whereNull('deleted_at')
+      .whereNotNull('pin_hash');
+  }
 }
 
 // Single instance export (minimalist/no DI)

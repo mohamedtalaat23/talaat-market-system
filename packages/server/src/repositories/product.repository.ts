@@ -113,19 +113,29 @@ export class ProductRepository {
     }
 
     // Sorting (with column whitelist to prevent SQL injection)
-    const allowedSortFields = [
-      'id',
-      'name',
-      'cost_price',
-      'selling_price',
-      'created_at',
-      'updated_at',
-    ];
-    const sortField = allowedSortFields.includes(filters.sortBy)
-      ? `products.${filters.sortBy}`
-      : 'products.created_at';
+    let sortField = 'products.created_at';
+    
+    switch (filters.sortBy) {
+      case 'name':
+        sortField = 'products.name';
+        break;
+      case 'selling_price':
+      case 'cost_price':
+      case 'created_at':
+      case 'updated_at':
+        sortField = `products.${filters.sortBy}`;
+        break;
+      case 'category':
+        sortField = 'categories.name';
+        break;
+      case 'stock':
+        sortField = 'inventory.quantity';
+        break;
+      default:
+        sortField = 'products.created_at';
+    }
 
-    query.orderBy(sortField, filters.sortOrder);
+    query.orderBy(sortField, filters.sortOrder || 'desc');
 
     // Pagination
     const offset = (filters.page - 1) * filters.limit;

@@ -4,11 +4,66 @@ import { usePOSStore } from '../usePOSStore';
 import { useModalStore } from '@/stores/modalStore';
 import { bankersRound } from '@/utils/currency';
 import { useTranslation } from '@/hooks/useTranslation';
+import {
+  Hash,
+  Percent,
+  History,
+  PauseCircle,
+  Trash2,
+  CreditCard,
+  UserMinus,
+  UserCog,
+  Banknote,
+} from 'lucide-react';
 
 interface POSSummaryProps {
   cart: POSCartItem[];
   paymentMethod: string;
   cashReceived: number;
+}
+
+/** Compact key badge — shows the keyboard shortcut next to an action label */
+function KbdBadge({ label }: { label: string }) {
+  return (
+    <kbd className="ms-auto text-xs font-mono font-semibold px-1 py-0.5 rounded bg-neutral-100 border border-border text-secondary leading-none select-none">
+      {label}
+    </kbd>
+  );
+}
+
+/** A single action button in the Item Actions or Cart Actions panels */
+interface ActionBtnProps {
+  label: string;
+  kbd: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  destructive?: boolean;
+  fullWidth?: boolean;
+}
+function ActionBtn({ label, kbd, icon, onClick, disabled, destructive, fullWidth }: ActionBtnProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={[
+        'flex items-center gap-2 px-3 h-10 rounded border transition-colors focus:outline-none',
+        fullWidth ? 'w-full' : '',
+        disabled
+          ? 'opacity-40 cursor-not-allowed border-border bg-neutral-50 text-neutral-400'
+          : destructive
+            ? 'border-border bg-white text-secondary hover:bg-danger-50 hover:text-danger hover:border-danger/30'
+            : 'border-border bg-white text-secondary hover:bg-neutral-50 hover:text-foreground',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <span className="shrink-0 text-current opacity-70">{icon}</span>
+      <span className="text-xs font-bold uppercase tracking-wider leading-none">{label}</span>
+      <KbdBadge label={kbd} />
+    </button>
+  );
 }
 
 export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POSSummaryProps) => {
@@ -37,7 +92,8 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   const activeItem = cart[activeItemIndex];
 
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const appliedDiscountsCount = cart.filter((item) => item.discount > 0).length + (globalDiscount > 0 ? 1 : 0);
+  const appliedDiscountsCount =
+    cart.filter((item) => item.discount > 0).length + (globalDiscount > 0 ? 1 : 0);
 
   const handleRemoveActiveItem = () => {
     if (activeItem) {
@@ -46,31 +102,34 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   };
 
   return (
-    <div className="flex flex-col h-full justify-between font-sans bg-neutral-950 p-4 space-y-4 border-l border-border select-none overflow-hidden">
-      
+    <div className="flex flex-col h-full justify-between font-sans bg-white p-4 space-y-3 border-l border-border select-none overflow-hidden">
+
       {/* ── Top Section: Customer & Metadata ── */}
-      <div className="bg-neutral-900 rounded border border-border p-3 flex flex-col justify-between shrink-0">
+      <div className="bg-white rounded border border-border p-3 flex flex-col justify-between shrink-0 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('pos.cartCustomer')}
           </span>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
             {selectedCustomer && (
               <button
                 type="button"
                 onClick={() => selectCustomer(null)}
-                className="text-[10px] font-bold text-danger hover:text-danger/80 focus:outline-none transition-colors"
                 title={t('pos.disconnectCustomer')}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold text-danger hover:text-danger/80 hover:bg-danger/10 border border-transparent hover:border-danger/20 transition-colors focus:outline-none"
               >
-                [REMOVE]
+                <UserMinus size={11} />
+                <span>Remove</span>
               </button>
             )}
             <button
               type="button"
               onClick={() => openModal('pos_customer_select')}
-              className="text-[10px] font-bold text-secondary hover:text-foreground focus:outline-none transition-colors"
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold text-secondary hover:text-foreground hover:bg-neutral-100 border border-transparent hover:border-border transition-colors focus:outline-none"
             >
-              [F7 EDIT]
+              <UserCog size={11} />
+              <span>Edit</span>
+              <KbdBadge label="F7" />
             </button>
           </div>
         </div>
@@ -103,12 +162,12 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           </div>
         )}
 
-        <div className="flex items-center justify-between text-[11px] font-mono border-t border-border pt-2 text-secondary">
+        <div className="flex items-center justify-between text-xs font-mono border-t border-border pt-2 text-secondary">
           <div className="flex gap-3">
             <span>Items: {totalItemsCount}</span>
             <span>Discounts: {appliedDiscountsCount}</span>
           </div>
-          <button 
+          <button
             onClick={() => openModal('pos_suspended_carts')}
             className="font-bold hover:text-foreground transition-colors focus:outline-none"
           >
@@ -118,75 +177,83 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
       </div>
 
       {/* ── Middle Section: Item Actions ── */}
-      <div className="bg-neutral-900 rounded border border-border p-3 shrink-0">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">
+      <div className="bg-white rounded border border-border p-3 shrink-0 shadow-sm">
+        <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-2">
           Selected Item Actions
         </div>
-        <div className="mb-2 text-sm font-bold text-foreground truncate">
-          {activeItem ? `> ${activeItem.name} (x${activeItem.quantity})` : 'No item selected'}
+        <div className="mb-3 text-sm font-bold text-foreground truncate">
+          {activeItem ? `› ${activeItem.name} ×${activeItem.quantity}` : 'No item selected'}
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => activeItem && openModal('pos_quantity')}
-            disabled={!activeItem}
-            className="h-10 bg-neutral-950 hover:bg-neutral-800 disabled:opacity-50 text-secondary hover:text-foreground font-bold text-[11px] uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F2] QTY
-          </button>
-          <button
-            onClick={() => activeItem && openModal('pos_discount')}
-            disabled={!activeItem}
-            className="h-10 bg-neutral-950 hover:bg-neutral-800 disabled:opacity-50 text-secondary hover:text-foreground font-bold text-[11px] uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F3] DISC
-          </button>
-          <button
+        <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ActionBtn
+              label="Quantity"
+              kbd="F2"
+              icon={<Hash size={13} />}
+              onClick={() => activeItem && openModal('pos_quantity')}
+              disabled={!activeItem}
+            />
+            <ActionBtn
+              label="Discount"
+              kbd="F3"
+              icon={<Percent size={13} />}
+              onClick={() => activeItem && openModal('pos_discount')}
+              disabled={!activeItem}
+            />
+          </div>
+          <ActionBtn
+            label="Remove Item"
+            kbd="Del"
+            icon={<Trash2 size={13} />}
             onClick={handleRemoveActiveItem}
             disabled={!activeItem}
-            className="h-10 bg-neutral-950 hover:bg-danger/20 disabled:opacity-50 text-secondary hover:text-danger font-bold text-[11px] uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [DEL] REMOVE
-          </button>
+            destructive
+            fullWidth
+          />
         </div>
       </div>
 
       {/* ── Cart Actions Grid ── */}
-      <div className="bg-neutral-900 rounded border border-border p-3 shrink-0">
-        <div className="grid grid-cols-2 gap-2">
-          <button
+      <div className="bg-white rounded border border-border p-3 shrink-0 shadow-sm">
+        <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-2">
+          Cart Actions
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <ActionBtn
+            label="Past Sales"
+            kbd="F4"
+            icon={<History size={13} />}
             onClick={() => openModal('pos_transaction_search')}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F4] PAST SALES
-          </button>
-          <button
-            onClick={() => openModal('pos_manager_override', { action: 'clear_cart' })}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F8] CLEAR CART
-          </button>
-          <button
+          />
+          <ActionBtn
+            label="Suspend"
+            kbd="F6"
+            icon={<PauseCircle size={13} />}
             onClick={() => openModal('pos_suspended_carts')}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            [F6] SUSPEND
-          </button>
-          <button
+          />
+          <ActionBtn
+            label="Clear Cart"
+            kbd="F8"
+            icon={<Trash2 size={13} />}
+            onClick={() => openModal('pos_manager_override', { action: 'clear_cart' })}
+            destructive
+          />
+          <ActionBtn
+            label="Drawer"
+            kbd="F9"
+            icon={<Banknote size={13} />}
             onClick={() => {
               if (window.electronAPI) {
                 window.electronAPI.openCashDrawer().catch(console.error);
               }
             }}
-            className="h-12 bg-neutral-950 hover:bg-neutral-800 text-secondary hover:text-foreground font-bold text-xs uppercase tracking-wider border border-border rounded transition-colors focus:outline-none"
-          >
-            DRAWER
-          </button>
+          />
         </div>
       </div>
 
       {/* ── Bottom Section: Financials & Pay ── */}
       <div className="flex-1 min-h-0 flex flex-col justify-end">
-        <div className="bg-neutral-900 border border-border rounded p-4 space-y-2 select-none mb-4 flex-1 flex flex-col">
+        <div className="bg-white border border-border rounded p-4 space-y-2 select-none mb-3 flex-1 flex flex-col shadow-sm">
           <div className="flex justify-between text-sm text-secondary font-mono">
             <span>{t('pos.subtotal')}</span>
             <span>EGP {subtotal.toFixed(2)}</span>
@@ -203,7 +270,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               <span>- EGP {globalDiscount.toFixed(2)}</span>
             </div>
           )}
-          
+
           <div className="flex-1" />
 
           {/* Giant Grand Total */}
@@ -223,8 +290,9 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             onClick={() => openModal('pos_payment')}
             className="w-full h-16 bg-success hover:bg-success/90 rounded text-neutral-50 font-black uppercase text-xl tracking-widest transition-colors focus:outline-none shadow-md flex items-center justify-center gap-4"
           >
+            <CreditCard size={22} />
             <span>{t('pos.payAction')}</span>
-            <span className="text-success-900/50 text-sm tracking-normal">[SPACE]</span>
+            <KbdBadge label="Space" />
           </button>
         </div>
       </div>
@@ -233,4 +301,3 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
 });
 
 POSSummary.displayName = 'POSSummary';
-
