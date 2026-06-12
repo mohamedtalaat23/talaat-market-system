@@ -86,7 +86,7 @@ export function ManagerOverrideModal() {
           payload.onSuccess(selectedManagerId);
         } else if (payload?.action === 'clear_cart') {
           state.clearCart();
-          toast.error(t('pos.cartCleared'));
+          toast.error('Cart Discarded');
         } else if (payload?.action === 'large_discount') {
           if (payload.target === 'cart') {
             state.setGlobalDiscount(payload.discountValue);

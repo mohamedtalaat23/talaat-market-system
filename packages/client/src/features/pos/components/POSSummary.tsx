@@ -232,7 +232,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             onClick={() => openModal('pos_suspended_carts')}
           />
           <ActionBtn
-            label="Clear Cart"
+            label="Discard Cart"
             kbd="F8"
             icon={<Trash2 size={13} />}
             onClick={() => openModal('pos_manager_override', { action: 'clear_cart' })}

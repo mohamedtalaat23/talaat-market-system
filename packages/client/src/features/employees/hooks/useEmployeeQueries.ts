@@ -142,6 +142,6 @@ export function useManagers() {
       );
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes stale time is completely safe since manager configurations are static
+    staleTime: Infinity, // Load managers once, cache indefinitely for the shift to prevent repeated API calls
   });
 }

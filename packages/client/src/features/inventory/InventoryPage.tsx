@@ -14,6 +14,8 @@ import { InventoryFilterBar } from './components/InventoryFilterBar';
 import { Pagination } from '@/components/ui/Pagination';
 import { useModalStore } from '@/stores/modalStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { CycleCountBatchList } from './components/CycleCountBatchList';
+import { ClipboardList, LayoutGrid } from 'lucide-react';
 
 /**
  * Inventory Levels management orchestrator.
@@ -28,6 +30,7 @@ export function InventoryPage() {
   const [showLowStock, setShowLowStock] = useState(false);
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [activeTab, setActiveTab] = useState<'stock' | 'cycle_counts'>('stock');
 
   const openModal = useModalStore((state) => state.openModal);
 
@@ -124,25 +127,53 @@ export function InventoryPage() {
         onClearFilters={handleClearFilters}
       />
 
-      {/* Main Stock Inventory Table */}
-      <InventoryTable
-        items={items}
-        onAdjust={handleAdjustClick}
-        isLoading={isLoadingInventory && page === 1}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-      />
+      {/* Tabs */}
+      <div className="flex space-x-4 mb-6 border-b border-input-border mt-4">
+        <button
+          onClick={() => setActiveTab('stock')}
+          className={`pb-3 px-2 flex items-center space-x-2 font-medium border-b-2 transition-colors ${
+            activeTab === 'stock' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-white'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span>Stock Levels</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('cycle_counts')}
+          className={`pb-3 px-2 flex items-center space-x-2 font-medium border-b-2 transition-colors ${
+            activeTab === 'cycle_counts' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-white'
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          <span>Cycle Counts</span>
+        </button>
+      </div>
 
-      {/* Unified Pagination footer component */}
-      <Pagination
-        page={meta.page}
-        totalPages={meta.totalPages}
-        total={meta.total}
-        limit={meta.limit}
-        onPageChange={setPage}
-        itemName="listings"
-      />
+      {activeTab === 'stock' ? (
+        <>
+          {/* Main Stock Inventory Table */}
+          <InventoryTable
+            items={items}
+            onAdjust={handleAdjustClick}
+            isLoading={isLoadingInventory && page === 1}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+          />
+
+          {/* Unified Pagination footer component */}
+          <Pagination
+            page={meta.page}
+            totalPages={meta.totalPages}
+            total={meta.total}
+            limit={meta.limit}
+            onPageChange={setPage}
+            itemName="listings"
+          />
+        </>
+      ) : (
+        <CycleCountBatchList />
+      )}
 
       {/* Centralized modal containers */}
       <InventoryAdjustmentModal />

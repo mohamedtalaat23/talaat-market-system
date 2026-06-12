@@ -3,6 +3,7 @@ import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 import { X, Vault, ArrowDownRight, ArrowUpRight, FileText } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { InlineManagerApproval } from './InlineManagerApproval';
 
 const ADJUSTMENT_TYPES = [
   { value: 'safe_drop', label: 'Safe Drop', type: 'out', icon: Vault, color: 'text-danger' },
@@ -15,8 +16,9 @@ const ADJUSTMENT_TYPES = [
 ];
 
 export function DrawerAdjustmentModal() {
-  const { activeModals, closeModal, openModal } = useModalStore();
+  const { activeModals, closeModal, modalPayloads } = useModalStore();
   const isOpen = activeModals.pos_drawer_adjustment;
+  const payload = modalPayloads.pos_drawer_adjustment;
   const activeShift = usePOSStore((state) => state.activeShift);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
 
@@ -24,67 +26,82 @@ export function DrawerAdjustmentModal() {
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
 
+  const [managerId, setManagerId] = useState<number | ''>('');
+  const [pin, setPin] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   // Reset form when opened
   useEffect(() => {
     if (isOpen) {
-      setType('safe_drop');
+      setType(payload?.type || 'safe_drop');
       setAmount('');
       setNotes('');
     }
-  }, [isOpen]);
+  }, [isOpen, payload]);
 
   if (!isOpen) return null;
 
   const selectedTypeObj = ADJUSTMENT_TYPES.find((t) => t.value === type);
   const isOut = selectedTypeObj?.type === 'out';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) return;
     if (!activeShift) return;
+    if (!pin || managerId === '') {
+      import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
+      return;
+    }
 
-    openModal('pos_manager_override', {
-      action: 'drawer_adjustment',
-      displayMetadata: {
-        title: selectedTypeObj?.label,
-        amount: numericAmount,
-        direction: isOut ? 'OUT' : 'IN'
-      },
-      onSuccess: async (managerId: number) => {
-        try {
-          const { apiClient } = await import('@/services/api-client');
-          const toast = (await import('react-hot-toast')).default;
+    setIsSubmitting(true);
+    try {
+      const { apiClient } = await import('@/services/api-client');
+      const toast = (await import('react-hot-toast')).default;
 
-          const payload = {
-            manager_id: managerId,
-            type: type,
-            amount: numericAmount,
-            reason_code: type.toUpperCase(),
-            reason_notes: notes || null,
-          };
+      // Inline PIN verification
+      const verifyRes = await apiClient.post('/employees/verify-pin', {
+        manager_id: managerId,
+        pin,
+      });
 
-          const response = await apiClient.post(`/pos/shifts/${activeShift.id}/adjustments`, payload);
-          if (response.data?.success) {
-            toast.success('Drawer adjustment recorded');
-            
-            // Re-fetch shift to update expected cash
-            const shiftRes = await apiClient.get('/pos/shifts/current');
-            if (shiftRes.data?.success) {
-              setActiveShift(shiftRes.data.data);
-            }
-            
-            closeModal('pos_drawer_adjustment');
-          }
-        } catch (error: any) {
-          const toast = (await import('react-hot-toast')).default;
-          toast.error(error.response?.data?.message || 'Failed to record adjustment');
-        }
+      if (!verifyRes.data?.success) {
+        toast.error('Invalid Manager PIN');
+        setIsSubmitting(false);
+        setPin('');
+        return;
       }
-    });
+
+      const payload = {
+        manager_id: managerId,
+        type: type,
+        amount: numericAmount,
+        reason_code: type.toUpperCase(),
+        reason_notes: notes || null,
+      };
+
+      const response = await apiClient.post(`/pos/shifts/${activeShift.id}/adjustments`, payload);
+      if (response.data?.success) {
+        toast.success('Drawer adjustment recorded');
+        
+        // Re-fetch shift to update expected cash
+        const shiftRes = await apiClient.get('/pos/shifts/current');
+        if (shiftRes.data?.success) {
+          setActiveShift(shiftRes.data.data);
+        }
+        
+        closeModal('pos_drawer_adjustment');
+      }
+    } catch (error: any) {
+      const toast = (await import('react-hot-toast')).default;
+      toast.error(error.response?.data?.message || 'Failed to record adjustment');
+    } finally {
+      setIsSubmitting(false);
+      setPin('');
+    }
   };
 
   return (
@@ -169,13 +186,31 @@ export function DrawerAdjustmentModal() {
             </div>
           </div>
 
+          <div className="pt-2">
+            <InlineManagerApproval
+              managerId={managerId}
+              setManagerId={setManagerId}
+              pin={pin}
+              setPin={setPin}
+              isSubmitting={isSubmitting}
+              contextMetadata={
+                <div className="flex flex-col">
+                  <div className="font-bold text-lg uppercase">{selectedTypeObj?.label}</div>
+                  <div className={isOut ? 'text-danger mt-1' : 'text-success mt-1'}>
+                    {isOut ? 'OUT' : 'IN'}: EGP {amount ? parseFloat(amount).toFixed(2) : '0.00'}
+                  </div>
+                </div>
+              }
+            />
+          </div>
+
           <div className="pt-4 border-t border-input-border">
             <button
               type="submit"
-              disabled={!amount || parseFloat(amount) <= 0}
+              disabled={!amount || parseFloat(amount) <= 0 || isSubmitting}
               className={`w-full py-3 rounded-lg font-bold text-white shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isOut ? 'bg-danger hover:bg-danger/90' : 'bg-success hover:bg-success/90'}`}
             >
-              Authorize & {isOut ? 'Withdraw' : 'Deposit'} {amount ? `EGP ${amount}` : ''}
+              {isSubmitting ? 'Processing...' : `Authorize & ${isOut ? 'Withdraw' : 'Deposit'} ${amount ? `EGP ${amount}` : ''}`}
             </button>
           </div>
         </form>

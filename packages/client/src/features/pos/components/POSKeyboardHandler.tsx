@@ -143,6 +143,27 @@ export function POSKeyboardHandler() {
         e.target instanceof HTMLTextAreaElement ||
         (e.target instanceof HTMLElement && e.target.isContentEditable);
 
+      // Handle Alt shortcuts for drawer adjustments
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        if (!isInput) {
+          if (e.key.toLowerCase() === 'd') {
+            e.preventDefault();
+            openModal('pos_drawer_adjustment', { type: 'safe_drop' });
+            return;
+          }
+          if (e.key.toLowerCase() === 'p') {
+            e.preventDefault();
+            openModal('pos_drawer_adjustment', { type: 'petty_cash' });
+            return;
+          }
+          if (e.key.toLowerCase() === 'c') {
+            e.preventDefault();
+            openModal('pos_drawer_adjustment', { type: 'change_replenishment' });
+            return;
+          }
+        }
+      }
+
       switch (e.key) {
         case 'F1':
         case ' ':

@@ -61,14 +61,25 @@ export function PaymentModal() {
     setCashPortionStr(String(Math.max(0, total - num)));
   };
 
-  // Close modal on Escape
+  // Keyboard listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !isSubmitting) closeModal();
+      if (e.key === 'Escape' && !isSubmitting) {
+        closeModal();
+      } else if (e.key === 'F1') {
+        e.preventDefault();
+        setPaymentMethod('cash');
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        setPaymentMethod('card');
+      } else if (e.key === 'F3') {
+        e.preventDefault();
+        setPaymentMethod('split');
+      }
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isSubmitting, closeModal]);
+  }, [isOpen, isSubmitting, closeModal, setPaymentMethod]);
 
   if (!isOpen) return null;
 
@@ -353,7 +364,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-success/15 border-success text-success' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Banknote size={20} />
-                <span className="font-bold text-base">Cash</span>
+                <span className="font-bold text-base">Cash [F1]</span>
               </button>
               <button
                 type="button"
@@ -361,7 +372,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-primary/15 border-primary text-primary' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <CreditCard size={20} />
-                <span className="font-bold text-base">Card</span>
+                <span className="font-bold text-base">Card [F2]</span>
               </button>
               <button
                 type="button"
@@ -369,7 +380,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-warning/15 border-warning text-warning' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Monitor size={20} />
-                <span className="font-bold text-base">Split</span>
+                <span className="font-bold text-base">Split [F3]</span>
               </button>
               <button
                 type="button"

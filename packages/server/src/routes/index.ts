@@ -25,6 +25,7 @@ import { settingsRouter } from './settings.routes';
 import { customerRouter } from './customer.routes';
 import { supplierRouter } from './supplier.routes';
 import purchaseRouter from './purchase.routes';
+import { cycleCountRouter } from './cycle-counts.routes';
 
 const apiRouter = Router();
 
@@ -42,6 +43,7 @@ apiRouter.use(`${API_PREFIX}/settings`, settingsRouter);
 apiRouter.use(`${API_PREFIX}/customers`, customerRouter);
 apiRouter.use(`${API_PREFIX}/suppliers`, supplierRouter);
 apiRouter.use(`${API_PREFIX}/purchases`, purchaseRouter);
+apiRouter.use(`${API_PREFIX}/cycle-counts`, cycleCountRouter);
 
 // Future routes will be mounted here (Phase 2+):
 // apiRouter.use(`${API_PREFIX}/auth`,       authRouter);
