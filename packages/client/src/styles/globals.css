@@ -52,6 +52,10 @@ textarea,
 }
 
 /* Global Cairo Font family override for Arabic Language */
+html[lang="ar"] {
+  font-size: 108%;
+}
+
 html[lang="ar"],
 html[lang="ar"] body,
 html[lang="ar"] input,

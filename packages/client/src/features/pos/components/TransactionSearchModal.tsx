@@ -66,7 +66,7 @@ const TransactionSearchModal = () => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-foreground">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 text-foreground">
       <div
         className="absolute inset-0"
         onClick={() => closeModal('pos_transaction_search')}
@@ -75,86 +75,94 @@ const TransactionSearchModal = () => {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-4xl bg-card border border-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[85vh]"
+        className="w-full max-w-4xl bg-card border border-border/80 rounded-2xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
         role="dialog"
       >
-        <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
-          <div className="flex items-center space-x-3">
-            <Search className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Transaction Search & Reprint</h2>
+        <div className="flex items-center justify-between p-5 border-b border-border/40 bg-card">
+          <div className="flex items-center space-x-3.5">
+            <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary shadow-sm">
+              <Search className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-black tracking-tight text-foreground">Transaction Search & Reprint</h2>
           </div>
           <button
             onClick={() => closeModal('pos_transaction_search')}
-            className="text-secondary hover:text-white p-1 rounded-md hover:bg-card-hover transition-colors"
+            className="text-secondary hover:text-foreground p-2 rounded-xl hover:bg-card-hover border border-transparent hover:border-border/60 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-border">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary w-5 h-5" />
+        <div className="p-5 border-b border-border/40 bg-card/40">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 w-5 h-5 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by Receipt Number..."
-              className="w-full bg-input-bg border border-input-border rounded-lg py-3 pl-10 pr-4 text-input-text focus:outline-none focus:border-input-focus focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-input-placeholder"
+              className="w-full bg-card border border-border/60 rounded-xl py-3.5 pl-12 pr-4 text-foreground text-sm font-bold shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-secondary/50 placeholder:font-medium"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 space-y-2">
+        <div className="flex-1 overflow-auto bg-card custom-scrollbar">
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+            <div className="flex flex-col items-center justify-center py-20 opacity-50">
+              <RefreshCw className="w-10 h-10 text-primary animate-spin mb-4" />
+              <p className="text-sm font-bold text-secondary uppercase tracking-widest">Searching...</p>
             </div>
           ) : sales.length === 0 ? (
-            <div className="text-center py-12 text-secondary">No transactions found.</div>
+            <div className="flex flex-col items-center justify-center py-20 text-secondary">
+              <div className="p-4 bg-secondary/5 rounded-full mb-3 border border-secondary/10">
+                <Search className="w-8 h-8 opacity-50" />
+              </div>
+              <p className="text-sm font-bold tracking-wide">No transactions found.</p>
+            </div>
           ) : (
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-border text-secondary">
-                  <th className="pb-2 font-medium">Receipt No.</th>
-                  <th className="pb-2 font-medium">Date</th>
-                  <th className="pb-2 font-medium">Cashier</th>
-                  <th className="pb-2 font-medium text-right">Total</th>
-                  <th className="pb-2 font-medium text-right">Status</th>
-                  <th className="pb-2 font-medium text-right">Actions</th>
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-muted/40 sticky top-0 z-10 backdrop-blur-md">
+                <tr className="border-b border-border/60 text-[11px] font-black text-secondary uppercase tracking-widest">
+                  <th className="py-4 px-5">Receipt No.</th>
+                  <th className="py-4 px-5">Date</th>
+                  <th className="py-4 px-5">Cashier</th>
+                  <th className="py-4 px-5 text-right">Total</th>
+                  <th className="py-4 px-5 text-right">Status</th>
+                  <th className="py-4 px-5 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border/40 text-sm">
                 {sales.map((sale) => (
                   <tr
                     key={sale.id}
-                    className="border-b border-border/50 hover:bg-card-hover/30 transition-colors"
+                    className="group hover:bg-primary/[0.02] transition-colors"
                   >
-                    <td className="py-3 font-mono text-success">{sale.receipt_number}</td>
-                    <td className="py-3 text-secondary">
+                    <td className="py-4 px-5 font-mono font-bold text-foreground text-xs">{sale.receipt_number}</td>
+                    <td className="py-4 px-5 text-xs text-secondary font-medium">
                       {new Date(sale.created_at).toLocaleString()}
                     </td>
-                    <td className="py-3 text-secondary">{sale.cashier_name}</td>
-                    <td className="py-3 text-right font-bold">
-                      EGP {Number(sale.total).toFixed(2)}
+                    <td className="py-4 px-5 text-secondary font-medium text-xs">{sale.cashier_name}</td>
+                    <td className="py-4 px-5 text-right font-black text-foreground tabular-nums">
+                      {Number(sale.total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </td>
-                    <td className="py-3 text-right">
+                    <td className="py-4 px-5 text-right">
                       {sale.print_status === 'pending_print' ? (
-                        <span className="px-2 py-0.5 rounded text-xs bg-warning/10 text-warning border border-warning/20">
+                        <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black bg-warning/10 text-warning border border-warning/20 uppercase tracking-widest">
                           Pending Print
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-xs bg-card-hover text-secondary border border-border">
+                        <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-widest">
                           Printed ({sale.print_count})
                         </span>
                       )}
                     </td>
-                    <td className="py-3 text-right">
-                      <div className="flex justify-end space-x-2">
+                    <td className="py-4 px-5 text-center">
+                      <div className="flex justify-center space-x-2.5">
                         {['completed', 'partially_refunded'].includes(sale.status) && (
                           <button
                             onClick={() => openModal('pos_refund', { sale })}
-                            className="inline-flex items-center space-x-1 px-3 py-1.5 bg-warning/10 hover:bg-warning/20 text-warning border border-warning/20 rounded transition-colors text-xs font-medium"
+                            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-warning/5 hover:bg-warning/10 text-warning border border-warning/20 rounded-lg transition-all text-xs font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5"
                           >
                             <RefreshCcw className="w-3.5 h-3.5" />
                             <span>Refund / Void</span>
@@ -162,7 +170,7 @@ const TransactionSearchModal = () => {
                         )}
                         <button
                           onClick={() => handleReprintRequest(sale)}
-                          className="inline-flex items-center space-x-1 px-3 py-1.5 bg-card-hover hover:bg-primary/20 text-primary rounded transition-colors text-xs font-medium"
+                          className="inline-flex items-center space-x-1.5 px-3 py-2 bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5"
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>Reprint</span>

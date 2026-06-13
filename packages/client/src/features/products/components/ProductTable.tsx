@@ -91,7 +91,7 @@ export function ProductTable({
                 className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary"
               />
               <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center">
-                Margin
+                {t('products.margin')}
               </th>
               <SortableHeader
                 label={t('products.stockQty')}
@@ -262,7 +262,7 @@ export function ProductTable({
                       <Package className="h-8 w-8 text-secondary/40" aria-hidden="true" />
                     </div>
                     <p className="font-semibold text-foreground">{t('products.noProductsCatalog')}</p>
-                    <p className="text-sm text-secondary">Try adjusting your filters or add a new product</p>
+                    <p className="text-sm text-secondary">{t('products.tryAdjustingFilters')}</p>
                     {hasFilters && (
                       <Button
                         variant="outline"

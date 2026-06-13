@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { User, Lock, Shield, KeyRound, CheckCircle2, XCircle } from 'lucide-react';
 import type { Employee } from '../hooks/useEmployeeQueries';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -104,8 +105,9 @@ export function EmployeeForm({
 
       {/* Primary detail inputs */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label htmlFor="fullName" className="text-xs font-semibold text-secondary">
+        <div className="space-y-1.5">
+          <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" />
             {t('employees.fullName')}
           </label>
           <Input
@@ -118,8 +120,9 @@ export function EmployeeForm({
           />
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="empUsername" className="text-xs font-semibold text-secondary">
+        <div className="space-y-1.5">
+          <label htmlFor="empUsername" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" />
             {t('employees.usernameLabel')}
           </label>
           <Input
@@ -132,8 +135,9 @@ export function EmployeeForm({
           />
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="empRole" className="text-xs font-semibold text-secondary">
+        <div className="space-y-1.5">
+          <label htmlFor="empRole" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5" />
             {t('employees.roleLevel')}
           </label>
           <select
@@ -141,7 +145,7 @@ export function EmployeeForm({
             value={role}
             onChange={(e) => setRole(e.target.value as any)}
             disabled={isLoading}
-            className="flex h-10 w-full rounded-md border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all"
+            className="flex h-10 w-full rounded-lg border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm"
           >
             <option value="cashier">{t('employees.cashierDesc')}</option>
             <option value="manager">{t('employees.managerDesc')}</option>
@@ -150,8 +154,9 @@ export function EmployeeForm({
         </div>
 
         {/* Credentials sections - never preloaded, isolated state */}
-        <div className="space-y-1">
-          <label htmlFor="empPassword" className="text-xs font-semibold text-secondary">
+        <div className="space-y-1.5 pt-2 border-t border-border/40 sm:border-t-0 sm:pt-0">
+          <label htmlFor="empPassword" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5" />
             {mode === 'create' ? t('employees.passwordLabel') : t('employees.passwordUpdate')}
           </label>
           <Input
@@ -169,8 +174,9 @@ export function EmployeeForm({
           />
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="empPin" className="text-xs font-semibold text-secondary">
+        <div className="space-y-1.5 pt-2 border-t border-border/40 sm:border-t-0 sm:pt-0">
+          <label htmlFor="empPin" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" />
             {t('employees.pinLabel')}
           </label>
           <Input
@@ -185,19 +191,20 @@ export function EmployeeForm({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 py-2">
+      <div className="flex items-center gap-3 py-4 mt-2 px-4 rounded-lg bg-card-hover/30 border border-border/40">
         <input
           id="isEmpActive"
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isLoading}
-          className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/20 focus:ring-offset-0"
+          className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/40 focus:ring-offset-0 cursor-pointer"
         />
         <label
           htmlFor="isEmpActive"
-          className="text-sm font-semibold text-secondary cursor-pointer select-none"
+          className="text-sm font-semibold text-foreground cursor-pointer select-none flex items-center gap-2"
         >
+          {isActive ? <CheckCircle2 className="w-4 h-4 text-success" /> : <XCircle className="w-4 h-4 text-secondary" />}
           {t('employees.accountActive')}
         </label>
       </div>

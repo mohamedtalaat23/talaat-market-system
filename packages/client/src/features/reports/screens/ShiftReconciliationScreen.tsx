@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { CheckCircle, AlertTriangle, HelpCircle, Clock, SearchX } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -24,21 +25,39 @@ export function ShiftReconciliationScreen() {
 
   const renderVarianceBadge = (variance: number | null) => {
     if (variance === null) {
-      return <Badge variant="secondary">N/A</Badge>;
+      return (
+        <Badge variant="secondary" className="font-mono bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+          <HelpCircle className="w-3 h-3 mr-1" />
+          N/A
+        </Badge>
+      );
     }
     if (variance === 0) {
-      return <Badge variant="success">EGP 0.00</Badge>;
+      return (
+        <Badge variant="success" className="font-mono bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          {formatCurrency(0)}
+        </Badge>
+      );
     }
-    return <Badge variant="destructive">{formatCurrency(variance)}</Badge>;
+    return (
+      <Badge variant="destructive" className="font-mono bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800 shadow-sm animate-pulse">
+        <AlertTriangle className="w-3 h-3 mr-1" />
+        {formatCurrency(variance)}
+      </Badge>
+    );
   };
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('reports.shiftReconciliation')}</CardTitle>
+      <Card className="border-none shadow-xl bg-gradient-to-b from-card to-card/50 backdrop-blur-xl">
+        <CardHeader className="border-b border-border/40 pb-4 bg-primary/5 rounded-t-xl">
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Clock className="w-5 h-5" />
+            {t('reports.shiftReconciliation')}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoading ? (
             <div className="flex justify-center p-8">
               <Spinner />
@@ -50,7 +69,7 @@ export function ShiftReconciliationScreen() {
           ) : (
             <div className="space-y-4">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/50 table-header-sticky">
                   <TableRow>
                     <TableHead>{t('reports.cashier')}</TableHead>
                     <TableHead>{t('reports.register')}</TableHead>
@@ -65,32 +84,35 @@ export function ShiftReconciliationScreen() {
                 <TableBody>
                   {data?.data?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-secondary py-4">
-                        {t('reports.noClosedShifts')}
+                      <TableCell colSpan={8} className="h-48 text-center">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground gap-3">
+                          <SearchX className="w-10 h-10 text-muted-foreground/30" />
+                          <p className="text-lg font-medium">{t('reports.noClosedShifts')}</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
                   {data?.data?.map((shift) => (
                     <TableRow
                       key={shift.id}
-                      className="cursor-pointer hover:bg-card-hover/50 transition-colors"
+                      className="cursor-pointer table-row-hover group"
                       onClick={() => navigate(`/reports/shifts/${shift.id}`)}
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-foreground group-hover:text-primary transition-colors">
                         {shift.cashier_name || 'Unknown'}
                       </TableCell>
-                      <TableCell>{shift.register_name || 'Main Register'}</TableCell>
-                      <TableCell>{formatDateTime(new Date(shift.start_time))}</TableCell>
-                      <TableCell>
-                        {shift.end_time ? formatDateTime(new Date(shift.end_time)) : '-'}
+                      <TableCell className="text-secondary">{shift.register_name || 'Main Register'}</TableCell>
+                      <TableCell className="text-secondary font-mono text-xs">{formatDateTime(new Date(shift.start_time))}</TableCell>
+                      <TableCell className="text-secondary font-mono text-xs">
+                        {shift.end_time ? formatDateTime(new Date(shift.end_time)) : <span className="text-primary font-medium">{t('reports.ongoing') || 'Ongoing'}</span>}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right font-mono font-medium">
                         {formatCurrency(shift.starting_cash)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right font-mono">
                         {shift.expected_cash !== null ? formatCurrency(shift.expected_cash) : '-'}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right font-mono font-bold text-foreground">
                         {shift.ending_cash !== null ? formatCurrency(shift.ending_cash) : '-'}
                       </TableCell>
                       <TableCell className="text-right">

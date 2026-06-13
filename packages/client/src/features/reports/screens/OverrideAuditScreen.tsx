@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ShieldAlert, SearchX } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatDateTime } from '@/utils/formatters';
@@ -55,7 +56,7 @@ export function OverrideAuditScreen() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <Card>
+      <Card className="border border-border/60 shadow-sm rounded-2xl">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">
@@ -84,11 +85,14 @@ export function OverrideAuditScreen() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('reports.managerOverridesLog')}</CardTitle>
+      <Card className="border-none shadow-xl bg-gradient-to-b from-card to-card/50 backdrop-blur-xl">
+        <CardHeader className="border-b border-border/40 pb-4 bg-primary/5 rounded-t-xl">
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <ShieldAlert className="w-5 h-5" />
+            {t('reports.managerOverridesLog')}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoading ? (
             <div className="flex justify-center p-8">
               <Spinner />
@@ -100,7 +104,7 @@ export function OverrideAuditScreen() {
           ) : (
             <div className="space-y-4">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/50 table-header-sticky">
                   <TableRow>
                     <TableHead>{t('reports.dateTime')}</TableHead>
                     <TableHead>{t('reports.manager')}</TableHead>
@@ -113,14 +117,17 @@ export function OverrideAuditScreen() {
                 <TableBody>
                   {data?.data?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-neutral-500 italic py-6">
-                        {t('reports.noOverridesRecorded')}
+                      <TableCell colSpan={6} className="h-48 text-center">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground gap-3">
+                          <SearchX className="w-10 h-10 text-muted-foreground/30" />
+                          <p className="text-lg font-medium">{t('reports.noOverridesRecorded')}</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
                   {data?.data?.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{formatDateTime(new Date(item.created_at))}</TableCell>
+                    <TableRow key={item.id} className="table-row-hover group">
+                      <TableCell className="text-secondary font-mono text-xs">{formatDateTime(new Date(item.created_at))}</TableCell>
                       <TableCell className="font-medium text-primary">
                         {item.manager_name}
                       </TableCell>

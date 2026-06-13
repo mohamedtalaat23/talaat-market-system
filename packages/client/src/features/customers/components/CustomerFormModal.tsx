@@ -5,6 +5,7 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
+import { User, Phone, Mail, MapPin, Wallet, Gift, AlignLeft, UserPlus, UserCog, X } from 'lucide-react';
 
 interface CustomerFormModalProps {
   isOpen: boolean;
@@ -141,27 +142,21 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
   const isPending = createCustomer.isPending || updateCustomer.isPending;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl border border-input-border bg-modal shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 select-text">
+      <div className="w-full max-w-2xl rounded-xl border-none bg-card shadow-2xl overflow-hidden font-sans text-foreground animate-fade-in relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-input-border bg-card px-6 py-4">
-          <h3 className="text-lg font-semibold tracking-wide">
+        <div className="flex items-center justify-between border-b border-border/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-4 select-none">
+          <h3 id="customer-modal-title" className="text-lg font-bold text-primary flex items-center gap-2">
+            {customer ? <UserCog className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             {customer
               ? t('common.edit') + ' ' + t('customers.title')
               : t('customers.registerCustomer')}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-input-text transition-colors"
+            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X size={18} />
           </button>
         </div>
 
@@ -170,7 +165,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
                 {t('customers.name')} *
               </label>
               <input
@@ -179,10 +175,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('customers.name')}
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                   errors.name
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.name && <p className="text-xs text-danger mt-0.5">{errors.name}</p>}
@@ -190,7 +186,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Phone */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
                 {t('customers.phone')}
               </label>
               <input
@@ -198,10 +195,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 01012345678"
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                   errors.phone
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.phone && <p className="text-xs text-danger mt-0.5">{errors.phone}</p>}
@@ -209,7 +206,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
                 {t('suppliers.email')}
               </label>
               <input
@@ -217,10 +215,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="customer@domain.com"
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                   errors.email
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.email && <p className="text-xs text-danger mt-0.5">{errors.email}</p>}
@@ -228,7 +226,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Address */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" />
                 {t('customers.address')}
               </label>
               <input
@@ -236,10 +235,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder={t('customers.address')}
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                   errors.address
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.address && <p className="text-xs text-danger mt-0.5">{errors.address}</p>}
@@ -248,7 +247,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
             {/* Initial Balance - Only for NEW customers */}
             {!customer && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+                <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                  <Wallet className="w-3.5 h-3.5" />
                   {t('customers.balance')} (EGP)
                 </label>
                 <input
@@ -257,10 +257,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                   value={balance}
                   onChange={(e) => setBalance(e.target.value)}
                   placeholder="0.00"
-                  className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                  className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                     errors.balance
-                      ? 'border-danger focus:border-danger'
-                      : 'border-input-border focus:border-success'
+                      ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                      : 'border-input-border'
                   }`}
                 />
                 {errors.balance && <p className="text-xs text-danger mt-0.5">{errors.balance}</p>}
@@ -269,7 +269,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Loyalty Points */}
             <div className={customer ? 'col-span-2 space-y-1.5' : 'space-y-1.5'}>
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <Gift className="w-3.5 h-3.5" />
                 {t('customers.loyaltyPoints')}
               </label>
               <input
@@ -278,10 +279,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 value={loyaltyPoints}
                 onChange={(e) => setLoyaltyPoints(e.target.value)}
                 placeholder="0"
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm ${
                   errors.loyalty_points
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.loyalty_points && (
@@ -291,7 +292,8 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
             {/* Notes */}
             <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+              <label className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <AlignLeft className="w-3.5 h-3.5" />
                 {t('customers.notes')}
               </label>
               <textarea
@@ -299,10 +301,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('customers.notes')}
                 rows={3}
-                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none transition-colors resize-none ${
+                className={`w-full rounded-lg border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm resize-none ${
                   errors.notes
-                    ? 'border-danger focus:border-danger'
-                    : 'border-input-border focus:border-success'
+                    ? 'border-danger focus:ring-danger/40 focus:border-danger'
+                    : 'border-input-border'
                 }`}
               />
               {errors.notes && <p className="text-xs text-danger mt-0.5">{errors.notes}</p>}

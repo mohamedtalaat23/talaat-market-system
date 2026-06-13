@@ -102,100 +102,101 @@ export function LANSettingsScreen() {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl text-input-text select-text">
-      <div>
-        <h3 className="text-xl font-bold tracking-tight text-input-text mb-2 flex items-center gap-2">
-          <Wifi className="text-success" size={24} />
-          {t('settings.lanTitle')}
-        </h3>
-        <p className="text-sm text-secondary">{t('settings.lanDesc')}</p>
+    <div className="space-y-8 max-w-4xl text-foreground select-text">
+      <div className="flex items-center gap-4 border-b border-border/40 pb-5">
+        <div className="p-3 bg-success/10 rounded-2xl border border-success/20 text-success">
+          <Wifi className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.lanTitle')}</h3>
+          <p className="text-sm text-secondary font-medium mt-1">{t('settings.lanDesc')}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Standalone Selector */}
         <div
           onClick={() => setMode('standalone')}
-          className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
+          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
             mode === 'standalone'
-              ? 'bg-card border-success ring-1 ring-success'
-              : 'bg-background/40 border-input-border hover:border-input-border'
+              ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
+              : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <Monitor
-            size={24}
-            className={`mb-3 ${mode === 'standalone' ? 'text-success' : 'text-secondary'}`}
-          />
-          <h4 className="font-semibold text-input-text">{t('settings.standalone')}</h4>
-          <p className="text-xs text-secondary mt-1">{t('settings.standaloneDesc')}</p>
+          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'standalone' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+            <Monitor size={24} />
+          </div>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.standalone')}</h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.standaloneDesc')}</p>
         </div>
 
         {/* Master Selector */}
         <div
           onClick={() => setMode('master')}
-          className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
+          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
             mode === 'master'
-              ? 'bg-card border-success ring-1 ring-success'
-              : 'bg-background/40 border-input-border hover:border-input-border'
+              ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
+              : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <Server
-            size={24}
-            className={`mb-3 ${mode === 'master' ? 'text-success' : 'text-secondary'}`}
-          />
-          <h4 className="font-semibold text-input-text">{t('settings.hostMaster')}</h4>
-          <p className="text-xs text-secondary mt-1">{t('settings.hostMasterDesc')}</p>
+          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'master' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+            <Server size={24} />
+          </div>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.hostMaster')}</h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.hostMasterDesc')}</p>
         </div>
 
         {/* Client Selector */}
         <div
           onClick={() => setMode('client')}
-          className={`flex flex-col p-5 rounded-xl border cursor-pointer transition-all ${
+          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
             mode === 'client'
-              ? 'bg-card border-success ring-1 ring-success'
-              : 'bg-background/40 border-input-border hover:border-input-border'
+              ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
+              : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <Laptop
-            size={24}
-            className={`mb-3 ${mode === 'client' ? 'text-success' : 'text-secondary'}`}
-          />
-          <h4 className="font-semibold text-input-text">{t('settings.clientTerminal')}</h4>
-          <p className="text-xs text-secondary mt-1">{t('settings.clientTerminalDesc')}</p>
+          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'client' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+            <Laptop size={24} />
+          </div>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.clientTerminal')}</h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.clientTerminalDesc')}</p>
         </div>
       </div>
 
       {mode === 'client' && (
-        <div className="bg-card/50 rounded-xl border border-input-border p-6 space-y-6">
-          <h4 className="font-bold text-input-text flex items-center gap-2">
-            <Activity size={18} className="text-success" />
+        <div className="bg-card/40 rounded-2xl border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
+          <h4 className="font-black text-foreground text-xl tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-success/10 text-success border border-success/20">
+              <Activity size={20} />
+            </div>
             {t('settings.hostConnSettings')}
           </h4>
 
           <form onSubmit={handleSaveConfig} className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="flex-1 space-y-2 w-full">
-                <label className="block text-xs font-semibold text-secondary uppercase tracking-wider">
+            <div className="flex flex-col lg:flex-row gap-4 items-end">
+              <div className="flex-1 space-y-2.5 w-full">
+                <label className="block text-xs font-bold text-foreground uppercase tracking-widest">
                   {t('settings.hostApiAddress')}
                 </label>
                 <input
                   type="text"
                   placeholder={t('settings.placeholderHostAddress')}
-                  className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-input-text outline-none focus:border-input-focus transition-colors placeholder:text-input-placeholder"
+                  className="w-full bg-card border border-border/60 rounded-xl px-5 py-3.5 text-foreground font-mono outline-none focus:border-success focus:ring-2 focus:ring-success/20 transition-all placeholder:text-secondary/50 shadow-sm"
                   value={addressInput}
                   onChange={(e) => setAddressInput(e.target.value)}
                 />
               </div>
 
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-3 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
                 <button
                   type="button"
                   onClick={handleTestConnection}
                   disabled={testingConnection}
-                  className="px-4 py-2.5 rounded-lg border border-input-border bg-card hover:bg-card-hover text-input-text font-semibold text-sm disabled:opacity-50 transition-colors flex items-center gap-2"
+                  className="flex-1 lg:flex-none px-6 py-3.5 rounded-xl border border-border/80 bg-card hover:bg-card-hover text-foreground font-bold text-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:border-success/40 hover:text-success"
                 >
                   {testingConnection ? (
                     <>
-                      <RefreshCw size={16} className="animate-spin text-secondary" />
+                      <RefreshCw size={18} className="animate-spin text-success" />
                       {t('settings.testing')}
                     </>
                   ) : (
@@ -204,7 +205,7 @@ export function LANSettingsScreen() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-lg bg-success text-white font-semibold text-sm hover:bg-success/90 transition-colors"
+                  className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-success text-white font-bold tracking-wide text-sm hover:bg-success/90 transition-all shadow-md shadow-success/20 hover:shadow-lg hover:shadow-success/30 hover:-translate-y-0.5"
                 >
                   {t('settings.saveHost')}
                 </button>
@@ -214,22 +215,24 @@ export function LANSettingsScreen() {
 
           {pingResult && (
             <div
-              className={`p-4 rounded-lg border flex items-start gap-3 ${
+              className={`p-5 rounded-2xl border flex items-start gap-4 shadow-sm transition-all ${
                 pingResult.success
-                  ? 'bg-success/15 border-success/30 text-success'
-                  : 'bg-danger/10 border-danger/50 text-danger'
+                  ? 'bg-gradient-to-br from-success/5 to-success/10 border-success/30 text-success'
+                  : 'bg-gradient-to-br from-danger/5 to-danger/10 border-danger/30 text-danger'
               }`}
             >
-              {pingResult.success ? (
-                <Wifi size={20} className="text-success mt-0.5 shrink-0" />
-              ) : (
-                <WifiOff size={20} className="text-danger mt-0.5 shrink-0" />
-              )}
-              <div>
-                <p className="font-semibold text-sm">
+              <div className={`p-2.5 rounded-xl shrink-0 ${pingResult.success ? 'bg-success/20' : 'bg-danger/20'}`}>
+                {pingResult.success ? (
+                  <Wifi size={24} />
+                ) : (
+                  <WifiOff size={24} />
+                )}
+              </div>
+              <div className="mt-0.5">
+                <p className="font-bold text-sm uppercase tracking-widest drop-shadow-sm">
                   {pingResult.success ? t('settings.hostReachable') : t('settings.hostUnreachable')}
                 </p>
-                <p className="text-xs text-secondary mt-0.5">
+                <p className="text-xs font-semibold opacity-90 mt-1 leading-relaxed">
                   {pingResult.success
                     ? t('settings.handshakeSuccess').replace(
                         '{latency}',
@@ -242,15 +245,15 @@ export function LANSettingsScreen() {
           )}
 
           {/* Active Status Badge */}
-          <div className="flex items-center justify-between p-4 bg-background/60 rounded-lg border border-input-border/50">
-            <span className="text-sm font-medium text-secondary">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-card/60 rounded-2xl border border-border/60 shadow-sm gap-4">
+            <span className="text-sm font-bold text-foreground">
               {t('settings.connectionStatusLabel')}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 bg-background p-2.5 rounded-xl border border-border/40">
               <span
-                className={`h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-success/90 animate-pulse' : 'bg-danger'}`}
+                className={`h-3 w-3 rounded-full shadow-sm ${status === 'online' ? 'bg-success animate-pulse shadow-success/40' : 'bg-danger shadow-danger/40'}`}
               />
-              <span className="text-sm font-bold uppercase tracking-wider">
+              <span className={`text-sm font-black uppercase tracking-widest pr-1 ${status === 'online' ? 'text-success' : 'text-danger'}`}>
                 {status === 'online' ? t('settings.onlineSynced') : t('settings.offlineOutage')}
               </span>
             </div>
@@ -259,76 +262,80 @@ export function LANSettingsScreen() {
       )}
 
       {/* Outage Sync Buffer Panel */}
-      <div className="bg-card/50 rounded-xl border border-input-border p-6 space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-card/40 rounded-2xl border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
+        <div className="flex justify-between items-start">
           <div className="space-y-1">
-            <h4 className="font-bold text-input-text flex items-center gap-2">
-              <Database size={18} className="text-success" />
+            <h4 className="font-black text-foreground text-xl tracking-tight flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-success/10 text-success border border-success/20">
+                <Database size={20} />
+              </div>
               {t('settings.syncBufferTitle')}
             </h4>
-            <p className="text-xs text-secondary">{t('settings.syncBufferDesc')}</p>
+            <p className="text-xs text-secondary font-medium">{t('settings.syncBufferDesc')}</p>
           </div>
 
           {offlineSales.length > 0 && (
             <button
               onClick={handleClearBuffer}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-danger/10 border border-danger/25 text-danger hover:bg-danger/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20 hover:shadow-sm transition-all mt-1"
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
               {t('settings.clearQueue')}
             </button>
           )}
         </div>
 
         {offlineSales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 border border-dashed border-input-border rounded-lg bg-background/10">
-            <AlertCircle size={32} className="text-slate-600 mb-2" />
-            <span className="text-sm text-slate-500 font-medium">{t('settings.bufferEmpty')}</span>
+          <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-border/60 rounded-2xl bg-card/30">
+            <div className="p-4 rounded-full bg-secondary/5 mb-3">
+              <AlertCircle size={36} className="text-secondary/50" />
+            </div>
+            <span className="text-sm text-secondary font-bold tracking-wide">{t('settings.bufferEmpty')}</span>
           </div>
         ) : (
-          <div className="overflow-hidden border border-input-border rounded-lg">
+          <div className="overflow-hidden border border-border/60 rounded-2xl shadow-sm bg-card">
             <table className="w-full text-start text-secondary border-collapse">
-              <thead className="bg-background text-xs font-bold text-secondary uppercase tracking-wider border-b border-input-border">
+              <thead className="bg-muted/40 text-[11px] font-black text-secondary uppercase tracking-widest border-b border-border/60">
                 <tr>
-                  <th className="px-4 py-3 text-start">{t('settings.receiptNum')}</th>
-                  <th className="px-4 py-3 text-start">{t('settings.dateTime')}</th>
-                  <th className="px-4 py-3 text-start">{t('settings.payment')}</th>
-                  <th className="px-4 py-3 text-end">{t('settings.total')}</th>
-                  <th className="px-4 py-3 text-center">{t('common.actions')}</th>
+                  <th className="px-5 py-4 text-start">{t('settings.receiptNum')}</th>
+                  <th className="px-5 py-4 text-start">{t('settings.dateTime')}</th>
+                  <th className="px-5 py-4 text-start">{t('settings.payment')}</th>
+                  <th className="px-5 py-4 text-end">{t('settings.total')}</th>
+                  <th className="px-5 py-4 text-center">{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border bg-background/20 text-sm">
+              <tbody className="divide-y divide-border/40 text-sm">
                 {offlineSales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-card-hover/40">
-                    <td className="px-4 py-3 font-mono font-bold text-input-text text-xs">
+                  <tr key={sale.id} className="group hover:bg-primary/[0.02] transition-colors">
+                    <td className="px-5 py-4 font-mono font-bold text-foreground text-xs">
                       {sale.saleData.receipt_number}
                     </td>
-                    <td className="px-4 py-3 text-xs text-secondary">
+                    <td className="px-5 py-4 text-xs text-secondary font-medium">
                       {new Date(sale.timestamp).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-card-hover text-secondary border border-input-border capitalize">
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-widest">
                         {sale.saleData.payment_method}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-end font-bold text-input-text text-xs">
-                      {Number(sale.saleData.total).toFixed(2)} EGP
+                    <td className="px-5 py-4 text-end font-black text-foreground text-sm tabular-nums">
+                      {Number(sale.saleData.total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex justify-center gap-2">
+                    <td className="px-5 py-4 text-center">
+                      <div className="flex justify-center gap-2.5">
                         <button
                           onClick={() => setSelectedSale(sale)}
-                          className="p-1 rounded bg-card hover:bg-card-hover border border-input-border text-secondary hover:text-input-text"
+                          className="p-1.5 rounded-lg bg-card hover:bg-card-hover border border-border/60 text-secondary hover:text-primary hover:border-primary/40 shadow-sm transition-all"
                           title={t('settings.viewSaleItems')}
                         >
-                          <Eye size={14} />
+                          <Eye size={16} />
                         </button>
                         <button
                           onClick={() => removeOfflineSale(sale.id)}
-                          className="p-1 rounded bg-danger/10 hover:bg-danger/25 border border-danger/25 text-danger hover:text-danger"
+                          className="p-1.5 rounded-lg bg-danger/5 hover:bg-danger/10 border border-danger/20 text-danger shadow-sm transition-all"
                           title={t('settings.deleteFromBuffer')}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -342,44 +349,44 @@ export function LANSettingsScreen() {
 
       {/* Sale Details Modal */}
       {selectedSale && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/75 backdrop-blur-[1px] p-4 select-text">
-          <div className="w-full max-w-lg rounded-xl border border-input-border bg-card p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-input-border pb-3">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 select-text">
+          <div className="w-full max-w-lg rounded-2xl border border-border/80 bg-card p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start border-b border-border/40 pb-4">
               <div>
-                <h4 className="font-bold text-input-text text-lg">
+                <h4 className="font-black text-foreground text-xl tracking-tight">
                   {t('settings.bufferedReceipt')}
                 </h4>
-                <p className="text-xs text-secondary font-mono mt-0.5">
+                <p className="text-xs text-secondary font-mono font-bold mt-1 bg-secondary/10 w-fit px-2 py-0.5 rounded-md border border-secondary/20">
                   {selectedSale.saleData.receipt_number}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedSale(null)}
-                className="px-2 py-1 rounded text-secondary hover:text-input-text hover:bg-card-hover text-xs"
+                className="px-3 py-1.5 rounded-lg text-secondary font-bold hover:text-foreground hover:bg-card-hover border border-transparent hover:border-border/60 transition-all text-xs"
               >
                 {t('settings.close')}
               </button>
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
               {selectedSale.saleData.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex justify-between items-start text-sm py-1.5 border-b border-input-border/40"
+                  className="flex justify-between items-start text-sm py-2 border-b border-border/40 last:border-0"
                 >
                   <div>
-                    <p className="font-semibold text-input-text">{item.product_name}</p>
-                    <p className="text-xs text-secondary mt-0.5">
-                      {item.quantity} {item.unit} x {Number(item.unit_price).toFixed(2)}
+                    <p className="font-bold text-foreground">{item.product_name}</p>
+                    <p className="text-xs text-secondary font-medium mt-0.5">
+                      <span className="font-bold">{item.quantity}</span> {item.unit} &times; {Number(item.unit_price).toFixed(2)}
                     </p>
                   </div>
                   <div className="text-end">
-                    <p className="font-bold text-input-text text-xs">
-                      {Number(item.line_total).toFixed(2)} EGP
+                    <p className="font-black text-foreground text-sm tabular-nums">
+                      {Number(item.line_total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </p>
                     {item.discount > 0 && (
-                      <p className="text-xs text-danger">
-                        -{Number(item.discount).toFixed(2)} Discount
+                      <p className="text-[11px] font-bold text-danger mt-0.5">
+                        -{Number(item.discount).toFixed(2)}
                       </p>
                     )}
                   </div>
@@ -387,28 +394,28 @@ export function LANSettingsScreen() {
               ))}
             </div>
 
-            <div className="pt-2 border-t border-input-border space-y-1.5 text-xs text-secondary">
+            <div className="pt-4 border-t border-border/60 space-y-2 text-xs font-medium text-secondary">
               <div className="flex justify-between">
                 <span>{t('settings.subtotal')}</span>
-                <span className="font-medium text-input-text">
+                <span className="font-bold text-foreground tabular-nums">
                   {Number(selectedSale.saleData.subtotal).toFixed(2)} EGP
                 </span>
               </div>
               {selectedSale.saleData.discount_amount > 0 && (
-                <div className="flex justify-between text-danger">
+                <div className="flex justify-between text-danger font-bold">
                   <span>{t('settings.productDiscount')}</span>
-                  <span>-{Number(selectedSale.saleData.discount_amount).toFixed(2)} EGP</span>
+                  <span className="tabular-nums">-{Number(selectedSale.saleData.discount_amount).toFixed(2)} EGP</span>
                 </div>
               )}
               {selectedSale.saleData.global_discount > 0 && (
-                <div className="flex justify-between text-danger">
+                <div className="flex justify-between text-danger font-bold">
                   <span>{t('settings.globalDiscount')}</span>
-                  <span>-{Number(selectedSale.saleData.global_discount).toFixed(2)} EGP</span>
+                  <span className="tabular-nums">-{Number(selectedSale.saleData.global_discount).toFixed(2)} EGP</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm font-bold text-input-text pt-1 border-t border-input-border/40">
+              <div className="flex justify-between text-base font-black text-foreground pt-3 border-t border-border/40 mt-2">
                 <span>{t('settings.totalAmount')}</span>
-                <span>{Number(selectedSale.saleData.total).toFixed(2)} EGP</span>
+                <span className="tabular-nums text-success">{Number(selectedSale.saleData.total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5 font-bold uppercase">EGP</span></span>
               </div>
             </div>
           </div>

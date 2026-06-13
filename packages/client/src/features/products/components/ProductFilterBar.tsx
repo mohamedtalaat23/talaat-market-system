@@ -9,7 +9,7 @@ export const FILTER_BUTTON_BASE =
 export const FILTER_BUTTON_ACTIVE =
   'bg-primary text-white border-transparent shadow-[0_4px_10px_rgba(16,185,129,0.3)] hover:opacity-90';
 export const FILTER_BUTTON_INACTIVE =
-  'bg-card text-secondary border-border/60 hover:text-primary hover:border-primary/40 hover:bg-primary/5';
+  'bg-transparent text-secondary border-transparent hover:text-primary hover:bg-primary/5';
 
 interface Category {
   id: number;
@@ -58,17 +58,17 @@ export function ProductFilterBar({
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-6 select-none">
+    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between mb-8 select-text">
       {/* Search row */}
-      <div className="flex items-center gap-3">
-        <form onSubmit={handleSearchSubmit} className="flex flex-1 max-w-sm items-center gap-2">
-          <div className="relative flex-1">
-            <span className="absolute inset-y-0 start-0 flex items-center ps-3.5 text-secondary/50 pointer-events-none">
-              <Search className="h-4 w-4" />
+      <div className="flex items-center gap-3 w-full xl:w-auto">
+        <form onSubmit={handleSearchSubmit} className="flex flex-1 xl:w-96 items-center gap-2">
+          <div className="relative flex-1 flex items-center bg-card rounded-xl border border-border/60 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
+            <span className="ps-4 text-muted-foreground pointer-events-none">
+              <Search className="h-5 w-5" />
             </span>
             <Input
               placeholder={t('products.searchPlaceholder')}
-              className="ps-10 pe-4 h-10 rounded-xl border-border/60 bg-card focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+              className="border-0 bg-transparent shadow-none focus-visible:ring-0 ps-3 h-12 text-base"
               value={searchTerm}
               onChange={handleInputChange}
             />
@@ -92,15 +92,17 @@ export function ProductFilterBar({
       </div>
 
       {/* Category filter pills */}
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Category Filters">
-        <div className="flex items-center gap-1.5 text-xs text-secondary font-semibold uppercase tracking-wider me-1">
-          <SlidersHorizontal size={13} className="text-secondary/60" />
+      <div className="flex flex-wrap items-center gap-2 select-none bg-card/50 p-1.5 rounded-xl border border-border/40" role="group" aria-label="Category Filters">
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider mx-2">
+          <SlidersHorizontal size={13} />
           <span>{t('products.category')}</span>
         </div>
 
+        <div className="w-[1px] h-6 bg-border/50 mx-1"></div>
+
         <button
           onClick={() => onSelectCategory(null)}
-          className={`${FILTER_BUTTON_BASE} ${selectedCategoryId === null ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE}`}
+          className={`${FILTER_BUTTON_BASE} rounded-lg ${selectedCategoryId === null ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE}`}
           aria-pressed={selectedCategoryId === null}
         >
           {t('products.all')}
@@ -113,7 +115,7 @@ export function ProductFilterBar({
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className={`${FILTER_BUTTON_BASE} ${selectedCategoryId === cat.id ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE}`}
+              className={`${FILTER_BUTTON_BASE} rounded-lg ${selectedCategoryId === cat.id ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE}`}
               aria-pressed={selectedCategoryId === cat.id}
             >
               {language === 'ar' && cat.name_ar ? cat.name_ar : cat.name}

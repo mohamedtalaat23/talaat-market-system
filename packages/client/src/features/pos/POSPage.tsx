@@ -27,8 +27,11 @@ import { useIdleTimer } from '@/hooks/useIdleTimer';
 import { FastPinLockscreen } from './components/FastPinLockscreen';
 import { useCategories, useProducts, type Product } from '@/features/products/hooks/useProductQueries';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
+
 
 export function POSPage() {
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const openModal = useModalStore((state) => state.openModal);
   const activeModals = useModalStore((state) => state.activeModals);
@@ -342,7 +345,7 @@ export function POSPage() {
     focusSearchInput();
   };
 
-  const categoriesWithAll = [{ id: 'all' as any, name: 'All Products', name_ar: 'الكل' }, ...categories];
+  const categoriesWithAll = [{ id: 'all' as any, name: 'All', name_ar: 'الكل' }, ...categories];
 
   return (
     <div
@@ -373,7 +376,7 @@ export function POSPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={scannerMultiplier ? `${scannerMultiplier}× — scan next item... (Esc to cancel)` : "Scan barcode or type name to search... (F5)"}
+                placeholder={scannerMultiplier ? t('pos.scanMultiplier').replace('{multiplier}', String(scannerMultiplier)) : t('pos.scanPromptLong')}
                 className="w-full h-11 bg-[#f4f7fa] border border-border/50 text-base text-foreground placeholder-neutral-400 pl-10 pr-16 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl font-sans select-text transition-all duration-200"
               />
               <kbd className="absolute right-3 top-2.5 text-[10px] font-mono font-bold text-neutral-400 border border-neutral-200 bg-white px-1.5 py-0.5 rounded opacity-0 group-focus-within:opacity-100 transition-opacity shadow-sm">
@@ -405,7 +408,7 @@ export function POSPage() {
                           : 'bg-white text-secondary border-border/60 hover:text-foreground hover:border-border hover:shadow-sm'
                       }`}
                     >
-                      {cat.name}
+                      {language === 'ar' && cat.name_ar ? cat.name_ar : cat.name}
                     </button>
                   );
                 })}
@@ -428,10 +431,10 @@ export function POSPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <div className="h-5 w-1 rounded-full bg-amber-400" />
-                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Top Sellers</h3>
+                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">{t('pos.topSellers')}</h3>
                     </div>
                     {favoriteProducts.length === 0 ? (
-                      <p className="text-xs text-secondary/60 italic py-2">Building favorites from sales data...</p>
+                      <p className="text-xs text-secondary/60 italic py-2">{t('pos.buildingFavorites')}</p>
                     ) : (
                       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                         {favoriteProducts.map((prod) => (
@@ -456,10 +459,10 @@ export function POSPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <div className="h-5 w-1 rounded-full bg-blue-400" />
-                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Recent Scans</h3>
+                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">{t('pos.recentScans')}</h3>
                     </div>
                     {recentProducts.length === 0 ? (
-                      <p className="text-xs text-secondary/60 italic py-2">Scan items to build recency...</p>
+                      <p className="text-xs text-secondary/60 italic py-2">{t('pos.scanItemsRecency')}</p>
                     ) : (
                       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                         {recentProducts.map((prod) => (
@@ -482,13 +485,13 @@ export function POSPage() {
                 </div>
               ) : products.length === 0 ? (
                 <div className="border border-border/40 rounded-2xl p-10 text-center text-sm font-medium text-secondary bg-white">
-                  No products in this category.
+                  {t('pos.noProductsCategory')}
                 </div>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-5 w-1 rounded-full bg-primary" />
-                    <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Category Products</h3>
+                    <h3 className="text-xs font-black uppercase tracking-widest text-secondary">{t('pos.categoryProducts')}</h3>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                     {products.map((prod) => (

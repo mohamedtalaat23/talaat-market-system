@@ -431,7 +431,7 @@ export function DashboardPage() {
             <BarChart3 size={20} strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-base font-black tracking-tight text-foreground group-hover:text-neutral-800 dark:group-hover:text-white transition-colors">
+            <div className="text-base font-black tracking-tight text-foreground group-hover:text-neutral-800 transition-colors">
               {t('nav.products') || 'Products'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">Catalog &amp; pricing</div>
