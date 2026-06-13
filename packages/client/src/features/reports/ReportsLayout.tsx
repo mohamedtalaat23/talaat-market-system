@@ -9,18 +9,18 @@ export function ReportsLayout() {
 
   return (
     <PageContainer title={t('reports.title')} description={t('reports.subtitle')}>
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Navigation for Reports */}
-        <div className="w-full md:w-64 shrink-0">
-          <Card>
-            <CardContent className="p-2 flex flex-col space-y-1">
+        <div className="w-full lg:w-72 shrink-0">
+          <Card className="border-none shadow-lg bg-card/60 backdrop-blur-xl">
+            <CardContent className="p-3 flex flex-col space-y-1.5">
               <NavLink
                 to="/reports/shifts"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive || window.location.pathname.startsWith('/reports/shifts/')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
+                      ? 'bg-primary shadow-md shadow-primary/20 text-primary-foreground font-semibold scale-[1.02]'
+                      : 'text-secondary hover:bg-secondary/10 hover:text-foreground font-medium'
                   }`
                 }
               >
@@ -31,10 +31,10 @@ export function ReportsLayout() {
               <NavLink
                 to="/reports/weekly"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
+                      ? 'bg-primary shadow-md shadow-primary/20 text-primary-foreground font-semibold scale-[1.02]'
+                      : 'text-secondary hover:bg-secondary/10 hover:text-foreground font-medium'
                   }`
                 }
               >
@@ -45,10 +45,10 @@ export function ReportsLayout() {
               <NavLink
                 to="/reports/overrides"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-secondary hover:bg-card-hover hover:text-foreground'
+                      ? 'bg-primary shadow-md shadow-primary/20 text-primary-foreground font-semibold scale-[1.02]'
+                      : 'text-secondary hover:bg-secondary/10 hover:text-foreground font-medium'
                   }`
                 }
               >

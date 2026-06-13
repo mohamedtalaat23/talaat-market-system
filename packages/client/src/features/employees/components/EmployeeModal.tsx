@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, UserPlus, UserCog } from 'lucide-react';
 import { EmployeeForm } from './EmployeeForm';
 import { useCreateEmployee, useUpdateEmployee } from '../hooks/useEmployeeQueries';
 import toast from 'react-hot-toast';
@@ -71,7 +71,7 @@ export function EmployeeModal() {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return createPortal(
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 select-text">
       {/* Backdrop click close */}
       <div
         className="absolute inset-0"
@@ -82,13 +82,14 @@ export function EmployeeModal() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-lg border border-border bg-modal text-foreground p-6 shadow-xl relative z-10 animate-fade-in"
+        className="w-full max-w-2xl rounded-xl border-none bg-card text-foreground p-6 shadow-2xl relative z-10 animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="employee-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-border pb-3 mb-4 select-none">
-          <h3 id="employee-modal-title" className="text-lg font-bold text-foreground">
+        <div className="flex items-center justify-between border-b border-border/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-4 -mx-6 -mt-6 mb-6 rounded-t-xl select-none">
+          <h3 id="employee-modal-title" className="text-lg font-bold text-primary flex items-center gap-2">
+            {mode === 'create' ? <UserPlus className="w-5 h-5" /> : <UserCog className="w-5 h-5" />}
             {mode === 'create'
               ? t('employees.registerTitle')
               : t('employees.editTitle').replace('{name}', employee?.full_name || '')}

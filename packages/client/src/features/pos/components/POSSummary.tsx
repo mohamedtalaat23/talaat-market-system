@@ -106,13 +106,13 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               <UserCog size={14} />
             </div>
             <span className="text-sm font-black text-foreground tracking-tight">
-              {selectedCustomer ? selectedCustomer.name : 'Walk-In Customer'}
+              {selectedCustomer ? selectedCustomer.name : t('pos.walkIn')}
             </span>
             {selectedCustomer && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                 selectedCustomer.balance < 0 ? 'bg-danger/10 text-danger' : selectedCustomer.balance > 0 ? 'bg-success/10 text-success' : 'bg-secondary/10 text-secondary'
               }`}>
-                Cr: {Number(selectedCustomer.balance).toFixed(2)}
+                {t('pos.creditShort')}{Number(selectedCustomer.balance).toFixed(2)}
               </span>
             )}
           </div>
@@ -137,21 +137,21 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               onClick={() => openModal('pos_customer_select')}
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold text-secondary hover:bg-white hover:text-primary border border-border/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
             >
-              <span>{selectedCustomer ? 'Change' : 'Assign'}</span>
+              <span>{selectedCustomer ? t('pos.change') : t('pos.assign')}</span>
               <KbdBadge label="F7" />
             </button>
           </div>
         </div>
         <div className="flex items-center justify-between text-[11px] font-mono font-medium text-secondary">
           <div className="flex gap-2">
-            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">Items: {totalItemsCount}</span>
-            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">Disc: {appliedDiscountsCount}</span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">{t('pos.itemsShort')}{totalItemsCount}</span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">{t('pos.discShort')}{appliedDiscountsCount}</span>
           </div>
           <button
             onClick={() => openModal('pos_suspended_carts')}
             className="font-bold hover:text-primary transition-colors focus:outline-none text-secondary/70"
           >
-            Suspended ({heldCarts.length})
+            {t('pos.suspended')} ({heldCarts.length})
           </button>
         </div>
       </div>
@@ -166,13 +166,13 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
       <div className="bg-[#f8fafc] rounded-xl border border-border/40 p-2 shrink-0">
         <div className="grid grid-cols-2 gap-2">
           <ActionBtn
-            label="Past Sales"
+            label={t('pos.pastSales')}
             kbd="F4"
             icon={<History size={16} />}
             onClick={() => openModal('pos_transaction_search')}
           />
           <ActionBtn
-            label="Suspend"
+            label={t('pos.suspendBtn')}
             kbd="F6"
             icon={<PauseCircle size={16} />}
             onClick={() => {
@@ -184,7 +184,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             }}
           />
           <ActionBtn
-            label="Discard"
+            label={t('pos.discard')}
             kbd="F8"
             icon={<Trash2 size={16} />}
             onClick={() => {
@@ -197,7 +197,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             destructive
           />
           <ActionBtn
-            label="Drawer"
+            label={t('pos.drawer')}
             kbd="F9"
             icon={<Banknote size={16} />}
             onClick={() => {
@@ -222,7 +222,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           </div>
           {itemDiscounts > 0 && (
             <div className="flex justify-between text-sm text-success font-mono font-bold">
-              <span>Item Discounts</span>
+              <span>{t('pos.itemDiscounts')}</span>
               <span>- EGP {itemDiscounts.toFixed(2)}</span>
             </div>
           )}
@@ -236,9 +236,9 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           {/* Grand Total */}
           <div className="border-t border-border/60 pt-3 mt-1">
             <div className="flex items-end justify-between">
-              <span className="text-xs font-black text-secondary uppercase tracking-widest">Total</span>
+              <span className="text-xs font-black text-secondary uppercase tracking-widest">{t('pos.totalUpper')}</span>
               <span className="text-5xl font-black font-mono tracking-tighter select-none leading-none text-foreground">
-                <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">EGP</span>
+                <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">{t('pos.currency')}</span>
                 {total.toFixed(2)}
               </span>
             </div>

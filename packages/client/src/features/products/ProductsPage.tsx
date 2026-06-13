@@ -100,9 +100,11 @@ export function ProductsPage() {
       error={!isLoadingProducts ? (error as Error) : null}
       refetch={refetch}
       actions={
-        <Button onClick={openCreateModal} className="flex items-center space-x-1.5 font-semibold">
-          <Plus size={16} />
-          <span>{t('products.addProduct')}</span>
+        <Button onClick={openCreateModal} className="flex items-center gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all rounded-xl px-5 py-5">
+          <div className="bg-white/20 p-1 rounded-md">
+            <Plus size={16} className="text-white" />
+          </div>
+          <span className="tracking-wide">{t('products.addProduct')}</span>
         </Button>
       }
     >

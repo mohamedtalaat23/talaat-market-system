@@ -78,17 +78,17 @@ export function AdjustmentHistoryViewer() {
   const getTypeBadgeDetails = (type: string) => {
     switch (type) {
       case 'stock_addition':
-        return { label: t('inventory.stockAddition'), variant: 'success' as const };
+        return { label: t('inventory.stockAddition'), variant: 'success' as const, borderColor: 'border-l-success' };
       case 'stock_removal':
-        return { label: t('inventory.stockRemoval'), variant: 'destructive' as const };
+        return { label: t('inventory.stockRemoval'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
       case 'damaged':
-        return { label: t('inventory.damagedStock'), variant: 'destructive' as const };
+        return { label: t('inventory.damagedStock'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
       case 'expired':
-        return { label: t('inventory.expiredStock'), variant: 'destructive' as const };
+        return { label: t('inventory.expiredStock'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
       case 'manual_correction':
-        return { label: t('inventory.manualCorrection'), variant: 'warning' as const };
+        return { label: t('inventory.manualCorrection'), variant: 'warning' as const, borderColor: 'border-l-warning' };
       default:
-        return { label: type, variant: 'outline' as const };
+        return { label: type, variant: 'outline' as const, borderColor: 'border-l-border' };
     }
   };
 
@@ -106,10 +106,12 @@ export function AdjustmentHistoryViewer() {
         aria-labelledby="history-panel-title"
       >
         {/* Panel Header */}
-        <div className="flex h-[60px] items-center justify-between px-6 border-b border-border select-none">
-          <div className="flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" aria-hidden="true" />
-            <h3 id="history-panel-title" className="font-bold text-foreground">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent select-none shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <History className="h-5 w-5 text-primary" aria-hidden="true" />
+            </div>
+            <h3 id="history-panel-title" className="font-bold text-lg text-primary tracking-tight">
               {productName
                 ? `${t('inventory.auditHistory').replace('{name}', productName)}`
                 : t('inventory.globalLogs')}
@@ -129,7 +131,7 @@ export function AdjustmentHistoryViewer() {
           {isLoading ? (
             <div className="flex h-60 w-full flex-col items-center justify-center">
               <Spinner size="md" />
-              <span className="mt-3 text-xs text-neutral-500 font-mono">
+              <span className="mt-3 text-xs text-muted-foreground font-medium">
                 {t('inventory.loadingHistory')}
               </span>
             </div>
@@ -152,53 +154,53 @@ export function AdjustmentHistoryViewer() {
                 return (
                   <div
                     key={log.id}
-                    className="rounded-lg border border-border bg-card p-4 space-y-3 hover:border-border/80 transition-all text-xs"
+                    className={`rounded-xl border border-border/50 bg-card p-5 space-y-4 hover:shadow-lg transition-all text-xs border-l-[6px] ${badge.borderColor}`}
                   >
                     <div className="flex items-center justify-between border-b border-border pb-2">
                       <div className="flex items-center gap-2">
                         <Badge variant={badge.variant}>{badge.label}</Badge>
-                        <span className="font-mono font-bold text-foreground">
+                        <span className="font-bold text-foreground">
                           {signedChange} {log.product_unit}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-neutral-500 font-mono">
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-medium">
                         <Calendar size={12} aria-hidden="true" />
                         <span>{new Date(log.created_at).toLocaleString()}</span>
                       </div>
                     </div>
 
                     {!productName && (
-                      <div className="font-semibold text-neutral-200">
+                      <div className="font-semibold text-foreground text-sm">
                         {log.product_name}{' '}
-                        <span className="font-mono text-neutral-500">
+                        <span className="text-muted-foreground text-xs font-normal">
                           ({log.product_barcode || 'Loose'})
                         </span>
                       </div>
                     )}
 
                     {/* Stock Shift Indicator */}
-                    <div className="flex items-center gap-3 bg-card-hover p-2 rounded border border-border font-mono text-center justify-around">
-                      <div>
-                        <div className="text-xs text-neutral-500">{t('inventory.previous')}</div>
-                        <div className="font-semibold text-secondary">{log.old_quantity}</div>
+                    <div className="flex items-center gap-4 bg-muted/30 px-4 py-3 rounded-md border border-border/50 text-center justify-around">
+                      <div className="flex flex-col items-center">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{t('inventory.previous')}</div>
+                        <div className="font-bold text-secondary text-base">{log.old_quantity}</div>
                       </div>
-                      <ArrowRight size={12} className="text-neutral-600" aria-hidden="true" />
-                      <div>
-                        <div className="text-xs text-neutral-500">{t('inventory.newStock')}</div>
-                        <div className="font-semibold text-foreground">{log.new_quantity}</div>
+                      <ArrowRight size={14} className="text-muted-foreground" aria-hidden="true" />
+                      <div className="flex flex-col items-center">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{t('inventory.newStock')}</div>
+                        <div className="font-bold text-foreground text-base">{log.new_quantity}</div>
                       </div>
                     </div>
 
                     {/* Audit Trail Note & Cashier Name */}
-                    <div className="space-y-1 bg-card-hover/50 p-2.5 rounded border border-border/40">
-                      <div className="text-secondary font-medium select-text">
-                        {t('inventory.reason')}: {log.notes || t('inventory.noReason')}
+                    <div className="space-y-1.5 bg-muted/20 p-3 rounded-md border border-border/40">
+                      <div className="text-secondary font-medium select-text text-[11px]">
+                        <span className="font-bold opacity-75">{t('inventory.reason')}:</span> {log.notes || t('inventory.noReason')}
                       </div>
-                      <div className="flex items-center gap-1.5 text-neutral-500 text-xs pt-1">
-                        <User size={10} aria-hidden="true" />
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] pt-1">
+                        <User size={12} aria-hidden="true" />
                         <span>
                           {t('inventory.processedBy')}:{' '}
-                          <strong className="text-secondary font-semibold">
+                          <strong className="text-secondary font-bold">
                             {log.creator_name || t('inventory.systemOperator')}
                           </strong>
                         </span>
@@ -227,7 +229,7 @@ export function AdjustmentHistoryViewer() {
               >
                 {t('inventory.prev')}
               </Button>
-              <span className="text-xs font-mono text-secondary" aria-current="page">
+              <span className="text-xs font-medium text-secondary" aria-current="page">
                 {t('inventory.pageOf')
                   .replace('{page}', String(meta.page))
                   .replace('{total}', String(meta.totalPages))}

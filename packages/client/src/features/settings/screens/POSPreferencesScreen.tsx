@@ -45,78 +45,95 @@ export function POSPreferencesScreen() {
   };
 
   return (
-    <div className="max-w-2xl select-text">
-      <h3 className="text-xl font-semibold mb-6">{t('settings.pos')}</h3>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+    <div className="max-w-3xl select-text space-y-8 pb-10">
+      <div className="flex items-center gap-4 border-b border-border/40 pb-5">
+        <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.pos')}</h3>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-5">
+          <h4 className="text-xs font-black text-secondary uppercase tracking-widest pl-1">
             {t('settings.workflowSecurity')}
           </h4>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
-            <input
-              type="checkbox"
-              id="allow_negative_inventory"
-              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
-              checked={form.allow_negative_inventory}
-              onChange={(e) => setForm({ ...form, allow_negative_inventory: e.target.checked })}
-            />
-            <label
-              htmlFor="allow_negative_inventory"
-              className="text-sm font-medium select-none cursor-pointer w-full"
-            >
-              {t('settings.allowNegative')}
-              <span className="block text-xs text-neutral-500 font-normal mt-0.5">
-                {t('settings.allowNegativeDesc')}
-              </span>
-            </label>
-          </div>
+          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, allow_negative_inventory: !form.allow_negative_inventory })}>
+              <div className="pt-0.5">
+                <input
+                  type="checkbox"
+                  id="allow_negative_inventory"
+                  className="w-5 h-5 rounded border-border/60 text-primary focus:ring-primary/20 bg-card cursor-pointer transition-all"
+                  checked={form.allow_negative_inventory}
+                  onChange={(e) => setForm({ ...form, allow_negative_inventory: e.target.checked })}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <label
+                htmlFor="allow_negative_inventory"
+                className="select-none cursor-pointer w-full"
+                onClick={(e) => e.preventDefault()}
+              >
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                  {t('settings.allowNegative')}
+                </div>
+                <div className="text-sm text-secondary/80 font-medium mt-1 leading-relaxed">
+                  {t('settings.allowNegativeDesc')}
+                </div>
+              </label>
+            </div>
 
-          <div className="flex items-center gap-3 bg-card-hover/40 p-4 rounded-lg border border-input-border">
-            <input
-              type="checkbox"
-              id="require_manager_pin_voids"
-              className="w-4 h-4 rounded border-input-border text-input-text focus:ring-primary/20 bg-input-bg placeholder:text-input-placeholder"
-              checked={form.require_manager_pin_voids}
-              onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
-            />
-            <label
-              htmlFor="require_manager_pin_voids"
-              className="text-sm font-medium select-none cursor-pointer w-full"
-            >
-              {t('settings.requireManagerPin')}
-              <span className="block text-xs text-neutral-500 font-normal mt-0.5">
-                {t('settings.requireManagerPinDesc')}
-              </span>
-            </label>
+            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, require_manager_pin_voids: !form.require_manager_pin_voids })}>
+              <div className="pt-0.5">
+                <input
+                  type="checkbox"
+                  id="require_manager_pin_voids"
+                  className="w-5 h-5 rounded border-border/60 text-primary focus:ring-primary/20 bg-card cursor-pointer transition-all"
+                  checked={form.require_manager_pin_voids}
+                  onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <label
+                htmlFor="require_manager_pin_voids"
+                className="select-none cursor-pointer w-full"
+                onClick={(e) => e.preventDefault()}
+              >
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                  {t('settings.requireManagerPin')}
+                </div>
+                <div className="text-sm text-secondary/80 font-medium mt-1 leading-relaxed">
+                  {t('settings.requireManagerPinDesc')}
+                </div>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4 pt-2">
-          <h4 className="text-sm font-medium text-secondary uppercase tracking-wider">
+        <div className="space-y-5">
+          <h4 className="text-xs font-black text-secondary uppercase tracking-widest pl-1">
             {t('settings.alertsNotifications')}
           </h4>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+            <label className="block text-sm font-bold mb-3 text-foreground">
               {t('settings.defaultLowStockThreshold')}
             </label>
             <input
               type="number"
               min="0"
-              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2 focus:border-input-focus focus:ring-primary/20 outline-none max-w-xs text-input-text placeholder:text-input-placeholder"
+              className="w-full bg-card border border-border/60 rounded-xl px-4 py-3.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none max-w-xs text-foreground font-bold shadow-sm transition-all"
               value={form.low_stock_threshold}
               onChange={(e) => setForm({ ...form, low_stock_threshold: Number(e.target.value) })}
             />
-            <p className="text-xs text-neutral-500 mt-1">{t('settings.defaultLowStockDesc')}</p>
+            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed max-w-xl">{t('settings.defaultLowStockDesc')}</p>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-input-border">
+        <div className="pt-6 border-t border-border/40 flex">
           <button
             type="submit"
             disabled={isPending}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-bold tracking-wide hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5"
           >
             {isPending ? t('settings.saving') : t('settings.saveChanges')}
           </button>

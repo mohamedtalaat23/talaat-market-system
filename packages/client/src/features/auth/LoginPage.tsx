@@ -4,14 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/services/api-client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/Card';
+
 import {
   Store,
   User,
@@ -25,9 +18,11 @@ import {
   TrendingUp,
   Zap,
   Shield,
+  Globe,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+import { usePreferences } from '@/contexts/preferencesContext';
 
 interface LoginResponse {
   success: boolean;
@@ -45,29 +40,29 @@ interface LoginResponse {
 const FEATURE_CARDS = [
   {
     icon: ShoppingCart,
-    title: 'Smart POS',
-    description: 'Lightning-fast checkout with multi-payment support',
+    title: 'login.featureSmartPOS',
+    description: 'login.featureSmartPOSDesc',
     color: 'from-emerald-400 to-teal-500',
     delay: '0ms',
   },
   {
     icon: Package,
-    title: 'Inventory Control',
-    description: 'Real-time stock tracking and smart adjustments',
+    title: 'login.featureInventory',
+    description: 'login.featureInventoryDesc',
     color: 'from-blue-400 to-cyan-500',
     delay: '100ms',
   },
   {
     icon: BarChart3,
-    title: 'Powerful Reports',
-    description: 'Deep shift analytics and financial insights',
+    title: 'login.featureReports',
+    description: 'login.featureReportsDesc',
     color: 'from-purple-400 to-violet-500',
     delay: '200ms',
   },
   {
     icon: TrendingUp,
-    title: 'Growth Analytics',
-    description: 'Weekly trends and performance benchmarks',
+    title: 'login.featureGrowth',
+    description: 'login.featureGrowthDesc',
     color: 'from-orange-400 to-amber-500',
     delay: '300ms',
   },
@@ -75,6 +70,7 @@ const FEATURE_CARDS = [
 
 export function LoginPage() {
   const { t } = useTranslation();
+  const { language, toggleLanguage } = usePreferences();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -159,8 +155,8 @@ export function LoginPage() {
               <Store className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-white font-black text-xl tracking-tight leading-none">Talaat Market</p>
-              <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-0.5">Management System</p>
+              <p className="text-white font-black text-xl tracking-tight leading-none">{t('login.talaatMarket')}</p>
+              <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-0.5">{t('login.managementSystem')}</p>
             </div>
           </div>
         </div>
@@ -169,14 +165,14 @@ export function LoginPage() {
         <div className="relative z-10 flex-1 flex flex-col justify-center py-12">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/20 rounded-full px-4 py-2 w-fit mb-6">
             <Zap className="h-4 w-4 text-yellow-300" />
-            <span className="text-white text-xs font-bold uppercase tracking-widest">Retail Intelligence Platform</span>
+            <span className="text-white text-xs font-bold uppercase tracking-widest">{t('login.retailPlatform')}</span>
           </div>
           <h1 className="text-5xl font-black text-white tracking-tight leading-tight mb-4">
-            Run your store<br />
-            <span className="text-white/80">smarter, faster.</span>
+            {t('login.runStore')}<br />
+            <span className="text-white/80">{t('login.smarterFaster')}</span>
           </h1>
           <p className="text-white/80 text-lg font-medium leading-relaxed max-w-md">
-            Everything you need to manage inventory, track sales, and grow your retail business — all in one place.
+            {t('login.heroDesc')}
           </p>
 
           {/* Feature cards grid */}
@@ -190,8 +186,8 @@ export function LoginPage() {
                 <div className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${color} mb-3 shadow-md`}>
                   <Icon className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-white font-bold text-sm leading-tight mb-1">{title}</p>
-                <p className="text-white/65 text-xs leading-snug">{description}</p>
+                <p className="text-white font-bold text-sm leading-tight mb-1">{t(title)}</p>
+                <p className="text-white/65 text-xs leading-snug">{t(description)}</p>
               </div>
             ))}
           </div>
@@ -201,23 +197,39 @@ export function LoginPage() {
         <div className="relative z-10 flex items-center gap-6">
           <div className="flex items-center gap-2 text-white/70">
             <Shield className="h-4 w-4" />
-            <span className="text-xs font-semibold">Secure & Encrypted</span>
+            <span className="text-xs font-semibold">{t('login.secureEncrypted')}</span>
           </div>
           <div className="h-4 w-px bg-white/20" />
           <div className="flex items-center gap-2 text-white/70">
             <TrendingUp className="h-4 w-4" />
-            <span className="text-xs font-semibold">Real-time Sync</span>
+            <span className="text-xs font-semibold">{t('login.realtimeSync')}</span>
           </div>
           <div className="h-4 w-px bg-white/20" />
           <div className="flex items-center gap-2 text-white/70">
             <Zap className="h-4 w-4" />
-            <span className="text-xs font-semibold">Offline-Ready</span>
+            <span className="text-xs font-semibold">{t('login.offlineReady')}</span>
           </div>
         </div>
       </div>
 
       {/* ── Right Panel: Login Form ───────────────────────────────── */}
       <div className="flex flex-1 items-center justify-center bg-background p-8 relative overflow-hidden">
+        {/* Language Toggle */}
+        <div className="absolute top-6 right-6 rtl:right-auto rtl:left-6 z-20">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleLanguage}
+            className="rounded-full gap-2 border-border/60 shadow-sm"
+            type="button"
+          >
+            <Globe className="h-4 w-4 text-secondary" />
+            <span className="font-semibold text-xs text-foreground uppercase">
+              {language === 'ar' ? 'English' : 'عربي'}
+            </span>
+          </Button>
+        </div>
+
         {/* Background glow (light mode: very soft) */}
         <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-primary/8 blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 h-[300px] w-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
@@ -229,8 +241,8 @@ export function LoginPage() {
               <Store className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-foreground font-black text-lg tracking-tight leading-none">Talaat Market</p>
-              <p className="text-secondary text-[10px] font-bold uppercase tracking-widest mt-0.5">Management System</p>
+              <p className="text-foreground font-black text-lg tracking-tight leading-none">{t('login.talaatMarket')}</p>
+              <p className="text-secondary text-[10px] font-bold uppercase tracking-widest mt-0.5">{t('login.managementSystem')}</p>
             </div>
           </div>
 
@@ -240,7 +252,7 @@ export function LoginPage() {
               {t('login.title')}
             </h2>
             <p className="text-secondary text-sm font-medium">
-              Enter your credentials to access your workspace
+              {t('login.enterCredentials')}
             </p>
           </div>
 
@@ -325,7 +337,7 @@ export function LoginPage() {
 
           {/* Footer */}
           <p className="mt-8 text-center text-xs text-secondary/60 font-medium">
-            © {new Date().getFullYear()} Talaat Market — All rights reserved
+            {t('login.copyright').replace('{year}', new Date().getFullYear().toString())}
           </p>
         </div>
       </div>

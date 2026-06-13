@@ -43,34 +43,34 @@ export function EmployeeFilterBar({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 select-text">
-      <div className="relative flex-1 max-w-md">
-        <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-neutral-500">
-          <Search className="h-4 w-4" />
+    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between mb-8 select-text">
+      <div className="relative flex-1 max-w-md flex items-center bg-card rounded-xl border border-border/60 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
+        <span className="ps-4 text-muted-foreground">
+          <Search className="h-5 w-5" />
         </span>
         <Input
           placeholder={t('employees.searchPlaceholder')}
-          className="ps-10 focus-visible:ring-2 focus-visible:ring-primary"
+          className="border-0 bg-transparent shadow-none focus-visible:ring-0 ps-3 h-12 text-base"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
       <div
-        className="flex flex-wrap items-center gap-2 select-none"
+        className="flex flex-wrap items-center gap-3 select-none bg-card/50 p-1.5 rounded-xl border border-border/40"
         role="group"
         aria-label="Staff Directory Filters"
       >
         {/* Role filter selectors */}
         <div
-          className="flex gap-1 border-e border-border pe-2 me-2"
+          className="flex gap-1 border-e border-border/50 pe-3 me-1"
           role="group"
           aria-label="Role Group"
         >
           <button
             onClick={() => onSelectRole(null)}
-            className={`${FILTER_BUTTON_BASE} ${
-              selectedRole === null ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE
+            className={`${FILTER_BUTTON_BASE} rounded-lg transition-colors ${
+              selectedRole === null ? FILTER_BUTTON_ACTIVE + ' shadow-sm' : FILTER_BUTTON_INACTIVE
             }`}
             aria-pressed={selectedRole === null}
           >
@@ -80,8 +80,8 @@ export function EmployeeFilterBar({
             <button
               key={r}
               onClick={() => onSelectRole(r)}
-              className={`${FILTER_BUTTON_BASE} ${
-                selectedRole === r ? FILTER_BUTTON_ACTIVE : FILTER_BUTTON_INACTIVE
+              className={`${FILTER_BUTTON_BASE} rounded-lg transition-colors ${
+                selectedRole === r ? FILTER_BUTTON_ACTIVE + ' shadow-sm' : FILTER_BUTTON_INACTIVE
               }`}
               aria-pressed={selectedRole === r}
             >
@@ -90,13 +90,12 @@ export function EmployeeFilterBar({
           ))}
         </div>
 
-        {/* Active / Inactive filter selectors */}
         <div className="flex gap-1" role="group" aria-label="Status Group">
           <button
             onClick={() => onSelectStatus(null)}
-            className={`${FILTER_BUTTON_BASE} ${
+            className={`${FILTER_BUTTON_BASE} rounded-lg transition-colors ${
               selectedStatus === null
-                ? 'bg-card text-foreground border-border'
+                ? 'bg-card text-foreground border-border shadow-sm'
                 : FILTER_BUTTON_INACTIVE
             }`}
             aria-pressed={selectedStatus === null}
@@ -105,9 +104,9 @@ export function EmployeeFilterBar({
           </button>
           <button
             onClick={() => onSelectStatus(true)}
-            className={`${FILTER_BUTTON_BASE} ${
+            className={`${FILTER_BUTTON_BASE} rounded-lg transition-colors ${
               selectedStatus === true
-                ? 'bg-success/20 text-success border-success/30'
+                ? 'bg-success/15 text-success border-success/30 shadow-sm'
                 : FILTER_BUTTON_INACTIVE
             }`}
             aria-pressed={selectedStatus === true}
@@ -116,9 +115,9 @@ export function EmployeeFilterBar({
           </button>
           <button
             onClick={() => onSelectStatus(false)}
-            className={`${FILTER_BUTTON_BASE} ${
+            className={`${FILTER_BUTTON_BASE} rounded-lg transition-colors ${
               selectedStatus === false
-                ? 'bg-destructive/15 text-destructive border-destructive/30'
+                ? 'bg-destructive/10 text-destructive border-destructive/30 shadow-sm'
                 : FILTER_BUTTON_INACTIVE
             }`}
             aria-pressed={selectedStatus === false}

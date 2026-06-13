@@ -108,36 +108,47 @@ export function PrinterSettingsScreen() {
   }
 
   return (
-    <div className="max-w-2xl font-sans text-input-text space-y-6 select-text">
-      <div className="flex items-center justify-between border-b border-input-border pb-4">
-        <div>
-          <h3 className="text-xl font-semibold">{t('settings.printerSetup')}</h3>
-          <p className="text-sm text-secondary mt-1">{t('settings.printerSetupDesc')}</p>
+    <div className="max-w-3xl font-sans text-foreground space-y-8 select-text">
+      <div className="flex items-center justify-between border-b border-border/40 pb-5">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20 text-primary">
+            <Printer className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.printerSetup')}</h3>
+            <p className="text-sm text-secondary font-medium mt-1">{t('settings.printerSetupDesc')}</p>
+          </div>
         </div>
         <button
           onClick={checkPrinterStatus}
           disabled={isLoadingStatus}
-          className="rounded-lg p-2 text-secondary hover:bg-card-hover hover:text-input-text transition-colors border border-input-border"
+          className="rounded-xl p-2.5 text-secondary hover:bg-card-hover hover:text-foreground hover:shadow-sm transition-all border border-border/60 bg-card focus:ring-2 focus:ring-primary/30 outline-none"
           title={t('settings.refreshPrinter')}
         >
-          <RefreshCw size={16} className={isLoadingStatus ? 'animate-spin text-success' : ''} />
+          <RefreshCw size={18} className={isLoadingStatus ? 'animate-spin text-primary' : ''} />
         </button>
       </div>
 
       {/* Live status badge */}
       {printerStatus && (
         <div
-          className={`flex items-start gap-3 rounded-lg border p-4 ${printerStatus.online ? 'border-success/30 bg-success/15 text-success' : 'border-danger/20 bg-danger/15 text-danger'}`}
+          className={`flex items-start gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+            printerStatus.online 
+              ? 'border-success/30 bg-gradient-to-br from-success/5 to-success/10 text-success' 
+              : 'border-danger/30 bg-gradient-to-br from-danger/5 to-danger/10 text-danger'
+          }`}
         >
-          <div className="mt-0.5">
-            {printerStatus.online ? <CheckCircle2 size={18} /> : <ShieldAlert size={18} />}
+          <div className={`p-2.5 rounded-xl ${printerStatus.online ? 'bg-success/20' : 'bg-danger/20'}`}>
+            {printerStatus.online ? <CheckCircle2 size={24} /> : <ShieldAlert size={24} />}
           </div>
-          <div className="space-y-1">
-            <span className="text-sm font-semibold uppercase tracking-wide block">
+          <div className="space-y-1 mt-0.5">
+            <span className="text-sm font-bold uppercase tracking-widest block">
               {t('settings.printerStatus')}:{' '}
-              {printerStatus.online ? t('settings.online') : t('settings.offline')}
+              <span className={printerStatus.online ? 'text-success drop-shadow-sm' : 'text-danger drop-shadow-sm'}>
+                {printerStatus.online ? t('settings.online') : t('settings.offline')}
+              </span>
             </span>
-            <span className="text-xs opacity-85 leading-relaxed block font-mono">
+            <span className="text-xs font-semibold opacity-90 leading-relaxed block font-mono tracking-tight">
               {printerStatus.message}
             </span>
           </div>
@@ -145,36 +156,36 @@ export function PrinterSettingsScreen() {
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Printer Mode Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">{t('settings.printerModel')}</label>
+          <div className="space-y-2.5">
+            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.printerModel')}</label>
             <select
               value={config.type}
               onChange={(e) => setConfig({ ...config, type: e.target.value as any })}
-              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-input-text"
+              className="w-full bg-card border border-border/60 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground shadow-sm hover:border-primary/50 cursor-pointer"
             >
               <option value="mock">{t('settings.mockPrinter')}</option>
               <option value="usb">{t('settings.usbPrinter')}</option>
             </select>
-            <p className="text-xs text-secondary font-sans leading-relaxed">
+            <p className="text-xs text-secondary font-medium leading-relaxed max-w-[280px]">
               {t('settings.mockPrinterDesc')}
             </p>
           </div>
 
           {/* Paper Width Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">{t('settings.paperWidth')}</label>
+          <div className="space-y-2.5">
+            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.paperWidth')}</label>
             <select
               value={config.paperWidth}
               onChange={(e) => setConfig({ ...config, paperWidth: Number(e.target.value) as any })}
-              className="w-full bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-input-text"
+              className="w-full bg-card border border-border/60 rounded-xl px-4 py-3 text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground shadow-sm hover:border-primary/50 cursor-pointer"
             >
               <option value={80}>{t('settings.width80')}</option>
               <option value={58}>{t('settings.width58')}</option>
             </select>
-            <p className="text-xs text-secondary font-sans leading-relaxed">
+            <p className="text-xs text-secondary font-medium leading-relaxed max-w-[280px]">
               {t('settings.paperWidthDesc')}
             </p>
           </div>
@@ -182,21 +193,21 @@ export function PrinterSettingsScreen() {
 
         {/* USB Path Selection (Only shown if USB mode selected) */}
         {config.type === 'usb' && (
-          <div className="space-y-3 bg-input-bg/40 p-4 border border-input-border rounded-xl">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium flex items-center gap-1.5">
-                <HardDrive size={16} className="text-secondary" />
+          <div className="space-y-4 bg-card/60 p-6 border border-border/60 rounded-2xl shadow-sm">
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-foreground flex items-center gap-2">
+                <HardDrive size={18} className="text-primary" />
                 <span>{t('settings.portPath')}</span>
               </label>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
                   required
                   value={config.devicePath}
                   onChange={(e) => setConfig({ ...config, devicePath: e.target.value })}
                   placeholder={t('settings.placeholderPath')}
-                  className="flex-1 bg-input-bg border border-input-border rounded-lg px-4 py-2.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all font-mono text-input-text"
+                  className="flex-1 bg-card border border-border/60 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-foreground shadow-sm"
                 />
 
                 {discoveredPorts.length > 0 && (
@@ -204,7 +215,7 @@ export function PrinterSettingsScreen() {
                     onChange={(e) => {
                       if (e.target.value) setConfig({ ...config, devicePath: e.target.value });
                     }}
-                    className="bg-input-bg border border-input-border rounded-lg px-3 py-2 text-xs text-input-text focus:outline-none"
+                    className="bg-primary/5 border border-primary/20 text-primary font-semibold rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/30 outline-none cursor-pointer transition-all hover:bg-primary/10"
                     value=""
                   >
                     <option value="" disabled>
@@ -221,42 +232,45 @@ export function PrinterSettingsScreen() {
             </div>
 
             {discoveredPorts.length === 0 ? (
-              <p className="text-xs text-secondary flex items-center gap-1.5">
-                <HelpCircle size={12} />
+              <p className="text-xs text-secondary flex items-center gap-1.5 font-medium bg-secondary/5 p-2.5 rounded-lg border border-secondary/10 w-fit">
+                <HelpCircle size={14} className="text-secondary/70" />
                 <span>{t('settings.noPrintersDetected')}</span>
               </p>
             ) : (
-              <p className="text-xs text-success font-medium">
-                {t('settings.printersFound').replace('{count}', String(discoveredPorts.length))}
+              <p className="text-xs text-success font-bold flex items-center gap-1.5 bg-success/10 p-2.5 rounded-lg border border-success/20 w-fit">
+                <CheckCircle2 size={14} />
+                <span>{t('settings.printersFound').replace('{count}', String(discoveredPorts.length))}</span>
               </p>
             )}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-input-bg/20 p-4 border border-input-border rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-card/40 p-6 border border-border/60 rounded-2xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
           {/* Auto Print Toggle */}
-          <div className="flex items-start gap-3 pt-1">
-            <input
-              id="autoPrint"
-              type="checkbox"
-              checked={config.autoPrint}
-              onChange={(e) => setConfig({ ...config, autoPrint: e.target.checked })}
-              className="h-4 w-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/20 focus:ring-offset-0 mt-0.5"
-            />
+          <div className="flex items-start gap-4">
+            <div className="flex items-center h-6 mt-1">
+              <input
+                id="autoPrint"
+                type="checkbox"
+                checked={config.autoPrint}
+                onChange={(e) => setConfig({ ...config, autoPrint: e.target.checked })}
+                className="h-5 w-5 rounded-md border-border/60 bg-card text-primary focus:ring-primary/30 focus:ring-offset-0 cursor-pointer transition-colors shadow-sm"
+              />
+            </div>
             <div className="space-y-1">
-              <label htmlFor="autoPrint" className="text-sm font-semibold cursor-pointer">
+              <label htmlFor="autoPrint" className="text-sm font-bold text-foreground cursor-pointer tracking-wide">
                 {t('settings.autoPrint')}
               </label>
-              <p className="text-xs text-secondary leading-relaxed">
+              <p className="text-xs text-secondary font-medium leading-relaxed max-w-[240px]">
                 {t('settings.autoPrintDesc')}
               </p>
             </div>
           </div>
 
           {/* Retry Threshold */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">{t('settings.retryPolicy')}</label>
-            <div className="flex items-center gap-2">
+          <div className="space-y-3">
+            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.retryPolicy')}</label>
+            <div className="flex items-center gap-3">
               <input
                 type="number"
                 min="0"
@@ -265,22 +279,22 @@ export function PrinterSettingsScreen() {
                 onChange={(e) =>
                   setConfig({ ...config, retries: Math.max(0, Number(e.target.value)) })
                 }
-                className="w-24 bg-input-bg border border-input-border rounded-lg px-3 py-1.5 text-sm focus:border-input-focus focus:ring-1 focus:ring-primary/20 outline-none transition-all text-center text-input-text"
+                className="w-24 bg-card border border-border/60 rounded-xl px-4 py-2.5 text-base font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-center text-foreground shadow-sm"
               />
-              <span className="text-xs text-secondary">{t('settings.attempts')}</span>
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">{t('settings.attempts')}</span>
             </div>
-            <p className="text-xs text-secondary leading-relaxed">
+            <p className="text-xs text-secondary font-medium leading-relaxed max-w-[240px]">
               {t('settings.retryPolicyDesc')}
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-5 border-t border-input-border flex items-center gap-3">
+        <div className="pt-6 border-t border-border/40 flex items-center gap-4">
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center justify-center rounded-lg bg-success px-6 py-2.5 text-sm font-semibold text-white hover:bg-success/90 disabled:opacity-50 transition-colors shadow-lg shadow-success/10"
+            className="flex items-center justify-center rounded-xl bg-success px-8 py-3 text-sm font-bold tracking-wide text-white hover:bg-success/90 disabled:opacity-50 transition-all shadow-md shadow-success/20 hover:shadow-lg hover:shadow-success/30 hover:-translate-y-0.5"
           >
             {isSaving ? t('settings.savingConfig') : t('settings.saveConfig')}
           </button>
@@ -289,7 +303,7 @@ export function PrinterSettingsScreen() {
             type="button"
             onClick={handleTestPrint}
             disabled={isTesting}
-            className="flex items-center justify-center rounded-lg bg-card hover:bg-card-hover border border-input-border px-6 py-2.5 text-sm font-semibold text-input-text disabled:opacity-50 transition-colors"
+            className="flex items-center justify-center rounded-xl bg-card hover:bg-card-hover border border-border/80 px-8 py-3 text-sm font-bold tracking-wide text-foreground disabled:opacity-50 transition-all shadow-sm hover:shadow-md hover:border-primary/40 hover:text-primary hover:-translate-y-0.5"
           >
             {isTesting ? t('settings.sendingTest') : t('settings.printTest')}
           </button>
