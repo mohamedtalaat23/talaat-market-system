@@ -19,6 +19,7 @@ import { RefundModal } from './components/RefundModal';
 import { DrawerAdjustmentModal } from './components/DrawerAdjustmentModal';
 import { CustomerSelectModal } from './components/CustomerSelectModal';
 import { QuantityModal } from './components/QuantityModal';
+import { QuickReturnWorkspace } from './components/QuickReturnWorkspace';
 import { useModalStore } from '@/stores/modalStore';
 import { PrintQueueMonitor } from './components/PrintQueueMonitor';
 import { useShiftHeartbeat } from './hooks/useShiftHeartbeat';
@@ -345,7 +346,7 @@ export function POSPage() {
 
   return (
     <div
-      className={`flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden select-none transition-colors duration-fast ${
+      className={`flex flex-col h-screen w-screen bg-[#f8fafc] text-foreground overflow-hidden select-none transition-colors duration-fast ${
         scannerFlash ? 'animate-scanner-flash' : ''
       }`}
     >
@@ -353,123 +354,126 @@ export function POSPage() {
       
       <POSTopBar />
 
-      <div className="flex flex-1 overflow-hidden">
-        
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Subtle background blur spheres for depth */}
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[60%] bg-success/5 rounded-full blur-[120px] pointer-events-none" />
+
         {/* ── Left Panel (65% width) - Main Workspace ── */}
-        <div className="w-[65%] flex flex-col h-full border-r border-border bg-neutral-50 overflow-hidden">
+        <div className="w-[65%] flex flex-col h-full border-r border-border/30 bg-white overflow-hidden relative z-10">
           
           {/* Search bar input (Scanner focus target) */}
-          <form onSubmit={handleSearchSubmit} className="p-2.5 bg-white border-b border-border shrink-0">
-            <div className="relative">
+          <form onSubmit={handleSearchSubmit} className="px-5 py-3 bg-white border-b border-border/30 shrink-0">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg className="w-4 h-4 text-secondary/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={scannerMultiplier ? `${scannerMultiplier}x Next Scan... (Esc to cancel)` : "Scan barcode or type name to search... (F5)"}
-                className="w-full bg-neutral-100 border border-border text-sm text-foreground placeholder-neutral-500 px-4 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded font-mono select-text"
+                placeholder={scannerMultiplier ? `${scannerMultiplier}× — scan next item... (Esc to cancel)` : "Scan barcode or type name to search... (F5)"}
+                className="w-full h-11 bg-[#f4f7fa] border border-border/50 text-base text-foreground placeholder-neutral-400 pl-10 pr-16 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl font-sans select-text transition-all duration-200"
               />
-              <div className="absolute right-3 top-2 text-xs font-mono font-bold text-neutral-500 border border-neutral-300 bg-white px-1.5 py-0.5 rounded">
+              <kbd className="absolute right-3 top-2.5 text-[10px] font-mono font-bold text-neutral-400 border border-neutral-200 bg-white px-1.5 py-0.5 rounded opacity-0 group-focus-within:opacity-100 transition-opacity shadow-sm">
                 ENTER
-              </div>
+              </kbd>
             </div>
           </form>
 
           {/* Independently Scrollable Left Container */}
-          <div className="flex-1 overflow-y-auto p-2.5 space-y-3 min-h-0">
-            
-            {/* Horizontal Category Strip */}
-            <div className="shrink-0 flex items-center gap-1.5 overflow-x-auto pb-1">
-              {categoriesWithAll.map((cat, idx) => {
-                const isActive = selectedCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    id={`cat-btn-${idx}`}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(cat.id);
-                      focusSearchInput();
-                    }}
-                    onKeyDown={(e) => handleCategoryKeyDown(e, idx, categoriesWithAll.length)}
-                    className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                      isActive
-                        ? 'bg-primary text-white'
-                        : 'bg-white hover:bg-neutral-100 text-secondary border border-border'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                );
-              })}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {/* Category Strip */}
+            <div className="px-5 py-3 border-b border-border/20 bg-[#f8fafc]">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                {categoriesWithAll.map((cat, idx) => {
+                  const isActive = selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      id={`cat-btn-${idx}`}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory(cat.id);
+                        focusSearchInput();
+                      }}
+                      onKeyDown={(e) => handleCategoryKeyDown(e, idx, categoriesWithAll.length)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shrink-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40 border ${
+                        isActive
+                          ? 'bg-primary text-white border-transparent shadow-[0_2px_8px_rgba(16,185,129,0.3)]'
+                          : 'bg-white text-secondary border-border/60 hover:text-foreground hover:border-border hover:shadow-sm'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
+            {/* Products area with padding */}
+            <div className="p-5 space-y-6">
+
             {/* Touch Products Panel */}
-            <div>
               {isProductsLoading && products.length === 0 ? (
-                <div className="grid grid-cols-3 xl:grid-cols-4 gap-2 animate-pulse">
+                <div className="grid grid-cols-3 xl:grid-cols-4 gap-3 animate-pulse">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="bg-white border border-border rounded h-[80px]" />
+                    <div key={i} className="bg-neutral-100 border border-border/30 rounded-2xl aspect-square" />
                   ))}
                 </div>
               ) : selectedCategory === 'all' ? (
-                <div className="space-y-6">
-                  {/* Favorites Grid */}
+                <div className="space-y-7">
+                  {/* ── Favorites ── */}
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3 flex items-center gap-1.5">
-                      <span className="text-yellow-500">⭐</span> Favorites
-                    </h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-5 w-1 rounded-full bg-amber-400" />
+                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Top Sellers</h3>
+                    </div>
                     {favoriteProducts.length === 0 ? (
-                      <div className="text-xs text-secondary italic">Building favorites from sales data...</div>
+                      <p className="text-xs text-secondary/60 italic py-2">Building favorites from sales data...</p>
                     ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                         {favoriteProducts.map((prod) => (
                           <button
                             key={`fav-${prod.id}`}
                             type="button"
                             onClick={() => handleAddProduct(prod)}
-                            className="bg-yellow-50/40 border border-yellow-200/60 hover:border-yellow-400 hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 shadow-xs"
+                            className="group border border-amber-200/70 bg-gradient-to-br from-amber-50 to-white hover:from-amber-100/60 hover:border-amber-300 active:scale-[0.97] transition-all duration-200 px-3 py-4 rounded-2xl flex flex-col items-start text-left focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm hover:shadow-md relative overflow-hidden"
                           >
-                            <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-90 drop-shadow-sm">
-                              ⭐
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/20 text-amber-600 mb-3 group-hover:scale-110 transition-transform duration-200">
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                             </div>
-                            <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
-                              {prod.name}
-                            </span>
-                            <span className="font-mono font-black text-primary text-base">
-                              EGP {prod.selling_price.toFixed(2)}
-                            </span>
+                            <span className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-2">{prod.name}</span>
+                            <span className="font-mono font-black text-amber-600 text-sm mt-auto">EGP {prod.selling_price.toFixed(2)}</span>
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
                   
-                  {/* Recent Grid */}
+                  {/* ── Recent ── */}
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3 flex items-center gap-1.5">
-                      <span className="text-blue-500">🕒</span> Recent Scans
-                    </h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-5 w-1 rounded-full bg-blue-400" />
+                      <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Recent Scans</h3>
+                    </div>
                     {recentProducts.length === 0 ? (
-                      <div className="text-xs text-secondary italic">Scan items to build recency...</div>
+                      <p className="text-xs text-secondary/60 italic py-2">Scan items to build recency...</p>
                     ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                         {recentProducts.map((prod) => (
                           <button
                             key={`rec-${prod.id}`}
                             type="button"
                             onClick={() => handleAddProduct(prod)}
-                            className="bg-white border border-border hover:border-primary hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-primary shadow-xs"
+                            className="group border border-blue-100 bg-gradient-to-br from-blue-50/50 to-white hover:from-blue-50 hover:border-blue-200 active:scale-[0.97] transition-all duration-200 px-3 py-4 rounded-2xl flex flex-col items-start text-left focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm hover:shadow-md relative overflow-hidden"
                           >
-                            <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-80">
-                              🕒
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-500 mb-3 group-hover:scale-110 transition-transform duration-200">
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                             </div>
-                            <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
-                              {prod.name}
-                            </span>
-                            <span className="font-mono font-black text-primary text-base">
-                              EGP {prod.selling_price.toFixed(2)}
-                            </span>
+                            <span className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-2">{prod.name}</span>
+                            <span className="font-mono font-black text-blue-600 text-sm mt-auto">EGP {prod.selling_price.toFixed(2)}</span>
                           </button>
                         ))}
                       </div>
@@ -477,31 +481,28 @@ export function POSPage() {
                   </div>
                 </div>
               ) : products.length === 0 ? (
-                <div className="bg-white border border-border rounded-lg p-6 text-center text-xs text-secondary">
-                  No products loaded in this category.
+                <div className="border border-border/40 rounded-2xl p-10 text-center text-sm font-medium text-secondary bg-white">
+                  No products in this category.
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-3">
-                    Category Products
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-5 w-1 rounded-full bg-primary" />
+                    <h3 className="text-xs font-black uppercase tracking-widest text-secondary">Category Products</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                     {products.map((prod) => (
                       <button
                         key={prod.id}
                         type="button"
                         onClick={() => handleAddProduct(prod)}
-                        className="bg-white border border-border hover:border-primary hover:shadow-md active:scale-95 transition-all p-4 rounded-xl flex flex-col items-center justify-center text-center aspect-square focus:outline-none focus:border-primary shadow-xs"
+                        className="group border border-border/50 bg-white hover:border-primary/40 hover:bg-primary/[0.03] active:scale-[0.97] transition-all duration-200 px-3 py-4 rounded-2xl flex flex-col items-start text-left focus:outline-none focus:ring-2 focus:ring-primary shadow-sm hover:shadow-md"
                       >
-                        <div className="flex-1 flex items-center justify-center text-4xl mb-2 opacity-80">
-                          📦
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary mb-3 group-hover:scale-110 transition-transform duration-200">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                         </div>
-                        <span className="font-bold text-sm text-foreground line-clamp-2 w-full mb-2">
-                          {prod.name}
-                        </span>
-                        <span className="font-mono font-black text-primary text-base">
-                          EGP {prod.selling_price.toFixed(2)}
-                        </span>
+                        <span className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-2">{prod.name}</span>
+                        <span className="font-mono font-black text-primary text-sm mt-auto">EGP {prod.selling_price.toFixed(2)}</span>
                       </button>
                     ))}
                   </div>
@@ -514,7 +515,7 @@ export function POSPage() {
         </div>
 
         {/* ── Right Panel (35% width) - Checkout ── */}
-        <div className="w-[35%] flex flex-col bg-white overflow-hidden h-full">
+        <div className="w-[35%] flex flex-col bg-[#f8fafc] overflow-hidden h-full">
           <POSSummary cart={cart} paymentMethod={paymentMethod} cashReceived={cashReceived} />
           <PrintQueueMonitor />
         </div>
@@ -538,6 +539,7 @@ export function POSPage() {
       <SuspendedCartsModal />
       <ReceiptPreviewModal />
       <QuantityModal />
+      <QuickReturnWorkspace />
       <CustomerSelectModal
         isOpen={activeModals.pos_customer_select}
         onClose={() => closeModal('pos_customer_select')}

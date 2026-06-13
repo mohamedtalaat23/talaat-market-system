@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCreatePurchaseOrder } from '../hooks/usePurchaseQueries';
 import { useSuppliers } from '../../suppliers/hooks/useSupplierQueries';
 import { useProducts, Product } from '../../products/hooks/useProductQueries';
@@ -136,7 +137,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="flex flex-col w-full max-w-4xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
         {/* Header */}
@@ -382,6 +383,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

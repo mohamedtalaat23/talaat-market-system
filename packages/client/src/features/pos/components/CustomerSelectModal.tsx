@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useCustomers, useCreateCustomer } from '@/features/customers/hooks/useCustomerQueries';
 import { usePOSStore } from '../usePOSStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -81,7 +82,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
     );
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div
         ref={modalRef}
@@ -307,6 +308,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

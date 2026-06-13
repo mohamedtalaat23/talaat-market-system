@@ -103,21 +103,21 @@ export const AppLayout = React.memo(() => {
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground font-sans">
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className={`flex flex-col bg-gradient-to-b from-[#0F2A26] to-[#0B1F1B] border-r rtl:border-r-0 rtl:border-l border-border transition-all duration-300 z-20 shrink-0 ${
-          collapsed ? 'w-16' : 'w-[240px]'
+        className={`flex flex-col bg-gradient-to-b from-[#0F2A26] to-[#0B1F1B] border-r rtl:border-r-0 rtl:border-l border-[#10B981]/10 transition-all duration-300 z-20 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.15)] ${
+          collapsed ? 'w-[72px]' : 'w-[260px]'
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-[60px] items-center px-4 border-b border-border gap-3 overflow-hidden select-none">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#10B981] text-white shrink-0 shadow-sm">
-            <Store size={18} />
+        <div className="flex h-[72px] items-center px-5 border-b border-[#10B981]/10 gap-3 overflow-hidden select-none bg-black/10">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#10B981] to-emerald-600 text-white shrink-0 shadow-[0_2px_10px_rgba(16,185,129,0.3)]">
+            <Store size={20} />
           </div>
           {!collapsed && (
             <div className="flex flex-col text-left rtl:text-right leading-none">
-              <span className="text-sm font-bold tracking-tight text-white">
+              <span className="text-sm font-black tracking-tight text-white">
                 {t('login.subtitle')}
               </span>
-              <span className="text-xs text-white/70 font-medium">
+              <span className="text-[10px] text-[#10B981] font-bold uppercase tracking-widest mt-0.5">
                 {t('topbar.station')}
               </span>
             </div>
@@ -132,17 +132,27 @@ export const AppLayout = React.memo(() => {
               <NavLink
                 key={path}
                 to={path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 py-2.5 rounded transition-all duration-fast ${
+                className={({ isActive }) => {
+                  const baseClasses = "flex items-center rounded-xl transition-all duration-200";
+                  const expandedClasses = "gap-3 py-3 pl-[16px] pr-4 rtl:pl-4 rtl:pr-[16px] border-l-[4px] rtl:border-l-0 rtl:border-r-[4px]";
+                  const collapsedClasses = "justify-center w-11 h-11 mx-auto p-0 group";
+                  
+                  const activeExpanded = "bg-[#10B981]/15 text-[#10B981] border-l-[#10B981] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]";
+                  const inactiveExpanded = "border-transparent text-white/60 hover:text-white hover:bg-white/5 font-medium";
+                  
+                  const activeCollapsed = "bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 font-bold shadow-sm rounded-xl";
+                  const inactiveCollapsed = "text-white/60 hover:text-white hover:bg-white/10 border border-transparent rounded-xl";
+                  
+                  return `${baseClasses} ${collapsed ? collapsedClasses : expandedClasses} ${
                     isActive
-                      ? 'bg-[#10B981]/15 text-white border-l-[4px] border-l-[#10B981] pl-[12px] pr-4 rtl:border-l-0 rtl:border-r-[4px] rtl:pl-4 rtl:pr-[12px] font-semibold shadow-[0_0_0_1px_rgba(16,185,129,.15),0_4px_12px_rgba(16,185,129,.12)]'
-                      : 'border-l-[4px] border-transparent pl-[12px] pr-4 rtl:border-r-[4px] rtl:pl-4 rtl:pr-[12px] text-white/70 hover:text-white hover:bg-white/5'
-                  }`
-                }
+                      ? collapsed ? activeCollapsed : activeExpanded
+                      : collapsed ? inactiveCollapsed : inactiveExpanded
+                  }`;
+                }}
                 end={path === '/'}
                 title={collapsed ? translatedLabel : undefined}
               >
-                <Icon size={18} className="shrink-0" strokeWidth={2} />
+                <Icon size={collapsed ? 22 : 18} className={`shrink-0 ${collapsed && 'transition-transform group-hover:scale-110'}`} strokeWidth={collapsed ? 2.5 : 2} />
                 {!collapsed && <span className="truncate">{translatedLabel}</span>}
               </NavLink>
             );
@@ -150,10 +160,10 @@ export const AppLayout = React.memo(() => {
         </nav>
 
         {/* Collapse toggle and footer info */}
-        <div className="p-3 border-t border-border flex flex-col space-y-3">
+        <div className="p-4 border-t border-[#10B981]/10 flex flex-col space-y-4 bg-black/20">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center h-9 w-full rounded-md border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center h-10 w-full rounded-xl border border-white/5 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-colors shadow-sm focus:outline-none"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -171,7 +181,7 @@ export const AppLayout = React.memo(() => {
           </button>
 
           {!collapsed && (
-            <div className="flex items-center justify-between text-xs text-white/50 font-mono px-1">
+            <div className="flex items-center justify-center text-[10px] text-[#10B981]/70 font-bold uppercase tracking-widest px-1">
               <span>Station 1</span>
             </div>
           )}
@@ -181,40 +191,47 @@ export const AppLayout = React.memo(() => {
       {/* ── Main Workspace ────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         {/* Top Navbar */}
-        <header className="flex h-[60px] w-full items-center justify-between px-6 bg-card border-b border-border z-10 select-none">
-          <div className="flex items-center gap-3">
+        <header className="flex h-[72px] shrink-0 w-full items-center justify-between px-8 bg-card/80 backdrop-blur-2xl border-b border-border z-10 select-none shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center gap-4">
             <button
-              className="md:hidden text-secondary hover:text-foreground"
+              onClick={() => setCollapsed(!collapsed)}
+              className="md:hidden text-secondary hover:text-foreground p-2 rounded-xl hover:bg-card-hover transition-colors focus:outline-none"
               aria-label="Toggle side drawer"
             >
-              <Menu size={20} />
+              <Menu size={24} />
             </button>
-            <h1 className="text-lg font-semibold tracking-tight text-foreground">
+            <h1 className="text-2xl font-black tracking-tight text-foreground drop-shadow-sm">
               {currentPage ? t(getTranslationKey(currentPage.label)) : 'ERP System'}
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {/* LAN Connection / Offline Sync Status */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card-hover border border-border backdrop-blur-sm select-none text-xs font-medium">
+            <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-card border border-border shadow-sm backdrop-blur-sm select-none text-[11px] font-bold tracking-wider uppercase">
               {lanStatus === 'online' ? (
                 <>
-                  <span className="flex h-2 w-2 rounded-full bg-success/90 animate-pulse" />
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+                  </span>
                   <Wifi size={14} className="text-success" />
-                  <span className="text-foreground">{t('topbar.lanOnline')}</span>
+                  <span className="text-foreground/80">{t('topbar.lanOnline')}</span>
                 </>
               ) : (
                 <>
-                  <span className="flex h-2 w-2 rounded-full bg-danger/15 animate-pulse" />
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-danger"></span>
+                  </span>
                   <WifiOff size={14} className="text-danger" />
                   <span className="text-danger">{t('topbar.lanOffline')}</span>
                 </>
               )}
               {hasOfflineSales && (
                 <>
-                  <div className="h-3 w-[1px] bg-border mx-1" />
-                  <RefreshCw size={12} className="text-warning animate-spin" />
-                  <span className="text-warning font-semibold">
+                  <div className="h-4 w-[1px] bg-border/80 mx-1" />
+                  <RefreshCw size={14} className="text-warning animate-spin" />
+                  <span className="text-warning">
                     {offlineSales.length} {t('topbar.syncing')}
                   </span>
                 </>
@@ -224,7 +241,7 @@ export const AppLayout = React.memo(() => {
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold border border-primary/35 bg-primary/10 hover:bg-primary/20 text-primary transition-all duration-150 uppercase shadow-sm"
+              className="px-4 py-2 rounded-xl text-xs font-black border border-primary/20 bg-primary/5 hover:bg-primary/15 text-primary transition-all duration-200 uppercase tracking-widest shadow-sm active:scale-95 focus:outline-none"
               title={language === 'ar' ? 'Switch to English' : 'تحويل للغة العربية'}
             >
               {language === 'ar' ? 'EN' : 'عربي'}
@@ -232,26 +249,26 @@ export const AppLayout = React.memo(() => {
 
             {/* Notifications */}
             <button
-              className="relative p-1.5 rounded-full text-secondary hover:text-foreground hover:bg-card-hover transition-colors"
+              className="relative p-2.5 rounded-xl text-secondary hover:text-primary hover:bg-primary/10 transition-all duration-200 focus:outline-none active:scale-95"
               aria-label="View notifications"
             >
-              <Bell size={18} />
-              <span className="absolute top-0.5 right-0.5 flex h-2 w-2 rounded-full bg-primary" />
+              <Bell size={20} />
+              <span className="absolute top-2 right-2.5 flex h-2.5 w-2.5 rounded-full bg-danger border-2 border-card" />
             </button>
 
             {/* Vertical Divider */}
-            <div className="h-5 w-[1px] bg-border" />
+            <div className="h-8 w-[1px] bg-border mx-1 hidden sm:block" />
 
             {/* Profile Information */}
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase shadow-sm select-none">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 text-white flex items-center justify-center font-black text-lg uppercase shadow-[0_2px_10px_rgba(16,185,129,0.3)] select-none ring-2 ring-card">
                 {user?.username?.charAt(0) || 'U'}
               </div>
-              <div className="hidden sm:flex flex-col text-left rtl:text-right">
-                <span className="text-sm font-semibold text-foreground leading-tight">
+              <div className="hidden md:flex flex-col text-left rtl:text-right justify-center">
+                <span className="text-sm font-black text-foreground tracking-tight leading-none mb-1">
                   {user?.full_name || user?.username}
                 </span>
-                <span className="text-xs text-secondary font-medium uppercase tracking-wider">
+                <span className="text-[10px] text-secondary font-bold uppercase tracking-widest leading-none">
                   {user?.role === 'admin'
                     ? t('dashboard.roleAdmin')
                     : user?.role === 'manager'
@@ -264,11 +281,11 @@ export const AppLayout = React.memo(() => {
             {/* Logout Trigger */}
             <button
               onClick={handleLogout}
-              className="p-1.5 rounded-full text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="p-2.5 ml-2 rounded-xl text-secondary hover:text-white hover:bg-danger hover:shadow-[0_4px_14px_rgba(239,68,68,0.3)] transition-all duration-200 focus:outline-none active:scale-95"
               aria-label="Log out of session"
               title="Log out"
             >
-              <LogOut size={18} />
+              <LogOut size={20} />
             </button>
           </div>
         </header>

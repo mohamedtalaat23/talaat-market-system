@@ -18,6 +18,8 @@ export function POSKeyboardHandler() {
   // Scanner detection logic
   const handleScan = useCallback(
     async (barcode: string) => {
+      const activeModals = useModalStore.getState().activeModals;
+      if (Object.values(activeModals).some((isOpen) => isOpen)) return; // Block scanner if modal is open (HUI-3 Fix)
       if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
 
       const loadingToastId = toast.loading(`Looking up barcode: ${barcode}`);
@@ -85,7 +87,7 @@ export function POSKeyboardHandler() {
       if (!state.activeShift && e.key !== 'F12') return;
 
       // Prevent browser default behaviors for specific intercepted POS F-keys
-      const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F12'];
+      const interceptedFKeys = ['F1', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F12'];
       if (interceptedFKeys.includes(e.key)) {
         e.preventDefault();
       }
@@ -199,6 +201,15 @@ export function POSKeyboardHandler() {
           break;
         case 'F9':
           openModal('pos_drawer_adjustment');
+          break;
+        case 'F10':
+          if (!isInput) {
+            e.preventDefault();
+            const modals = useModalStore.getState().activeModals;
+            if (!modals.pos_quick_return) {
+               openModal('pos_quick_return'); // HUI-7 Idempotent Modal Spam Fix
+            }
+          }
           break;
         case 'F12':
           openModal('pos_manager_override', {

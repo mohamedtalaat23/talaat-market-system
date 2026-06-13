@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { X, AlertTriangle, RefreshCcw,  } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -259,7 +260,7 @@ export function RefundModal() {
 
   if (!isOpen || !sale) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[250] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-input-text">
       <div className="absolute inset-0" onClick={() => closeModal('pos_refund')} />
       <div ref={focusTrapRef} className="w-full max-w-4xl bg-card border border-input-border rounded-xl shadow-2xl relative z-10 animate-fade-in flex flex-col max-h-[90vh]">
@@ -399,7 +400,8 @@ export function RefundModal() {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

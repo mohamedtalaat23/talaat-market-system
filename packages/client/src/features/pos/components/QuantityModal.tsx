@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Hash } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -52,7 +53,7 @@ export function QuantityModal() {
     closeModal();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="absolute inset-0" onClick={closeModal} aria-hidden="true" />
 
@@ -116,6 +117,7 @@ export function QuantityModal() {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

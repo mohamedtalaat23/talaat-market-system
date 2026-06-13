@@ -30,10 +30,12 @@ export function InventoryTable({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-12 border border-border bg-white rounded-md">
-        <ShieldAlert className="h-10 w-10 text-neutral-500 mb-3" />
-        <h3 className="text-sm font-bold text-foreground">{t('inventory.noStockMatches')}</h3>
-        <p className="text-xs text-neutral-500 mt-2 leading-relaxed">
+      <div className="flex flex-col items-center justify-center text-center p-16 border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+          <ShieldAlert className="h-8 w-8 text-neutral-400" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground mb-1">{t('inventory.noStockMatches')}</h3>
+        <p className="text-sm text-secondary leading-relaxed max-w-sm">
           {t('inventory.noStockMatchesDesc')}
         </p>
       </div>
@@ -41,11 +43,11 @@ export function InventoryTable({
   }
 
   return (
-    <div className="overflow-hidden border border-border bg-white select-none rounded-md">
-      <div className="overflow-x-auto">
+    <div className="overflow-hidden border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl">
+      <div className="table-container">
         <table className="w-full text-start text-xs text-foreground border-collapse">
-          <thead className="sticky top-0 bg-neutral-100 border-b border-border text-secondary font-bold uppercase tracking-wider text-xs select-none">
-            <tr className="h-9">
+          <thead className="bg-neutral-50/80 dark:bg-neutral-900/80 text-secondary font-bold uppercase tracking-wider text-[11px] select-none shadow-sm z-10">
+            <tr className="table-header-sticky h-11 border-b border-border/50">
               <th className="py-2 px-3 text-start font-semibold">{t('inventory.productDetail')}</th>
               <th className="py-2 px-3 text-start font-semibold">{t('products.barcodePLU')}</th>
               <SortableHeader
@@ -79,14 +81,14 @@ export function InventoryTable({
               <th className="py-2 px-3 text-center font-semibold">{t('common.actions')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1F1F1F] select-text">
+          <tbody className="divide-y divide-border/40 select-text">
             {items.map((item) => {
               const qty = item.quantity;
               const isLow = qty <= item.product_min_stock_level;
               return (
                 <tr
                   key={item.id}
-                  className="h-9 hover:bg-neutral-50 bg-white text-foreground transition-all duration-fast select-text"
+                  className="table-row-hover h-12 hover:bg-primary/5 transition-colors duration-200 select-text group"
                 >
                   <td className="py-1.5 px-3 select-text">
                     <div className="flex flex-col justify-center select-all">
@@ -146,9 +148,9 @@ export function InventoryTable({
                     <div className="flex items-center justify-center">
                       <button
                         onClick={() => onAdjust(item)}
-                        className="h-6 px-2.5 bg-neutral-100 hover:bg-neutral-200 text-secondary hover:text-foreground text-xs font-bold uppercase tracking-wider border border-border rounded transition-colors flex items-center gap-1 focus:outline-none"
+                        className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/5 text-secondary hover:text-primary text-[10px] font-black uppercase tracking-widest border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md opacity-70 group-hover:opacity-100"
                       >
-                        <ArrowUpDown size={11} />
+                        <ArrowUpDown size={12} />
                         <span>{t('inventory.adjustStock')}</span>
                       </button>
                     </div>

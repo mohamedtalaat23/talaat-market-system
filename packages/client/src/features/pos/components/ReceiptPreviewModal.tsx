@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Printer, CheckCircle } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -56,7 +57,7 @@ export function ReceiptPreviewModal() {
   const itemDiscounts = Number(sale.discount_amount) || 0;
   const total = Number(sale.total) || 0;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
       <div className="absolute inset-0" onClick={closeModal} aria-hidden="true" />
 
@@ -158,6 +159,7 @@ export function ReceiptPreviewModal() {
           Press ENTER to print and continue
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

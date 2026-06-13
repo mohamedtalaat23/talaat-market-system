@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useCreateCustomer, useUpdateCustomer, Customer } from '../hooks/useCustomerQueries';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
@@ -139,7 +140,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
   const isPending = createCustomer.isPending || updateCustomer.isPending;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-xl border border-input-border bg-modal shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200">
         {/* Header */}
@@ -356,6 +357,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

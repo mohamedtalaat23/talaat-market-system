@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Button } from '@/components/ui/Button';
 import { History } from 'lucide-react';
 import {
   useInventory,
@@ -95,14 +94,13 @@ export function InventoryPage() {
       error={!isLoadingInventory ? (error as Error) : null}
       refetch={refetch}
       actions={
-        <Button
+        <button
           onClick={handleGlobalHistoryClick}
-          variant="outline"
-          className="flex items-center gap-1.5 font-semibold h-10"
+          className="flex items-center gap-2 px-4 py-2 h-10 bg-white dark:bg-card border border-border/60 hover:border-primary/40 rounded-xl font-bold text-xs uppercase tracking-wider text-secondary hover:text-primary transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <History size={16} />
           <span>{t('inventory.globalHistory')}</span>
-        </Button>
+        </button>
       }
     >
       {/* Search inputs and toggles decomposed filter bar */}
@@ -128,11 +126,11 @@ export function InventoryPage() {
       />
 
       {/* Tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-input-border mt-4">
+      <div className="flex space-x-6 mb-6 border-b border-border/40 mt-4 px-2">
         <button
           onClick={() => setActiveTab('stock')}
-          className={`pb-3 px-2 flex items-center space-x-2 font-medium border-b-2 transition-colors ${
-            activeTab === 'stock' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-white'
+          className={`pb-3 flex items-center space-x-2 font-bold uppercase tracking-wider text-xs border-b-2 transition-all duration-300 ${
+            activeTab === 'stock' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-foreground'
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -140,8 +138,8 @@ export function InventoryPage() {
         </button>
         <button
           onClick={() => setActiveTab('cycle_counts')}
-          className={`pb-3 px-2 flex items-center space-x-2 font-medium border-b-2 transition-colors ${
-            activeTab === 'cycle_counts' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-white'
+          className={`pb-3 flex items-center space-x-2 font-bold uppercase tracking-wider text-xs border-b-2 transition-all duration-300 ${
+            activeTab === 'cycle_counts' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-foreground'
           }`}
         >
           <ClipboardList className="w-4 h-4" />

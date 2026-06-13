@@ -48,19 +48,23 @@ function ActionBtn({ label, kbd, icon, onClick, disabled, destructive, fullWidth
       onClick={onClick}
       disabled={disabled}
       className={[
-        'flex items-center gap-2 px-3 h-14 rounded-lg border transition-colors focus:outline-none shadow-sm text-left',
+        'flex items-center gap-2 px-3 h-14 rounded-xl border transition-all duration-200 focus:outline-none shadow-sm text-left relative overflow-hidden group',
         fullWidth ? 'w-full' : '',
         disabled
-          ? 'opacity-40 cursor-not-allowed border-border bg-neutral-50 text-neutral-400'
+          ? 'opacity-50 cursor-not-allowed border-border/50 bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
           : destructive
-            ? 'border-border bg-white text-secondary hover:bg-danger-50 hover:text-danger hover:border-danger/30'
-            : 'border-border bg-white text-secondary hover:bg-neutral-50 hover:text-foreground hover:border-primary/20',
+            ? 'border-danger/30 bg-danger/5 text-danger hover:bg-danger hover:text-white hover:border-danger hover:shadow-[0_4px_12px_rgba(239,68,68,0.3)] active:scale-95'
+            : 'border-border/60 bg-white dark:bg-card text-secondary hover:bg-gradient-to-br hover:from-white hover:to-neutral-50 dark:hover:from-card dark:hover:to-background hover:text-foreground hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] active:scale-95',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5">{icon}</span>
-      <span className="text-xs font-bold uppercase tracking-wider leading-none">{label}</span>
+      {/* Optional hover glow effect */}
+      {!disabled && !destructive && (
+        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      )}
+      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5 group-hover:scale-110 transition-transform">{icon}</span>
+      <span className="text-xs font-bold uppercase tracking-wider leading-none z-10">{label}</span>
       <KbdBadge label={kbd} />
     </button>
   );
@@ -92,19 +96,21 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
 
 
   return (
-    <div className="flex flex-col h-full justify-between font-sans bg-white p-2.5 space-y-2 border-l border-border select-none overflow-hidden">
+    <div className="flex flex-col h-full justify-between font-sans bg-white p-4 space-y-3 border-l border-border/30 select-none overflow-hidden relative z-20">
 
       {/* ── 1. Customer & Metadata (Top) ── */}
-      {/* ── 1. Customer & Metadata (Top) ── */}
-      <div className="bg-white rounded border border-border px-2 py-1.5 flex flex-col shrink-0 shadow-xs">
-        <div className="flex items-center justify-between mb-1">
+      <div className="bg-[#f8fafc] rounded-xl border border-border/40 px-3 py-2.5 flex flex-col shrink-0">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold uppercase tracking-wide text-foreground">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <UserCog size={14} />
+            </div>
+            <span className="text-sm font-black text-foreground tracking-tight">
               {selectedCustomer ? selectedCustomer.name : 'Walk-In Customer'}
             </span>
             {selectedCustomer && (
-              <span className={`text-[10px] font-bold ${
-                selectedCustomer.balance < 0 ? 'text-danger' : selectedCustomer.balance > 0 ? 'text-success' : 'text-secondary'
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                selectedCustomer.balance < 0 ? 'bg-danger/10 text-danger' : selectedCustomer.balance > 0 ? 'bg-success/10 text-success' : 'bg-secondary/10 text-secondary'
               }`}>
                 Cr: {Number(selectedCustomer.balance).toFixed(2)}
               </span>
@@ -121,7 +127,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
                     searchInput?.focus();
                   }, 50);
                 }}
-                className="text-danger hover:bg-danger/10 p-1 rounded transition-colors focus:outline-none"
+                className="text-danger hover:bg-danger/10 p-1.5 rounded-lg transition-colors focus:outline-none"
               >
                 <UserMinus size={14} />
               </button>
@@ -129,22 +135,21 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             <button
               type="button"
               onClick={() => openModal('pos_customer_select')}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold text-secondary hover:bg-neutral-100 border border-border transition-colors focus:outline-none"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold text-secondary hover:bg-white hover:text-primary border border-border/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
             >
-              <UserCog size={12} />
               <span>{selectedCustomer ? 'Change' : 'Assign'}</span>
               <KbdBadge label="F7" />
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-between text-[10px] font-mono text-secondary">
+        <div className="flex items-center justify-between text-[11px] font-mono font-medium text-secondary">
           <div className="flex gap-2">
-            <span>Items: {totalItemsCount}</span>
-            <span>Discounts: {appliedDiscountsCount}</span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">Items: {totalItemsCount}</span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">Disc: {appliedDiscountsCount}</span>
           </div>
           <button
             onClick={() => openModal('pos_suspended_carts')}
-            className="font-bold hover:text-foreground transition-colors focus:outline-none"
+            className="font-bold hover:text-primary transition-colors focus:outline-none text-secondary/70"
           >
             Suspended ({heldCarts.length})
           </button>
@@ -152,24 +157,24 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
       </div>
 
       {/* ── 2. Cart Items list (Middle - Scrollable) ── */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-[#f8fafc] rounded-xl border border-border/30">
         <POSCartList />
       </div>
 
 
       {/* ── 4. Cart Actions Grid ── */}
-      <div className="bg-white rounded border border-border p-2 shrink-0 shadow-xs">
-        <div className="grid grid-cols-2 gap-1">
+      <div className="bg-[#f8fafc] rounded-xl border border-border/40 p-2 shrink-0">
+        <div className="grid grid-cols-2 gap-2">
           <ActionBtn
             label="Past Sales"
             kbd="F4"
-            icon={<History size={18} />}
+            icon={<History size={16} />}
             onClick={() => openModal('pos_transaction_search')}
           />
           <ActionBtn
             label="Suspend"
             kbd="F6"
-            icon={<PauseCircle size={18} />}
+            icon={<PauseCircle size={16} />}
             onClick={() => {
               openModal('pos_suspended_carts');
               setTimeout(() => {
@@ -181,7 +186,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           <ActionBtn
             label="Discard"
             kbd="F8"
-            icon={<Trash2 size={18} />}
+            icon={<Trash2 size={16} />}
             onClick={() => {
               openModal('pos_manager_override', { action: 'clear_cart' });
               setTimeout(() => {
@@ -194,7 +199,7 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           <ActionBtn
             label="Drawer"
             kbd="F9"
-            icon={<Banknote size={18} />}
+            icon={<Banknote size={16} />}
             onClick={() => {
               if (window.electronAPI) {
                 window.electronAPI.openCashDrawer().catch(console.error);
@@ -209,31 +214,31 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
       </div>
 
       {/* ── 5. Financials & Pay (Bottom) ── */}
-      <div className="shrink-0 flex flex-col justify-end space-y-2">
-        <div className="bg-white border border-border rounded p-3 space-y-1.5 select-none flex flex-col shadow-xs">
-          <div className="flex justify-between text-xs text-secondary font-mono">
+      <div className="shrink-0 flex flex-col justify-end space-y-3">
+        <div className="bg-[#f8fafc] border border-border/40 rounded-2xl p-4 space-y-2 select-none flex flex-col relative overflow-hidden shadow-sm">
+          <div className="flex justify-between text-sm text-secondary font-mono font-medium">
             <span>{t('pos.subtotal')}</span>
             <span>EGP {subtotal.toFixed(2)}</span>
           </div>
           {itemDiscounts > 0 && (
-            <div className="flex justify-between text-xs text-success font-mono">
+            <div className="flex justify-between text-sm text-success font-mono font-bold">
               <span>Item Discounts</span>
               <span>- EGP {itemDiscounts.toFixed(2)}</span>
             </div>
           )}
           {globalDiscount > 0 && (
-            <div className="flex justify-between text-xs text-success font-mono">
+            <div className="flex justify-between text-sm text-success font-mono font-bold">
               <span>{t('pos.globalDiscount')}</span>
               <span>- EGP {globalDiscount.toFixed(2)}</span>
             </div>
           )}
 
           {/* Grand Total */}
-          <div className="border-t-2 border-border pt-4 mt-2">
-            <div className="flex flex-col items-end">
-              <span className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total</span>
-              <span className="text-6xl font-black font-mono text-foreground tracking-tighter select-none leading-none">
-                <span className="text-xl text-secondary font-sans font-bold uppercase tracking-wider mr-3">EGP</span>
+          <div className="border-t border-border/60 pt-3 mt-1">
+            <div className="flex items-end justify-between">
+              <span className="text-xs font-black text-secondary uppercase tracking-widest">Total</span>
+              <span className="text-5xl font-black font-mono tracking-tighter select-none leading-none text-foreground">
+                <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">EGP</span>
                 {total.toFixed(2)}
               </span>
             </div>
@@ -241,14 +246,17 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
         </div>
 
         {/* Pay Button */}
-        <div className="shrink-0 select-none pt-1">
+        <div className="shrink-0 select-none pt-2">
           <button
             onClick={() => openModal('pos_payment')}
-            className="w-full h-16 bg-success hover:bg-success/90 rounded-lg text-white font-black uppercase text-2xl tracking-widest transition-all focus:outline-none shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-4"
+            className="w-full h-20 bg-gradient-to-r from-success via-emerald-500 to-success hover:from-success/90 hover:via-emerald-400 hover:to-success/90 rounded-2xl text-white font-black uppercase text-3xl tracking-widest transition-all duration-300 focus:outline-none shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:shadow-[0_8px_40px_rgba(34,197,94,0.5)] hover:-translate-y-1 flex items-center justify-center gap-4 overflow-hidden relative group"
           >
-            <CreditCard size={28} />
-            <span>{t('pos.payAction')}</span>
-            <kbd className="ms-4 text-sm font-mono font-bold px-2 py-1 rounded bg-black/10 border border-black/10 text-white/90 leading-none shadow-inner">
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
+            
+            <CreditCard size={32} className="drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+            <span className="drop-shadow-md">{t('pos.payAction')}</span>
+            <kbd className="ms-4 text-base font-mono font-bold px-3 py-1.5 rounded-lg bg-black/20 border border-black/10 text-white leading-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] backdrop-blur-sm">
               Space
             </kbd>
           </button>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { Badge } from '@/components/ui/Badge';
 import {
@@ -152,80 +151,87 @@ export function PurchasesPage() {
       refetch={refetch}
       actions={
         isManagerOrAdmin ? (
-          <Button
+          <button
             onClick={handleCreate}
-            className="flex items-center gap-1.5 font-semibold bg-success hover:bg-success/90 text-white"
+            className="flex items-center gap-2 px-5 py-2.5 h-11 rounded-xl bg-gradient-to-r from-success to-emerald-500 hover:from-success/90 hover:to-emerald-400 text-white font-black text-sm uppercase tracking-wider transition-all shadow-[0_4px_14px_rgba(var(--color-success-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-success-500),0.4)] hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success/20"
           >
-            <Plus size={16} />
+            <Plus size={18} strokeWidth={2.5} />
             <span>{t('purchases.createPO')}</span>
-          </Button>
+          </button>
         ) : undefined
       }
     >
       {/* KPI Stats Summaries */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
+        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.totalPOs')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-foreground">{meta.total}</span>
-            <FileText className="h-4 w-4 text-secondary" />
+            <span className="text-4xl font-black tracking-tighter text-foreground">{meta.total}</span>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.draftPOs')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-foreground">
+            <span className="text-4xl font-black tracking-tighter text-foreground">
               {items.filter((po) => po.status === 'draft').length}
             </span>
-            <span className="text-xs text-secondary font-mono">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary/10 px-2 py-1 rounded-md">
               {t('purchases.awaitingReview')}
             </span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3 group">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.pendingDeliveries')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-warning">
+            <span className="text-4xl font-black tracking-tighter text-warning group-hover:scale-105 transition-transform origin-left">
               {items.filter((po) => po.status === 'ordered').length}
             </span>
-            <span className="text-xs text-secondary font-mono">{t('purchases.inTransit')}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-warning bg-warning/10 px-2 py-1 rounded-md">
+              {t('purchases.inTransit')}
+            </span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3 group">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.receivedAudited')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-success">
+            <span className="text-4xl font-black tracking-tighter text-success group-hover:scale-105 transition-transform origin-left">
               {items.filter((po) => po.status === 'received').length}
             </span>
-            <span className="text-xs text-secondary font-mono">{t('purchases.stockSettled')}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-success bg-success/10 px-2 py-1 rounded-md">
+              {t('purchases.stockSettled')}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Filters Area */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-xl border border-border bg-card/40">
-        <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-5 mb-6 rounded-2xl border border-border/40 bg-white/40 dark:bg-card/40 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {/* Supplier Filter */}
-          <div className="flex flex-col space-y-1 w-full sm:w-56">
-            <span className="text-xs font-semibold text-secondary">{t('purchases.supplier')}</span>
+          <div className="flex flex-col space-y-1.5 w-full sm:w-64">
+            <span className="text-xs font-bold uppercase tracking-wider text-secondary">{t('purchases.supplier')}</span>
             <select
               value={supplierFilter || ''}
               onChange={(e) => {
                 setSupplierFilter(e.target.value ? Number(e.target.value) : undefined);
                 setPage(1);
               }}
-              className="bg-input text-foreground border border-border rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
+              className="bg-background text-foreground border border-border/60 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm shadow-sm transition-all appearance-none cursor-pointer font-semibold"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
             >
               <option value="">{t('purchases.allSuppliers')}</option>
               {suppliers.map((s) => (
@@ -237,8 +243,8 @@ export function PurchasesPage() {
           </div>
 
           {/* Status Filter */}
-          <div className="flex flex-col space-y-1 w-full sm:w-44">
-            <span className="text-xs font-semibold text-secondary">
+          <div className="flex flex-col space-y-1.5 w-full sm:w-56">
+            <span className="text-xs font-bold uppercase tracking-wider text-secondary">
               {t('purchases.orderStatus')}
             </span>
             <select
@@ -247,7 +253,8 @@ export function PurchasesPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="bg-input text-foreground border border-border rounded-lg py-1.5 px-3 focus:outline-none focus:border-primary text-sm"
+              className="bg-background text-foreground border border-border/60 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm shadow-sm transition-all appearance-none cursor-pointer font-semibold"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
             >
               <option value="">{t('employees.allStatuses')}</option>
               <option value="draft">{t('purchases.draft')}</option>
@@ -260,11 +267,11 @@ export function PurchasesPage() {
       </div>
 
       {/* Main Grid/Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="table-container">
           <table className="w-full text-start border-collapse text-sm">
             <thead>
-              <tr className="border-b border-border bg-input/60 text-secondary font-semibold">
+              <tr className="table-header-sticky border-b border-border/50 bg-neutral-50/80 dark:bg-neutral-900/80 text-secondary font-bold uppercase tracking-wider text-[11px] select-none h-11">
                 <th className="py-2 px-3 text-start">{t('purchases.poNumber')}</th>
                 <SortableHeader
                   label={t('purchases.supplier')}
@@ -302,62 +309,61 @@ export function PurchasesPage() {
                 <th className="py-2 px-3 text-center">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/40">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-secondary">
-                    <ShoppingBag className="mx-auto h-8 w-8 text-secondary mb-2" />
-                    <span>{t('purchases.noPOs')}</span>
+                  <td colSpan={6} className="py-20 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                        <ShoppingBag className="h-8 w-8 text-neutral-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground mb-1">{t('purchases.noPOs')}</h3>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 items.map((po) => (
                   <tr
                     key={po.id}
-                    className="hover:bg-card-hover/10 text-foreground transition-colors group"
+                    className="table-row-hover hover:bg-primary/5 text-foreground group h-14"
                   >
-                    <td className="py-1.5 px-3 font-mono tabular-nums font-bold text-primary">{po.po_number}</td>
-                    <td className="py-1.5 px-3">
-                      <div className="font-semibold truncate max-w-[200px]" title={po.supplier_name}>{po.supplier_name}</div>
-                      <div className="text-xs text-secondary font-mono">{po.supplier_code}</div>
+                    <td className="py-2 px-3 font-mono tabular-nums font-black text-primary text-[13px]">{po.po_number}</td>
+                    <td className="py-2 px-3">
+                      <div className="font-bold truncate max-w-[200px]" title={po.supplier_name}>{po.supplier_name}</div>
+                      <div className="text-[11px] text-secondary font-mono tracking-widest">{po.supplier_code}</div>
                     </td>
-                    <td className="py-1.5 px-3 text-xs font-mono text-secondary">
+                    <td className="py-2 px-3 text-xs font-mono font-semibold text-secondary tracking-wide">
                       {formatDate(po.order_date)}
                     </td>
-                    <td className="py-1.5 px-3">{getStatusBadge(po.status)}</td>
-                    <td className="py-1.5 px-3 text-end font-mono tabular-nums font-bold text-foreground">
+                    <td className="py-2 px-3">{getStatusBadge(po.status)}</td>
+                    <td className="py-2 px-3 text-end font-mono tabular-nums font-black text-foreground text-[13px]">
                       {formatCurrency(po.total)}
                     </td>
-                    <td className="py-1.5 px-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                    <td className="py-2 px-3">
+                      <div className="flex items-center justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <button
                           onClick={() => navigate(`/purchases/${po.id}`)}
-                          className="flex items-center gap-1 text-secondary hover:text-foreground h-7 px-2"
+                          className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/10 text-secondary hover:text-primary text-[10px] font-black uppercase tracking-widest border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                         >
-                          <Eye size={14} />
+                          <Eye size={12} />
                           <span>{t('purchases.view')}</span>
-                        </Button>
+                        </button>
                         {isManagerOrAdmin && po.status === 'draft' && (
-                          <Button
-                            size="sm"
+                          <button
                             onClick={() => handlePlaceOrder(po.id)}
-                            className="bg-warning/90 hover:bg-warning text-white font-semibold h-7 px-2"
+                            className="h-8 px-3 bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 text-white text-[10px] font-black uppercase tracking-widest border border-transparent rounded-lg transition-all duration-300 flex items-center focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md shadow-warning/20"
                           >
                             {t('purchases.placeOrder')}
-                          </Button>
+                          </button>
                         )}
                         {isManagerOrAdmin && ['draft', 'ordered'].includes(po.status) && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
+                          <button
                             onClick={() => handleCancelOrder(po.id)}
-                            className="text-danger hover:text-danger hover:bg-danger/10 h-7 px-2"
+                            className="h-8 px-2.5 bg-white dark:bg-card hover:bg-danger/10 text-secondary hover:text-danger border border-border/60 hover:border-danger/40 rounded-lg transition-all duration-300 flex items-center focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                             title={t('purchases.cancel')}
                           >
                             <XCircle size={14} />
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </td>

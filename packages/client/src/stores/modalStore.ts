@@ -19,7 +19,9 @@ export type ModalType =
   | 'pos_refund'
   | 'pos_drawer_adjustment'
   | 'pos_customer_select'
-  | 'pos_quantity';
+  | 'pos_quantity'
+  | 'pos_quick_return'
+  | 'pos_return_approval';
 
 interface ModalState {
   activeModals: Record<ModalType, boolean>;
@@ -54,6 +56,8 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_drawer_adjustment: false,
     pos_customer_select: false,
     pos_quantity: false,
+    pos_quick_return: false,
+    pos_return_approval: false,
   },
   modalPayloads: {
     product_form: null,
@@ -75,6 +79,8 @@ export const useModalStore = create<ModalState>((set) => ({
     pos_drawer_adjustment: null,
     pos_customer_select: null,
     pos_quantity: null,
+    pos_quick_return: null,
+    pos_return_approval: null,
   },
 
   openModal: (type, payload = null) =>
@@ -112,6 +118,8 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_drawer_adjustment: false, // from closeAll
         pos_customer_select: false,
         pos_quantity: false,
+        pos_quick_return: false,
+        pos_return_approval: false,
       },
       modalPayloads: {
         product_form: null,
@@ -133,6 +141,8 @@ export const useModalStore = create<ModalState>((set) => ({
         pos_drawer_adjustment: null, // from closeAll
         pos_customer_select: null,
         pos_quantity: null,
+        pos_quick_return: null,
+        pos_return_approval: null,
       },
     }),
 }));

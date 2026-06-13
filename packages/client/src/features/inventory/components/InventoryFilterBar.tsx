@@ -55,23 +55,23 @@ export function InventoryFilterBar({
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 select-text">
       <form onSubmit={handleSearchSubmit} className="flex flex-1 max-w-md items-center gap-2">
         <div className="relative flex-1">
-          <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-neutral-500">
+          <span className="absolute inset-y-0 start-0 flex items-center ps-4 text-neutral-400">
             <Search className="h-4 w-4" />
           </span>
           <Input
             placeholder={t('inventory.searchPlaceholder')}
-            className="ps-10 focus-visible:ring-2 focus-visible:ring-primary"
+            className="ps-11 h-12 bg-white/80 dark:bg-card/80 backdrop-blur-md border-border/60 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button type="submit" variant="secondary" size="sm" className="font-semibold shrink-0">
+        <Button type="submit" variant="secondary" className="h-12 rounded-xl font-bold px-6 shrink-0 shadow-sm border border-border/60 hover:border-border transition-all hover:-translate-y-0.5">
           {t('common.search')}
         </Button>
       </form>
 
       <div
-        className="flex flex-wrap items-center gap-2"
+        className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide"
         role="group"
         aria-label="Inventory Filters"
       >
@@ -122,14 +122,12 @@ export function InventoryFilterBar({
         </button>
 
         {(debouncedSearch || selectedCategoryId !== null || showLowStock) && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleClear}
-            className="text-xs text-secondary hover:text-destructive shrink-0 font-semibold"
+            className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-secondary hover:text-danger hover:bg-danger/10 border border-transparent rounded-full transition-all duration-300 shrink-0"
           >
             {t('reports.clear')}
-          </Button>
+          </button>
         )}
       </div>
     </div>

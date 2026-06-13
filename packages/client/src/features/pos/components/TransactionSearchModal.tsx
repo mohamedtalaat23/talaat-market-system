@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { RefreshCcw } from 'lucide-react';
 import { apiClient } from '@/services/api-client';
@@ -64,7 +65,7 @@ const TransactionSearchModal = () => {
     });
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 text-foreground">
       <div
         className="absolute inset-0"
@@ -175,7 +176,8 @@ const TransactionSearchModal = () => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

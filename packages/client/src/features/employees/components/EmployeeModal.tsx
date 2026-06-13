@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { EmployeeForm } from './EmployeeForm';
 import { useCreateEmployee, useUpdateEmployee } from '../hooks/useEmployeeQueries';
@@ -69,7 +70,7 @@ export function EmployeeModal() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop click close */}
       <div
@@ -110,7 +111,8 @@ export function EmployeeModal() {
           onCancel={closeModal}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 export default EmployeeModal;

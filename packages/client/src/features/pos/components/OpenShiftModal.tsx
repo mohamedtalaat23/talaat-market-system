@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 import { apiClient } from '@/services/api-client';
@@ -43,7 +44,7 @@ export function OpenShiftModal() {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm text-foreground">
       <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         {/* Header */}
@@ -110,6 +111,7 @@ export function OpenShiftModal() {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

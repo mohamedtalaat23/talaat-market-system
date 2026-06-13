@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calendar, Clipboard, History, ArrowRight, User } from 'lucide-react';
 import { useInventoryAdjustments } from '../hooks/useInventoryQueries';
 import { Button } from '@/components/ui/Button';
@@ -91,7 +92,7 @@ export function AdjustmentHistoryViewer() {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[250] flex justify-end bg-black/60 backdrop-blur-[1px] select-text">
       {/* Backdrop closer click hook */}
       <div className="absolute inset-0" onClick={closeModal} aria-hidden="true" />
@@ -244,7 +245,8 @@ export function AdjustmentHistoryViewer() {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 export default AdjustmentHistoryViewer;

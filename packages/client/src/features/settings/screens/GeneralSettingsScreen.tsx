@@ -81,59 +81,59 @@ export function GeneralSettingsScreen() {
   }
 
   return (
-    <div className="max-w-4xl select-text pb-20 relative">
-      <h3 className="text-base font-bold uppercase tracking-wider text-secondary mb-6 select-none">
+    <div className="max-w-4xl select-text pb-24 relative">
+      <h3 className="text-2xl font-black tracking-tight text-foreground mb-8 select-none">
         {t('settings.general')}
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-8 select-text">
+      <form onSubmit={handleSubmit} className="space-y-10 select-text">
         {/* Company Details */}
-        <div className="space-y-4 pb-6 border-b border-input-border">
-          <h4 className="text-xs font-bold text-secondary uppercase tracking-wider select-none">
+        <div className="space-y-6 pb-8 border-b border-border/40">
+          <h4 className="text-[11px] font-black text-primary uppercase tracking-widest select-none bg-primary/10 w-max px-3 py-1.5 rounded-md">
             {t('settings.companyDetails')}
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.storeName')}
               </label>
               <input
                 type="text"
-                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold"
                 value={form.store_name}
                 onChange={(e) => setForm({ ...form, store_name: e.target.value })}
                 required
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.phone')}
               </label>
               <input
                 type="text"
-                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold"
                 value={form.store_phone}
                 onChange={(e) => setForm({ ...form, store_phone: e.target.value })}
                 placeholder={t('settings.placeholderPhone')}
               />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="md:col-span-2 space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.storeAddress')}
               </label>
               <textarea
-                className="w-full bg-input-bg border border-input-border rounded p-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans resize-none h-20 select-text"
+                className="w-full bg-background border border-border/60 rounded-xl p-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold resize-none h-24"
                 value={form.store_address}
                 onChange={(e) => setForm({ ...form, store_address: e.target.value })}
                 placeholder={t('settings.placeholderAddress')}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.taxId')}
               </label>
               <input
                 type="text"
-                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans select-text"
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold"
                 value={form.tax_id}
                 onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
                 placeholder={t('settings.placeholderTaxId')}
@@ -143,96 +143,88 @@ export function GeneralSettingsScreen() {
         </div>
 
         {/* Financial & Localization */}
-        <div className="space-y-4 pb-6">
-          <h4 className="text-xs font-bold text-secondary uppercase tracking-wider select-none">
+        <div className="space-y-6 pb-6">
+          <h4 className="text-[11px] font-black text-primary uppercase tracking-widest select-none bg-primary/10 w-max px-3 py-1.5 rounded-md">
             {t('settings.financialL10n')}
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.currencySymbol')}
               </label>
               <input
                 type="text"
-                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono select-text"
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-mono font-bold"
                 value={form.currency_symbol}
                 onChange={(e) => setForm({ ...form, currency_symbol: e.target.value })}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.defaultTax')} (%)
               </label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
-                className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text placeholder:text-input-placeholder:text-input-placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono select-text"
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-mono font-bold"
                 value={form.tax_rate}
                 onChange={(e) => setForm({ ...form, tax_rate: Number(e.target.value) })}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.timezone')}
               </label>
-              <div className="relative">
-                <select
-                  className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text focus:outline-none focus:border-input-focus focus:ring-primary/20 font-sans appearance-none select-text placeholder:text-input-placeholder"
-                  value={form.timezone}
-                  onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-                >
-                  <option value="Africa/Cairo">Africa/Cairo</option>
-                  <option value="Asia/Riyadh">Asia/Riyadh</option>
-                  <option value="Asia/Dubai">Asia/Dubai</option>
-                  <option value="Europe/London">Europe/London</option>
-                  <option value="America/New_York">America/New_York</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
-                  ▼
-                </div>
-              </div>
+              <select
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                value={form.timezone}
+                onChange={(e) => setForm({ ...form, timezone: e.target.value })}
+              >
+                <option value="Africa/Cairo">Africa/Cairo</option>
+                <option value="Asia/Riyadh">Asia/Riyadh</option>
+                <option value="Asia/Dubai">Asia/Dubai</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="America/New_York">America/New_York</option>
+              </select>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1.5 select-none">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
                 {t('settings.dateFormat')}
               </label>
-              <div className="relative">
-                <select
-                  className="w-full bg-input-bg border border-input-border rounded h-9 px-3 text-sm text-input-text focus:outline-none focus:border-input-focus focus:ring-primary/20 font-mono appearance-none select-text placeholder:text-input-placeholder"
-                  value={form.date_format}
-                  onChange={(e) => setForm({ ...form, date_format: e.target.value })}
-                >
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
-                  ▼
-                </div>
-              </div>
+              <select
+                className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-mono font-bold appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                value={form.date_format}
+                onChange={(e) => setForm({ ...form, date_format: e.target.value })}
+              >
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              </select>
             </div>
           </div>
         </div>
 
         {/* ── Sticky Unsaved Changes Action Bar ── */}
         {isDirty && (
-          <div className="sticky bottom-4 left-0 right-0 bg-white border border-border rounded p-3.5 flex items-center justify-between shadow-2xl animate-fade-in z-20 select-none">
-            <span className="text-xs font-semibold text-foreground">
+          <div className="sticky bottom-6 left-0 right-0 bg-white/95 dark:bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom-8 duration-300 z-20 select-none gap-4">
+            <span className="text-sm font-bold text-foreground">
               You have unsaved changes to your general settings
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="px-4 h-8 bg-transparent hover:bg-neutral-100 border border-border text-secondary hover:text-foreground text-xs font-bold uppercase tracking-wider rounded transition-colors focus:outline-none"
+                className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-card hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-border/60 text-secondary hover:text-foreground text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-sm focus:outline-none"
               >
                 Discard
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-4 h-8 bg-primary hover:bg-primary-600 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors focus:outline-none disabled:opacity-50"
+                className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all focus:outline-none disabled:opacity-50 shadow-[0_4px_14px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.4)] hover:-translate-y-0.5 active:scale-95"
               >
                 {isPending ? 'Saving...' : 'Save Changes'}
               </button>

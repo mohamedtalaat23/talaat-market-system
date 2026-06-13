@@ -60,6 +60,8 @@ CREATE TABLE "ReturnQueueItem" (
     )
 );
 
+CREATE INDEX idx_returnqueueitem_sale_line ON "ReturnQueueItem"(original_sale_line_id);
+
 -- 4. SystemSettings entries for queue aging thresholds
 INSERT INTO "SystemSettings" (key, value) VALUES
     ('return_queue_warning_minutes','15'),

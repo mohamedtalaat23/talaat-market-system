@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 import { useCreateProduct, useUpdateProduct } from '../hooks/useProductQueries';
@@ -63,7 +64,7 @@ export function ProductModal() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop closer click hook */}
       <div
@@ -75,22 +76,22 @@ export function ProductModal() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-lg border border-border bg-input p-6 shadow-xl relative z-10 animate-fade-in max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-2xl rounded-2xl border border-border/50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
       >
-        <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
-          <h3 id="product-modal-title" className="text-lg font-bold text-foreground">
+        <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
+          <h3 id="product-modal-title" className="text-2xl font-black text-foreground tracking-tight">
             {mode === 'create' ? t('products.addProduct') : `${t('common.edit')}: ${product?.name}`}
           </h3>
           <button
             onClick={closeModal}
             disabled={isSaving}
-            className="rounded-md p-1.5 text-secondary hover:text-foreground hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-full p-2 text-secondary hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={t('products.closeModal')}
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
@@ -102,7 +103,8 @@ export function ProductModal() {
           onCancel={closeModal}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 export default ProductModal;

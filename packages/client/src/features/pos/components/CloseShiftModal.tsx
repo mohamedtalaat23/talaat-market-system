@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
 import { apiClient } from '@/services/api-client';
@@ -180,25 +181,27 @@ export function CloseShiftModal() {
   const myHeldCarts = heldCarts.filter((c) => c.cashier_id === user?.id);
   const discrepancy = summary ? parseFloat(endingCash || '0') - summary.expected_cash : 0;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm text-foreground">
-      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] text-foreground select-none p-4">
+      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
+        <div className="flex items-center justify-between p-6 border-b border-border/40">
           <div className="flex items-center space-x-3">
-            <Lock className="w-5 h-5 text-danger" />
-            <h2 className="text-lg font-semibold text-foreground">Close Shift Report</h2>
+            <div className="p-2 bg-danger/10 rounded-xl">
+              <Lock className="w-6 h-6 text-danger" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-foreground">Close Shift Report</h2>
           </div>
           <button
             onClick={() => closeModal('pos_close_shift')}
-            className="text-secondary hover:text-foreground p-1 rounded-md hover:bg-card-hover transition-colors"
+            className="text-secondary hover:text-foreground p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-8 select-text">
           {isLoading ? (
             <div className="flex justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-success"></div>
@@ -206,17 +209,19 @@ export function CloseShiftModal() {
           ) : summary ? (
             <>
               {needsOverride && (
-                <div className="bg-warning/15 border border-warning/30 rounded-lg p-4 flex items-start space-x-3 text-warning">
-                  <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-warning" />
-                  <div className="text-sm space-y-1">
-                    <p className="font-semibold text-warning">Operational Warnings Detected</p>
-                    {summary.pending_prints > 0 && (
-                      <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>
-                    )}
-                    {myHeldCarts.length > 0 && (
-                      <p>• {myHeldCarts.length} cart(s) currently suspended.</p>
-                    )}
-                    <p className="pt-2 text-warning">
+                <div className="bg-warning/10 border border-warning/30 rounded-xl p-5 flex items-start space-x-4 text-warning shadow-sm">
+                  <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5 text-warning" />
+                  <div className="text-sm space-y-1.5">
+                    <p className="font-black uppercase tracking-widest text-warning text-[11px]">Operational Warnings Detected</p>
+                    <div className="font-medium space-y-1">
+                      {summary.pending_prints > 0 && (
+                        <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>
+                      )}
+                      {myHeldCarts.length > 0 && (
+                        <p>• {myHeldCarts.length} cart(s) currently suspended.</p>
+                      )}
+                    </div>
+                    <p className="pt-2 text-warning/80 font-bold text-[11px] uppercase tracking-wider">
                       Manager override is required to force close this shift.
                     </p>
                   </div>
@@ -224,38 +229,38 @@ export function CloseShiftModal() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-secondary">Starting Cash</p>
-                  <p className="text-xl font-bold font-mono">
+                <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Starting Cash</p>
+                  <p className="text-2xl font-black font-mono tracking-tight text-foreground">
                     EGP {summary.starting_cash.toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-secondary">Cash Sales</p>
-                  <p className="text-xl font-bold text-success font-mono">
+                <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Cash Sales</p>
+                  <p className="text-2xl font-black text-success font-mono tracking-tight">
                     +EGP {summary.cash_sales.toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-secondary">Card Sales</p>
-                  <p className="text-xl font-bold text-primary font-mono">
+                <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Card Sales</p>
+                  <p className="text-2xl font-black text-primary font-mono tracking-tight">
                     EGP {summary.card_sales.toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-background border border-border rounded-lg p-4 space-y-1">
-                  <p className="text-sm text-secondary">Expected Cash in Drawer</p>
-                  <p className="text-2xl font-bold text-foreground font-mono">
+                <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] ring-1 ring-foreground/5">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">Expected Cash</p>
+                  <p className="text-2xl font-black text-foreground font-mono tracking-tight">
                     EGP {summary.expected_cash.toFixed(2)}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2 border-t border-border">
-                <label className="text-sm font-medium text-secondary flex justify-between">
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <label className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-secondary">
                   <span>Actual Cash Counted (EGP)</span>
                   {endingCash && (
                     <span
-                      className={`font-mono ${discrepancy < 0 ? 'text-danger' : discrepancy > 0 ? 'text-success' : 'text-secondary'}`}
+                      className={`font-mono font-black text-sm tracking-widest ${discrepancy < 0 ? 'text-danger' : discrepancy > 0 ? 'text-success' : 'text-secondary'}`}
                     >
                       Diff: {discrepancy > 0 ? '+' : ''}
                       {discrepancy.toFixed(2)}
@@ -263,7 +268,7 @@ export function CloseShiftModal() {
                   )}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-semibold">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary font-bold select-none">
                     EGP
                   </span>
                   <input
@@ -277,7 +282,7 @@ export function CloseShiftModal() {
                       if (e.key === 'Enter') handleCloseShift();
                       if (e.key === 'Escape') closeModal('pos_close_shift');
                     }}
-                    className="w-full bg-background border border-border rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-danger transition-all placeholder:text-muted"
+                    className="w-full bg-background border border-border/60 rounded-xl h-16 pl-14 pr-6 text-3xl font-black tabular-nums tracking-tight text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 transition-all placeholder:text-neutral-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
                     placeholder="0.00"
                   />
                 </div>
@@ -289,18 +294,20 @@ export function CloseShiftModal() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-card-hover/30 flex justify-end space-x-3">
+        <div className="p-6 border-t border-border/40 flex flex-col sm:flex-row justify-end gap-3 select-none bg-neutral-50/50 dark:bg-neutral-900/50">
           <button
             onClick={() => closeModal('pos_close_shift')}
-            className="px-6 py-3 rounded-lg font-medium text-secondary bg-card-hover hover:bg-border transition-colors"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-secondary hover:text-foreground bg-white dark:bg-card border border-border/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all text-sm uppercase tracking-wider shadow-sm focus:outline-none"
           >
             Cancel
           </button>
           <button
             onClick={handleCloseShift}
             disabled={isSubmitting || isLoading || (!endingCash && !needsOverride)}
-            className={`px-8 py-3 rounded-lg font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              needsOverride ? 'bg-warning/90 hover:bg-warning' : 'bg-danger/90 hover:bg-danger'
+            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-black text-white text-sm uppercase tracking-wider transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
+              needsOverride 
+                ? 'bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 shadow-[0_4px_14px_rgba(var(--color-warning-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-warning-500),0.4)] hover:-translate-y-0.5 active:scale-95' 
+                : 'bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 shadow-[0_4px_14px_rgba(var(--color-danger-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-danger-500),0.4)] hover:-translate-y-0.5 active:scale-95'
             }`}
           >
             {isSubmitting
@@ -311,6 +318,7 @@ export function CloseShiftModal() {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -191,10 +191,10 @@ export function CustomersPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="table-container">
             <table className="w-full text-start border-collapse">
               <thead>
-                <tr className="border-b border-border bg-card text-xs font-semibold uppercase tracking-wider text-secondary">
+                <tr className="table-header-sticky border-b border-border bg-card/90 backdrop-blur-md text-xs font-semibold uppercase tracking-wider text-secondary">
                   <SortableHeader
                     label={t('customers.name')}
                     field="name"
@@ -228,7 +228,7 @@ export function CustomersPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {customers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-card-hover/40 transition-colors group">
+                  <tr key={customer.id} className="table-row-hover hover:bg-card-hover/40 transition-colors group">
                     {/* Name */}
                     <td className="py-1.5 px-3 font-semibold text-foreground">
                       <button

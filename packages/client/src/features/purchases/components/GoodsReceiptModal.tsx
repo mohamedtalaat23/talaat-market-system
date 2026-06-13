@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useReceivePurchaseOrder, PurchaseOrder } from '../hooks/usePurchaseQueries';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -143,7 +144,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
         {/* Header */}
@@ -292,6 +293,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

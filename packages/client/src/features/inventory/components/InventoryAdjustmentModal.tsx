@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { InventoryAdjustmentForm } from './InventoryAdjustmentForm';
 import { useAdjustStock } from '../hooks/useInventoryQueries';
@@ -63,7 +64,7 @@ export function InventoryAdjustmentModal() {
 
   const isSaving = adjustMutation.isPending;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
       {/* Backdrop click close hook */}
       <div
@@ -101,7 +102,8 @@ export function InventoryAdjustmentModal() {
           onCancel={closeModal}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 export default InventoryAdjustmentModal;

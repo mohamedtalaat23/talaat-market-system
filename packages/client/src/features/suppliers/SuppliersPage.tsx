@@ -184,10 +184,10 @@ export function SuppliersPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="table-container">
             <table className="w-full text-left rtl:text-right border-collapse">
               <thead>
-                <tr className="border-b border-border bg-card text-xs font-semibold uppercase tracking-wider text-secondary">
+                <tr className="table-header-sticky border-b border-border bg-card/90 backdrop-blur-md text-xs font-semibold uppercase tracking-wider text-secondary">
                   <th className="px-6 py-4">{t('suppliers.code')}</th>
                   <th className="px-6 py-4">{t('purchases.supplier')}</th>
                   <th className="px-6 py-4">{t('suppliers.representative')}</th>
@@ -200,7 +200,7 @@ export function SuppliersPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {items.map((supplier) => (
-                  <tr key={supplier.id} className="hover:bg-card-hover/40 transition-colors group">
+                  <tr key={supplier.id} className="table-row-hover hover:bg-card-hover/40 transition-colors group">
                     {/* Code */}
                     <td className="px-6 py-4 font-mono text-xs font-semibold text-secondary">
                       {supplier.supplier_code}

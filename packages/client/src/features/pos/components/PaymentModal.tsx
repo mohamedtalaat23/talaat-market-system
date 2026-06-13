@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CreditCard, Banknote, CheckCircle2, Monitor } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -304,7 +305,7 @@ export function PaymentModal() {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4">
       <div
         className="absolute inset-0"
@@ -532,6 +533,7 @@ export function PaymentModal() {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

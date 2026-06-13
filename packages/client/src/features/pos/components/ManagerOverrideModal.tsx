@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ShieldAlert } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -112,8 +113,8 @@ export function ManagerOverrideModal() {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-background/80 backdrop-blur-md p-4 transition-all duration-300">
       <div
         className="absolute inset-0"
         onClick={isSubmitting ? undefined : closeModal}
@@ -122,52 +123,58 @@ export function ManagerOverrideModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-sm rounded-lg border border-danger/30 bg-popover p-6 shadow-2xl relative z-10 animate-fade-in"
+        className="w-full max-w-sm rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="override-modal-title"
       >
-        <div className="flex flex-col items-center justify-center pb-4 mb-4 border-b border-input-border">
-          <ShieldAlert size={48} className="text-danger mb-2" />
-          <h3 id="override-modal-title" className="text-xl font-bold text-input-text text-center">
+        {/* Subtle red glow at the top for context */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-danger to-transparent opacity-80"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-16 bg-danger/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div className="flex flex-col items-center justify-center pb-5 mb-5 border-b border-border/40 relative z-10">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10 text-danger mb-4 shadow-inner border border-danger/20">
+            <ShieldAlert size={36} className="drop-shadow-sm" />
+          </div>
+          <h3 id="override-modal-title" className="text-2xl font-black text-foreground text-center tracking-tight">
             {t('pos.managerAuthTitle')}
           </h3>
-          <p className="text-secondary text-sm mt-1 text-center">{actionName}</p>
+          <p className="text-secondary text-sm mt-1.5 text-center font-medium">{actionName}</p>
 
           {payload?.displayMetadata && (
-            <div className="mt-4 w-full bg-neutral-50 border border-input-border rounded-md p-3 text-sm">
-              <div className="font-semibold text-primary mb-2 text-center border-b border-input-border pb-1">
+            <div className="mt-5 w-full bg-background/50 border border-border/60 rounded-xl p-4 text-sm shadow-inner">
+              <div className="font-bold text-foreground mb-3 text-center border-b border-border/40 pb-2">
                 {payload.displayMetadata.title}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {payload.displayMetadata.customer && (
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Customer:</span>
-                    <span className="text-input-text">{payload.displayMetadata.customer}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-secondary font-medium">Customer:</span>
+                    <span className="text-foreground font-semibold">{payload.displayMetadata.customer}</span>
                   </div>
                 )}
                 {payload.displayMetadata.amount !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Amount:</span>
-                    <span className="font-mono text-input-text font-bold">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-secondary font-medium">Amount:</span>
+                    <span className="font-mono text-foreground font-black text-base">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
                   </div>
                 )}
                 {payload.displayMetadata.actionType && (
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Type:</span>
-                    <span className="text-input-text">{payload.displayMetadata.actionType}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-secondary font-medium">Type:</span>
+                    <span className="text-foreground font-semibold bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">{payload.displayMetadata.actionType}</span>
                   </div>
                 )}
                 {payload.displayMetadata.direction && (
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Direction:</span>
-                    <span className={`font-bold ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}>{payload.displayMetadata.direction}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-secondary font-medium">Direction:</span>
+                    <span className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}>{payload.displayMetadata.direction}</span>
                   </div>
                 )}
                 {payload.displayMetadata.inventoryEffect && (
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Inventory:</span>
-                    <span className={`font-bold ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}>{payload.displayMetadata.inventoryEffect}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-secondary font-medium">Inventory:</span>
+                    <span className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}>{payload.displayMetadata.inventoryEffect}</span>
                   </div>
                 )}
               </div>
@@ -176,25 +183,26 @@ export function ManagerOverrideModal() {
         </div>
         <button
           onClick={closeModal}
-          className="absolute top-4 end-4 rounded-md p-1.5 text-secondary hover:text-input-text hover:bg-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="absolute top-4 end-4 rounded-full p-2 text-secondary hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger z-20"
           aria-label={t('common.cancel')}
         >
-          <X size={18} />
+          <X size={20} />
         </button>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
           {managers.length > 0 && (
-            <div>
+            <div className="space-y-1.5">
               <label
                 htmlFor="manager-select"
-                className="block text-sm font-semibold text-secondary mb-1"
+                className="block text-sm font-bold text-foreground/80"
               >
                 {t('pos.authorizeAs')}
               </label>
               <select
                 id="manager-select"
                 disabled={isSubmitting}
-                className="w-full bg-input-bg border border-input-border rounded p-3 text-input-text focus:outline-none focus:border-input-focus text-sm font-semibold placeholder:text-input-placeholder focus:ring-1 focus:ring-primary/20"
+                className="w-full h-12 bg-background border border-border/60 rounded-xl px-4 text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 text-sm font-semibold transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
                 value={selectedManagerId}
                 onChange={(e) => setSelectedManagerId(Number(e.target.value))}
               >
@@ -207,8 +215,8 @@ export function ManagerOverrideModal() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="pin-input" className="block text-sm font-semibold text-secondary mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="pin-input" className="block text-sm font-bold text-foreground/80">
               {t('pos.enterPin')}
             </label>
             <input
@@ -218,7 +226,7 @@ export function ManagerOverrideModal() {
               inputMode="numeric"
               maxLength={6}
               disabled={isSubmitting}
-              className="w-full bg-input-bg border border-input-border rounded p-3 text-center text-input-text tracking-[1em] placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20"
+              className="w-full h-14 bg-background border border-border/60 rounded-xl px-4 text-center text-foreground font-mono text-2xl tracking-[0.75em] placeholder:text-neutral-300 focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
             />
@@ -227,12 +235,20 @@ export function ManagerOverrideModal() {
           <button
             type="submit"
             disabled={isSubmitting || pin.length < 4}
-            className="w-full py-3 bg-danger hover:bg-danger/90 disabled:bg-card-hover disabled:text-secondary rounded font-bold text-white transition-colors"
+            className="w-full h-12 mt-2 bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 disabled:from-neutral-300 disabled:to-neutral-300 dark:disabled:from-neutral-700 dark:disabled:to-neutral-700 disabled:text-neutral-500 rounded-xl font-black uppercase tracking-wider text-white transition-all shadow-[0_4px_14px_rgba(239,68,68,0.3)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.5)] disabled:shadow-none hover:-translate-y-0.5 active:scale-95 flex items-center justify-center"
           >
-            {isSubmitting ? t('pos.verifying') : t('pos.authorizeAction')}
+            {isSubmitting ? (
+              <div className="flex items-center space-x-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                <span>{t('pos.verifying')}</span>
+              </div>
+            ) : (
+              t('pos.authorizeAction')
+            )}
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

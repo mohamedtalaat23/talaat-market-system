@@ -12,7 +12,20 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/Card';
-import { Store, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import {
+  Store,
+  User,
+  Lock,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  BarChart3,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Zap,
+  Shield,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -29,6 +42,37 @@ interface LoginResponse {
   };
 }
 
+const FEATURE_CARDS = [
+  {
+    icon: ShoppingCart,
+    title: 'Smart POS',
+    description: 'Lightning-fast checkout with multi-payment support',
+    color: 'from-emerald-400 to-teal-500',
+    delay: '0ms',
+  },
+  {
+    icon: Package,
+    title: 'Inventory Control',
+    description: 'Real-time stock tracking and smart adjustments',
+    color: 'from-blue-400 to-cyan-500',
+    delay: '100ms',
+  },
+  {
+    icon: BarChart3,
+    title: 'Powerful Reports',
+    description: 'Deep shift analytics and financial insights',
+    color: 'from-purple-400 to-violet-500',
+    delay: '200ms',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Growth Analytics',
+    description: 'Weekly trends and performance benchmarks',
+    color: 'from-orange-400 to-amber-500',
+    delay: '300ms',
+  },
+];
+
 export function LoginPage() {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
@@ -42,7 +86,6 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already logged in
   const from = (location.state as any)?.from?.pathname || '/';
 
   useEffect(() => {
@@ -51,7 +94,6 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate, from]);
 
-  // Focus username input on mount
   useEffect(() => {
     usernameRef.current?.focus();
   }, []);
@@ -67,13 +109,8 @@ export function LoginPage() {
     setError(null);
 
     try {
-      // Artificial delay to prevent timing attacks and show loading state cleanly
       await new Promise((resolve) => setTimeout(resolve, 600));
-
-      const response = await apiClient.post<LoginResponse>('/auth/login', {
-        username,
-        password,
-      });
+      const response = await apiClient.post<LoginResponse>('/auth/login', { username, password });
 
       if (response.data?.success && response.data?.data) {
         const { token, employee } = response.data.data;
@@ -96,44 +133,140 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 font-sans select-text">
-      {/* Visual background accents */}
-      <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
+    <div className="flex min-h-screen font-sans select-text bg-background">
+      {/* ── Left Panel: Brand & Feature Showcase ─────────────────── */}
+      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 p-14">
+        {/* Decorative shapes */}
+        <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-white/10 pointer-events-none" />
+        <div className="absolute -bottom-40 -left-20 h-[600px] w-[600px] rounded-full bg-black/10 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[800px] w-[800px] rounded-full border border-white/5 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full border border-white/5 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full border border-white/5 pointer-events-none" />
 
-      <Card className="w-full max-w-md border-border bg-card/60 backdrop-blur-md relative z-10">
-        <CardHeader className="space-y-2 text-center pb-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
-            <Store className="h-6 w-6" />
+        {/* Grid pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
+          }}
+        />
+
+        {/* Brand logo + name */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur border border-white/30 shadow-xl">
+              <Store className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-black text-xl tracking-tight leading-none">Talaat Market</p>
+              <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-0.5">Management System</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight mt-3">
-            {t('login.title')}
-          </CardTitle>
-          <CardDescription className="text-secondary">{t('login.subtitle')}</CardDescription>
-        </CardHeader>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="flex items-center space-x-2 rtl:space-x-reverse rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive animate-fade-in">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{error}</span>
+        {/* Hero text */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center py-12">
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/20 rounded-full px-4 py-2 w-fit mb-6">
+            <Zap className="h-4 w-4 text-yellow-300" />
+            <span className="text-white text-xs font-bold uppercase tracking-widest">Retail Intelligence Platform</span>
+          </div>
+          <h1 className="text-5xl font-black text-white tracking-tight leading-tight mb-4">
+            Run your store<br />
+            <span className="text-white/80">smarter, faster.</span>
+          </h1>
+          <p className="text-white/80 text-lg font-medium leading-relaxed max-w-md">
+            Everything you need to manage inventory, track sales, and grow your retail business — all in one place.
+          </p>
+
+          {/* Feature cards grid */}
+          <div className="grid grid-cols-2 gap-3 mt-10">
+            {FEATURE_CARDS.map(({ icon: Icon, title, description, color, delay }) => (
+              <div
+                key={title}
+                className="group bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default"
+                style={{ animationDelay: delay }}
+              >
+                <div className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${color} mb-3 shadow-md`}>
+                  <Icon className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-white font-bold text-sm leading-tight mb-1">{title}</p>
+                <p className="text-white/65 text-xs leading-snug">{description}</p>
               </div>
-            )}
+            ))}
+          </div>
+        </div>
 
-            <div className="space-y-1.5 text-left rtl:text-right">
-              <label htmlFor="username" className="text-sm font-medium text-secondary">
+        {/* Bottom trust badges */}
+        <div className="relative z-10 flex items-center gap-6">
+          <div className="flex items-center gap-2 text-white/70">
+            <Shield className="h-4 w-4" />
+            <span className="text-xs font-semibold">Secure & Encrypted</span>
+          </div>
+          <div className="h-4 w-px bg-white/20" />
+          <div className="flex items-center gap-2 text-white/70">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-xs font-semibold">Real-time Sync</span>
+          </div>
+          <div className="h-4 w-px bg-white/20" />
+          <div className="flex items-center gap-2 text-white/70">
+            <Zap className="h-4 w-4" />
+            <span className="text-xs font-semibold">Offline-Ready</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Right Panel: Login Form ───────────────────────────────── */}
+      <div className="flex flex-1 items-center justify-center bg-background p-8 relative overflow-hidden">
+        {/* Background glow (light mode: very soft) */}
+        <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-primary/8 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 h-[300px] w-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
+
+        <div className="w-full max-w-[400px] relative z-10">
+          {/* Mobile-only brand header */}
+          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg">
+              <Store className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-foreground font-black text-lg tracking-tight leading-none">Talaat Market</p>
+              <p className="text-secondary text-[10px] font-bold uppercase tracking-widest mt-0.5">Management System</p>
+            </div>
+          </div>
+
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-foreground tracking-tight mb-1">
+              {t('login.title')}
+            </h2>
+            <p className="text-secondary text-sm font-medium">
+              Enter your credentials to access your workspace
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive mb-6 animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span className="font-medium">{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Username */}
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-bold text-foreground/80">
                 {t('login.username')}
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-3 rtl:pl-0 rtl:pr-3 text-neutral-500">
-                  <User className="h-4 w-4" />
+              <div className="relative group">
+                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-4 rtl:pl-0 rtl:pr-4 text-secondary/50 group-focus-within:text-primary transition-colors duration-200">
+                  <User className="h-5 w-5" />
                 </span>
                 <Input
                   id="username"
                   type="text"
                   placeholder="admin..."
-                  className="pl-10 rtl:pl-3 rtl:pr-10"
+                  className="pl-12 rtl:pl-4 rtl:pr-12 h-13 rounded-xl text-base border-border/60 bg-card focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200 hover:border-border shadow-sm"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={isLoading}
@@ -143,19 +276,20 @@ export function LoginPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5 text-left rtl:text-right">
-              <label htmlFor="password" className="text-sm font-medium text-secondary">
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-bold text-foreground/80">
                 {t('login.password')}
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-3 rtl:pl-0 rtl:pr-3 text-neutral-500">
-                  <Lock className="h-4 w-4" />
+              <div className="relative group">
+                <span className="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 flex items-center pl-4 rtl:pl-0 rtl:pr-4 text-secondary/50 group-focus-within:text-primary transition-colors duration-200">
+                  <Lock className="h-5 w-5" />
                 </span>
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="pl-10 pr-10"
+                  className="pl-12 pr-12 rtl:pl-12 rtl:pr-12 h-13 rounded-xl text-base border-border/60 bg-card focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200 hover:border-border shadow-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -164,22 +298,37 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center pr-3 rtl:pr-0 rtl:pl-3 text-secondary hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
+                  className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center pr-4 rtl:pr-0 rtl:pl-4 text-secondary/50 hover:text-foreground focus:outline-none transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
-          </CardContent>
 
-          <CardFooter className="pt-2">
-            <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-              {isLoading ? t('login.submitting') : t('login.submit')}
+            {/* Submit */}
+            <Button
+              type="submit"
+              className="w-full h-13 rounded-xl text-[15px] font-black tracking-wider uppercase bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-[0_4px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.4)] transition-all duration-300 hover:-translate-y-0.5 mt-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span>{t('login.submitting')}</span>
+                </div>
+              ) : (
+                t('login.submit')
+              )}
             </Button>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-8 text-center text-xs text-secondary/60 font-medium">
+            © {new Date().getFullYear()} Talaat Market — All rights reserved
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

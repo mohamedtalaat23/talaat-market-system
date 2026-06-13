@@ -286,6 +286,37 @@ h6 {
   animation: focusRowFlash 300ms ease-out;
 }
 
+/* ── Premium Table Overhaul ─────────────────────────────────── */
+
+.table-container {
+  max-height: 65vh;
+  overflow-y: auto;
+  /* Use custom scrollbar styling defined above */
+}
+
+/* Apply to <thead> or <tr> within thead */
+.table-header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  /* The exact background color will be defined by Tailwind classes (e.g. bg-white/80) */
+  box-shadow: 0 1px 0 0 var(--border-color); /* Reliable bottom border for sticky headers */
+}
+
+/* Apply to <tbody> <tr> */
+.table-row-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.table-row-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  /* Background color change should be handled by group-hover in Tailwind to match the theme */
+}
+
 /* ── Print styles ───────────────────────────────────────────── */
 
 @media print {
