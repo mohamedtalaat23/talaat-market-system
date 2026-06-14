@@ -534,6 +534,6 @@ export function PaymentModal() {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

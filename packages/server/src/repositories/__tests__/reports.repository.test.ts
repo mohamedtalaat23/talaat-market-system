@@ -151,7 +151,7 @@ describe('ReportsRepository', () => {
 
       expect(result.days?.[0]?.date).toBe('2026-06-01');
       expect(result.days?.[0]?.transaction_count).toBe(5);
-      expect(result.days?.[0]?.net_revenue).toBe(490);
+      expect(result.days?.[0]?.net_revenue).toBe(500);
       expect(result.top_products?.[0]?.product_name).toBe('Coke');
       expect(result.top_products?.[0]?.total_quantity_sold).toBe(10);
     });

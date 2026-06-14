@@ -2,8 +2,10 @@ import React, { useMemo } from 'react';
 import type { POSCartItem } from '../usePOSStore';
 import { usePOSStore } from '../usePOSStore';
 import { useModalStore } from '@/stores/modalStore';
+import { useAuthStore } from '@/stores/authStore';
 import { bankersRound } from '@/utils/currency';
 import { useTranslation } from '@/hooks/useTranslation';
+import toast from 'react-hot-toast';
 import { POSCartList } from './POSCartList';
 import {
   History,
@@ -20,7 +22,6 @@ interface POSSummaryProps {
   paymentMethod: string;
   cashReceived: number;
 }
-
 
 /** Compact key badge — shows the keyboard shortcut next to an action label */
 function KbdBadge({ label }: { label: string }) {
@@ -41,7 +42,15 @@ interface ActionBtnProps {
   destructive?: boolean;
   fullWidth?: boolean;
 }
-function ActionBtn({ label, kbd, icon, onClick, disabled, destructive, fullWidth }: ActionBtnProps) {
+function ActionBtn({
+  label,
+  kbd,
+  icon,
+  onClick,
+  disabled,
+  destructive,
+  fullWidth,
+}: ActionBtnProps) {
   return (
     <button
       type="button"
@@ -63,7 +72,9 @@ function ActionBtn({ label, kbd, icon, onClick, disabled, destructive, fullWidth
       {!disabled && !destructive && (
         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       )}
-      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5 group-hover:scale-110 transition-transform">{icon}</span>
+      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5 group-hover:scale-110 transition-transform">
+        {icon}
+      </span>
       <span className="text-xs font-bold uppercase tracking-wider leading-none z-10">{label}</span>
       <KbdBadge label={kbd} />
     </button>
@@ -77,6 +88,8 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   const selectCustomer = usePOSStore((state) => state.selectCustomer);
   const globalDiscount = usePOSStore((state) => state.globalDiscount);
   const heldCarts = usePOSStore((state) => state.heldCarts);
+  const holdCurrentCart = usePOSStore((state) => state.holdCurrentCart);
+  const user = useAuthStore((state) => state.user);
 
   const { rawSubtotal, rawDiscount } = useMemo(
     () => ({
@@ -94,10 +107,8 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
   const appliedDiscountsCount =
     cart.filter((item) => item.discount > 0).length + (globalDiscount > 0 ? 1 : 0);
 
-
   return (
     <div className="flex flex-col h-full justify-between font-sans bg-white p-4 space-y-3 border-l border-border/30 select-none overflow-hidden relative z-20">
-
       {/* ── 1. Customer & Metadata (Top) ── */}
       <div className="bg-[#f8fafc] rounded-xl border border-border/40 px-3 py-2.5 flex flex-col shrink-0">
         <div className="flex items-center justify-between mb-2">
@@ -109,10 +120,17 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
               {selectedCustomer ? selectedCustomer.name : t('pos.walkIn')}
             </span>
             {selectedCustomer && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                selectedCustomer.balance < 0 ? 'bg-danger/10 text-danger' : selectedCustomer.balance > 0 ? 'bg-success/10 text-success' : 'bg-secondary/10 text-secondary'
-              }`}>
-                {t('pos.creditShort')}{Number(selectedCustomer.balance).toFixed(2)}
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                  selectedCustomer.balance < 0
+                    ? 'bg-danger/10 text-danger'
+                    : selectedCustomer.balance > 0
+                      ? 'bg-success/10 text-success'
+                      : 'bg-secondary/10 text-secondary'
+                }`}
+              >
+                {t('pos.creditShort')}
+                {Number(selectedCustomer.balance).toFixed(2)}
               </span>
             )}
           </div>
@@ -123,7 +141,9 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
                 onClick={() => {
                   selectCustomer(null);
                   setTimeout(() => {
-                    const searchInput = document.querySelector('input[placeholder*="Scan barcode"]') as HTMLInputElement;
+                    const searchInput = document.querySelector(
+                      'input[placeholder*="Scan barcode"]',
+                    ) as HTMLInputElement;
                     searchInput?.focus();
                   }, 50);
                 }}
@@ -144,8 +164,14 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
         </div>
         <div className="flex items-center justify-between text-[11px] font-mono font-medium text-secondary">
           <div className="flex gap-2">
-            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">{t('pos.itemsShort')}{totalItemsCount}</span>
-            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">{t('pos.discShort')}{appliedDiscountsCount}</span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">
+              {t('pos.itemsShort')}
+              {totalItemsCount}
+            </span>
+            <span className="bg-white border border-border/40 px-2 py-0.5 rounded-md">
+              {t('pos.discShort')}
+              {appliedDiscountsCount}
+            </span>
           </div>
           <button
             onClick={() => openModal('pos_suspended_carts')}
@@ -161,7 +187,6 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
         <POSCartList />
       </div>
 
-
       {/* ── 4. Cart Actions Grid ── */}
       <div className="bg-[#f8fafc] rounded-xl border border-border/40 p-2 shrink-0">
         <div className="grid grid-cols-2 gap-2">
@@ -176,9 +201,16 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             kbd="F6"
             icon={<PauseCircle size={16} />}
             onClick={() => {
-              openModal('pos_suspended_carts');
+              if (cart.length > 0) {
+                holdCurrentCart(user?.id || 1);
+                toast.success(t('pos.cartSuspended'));
+              } else {
+                openModal('pos_suspended_carts');
+              }
               setTimeout(() => {
-                const searchInput = document.querySelector('input[placeholder*="Scan barcode"]') as HTMLInputElement;
+                const searchInput = document.querySelector(
+                  'input[placeholder*="Scan barcode"]',
+                ) as HTMLInputElement;
                 searchInput?.focus();
               }, 50);
             }}
@@ -190,7 +222,9 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
             onClick={() => {
               openModal('pos_manager_override', { action: 'clear_cart' });
               setTimeout(() => {
-                const searchInput = document.querySelector('input[placeholder*="Scan barcode"]') as HTMLInputElement;
+                const searchInput = document.querySelector(
+                  'input[placeholder*="Scan barcode"]',
+                ) as HTMLInputElement;
                 searchInput?.focus();
               }, 50);
             }}
@@ -205,7 +239,9 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
                 window.electronAPI.openCashDrawer().catch(console.error);
               }
               setTimeout(() => {
-                const searchInput = document.querySelector('input[placeholder*="Scan barcode"]') as HTMLInputElement;
+                const searchInput = document.querySelector(
+                  'input[placeholder*="Scan barcode"]',
+                ) as HTMLInputElement;
                 searchInput?.focus();
               }, 50);
             }}
@@ -236,9 +272,13 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           {/* Grand Total */}
           <div className="border-t border-border/60 pt-3 mt-1">
             <div className="flex items-end justify-between">
-              <span className="text-xs font-black text-secondary uppercase tracking-widest">{t('pos.totalUpper')}</span>
+              <span className="text-xs font-black text-secondary uppercase tracking-widest">
+                {t('pos.totalUpper')}
+              </span>
               <span className="text-5xl font-black font-mono tracking-tighter select-none leading-none text-foreground">
-                <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">{t('pos.currency')}</span>
+                <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">
+                  {t('pos.currency')}
+                </span>
                 {total.toFixed(2)}
               </span>
             </div>
@@ -253,8 +293,11 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
           >
             {/* Shimmer effect */}
             <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
-            
-            <CreditCard size={32} className="drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+
+            <CreditCard
+              size={32}
+              className="drop-shadow-md group-hover:scale-110 transition-transform duration-300"
+            />
             <span className="drop-shadow-md">{t('pos.payAction')}</span>
             <kbd className="ms-4 text-base font-mono font-bold px-3 py-1.5 rounded-lg bg-black/20 border border-black/10 text-white leading-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] backdrop-blur-sm">
               Space

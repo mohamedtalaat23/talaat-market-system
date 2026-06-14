@@ -127,7 +127,9 @@ export function OverrideAuditScreen() {
                   )}
                   {data?.data?.map((item) => (
                     <TableRow key={item.id} className="table-row-hover group">
-                      <TableCell className="text-secondary font-mono text-xs">{formatDateTime(new Date(item.created_at))}</TableCell>
+                      <TableCell className="text-secondary font-mono text-xs">
+                        {formatDateTime(new Date(item.created_at))}
+                      </TableCell>
                       <TableCell className="font-medium text-primary">
                         {item.manager_name}
                       </TableCell>

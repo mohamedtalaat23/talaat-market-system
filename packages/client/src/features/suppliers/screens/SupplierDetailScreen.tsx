@@ -408,7 +408,10 @@ export function SupplierDetailScreen() {
                     </span>
                     . If you proceed, those products will remain in the catalog, but their primary
                     supplier connection will be set to{' '}
-                    <span className="font-mono bg-input-bg px-1 rounded text-neutral-300">NULL</span>.
+                    <span className="font-mono bg-input-bg px-1 rounded text-neutral-300">
+                      NULL
+                    </span>
+                    .
                   </div>
                 )}
               </div>

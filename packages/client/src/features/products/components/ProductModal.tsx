@@ -82,7 +82,10 @@ export function ProductModal() {
         aria-labelledby="product-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
-          <h3 id="product-modal-title" className="text-2xl font-black text-foreground tracking-tight">
+          <h3
+            id="product-modal-title"
+            className="text-2xl font-black text-foreground tracking-tight"
+          >
             {mode === 'create' ? t('products.addProduct') : `${t('common.edit')}: ${product?.name}`}
           </h3>
           <button
@@ -104,7 +107,7 @@ export function ProductModal() {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default ProductModal;

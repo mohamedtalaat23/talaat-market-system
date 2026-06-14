@@ -384,6 +384,6 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

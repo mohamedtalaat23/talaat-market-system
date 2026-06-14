@@ -36,7 +36,7 @@ export function InlineManagerApproval({
         <ShieldAlert className="w-5 h-5 text-danger" />
         <h4 className="font-bold text-input-text">Manager Approval Required</h4>
       </div>
-      
+
       {contextMetadata && (
         <div className="mb-4 text-sm bg-danger/5 border border-danger/20 rounded p-3 text-input-text">
           <div className="font-mono text-xs text-secondary mb-1">Authorizing:</div>
@@ -47,7 +47,10 @@ export function InlineManagerApproval({
       <div className="grid grid-cols-2 gap-4">
         {managers.length > 0 && (
           <div>
-            <label htmlFor="inline-manager-select" className="block text-xs font-semibold text-secondary mb-1">
+            <label
+              htmlFor="inline-manager-select"
+              className="block text-xs font-semibold text-secondary mb-1"
+            >
               Manager
             </label>
             <select
@@ -67,7 +70,10 @@ export function InlineManagerApproval({
         )}
 
         <div>
-          <label htmlFor="inline-pin-input" className="block text-xs font-semibold text-secondary mb-1">
+          <label
+            htmlFor="inline-pin-input"
+            className="block text-xs font-semibold text-secondary mb-1"
+          >
             PIN
           </label>
           <input

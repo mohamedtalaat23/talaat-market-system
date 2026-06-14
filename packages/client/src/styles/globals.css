@@ -272,14 +272,24 @@ h6 {
 }
 
 @keyframes scannerFlash {
-  0% { background-color: var(--bg-app); }
-  50% { background-color: var(--color-neutral-850); }
-  100% { background-color: var(--bg-app); }
+  0% {
+    background-color: var(--bg-app);
+  }
+  50% {
+    background-color: var(--color-neutral-850);
+  }
+  100% {
+    background-color: var(--bg-app);
+  }
 }
 
 @keyframes focusRowFlash {
-  0% { background-color: rgba(37, 99, 235, 0.45); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(37, 99, 235, 0.45);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .animate-scanner-flash {

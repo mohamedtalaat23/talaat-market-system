@@ -78,15 +78,35 @@ export function AdjustmentHistoryViewer() {
   const getTypeBadgeDetails = (type: string) => {
     switch (type) {
       case 'stock_addition':
-        return { label: t('inventory.stockAddition'), variant: 'success' as const, borderColor: 'border-l-success' };
+        return {
+          label: t('inventory.stockAddition'),
+          variant: 'success' as const,
+          borderColor: 'border-l-success',
+        };
       case 'stock_removal':
-        return { label: t('inventory.stockRemoval'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
+        return {
+          label: t('inventory.stockRemoval'),
+          variant: 'destructive' as const,
+          borderColor: 'border-l-destructive',
+        };
       case 'damaged':
-        return { label: t('inventory.damagedStock'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
+        return {
+          label: t('inventory.damagedStock'),
+          variant: 'destructive' as const,
+          borderColor: 'border-l-destructive',
+        };
       case 'expired':
-        return { label: t('inventory.expiredStock'), variant: 'destructive' as const, borderColor: 'border-l-destructive' };
+        return {
+          label: t('inventory.expiredStock'),
+          variant: 'destructive' as const,
+          borderColor: 'border-l-destructive',
+        };
       case 'manual_correction':
-        return { label: t('inventory.manualCorrection'), variant: 'warning' as const, borderColor: 'border-l-warning' };
+        return {
+          label: t('inventory.manualCorrection'),
+          variant: 'warning' as const,
+          borderColor: 'border-l-warning',
+        };
       default:
         return { label: type, variant: 'outline' as const, borderColor: 'border-l-border' };
     }
@@ -181,20 +201,27 @@ export function AdjustmentHistoryViewer() {
                     {/* Stock Shift Indicator */}
                     <div className="flex items-center gap-4 bg-muted/30 px-4 py-3 rounded-md border border-border/50 text-center justify-around">
                       <div className="flex flex-col items-center">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{t('inventory.previous')}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                          {t('inventory.previous')}
+                        </div>
                         <div className="font-bold text-secondary text-base">{log.old_quantity}</div>
                       </div>
                       <ArrowRight size={14} className="text-muted-foreground" aria-hidden="true" />
                       <div className="flex flex-col items-center">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{t('inventory.newStock')}</div>
-                        <div className="font-bold text-foreground text-base">{log.new_quantity}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                          {t('inventory.newStock')}
+                        </div>
+                        <div className="font-bold text-foreground text-base">
+                          {log.new_quantity}
+                        </div>
                       </div>
                     </div>
 
                     {/* Audit Trail Note & Cashier Name */}
                     <div className="space-y-1.5 bg-muted/20 p-3 rounded-md border border-border/40">
                       <div className="text-secondary font-medium select-text text-[11px]">
-                        <span className="font-bold opacity-75">{t('inventory.reason')}:</span> {log.notes || t('inventory.noReason')}
+                        <span className="font-bold opacity-75">{t('inventory.reason')}:</span>{' '}
+                        {log.notes || t('inventory.noReason')}
                       </div>
                       <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] pt-1">
                         <User size={12} aria-hidden="true" />
@@ -248,7 +275,7 @@ export function AdjustmentHistoryViewer() {
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default AdjustmentHistoryViewer;

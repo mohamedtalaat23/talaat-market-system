@@ -6,7 +6,7 @@
 
 :root {
   color-scheme: light;
-  
+
   /* ── Core Color Palette ──────────────────────────────────────── */
 
   /* Primary: Emerald Accent */
@@ -18,85 +18,85 @@
   --color-primary-600: #047857; /* Hover */
   --color-primary-700: #065f46;
   --color-primary-900: #064e3b;
-  
-  --color-accent: #10B981;
+
+  --color-accent: #10b981;
 
   /* Sidebar Palette */
   --color-sidebar-bg: #111827;
-  --color-sidebar-hover: #1F2937;
-  --color-sidebar-text: #E5E7EB;
-  --color-sidebar-muted: #9CA3AF;
+  --color-sidebar-hover: #1f2937;
+  --color-sidebar-text: #e5e7eb;
+  --color-sidebar-muted: #9ca3af;
 
   /* Neutrals */
   --color-neutral-0: #ffffff;
-  --color-neutral-50: #FAFAFA;
-  --color-neutral-100: #F3F4F6;
-  --color-neutral-200: #E5E7EB;
-  --color-neutral-300: #D1D5DB;
-  --color-neutral-400: #9CA3AF;
-  --color-neutral-500: #6B7280;
-  --color-neutral-600: #4B5563;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
   --color-neutral-700: #374151;
-  --color-neutral-800: #1F2937;
+  --color-neutral-800: #1f2937;
   --color-neutral-900: #111827;
   --color-neutral-950: #030712;
 
   /* Semantic Backgrounds */
-  --bg-app: #EEF2F7;
+  --bg-app: #eef2f7;
   --bg-sidebar: var(--color-sidebar-bg);
-  --bg-header: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F3F4F6;
-  --bg-input: #FFFFFF;
-  --bg-modal: #FFFFFF;
-  --bg-tooltip: #1F2937;
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f3f4f6;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-tooltip: #1f2937;
 
   /* Form Controls */
-  --input-bg: #FFFFFF;
+  --input-bg: #ffffff;
   --input-border: var(--color-neutral-300);
   --input-text: var(--color-neutral-900);
   --input-placeholder: var(--color-neutral-400);
   --input-focus: var(--color-primary-500);
 
   /* Status Colors */
-  --color-success-50: #DCFCE7;
-  --color-success-400: #4ADE80;
-  --color-success-500: #16A34A;
-  --color-success-600: #15803D;
+  --color-success-50: #dcfce7;
+  --color-success-400: #4ade80;
+  --color-success-500: #16a34a;
+  --color-success-600: #15803d;
 
-  --color-warning-50: #FEF3C7;
-  --color-warning-400: #FBBF24;
-  --color-warning-500: #D97706;
-  --color-warning-600: #B45309;
+  --color-warning-50: #fef3c7;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #d97706;
+  --color-warning-600: #b45309;
 
-  --color-danger-50: #FEE2E2;
-  --color-danger-400: #F87171;
-  --color-danger-500: #DC2626;
-  --color-danger-600: #B91C1C;
+  --color-danger-50: #fee2e2;
+  --color-danger-400: #f87171;
+  --color-danger-500: #dc2626;
+  --color-danger-600: #b91c1c;
 
   /* Borders */
-  --border-color: #E5E7EB;
+  --border-color: #e5e7eb;
   --border-focus: #059669;
 
   /* Semantic Text */
   --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
-  --text-on-primary: #FFFFFF;
-  --text-on-danger: #FFFFFF;
-  
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-on-primary: #ffffff;
+  --text-on-danger: #ffffff;
+
   /* Status Text */
   --text-success: var(--color-success-600);
   --text-warning: var(--color-warning-600);
   --text-danger: var(--color-danger-600);
 
   /* Unified Status (Background + Text for Badges) */
-  --status-success-bg: #DCFCE7;
-  --status-success-text: #16A34A;
-  --status-warning-bg: #FEF3C7;
-  --status-warning-text: #D97706;
-  --status-danger-bg: #FEE2E2;
-  --status-danger-text: #DC2626;
+  --status-success-bg: #dcfce7;
+  --status-success-text: #16a34a;
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #d97706;
+  --status-danger-bg: #fee2e2;
+  --status-danger-text: #dc2626;
 
   /* ── Typography ─────────────────────────────────────────── */
   --font-sans: "Inter", "Cairo", system-ui, -apple-system, sans-serif;
@@ -178,7 +178,8 @@
   --z-tooltip: 500;
 
   --bg-gradient-start: transparent;
-  --theme-transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  --theme-transition:
+    background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 body {
@@ -186,7 +187,13 @@ body {
   letter-spacing: -0.01em;
 }
 
-h1, h2, h3, h4, h5, h6, .tracking-tight {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.tracking-tight {
   letter-spacing: -0.02em;
 }
 

@@ -32,7 +32,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   loginWithPin: async (pin: string) => {
     try {
-      const response = await apiClient.post<{ success: boolean; data: { token: string; employee: User } }>('/auth/fast-pin', { pin });
+      const response = await apiClient.post<{
+        success: boolean;
+        data: { token: string; employee: User };
+      }>('/auth/fast-pin', { pin });
       if (response.data?.success && response.data.data) {
         const { token, employee } = response.data.data;
         localStorage.setItem('talaat_token', token);

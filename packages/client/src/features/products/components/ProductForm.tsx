@@ -111,7 +111,10 @@ export function ProductForm({
       {/* Grid containing primary fields */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="name" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="name"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.nameEnglish')} *
           </label>
           <Input
@@ -126,7 +129,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="nameAr" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="nameAr"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.nameArabic')}
           </label>
           <Input
@@ -140,7 +146,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="barcode" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="barcode"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.barcodePLU')}
           </label>
           <Input
@@ -154,7 +163,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="categoryId" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="categoryId"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.category').replace(':', '')}
           </label>
           {isLoadingCategories ? (
@@ -168,7 +180,13 @@ export function ProductForm({
               onChange={(e) => setCategoryId(e.target.value)}
               disabled={isLoading}
               className="flex h-12 w-full rounded-xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all appearance-none cursor-pointer"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: `right 0.75rem center`,
+                backgroundRepeat: `no-repeat`,
+                backgroundSize: `1.5em 1.5em`,
+                paddingRight: `2.5rem`,
+              }}
             >
               <option value="">{t('products.noCategory')}</option>
               {categories.map((cat) => (
@@ -181,7 +199,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="supplierId" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="supplierId"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.supplierLabel')}
           </label>
           <div className="flex gap-2">
@@ -191,7 +212,13 @@ export function ProductForm({
               onChange={(e) => setSupplierId(e.target.value)}
               disabled={isLoading}
               className="flex h-12 w-full rounded-xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all appearance-none cursor-pointer"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: `right 0.75rem center`,
+                backgroundRepeat: `no-repeat`,
+                backgroundSize: `1.5em 1.5em`,
+                paddingRight: `2.5rem`,
+              }}
             >
               <option value="">{t('products.noSupplier')}</option>
               {suppliers.map((sup) => (
@@ -222,7 +249,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="unit" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="unit"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.unit')}
           </label>
           <select
@@ -231,7 +261,13 @@ export function ProductForm({
             onChange={(e) => setUnit(e.target.value)}
             disabled={isLoading}
             className="flex h-12 w-full rounded-xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all appearance-none cursor-pointer"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: `right 0.75rem center`,
+              backgroundRepeat: `no-repeat`,
+              backgroundSize: `1.5em 1.5em`,
+              paddingRight: `2.5rem`,
+            }}
           >
             <option value="pcs">{t('products.unitPcs')}</option>
             <option value="kg">{t('products.unitKg')}</option>
@@ -242,7 +278,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="costPrice" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="costPrice"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.costPrice')} *
           </label>
           <Input
@@ -259,7 +298,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="sellingPrice" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="sellingPrice"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.sellingPrice')} *
           </label>
           <Input
@@ -277,7 +319,10 @@ export function ProductForm({
 
         {mode === 'create' && (
           <div className="space-y-1.5">
-            <label htmlFor="initialQuantity" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+            <label
+              htmlFor="initialQuantity"
+              className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+            >
               {t('products.initialStockLabel')} *
             </label>
             <Input
@@ -295,7 +340,10 @@ export function ProductForm({
         )}
 
         <div className="space-y-1.5">
-          <label htmlFor="minStock" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="minStock"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.minStockLabel')}
           </label>
           <Input
@@ -311,7 +359,10 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="maxStock" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+          <label
+            htmlFor="maxStock"
+            className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+          >
             {t('products.maxStockLabel')}
           </label>
           <Input
@@ -328,7 +379,10 @@ export function ProductForm({
       </div>
 
       <div className="space-y-2 pt-2">
-        <label htmlFor="description" className="text-xs font-bold text-foreground/80 tracking-wider uppercase">
+        <label
+          htmlFor="description"
+          className="text-xs font-bold text-foreground/80 tracking-wider uppercase"
+        >
           {t('products.descLabel')}
         </label>
         <textarea
@@ -351,7 +405,10 @@ export function ProductForm({
           disabled={isLoading}
           className="h-5 w-5 rounded border-border/60 bg-background text-primary focus:ring-primary/20 focus:ring-offset-0 cursor-pointer"
         />
-        <label htmlFor="isActive" className="text-sm font-bold text-foreground cursor-pointer select-none">
+        <label
+          htmlFor="isActive"
+          className="text-sm font-bold text-foreground cursor-pointer select-none"
+        >
           {t('products.activeLabel')}
         </label>
       </div>

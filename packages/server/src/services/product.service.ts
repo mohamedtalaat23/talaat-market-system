@@ -118,7 +118,13 @@ export class ProductService {
   /**
    * Update product details.
    */
-  async updateProduct(id: number, data: any, userId?: number, ipAddress?: string, reason?: string): Promise<Product> {
+  async updateProduct(
+    id: number,
+    data: any,
+    userId?: number,
+    ipAddress?: string,
+    reason?: string,
+  ): Promise<Product> {
     logger.info('Updating product details', { id });
 
     // Ensure product exists
@@ -148,7 +154,14 @@ export class ProductService {
       // Audit pricing, status, and identifying changes
       const oldValues: any = {};
       const newValues: any = {};
-      const auditedFields = ['selling_price', 'cost_price', 'barcode', 'min_stock_level', 'max_stock_level', 'is_active'];
+      const auditedFields = [
+        'selling_price',
+        'cost_price',
+        'barcode',
+        'min_stock_level',
+        'max_stock_level',
+        'is_active',
+      ];
 
       for (const field of auditedFields) {
         if (data[field] !== undefined && data[field] !== (existingProduct as any)[field]) {
@@ -170,7 +183,7 @@ export class ProductService {
           trx,
         });
       }
-      
+
       return updated;
     });
 

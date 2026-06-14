@@ -76,16 +76,27 @@ export class POSRepository {
   /**
    * Create a Cash Drawer Adjustment
    */
-  async createDrawerAdjustment(payload: { shift_id: number, manager_id: number, type: string, amount: number, reason_code: string, reason_notes?: string }) {
+  async createDrawerAdjustment(payload: {
+    shift_id: number;
+    manager_id: number;
+    type: string;
+    amount: number;
+    reason_code: string;
+    reason_notes?: string;
+  }) {
     return await db.transaction(async (trx) => {
       // Verify shift is open
-      const shift = await trx('cashier_shifts').where({ id: payload.shift_id, status: 'open' }).first();
+      const shift = await trx('cashier_shifts')
+        .where({ id: payload.shift_id, status: 'open' })
+        .first();
       if (!shift) {
         throw new Error('Shift must be open to perform drawer adjustments.');
       }
 
       // Verify manager
-      const manager = await trx('employees').where({ id: payload.manager_id, role: 'manager' }).first();
+      const manager = await trx('employees')
+        .where({ id: payload.manager_id, role: 'manager' })
+        .first();
       if (!manager) {
         throw new Error('Valid manager authorization is required for drawer adjustments.');
       }
@@ -101,25 +112,33 @@ export class POSRepository {
 
       // Wait! The user's requested types are: safe_drop, change_replenishment, petty_cash, vendor_payment, owner_withdrawal, cash_correction.
       // If it's a cash_correction, let's look at the payload.type if we updated it, or we just rely on the controller logic.
-      
+
       const inTypes = ['change_replenishment', 'cash_correction_in'];
       direction = inTypes.includes(payload.type) ? 'IN' : 'OUT';
 
-      const [adj] = await trx('cash_drawer_adjustments').insert({
-        shift_id: payload.shift_id,
-        cashier_id: shift.employee_id,
-        manager_id: payload.manager_id,
-        adjustment_type: direction,
-        amount: payload.amount,
-        reason_code: payload.reason_code,
-        reason_notes: payload.reason_notes || null
-      }).returning('*');
+      const [adj] = await trx('cash_drawer_adjustments')
+        .insert({
+          shift_id: payload.shift_id,
+          cashier_id: shift.employee_id,
+          manager_id: payload.manager_id,
+          adjustment_type: direction,
+          amount: payload.amount,
+          reason_code: payload.reason_code,
+          reason_notes: payload.reason_notes || null,
+        })
+        .returning('*');
 
       // Update shift expected cash
       if (direction === 'IN') {
-        await trx('cashier_shifts').where('id', shift.id).increment('expected_cash', payload.amount).update({ updated_at: trx.fn.now() });
+        await trx('cashier_shifts')
+          .where('id', shift.id)
+          .increment('expected_cash', payload.amount)
+          .update({ updated_at: trx.fn.now() });
       } else {
-        await trx('cashier_shifts').where('id', shift.id).decrement('expected_cash', payload.amount).update({ updated_at: trx.fn.now() });
+        await trx('cashier_shifts')
+          .where('id', shift.id)
+          .decrement('expected_cash', payload.amount)
+          .update({ updated_at: trx.fn.now() });
       }
 
       // Audit Log
@@ -130,14 +149,20 @@ export class POSRepository {
         old_value: null,
         new_value: JSON.stringify(adj),
         user_id: payload.manager_id,
-        reason: payload.reason_notes || payload.reason_code
+        reason: payload.reason_notes || payload.reason_code,
       });
 
       return adj;
     });
   }
 
-  async closeShift(shiftId: number, endingCash: number, expectedCash: number, notes: string | undefined, userId: number) {
+  async closeShift(
+    shiftId: number,
+    endingCash: number,
+    expectedCash: number,
+    notes: string | undefined,
+    userId: number,
+  ) {
     const [shift] = await db('cashier_shifts')
       .where({ id: shiftId, status: 'open' })
       .update({
@@ -158,7 +183,7 @@ export class POSRepository {
       old_value: null,
       new_value: JSON.stringify({ ending_cash: endingCash, expected_cash: expectedCash, notes }),
       user_id: userId,
-      reason: notes || 'Shift closed'
+      reason: notes || 'Shift closed',
     });
 
     return shift;
@@ -169,6 +194,13 @@ export class POSRepository {
    */
   async getCurrentShift(registerId: number) {
     return db('cashier_shifts').where({ register_id: registerId, status: 'open' }).first();
+  }
+
+  /**
+   * Get the current active shift for a specific employee.
+   */
+  async getOpenShiftByEmployee(employeeId: number) {
+    return db('cashier_shifts').where({ employee_id: employeeId, status: 'open' }).first();
   }
 
   /**
@@ -183,8 +215,8 @@ export class POSRepository {
       .whereIn('status', ['completed', 'partially_refunded', 'refunded', 'voided'])
       .select(
         db.raw('COUNT(id) as transaction_count'),
-        db.raw("COALESCE(SUM(cash_paid), 0) as cash_sales"),
-        db.raw("COALESCE(SUM(card_paid), 0) as card_sales"),
+        db.raw('COALESCE(SUM(cash_paid), 0) as cash_sales'),
+        db.raw('COALESCE(SUM(card_paid), 0) as card_sales'),
         db.raw(
           'COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts',
         ),
@@ -198,17 +230,20 @@ export class POSRepository {
       .join('sales', 'sales.id', 'refunds.sale_id')
       .where('sales.shift_id', shiftId)
       .select(
-        db.raw("COALESCE(SUM(refunds.cash_refunded), 0) as cash_refunds"),
-        db.raw("COALESCE(SUM(refunds.card_refunded), 0) as card_refunds")
+        db.raw('COALESCE(SUM(refunds.cash_refunded), 0) as cash_refunds'),
+        db.raw('COALESCE(SUM(refunds.card_refunded), 0) as card_refunds'),
       )
       .first();
 
-    
     const adjustmentSummary = await db('cash_drawer_adjustments')
       .where('shift_id', shiftId)
       .select(
-        db.raw("COALESCE(SUM(CASE WHEN adjustment_type = 'IN' THEN amount ELSE 0 END), 0) as total_pay_ins"),
-        db.raw("COALESCE(SUM(CASE WHEN adjustment_type = 'OUT' THEN amount ELSE 0 END), 0) as total_pay_outs")
+        db.raw(
+          "COALESCE(SUM(CASE WHEN adjustment_type = 'IN' THEN amount ELSE 0 END), 0) as total_pay_ins",
+        ),
+        db.raw(
+          "COALESCE(SUM(CASE WHEN adjustment_type = 'OUT' THEN amount ELSE 0 END), 0) as total_pay_outs",
+        ),
       )
       .first();
 
@@ -228,8 +263,16 @@ export class POSRepository {
       )
       .first();
 
-    const cashSales = Number(salesSummary.cash_sales) + Number(paymentSummary.cash_payments) - Number(refundsSummary?.cash_refunds || 0) + payIns - payOuts;
-    const cardSales = Number(salesSummary.card_sales) + Number(paymentSummary.card_payments) - Number(refundsSummary?.card_refunds || 0);
+    const cashSales =
+      Number(salesSummary.cash_sales) +
+      Number(paymentSummary.cash_payments) -
+      Number(refundsSummary?.cash_refunds || 0) +
+      payIns -
+      payOuts;
+    const cardSales =
+      Number(salesSummary.card_sales) +
+      Number(paymentSummary.card_payments) -
+      Number(refundsSummary?.card_refunds || 0);
     const totalDiscounts = Number(salesSummary.total_discounts);
     const expectedCash = Number(shift.starting_cash) + cashSales;
 
@@ -244,7 +287,7 @@ export class POSRepository {
       transaction_count: Number(salesSummary.transaction_count),
       pending_prints: Number(salesSummary.pending_prints),
       total_pay_ins: payIns,
-      total_pay_outs: payOuts
+      total_pay_outs: payOuts,
     };
   }
 
@@ -255,6 +298,7 @@ export class POSRepository {
     payload: CheckoutPayload,
     cashierId: number,
     bypassInventoryCheck: boolean = false,
+    isOfflineSync: boolean = false,
   ) {
     if (!payload.shift_id) {
       throw new Error('Active shift is required for checkout.');
@@ -266,6 +310,16 @@ export class POSRepository {
         const hashQuery = await trx.raw('SELECT hashtext(?) as hash', [payload.idempotency_key]);
         const lockHash = hashQuery.rows[0].hash;
         await trx.raw('SELECT pg_advisory_xact_lock(?)', [lockHash]);
+
+        // Verify shift is open (only for online checkouts)
+        if (!isOfflineSync) {
+          const shift = await trx('cashier_shifts')
+            .where({ id: payload.shift_id, status: 'open' })
+            .first();
+          if (!shift) {
+            throw new Error('Shift must be open for checkout.');
+          }
+        }
 
         // 2. Perform a strict row-level lock check inside the serialized transaction block
         const existing = await trx('sales')
@@ -282,17 +336,71 @@ export class POSRepository {
           throw new Error('A customer must be selected to checkout using the debt payment method.');
         }
 
-        // 1. Calculate totals
+        // 1. Fetch products first to validate pricing and ensure consistent lock ordering
+        // CRITICAL: Sort items by product_id ASC before acquiring row-level locks to prevent deadlocks.
+        const sortedItems = [...payload.items].sort((a, b) => a.product_id - b.product_id);
+        const productIds = sortedItems.map((item) => item.product_id);
+        const products = await trx('products')
+          .whereIn('id', productIds)
+          .select('id', 'cost_price', 'selling_price', 'name', 'barcode');
+
+        const productMap = new Map(products.map((p) => [p.id, p]));
+
+        // 2. Calculate totals and enforce pricing/discount rules
         let subtotal = 0;
         let discountAmount = 0;
         const globalDiscount = payload.global_discount || 0;
 
-        for (const item of payload.items) {
+        for (const item of sortedItems) {
+          const product = productMap.get(item.product_id);
+          if (!product) throw new Error(`Product ${item.product_id} not found`);
+
+          if (!isOfflineSync) {
+            // Online checkout: strict price enforcement
+            if (Number(item.unit_price) !== Number(product.selling_price)) {
+              throw new Error(
+                `Price mismatch for ${product.name}. Expected ${product.selling_price}, got ${item.unit_price}. Please refresh the cart.`,
+              );
+            }
+          } else {
+            // Offline sync: log anomaly if price deviates
+            if (Number(item.unit_price) !== Number(product.selling_price)) {
+              await trx('audit_logs').insert({
+                entity_type: 'sales',
+                entity_id: payload.idempotency_key, // temporary ID until sale is inserted
+                action: 'offline_sync_price_anomaly',
+                old_value: String(product.selling_price),
+                new_value: String(item.unit_price),
+                user_id: cashierId,
+                reason: `Offline sync unit_price deviation for product ${product.id}`,
+              });
+            }
+          }
+
           subtotal += item.unit_price * item.quantity;
           discountAmount += item.discount;
         }
+
         const taxAmount = 0;
         const total = subtotal - discountAmount - globalDiscount + taxAmount;
+
+        // Discount validation
+        const totalDiscount = discountAmount + globalDiscount;
+        if (subtotal > 0 && totalDiscount / subtotal > 0.2) {
+          if (!payload.manager_id && !isOfflineSync) {
+            throw new Error('Manager authorization required for discounts exceeding 20%');
+          } else if (!payload.manager_id && isOfflineSync) {
+            await trx('audit_logs').insert({
+              entity_type: 'sales',
+              entity_id: payload.idempotency_key,
+              action: 'offline_sync_discount_anomaly',
+              old_value: '0',
+              new_value: String(totalDiscount),
+              user_id: cashierId,
+              reason: `Offline sync discount > 20% without manager override`,
+            });
+          }
+        }
 
         if (total < 0) {
           throw new Error('Sale total cannot be negative.');
@@ -335,7 +443,7 @@ export class POSRepository {
         let cashPaid = 0;
         let cardPaid = 0;
         let debtPaid = 0;
-        
+
         if (payload.payment_method === 'cash') {
           cashPaid = total;
         } else if (payload.payment_method === 'card') {
@@ -389,6 +497,7 @@ export class POSRepository {
           const customer = await trx('customers')
             .where('id', payload.customer_id)
             .whereNull('deleted_at')
+            .forUpdate()
             .first();
           if (!customer) {
             throw new Error('Selected customer not found or has been deleted.');
@@ -411,27 +520,11 @@ export class POSRepository {
         }
 
         // 4. Process items and inventory
-        //
-        // CRITICAL: Sort items by product_id ASC before acquiring any row-level locks.
-        //
-        // Without this sort, two concurrent transactions can deadlock:
-        //   Txn A: locks product_id=5, waits for product_id=8
-        //   Txn B: locks product_id=8, waits for product_id=5  ← cycle → deadlock
-        //
-        // With ascending sort, every transaction locks rows in the same order,
-        // so no cycle can form. This is standard lock-ordering deadlock prevention.
-        const sortedItems = [...payload.items].sort((a, b) => a.product_id - b.product_id);
-        const productIds = sortedItems.map((item) => item.product_id);
-        const products = await trx('products')
-          .whereIn('id', productIds)
-          .select('id', 'cost_price', 'name', 'barcode');
-
-        const productMap = new Map(products.map((p) => [p.id, p]));
+        // (Products are already fetched and sorted as part of step 1)
         const saleItemsToInsert = [];
 
         for (const item of sortedItems) {
-          const product = productMap.get(item.product_id);
-          if (!product) throw new Error(`Product ${item.product_id} not found`);
+          const product = productMap.get(item.product_id)!;
 
           const lineTotal = item.unit_price * item.quantity - item.discount;
 
@@ -454,12 +547,12 @@ export class POSRepository {
             affectedRows = await trx('inventory')
               .where('product_id', item.product_id)
               .decrement('quantity', item.quantity);
-              
+
             if (affectedRows === 0) {
               await trx('inventory').insert({
                 product_id: item.product_id,
                 quantity: -item.quantity,
-                reserved_quantity: 0
+                reserved_quantity: 0,
               });
               affectedRows = 1;
             }
@@ -567,7 +660,7 @@ export class POSRepository {
       const saleIdentifier = payload.id || payload.idempotency_key;
       try {
         // Offline sales bypass inventory underflow checks since the physical sale already happened
-        await this.checkout(payload, cashierId, true);
+        await this.checkout(payload, cashierId, true, true);
         syncedIds.push(saleIdentifier);
       } catch (error: any) {
         console.error(`[SyncOffline] Failed to sync sale ${saleIdentifier}:`, error.message);
@@ -742,29 +835,40 @@ export class POSRepository {
       const alreadyRefundedAmount = Number(sale.refunded_amount);
 
       // 2. Lock sale_items rows
-      const itemIds = input.items.map(i => i.sale_item_id);
+      const itemIds = input.items.map((i) => i.sale_item_id);
       const saleItems = await trx('sale_items')
         .whereIn('id', itemIds)
         .andWhere('sale_id', input.sale_id)
+        .orderBy('product_id', 'asc')
         .forUpdate();
 
-      const saleItemsMap = new Map(saleItems.map(item => [item.id, item]));
+      const saleItemsMap = new Map(saleItems.map((item) => [item.id, item]));
+
+      // Sort items by product_id ASC to ensure consistent inventory lock ordering
+      const sortedRefundItems = [...input.items].sort((a, b) => {
+        const itemA = saleItemsMap.get(a.sale_item_id);
+        const itemB = saleItemsMap.get(b.sale_item_id);
+        return (itemA?.product_id || 0) - (itemB?.product_id || 0);
+      });
 
       let totalRefundAmount = 0;
       const refundItemsToInsert = [];
 
-      // Process each item
-      for (const reqItem of input.items) {
+      // Process each item in sorted order to prevent deadlocks
+      for (const reqItem of sortedRefundItems) {
         const dbItem = saleItemsMap.get(reqItem.sale_item_id);
         if (!dbItem) throw new Error(`Sale item ${reqItem.sale_item_id} not found on this receipt`);
 
         const availableQty = Number(dbItem.quantity) - Number(dbItem.refunded_quantity);
         if (reqItem.quantity > availableQty) {
-          throw new Error(`Cannot refund ${reqItem.quantity} of item. Only ${availableQty} available.`);
+          throw new Error(
+            `Cannot refund ${reqItem.quantity} of item. Only ${availableQty} available.`,
+          );
         }
 
         // Proportional refund for the item
-        const itemRefundAmount = (Number(dbItem.line_total) / Number(dbItem.quantity)) * reqItem.quantity;
+        const itemRefundAmount =
+          (Number(dbItem.line_total) / Number(dbItem.quantity)) * reqItem.quantity;
         totalRefundAmount += itemRefundAmount;
 
         refundItemsToInsert.push({
@@ -772,7 +876,7 @@ export class POSRepository {
           product_id: dbItem.product_id,
           quantity_refunded: reqItem.quantity,
           refund_amount: itemRefundAmount,
-          restock_inventory: reqItem.restock_inventory
+          restock_inventory: reqItem.restock_inventory,
         });
 
         // Update sale_items aggregate
@@ -780,16 +884,19 @@ export class POSRepository {
           .where('id', dbItem.id)
           .increment('refunded_quantity', reqItem.quantity)
           .update({ updated_at: trx.fn.now() });
-        
+
         // Handle Inventory Restock
         if (reqItem.restock_inventory) {
-          await trx('inventory').where('product_id', dbItem.product_id).increment('quantity', reqItem.quantity).update({ updated_at: trx.fn.now() });
+          await trx('inventory')
+            .where('product_id', dbItem.product_id)
+            .increment('quantity', reqItem.quantity)
+            .update({ updated_at: trx.fn.now() });
           await trx('inventory_adjustments').insert({
             product_id: dbItem.product_id,
             adjustment_type: 'return',
             quantity_change: reqItem.quantity,
-            new_quantity: 0, 
-            old_quantity: 0, 
+            new_quantity: 0,
+            old_quantity: 0,
             notes: `Refund restock for sale ${sale.receipt_number}`,
             created_by: input.manager_id,
           });
@@ -807,7 +914,8 @@ export class POSRepository {
       }
 
       // Protect against monetary over-refund
-      if (totalRefundAmount + alreadyRefundedAmount > originalSaleTotal + 0.01) { // 0.01 for rounding
+      if (totalRefundAmount + alreadyRefundedAmount > originalSaleTotal + 0.01) {
+        // 0.01 for rounding
         throw new Error(`Total refund amount exceeds original sale total.`);
       }
 
@@ -815,7 +923,7 @@ export class POSRepository {
       const cashPaid = Number(sale.cash_paid);
       const cardPaid = Number(sale.card_paid);
       const debtPaid = Number(sale.debt_paid);
-      
+
       // Proportions
       let cashRefunded = 0;
       let cardRefunded = 0;
@@ -835,30 +943,35 @@ export class POSRepository {
       const refundReceiptNum = rawResult.rows[0];
       const formattedRefundReceipt = `RF-${new Date().getFullYear()}-${String(refundReceiptNum.seq).padStart(6, '0')}`;
 
-      const [refund] = await trx('refunds').insert({
-        sale_id: sale.id,
-        refund_receipt_number: formattedRefundReceipt,
-        manager_id: input.manager_id,
-        shift_id: sale.shift_id,
-        refund_type: input.refund_type,
-        original_sale_total: originalSaleTotal,
-        total_refunded: totalRefundAmount,
-        cash_refunded: cashRefunded,
-        card_refunded: cardRefunded,
-        debt_reversed: debtReversed,
-        reason: input.reason,
-        status: 'completed'
-      }).returning('*');
+      const [refund] = await trx('refunds')
+        .insert({
+          sale_id: sale.id,
+          refund_receipt_number: formattedRefundReceipt,
+          manager_id: input.manager_id,
+          shift_id: sale.shift_id,
+          refund_type: input.refund_type,
+          original_sale_total: originalSaleTotal,
+          total_refunded: totalRefundAmount,
+          cash_refunded: cashRefunded,
+          card_refunded: cardRefunded,
+          debt_reversed: debtReversed,
+          reason: input.reason,
+          status: 'completed',
+        })
+        .returning('*');
 
-      const mappedRefundItems = refundItemsToInsert.map(ri => ({
+      const mappedRefundItems = refundItemsToInsert.map((ri) => ({
         ...ri,
-        refund_id: refund.id
+        refund_id: refund.id,
       }));
 
       await trx('refund_items').insert(mappedRefundItems);
 
       // Increment aggregated refund on sale
-      await trx('sales').where('id', sale.id).increment('refunded_amount', totalRefundAmount).update({ updated_at: trx.fn.now() });
+      await trx('sales')
+        .where('id', sale.id)
+        .increment('refunded_amount', totalRefundAmount)
+        .update({ updated_at: trx.fn.now() });
 
       // Deduct cash from shift if applicable
       if (cashRefunded > 0 && sale.shift_id) {
@@ -879,8 +992,8 @@ export class POSRepository {
           input.manager_id,
           sale.shift_id,
           sale.register_id,
-          'cash', 
-          trx
+          'cash',
+          trx,
         );
       }
 
@@ -898,7 +1011,9 @@ export class POSRepository {
       }
 
       if (newStatus !== sale.status) {
-        await trx('sales').where('id', sale.id).update({ status: newStatus, updated_at: trx.fn.now() });
+        await trx('sales')
+          .where('id', sale.id)
+          .update({ status: newStatus, updated_at: trx.fn.now() });
       }
 
       // Audit Logging
@@ -907,17 +1022,22 @@ export class POSRepository {
         entityId: sale.id,
         action: input.refund_type === 'void' ? 'sale_voided' : 'sale_refunded',
         oldValue: { status: sale.status, refunded_amount: alreadyRefundedAmount, sale_id: sale.id },
-        newValue: { status: newStatus, refunded_amount: alreadyRefundedAmount + totalRefundAmount, refund_receipt: formattedRefundReceipt, sale_id: sale.id },
+        newValue: {
+          status: newStatus,
+          refunded_amount: alreadyRefundedAmount + totalRefundAmount,
+          refund_receipt: formattedRefundReceipt,
+          sale_id: sale.id,
+        },
         userId: input.manager_id,
         reason: input.reason,
-        trx: trx
+        trx: trx,
       });
 
       return {
         refund_id: refund.id,
         refund_receipt_number: formattedRefundReceipt,
         total_refunded: totalRefundAmount,
-        status: newStatus
+        status: newStatus,
       };
     });
   }

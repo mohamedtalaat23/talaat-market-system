@@ -15,7 +15,7 @@ import {
   posProductSearchQuerySchema,
   refundSaleSchema,
   voidSaleSchema,
-  drawerAdjustmentSchema
+  drawerAdjustmentSchema,
 } from '../validators/pos.validator';
 
 const router = Router();

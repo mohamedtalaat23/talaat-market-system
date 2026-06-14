@@ -118,6 +118,6 @@ export function QuantityModal() {
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

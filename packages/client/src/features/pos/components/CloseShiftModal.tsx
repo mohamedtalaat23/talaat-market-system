@@ -190,7 +190,9 @@ export function CloseShiftModal() {
             <div className="p-2 bg-danger/10 rounded-xl">
               <Lock className="w-6 h-6 text-danger" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-foreground">Close Shift Report</h2>
+            <h2 className="text-2xl font-black tracking-tight text-foreground">
+              Close Shift Report
+            </h2>
           </div>
           <button
             onClick={() => closeModal('pos_close_shift')}
@@ -212,7 +214,9 @@ export function CloseShiftModal() {
                 <div className="bg-warning/10 border border-warning/30 rounded-xl p-5 flex items-start space-x-4 text-warning shadow-sm">
                   <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5 text-warning" />
                   <div className="text-sm space-y-1.5">
-                    <p className="font-black uppercase tracking-widest text-warning text-[11px]">Operational Warnings Detected</p>
+                    <p className="font-black uppercase tracking-widest text-warning text-[11px]">
+                      Operational Warnings Detected
+                    </p>
                     <div className="font-medium space-y-1">
                       {summary.pending_prints > 0 && (
                         <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>
@@ -230,25 +234,33 @@ export function CloseShiftModal() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Starting Cash</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
+                    Starting Cash
+                  </p>
                   <p className="text-2xl font-black font-mono tracking-tight text-foreground">
                     EGP {summary.starting_cash.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Cash Sales</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
+                    Cash Sales
+                  </p>
                   <p className="text-2xl font-black text-success font-mono tracking-tight">
                     +EGP {summary.cash_sales.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">Card Sales</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
+                    Card Sales
+                  </p>
                   <p className="text-2xl font-black text-primary font-mono tracking-tight">
                     EGP {summary.card_sales.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] ring-1 ring-foreground/5">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">Expected Cash</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">
+                    Expected Cash
+                  </p>
                   <p className="text-2xl font-black text-foreground font-mono tracking-tight">
                     EGP {summary.expected_cash.toFixed(2)}
                   </p>
@@ -305,8 +317,8 @@ export function CloseShiftModal() {
             onClick={handleCloseShift}
             disabled={isSubmitting || isLoading || (!endingCash && !needsOverride)}
             className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-black text-white text-sm uppercase tracking-wider transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
-              needsOverride 
-                ? 'bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 shadow-[0_4px_14px_rgba(var(--color-warning-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-warning-500),0.4)] hover:-translate-y-0.5 active:scale-95' 
+              needsOverride
+                ? 'bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 shadow-[0_4px_14px_rgba(var(--color-warning-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-warning-500),0.4)] hover:-translate-y-0.5 active:scale-95'
                 : 'bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 shadow-[0_4px_14px_rgba(var(--color-danger-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-danger-500),0.4)] hover:-translate-y-0.5 active:scale-95'
             }`}
           >
@@ -319,6 +331,6 @@ export function CloseShiftModal() {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

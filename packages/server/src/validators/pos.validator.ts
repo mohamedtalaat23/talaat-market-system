@@ -62,9 +62,26 @@ export const posProductSearchQuerySchema = z.object({
 
 export const drawerAdjustmentSchema = z.object({
   manager_id: z.number().int().positive('Manager ID is required'),
-  type: z.enum(['safe_drop', 'change_replenishment', 'petty_cash', 'vendor_payment', 'owner_withdrawal', 'cash_correction_in', 'cash_correction_out']),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+  type: z.enum([
+    'safe_drop',
+    'change_replenishment',
+    'petty_cash',
+    'vendor_payment',
+    'owner_withdrawal',
+    'cash_correction_in',
+    'cash_correction_out',
+  ]),
   amount: z.coerce.number().positive('Amount must be positive'),
-  reason_code: z.enum(['SAFE_DROP', 'CHANGE_REPLENISHMENT', 'PETTY_CASH', 'VENDOR_PAYMENT', 'OWNER_WITHDRAWAL', 'CASH_CORRECTION_IN', 'CASH_CORRECTION_OUT']),
+  reason_code: z.enum([
+    'SAFE_DROP',
+    'CHANGE_REPLENISHMENT',
+    'PETTY_CASH',
+    'VENDOR_PAYMENT',
+    'OWNER_WITHDRAWAL',
+    'CASH_CORRECTION_IN',
+    'CASH_CORRECTION_OUT',
+  ]),
   reason_notes: z.string().trim().nullable().optional(),
 });
 
@@ -81,17 +98,21 @@ export const closeShiftSchema = z.object({
 
 export const voidSaleSchema = z.object({
   manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
   reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
 });
 
 export const refundSaleSchema = z.object({
   manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
   reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
-  items: z.array(
-    z.object({
-      sale_item_id: z.string().uuid('Invalid sale item UUID'),
-      quantity: z.coerce.number().positive('Quantity must be positive'),
-      restock_inventory: z.boolean().default(true),
-    })
-  ).min(1, 'At least one item is required for refund'),
+  items: z
+    .array(
+      z.object({
+        sale_item_id: z.string().uuid('Invalid sale item UUID'),
+        quantity: z.coerce.number().positive('Quantity must be positive'),
+        restock_inventory: z.boolean().default(true),
+      }),
+    )
+    .min(1, 'At least one item is required for refund'),
 });

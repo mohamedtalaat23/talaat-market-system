@@ -21,9 +21,12 @@ export function ReturnApprovalDashboard() {
 
   const getAgeColor = (ageState: string) => {
     switch (ageState) {
-      case 'CRITICAL': return 'bg-red-500/10 border-red-500/20 text-red-500';
-      case 'WARNING': return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-600';
-      default: return 'bg-green-500/10 border-green-500/20 text-green-600';
+      case 'CRITICAL':
+        return 'bg-red-500/10 border-red-500/20 text-red-500';
+      case 'WARNING':
+        return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-600';
+      default:
+        return 'bg-green-500/10 border-green-500/20 text-green-600';
     }
   };
 
@@ -50,13 +53,15 @@ export function ReturnApprovalDashboard() {
                   onClick={() => !isMine && setSelectedQueueId(q.queue_id)}
                   disabled={isMine}
                   className={`w-full flex items-center justify-between p-4 text-left transition-colors ${
-                    isMine 
-                      ? 'bg-neutral-100 opacity-60 cursor-not-allowed' 
+                    isMine
+                      ? 'bg-neutral-100 opacity-60 cursor-not-allowed'
                       : 'hover:bg-indigo-50/50 cursor-pointer group'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 ${getAgeColor(q.age_state)}`}>
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 ${getAgeColor(q.age_state)}`}
+                    >
                       <Clock className="w-3 h-3" />
                       {q.age_state}
                     </div>
@@ -67,7 +72,12 @@ export function ReturnApprovalDashboard() {
                       <div className="text-xs text-secondary mt-0.5 flex gap-3">
                         <span>Created By: {q.owner_id === user?.id ? 'Me' : 'Cashier'}</span>
                         <span className="text-neutral-300">|</span>
-                        <span>Value: EGP {q.items?.reduce((acc: number, i: any) => acc + (i.unit_price * i.quantity), 0).toFixed(2) || '0.00'}</span>
+                        <span>
+                          Value: EGP{' '}
+                          {q.items
+                            ?.reduce((acc: number, i: any) => acc + i.unit_price * i.quantity, 0)
+                            .toFixed(2) || '0.00'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -90,12 +100,12 @@ export function ReturnApprovalDashboard() {
       </Card>
 
       {selectedQueueId && (
-        <ManagerApproveCommitModal 
-          queueId={selectedQueueId} 
+        <ManagerApproveCommitModal
+          queueId={selectedQueueId}
           onClose={() => {
             setSelectedQueueId(null);
             refetch();
-          }} 
+          }}
         />
       )}
     </>

@@ -46,7 +46,10 @@ function redactSensitiveData(args: unknown[]): unknown[] {
       let clean = arg;
       for (const word of ['password', 'pin', 'secret', 'token', 'key']) {
         if (clean.toLowerCase().includes(word)) {
-          clean = clean.replace(new RegExp(`${word}\\s*[:=]\\s*[^&\\s\\"\\';]+`, 'gi'), `${word}=[REDACTED]`);
+          clean = clean.replace(
+            new RegExp(`${word}\\s*[:=]\\s*[^&\\s\\"\\';]+`, 'gi'),
+            `${word}=[REDACTED]`,
+          );
         }
       }
       return clean;
@@ -69,6 +72,9 @@ export const logger = {
 
 // ── Development detection ────────────────────────────────────────────────────
 const isDev = process.env['NODE_ENV'] === 'development';
+if (isDev) {
+  process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+}
 const VITE_DEV_SERVER_URL = 'http' + '://localhost:5173';
 const SERVER_PORT_DEV = 3001; // Dev server runs on fixed port
 

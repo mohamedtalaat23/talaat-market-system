@@ -130,7 +130,9 @@ export function InventoryPage() {
         <button
           onClick={() => setActiveTab('stock')}
           className={`pb-3 flex items-center space-x-2 font-bold uppercase tracking-wider text-xs border-b-2 transition-all duration-300 ${
-            activeTab === 'stock' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-foreground'
+            activeTab === 'stock'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-secondary hover:text-foreground'
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -139,7 +141,9 @@ export function InventoryPage() {
         <button
           onClick={() => setActiveTab('cycle_counts')}
           className={`pb-3 flex items-center space-x-2 font-bold uppercase tracking-wider text-xs border-b-2 transition-all duration-300 ${
-            activeTab === 'cycle_counts' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-foreground'
+            activeTab === 'cycle_counts'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-secondary hover:text-foreground'
           }`}
         >
           <ClipboardList className="w-4 h-4" />

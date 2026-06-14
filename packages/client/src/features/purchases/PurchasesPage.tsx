@@ -168,7 +168,9 @@ export function PurchasesPage() {
             {t('purchases.totalPOs')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-4xl font-black tracking-tighter text-foreground">{meta.total}</span>
+            <span className="text-4xl font-black tracking-tighter text-foreground">
+              {meta.total}
+            </span>
             <div className="p-2 bg-primary/10 rounded-xl">
               <FileText className="h-5 w-5 text-primary" />
             </div>
@@ -223,7 +225,9 @@ export function PurchasesPage() {
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {/* Supplier Filter */}
           <div className="flex flex-col space-y-1.5 w-full sm:w-64">
-            <span className="text-xs font-bold uppercase tracking-wider text-secondary">{t('purchases.supplier')}</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+              {t('purchases.supplier')}
+            </span>
             <select
               value={supplierFilter || ''}
               onChange={(e) => {
@@ -231,7 +235,13 @@ export function PurchasesPage() {
                 setPage(1);
               }}
               className="bg-background text-foreground border border-border/60 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm shadow-sm transition-all appearance-none cursor-pointer font-semibold"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: `right 0.75rem center`,
+                backgroundRepeat: `no-repeat`,
+                backgroundSize: `1.5em 1.5em`,
+                paddingRight: `2.5rem`,
+              }}
             >
               <option value="">{t('purchases.allSuppliers')}</option>
               {suppliers.map((s) => (
@@ -254,7 +264,13 @@ export function PurchasesPage() {
                 setPage(1);
               }}
               className="bg-background text-foreground border border-border/60 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm shadow-sm transition-all appearance-none cursor-pointer font-semibold"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.75rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: `right 0.75rem center`,
+                backgroundRepeat: `no-repeat`,
+                backgroundSize: `1.5em 1.5em`,
+                paddingRight: `2.5rem`,
+              }}
             >
               <option value="">{t('employees.allStatuses')}</option>
               <option value="draft">{t('purchases.draft')}</option>
@@ -317,7 +333,9 @@ export function PurchasesPage() {
                       <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
                         <ShoppingBag className="h-8 w-8 text-neutral-400" />
                       </div>
-                      <h3 className="text-lg font-bold text-foreground mb-1">{t('purchases.noPOs')}</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-1">
+                        {t('purchases.noPOs')}
+                      </h3>
                     </div>
                   </td>
                 </tr>
@@ -327,10 +345,16 @@ export function PurchasesPage() {
                     key={po.id}
                     className="table-row-hover hover:bg-primary/5 text-foreground group h-14"
                   >
-                    <td className="py-2 px-3 font-mono tabular-nums font-black text-primary text-[13px]">{po.po_number}</td>
+                    <td className="py-2 px-3 font-mono tabular-nums font-black text-primary text-[13px]">
+                      {po.po_number}
+                    </td>
                     <td className="py-2 px-3">
-                      <div className="font-bold truncate max-w-[200px]" title={po.supplier_name}>{po.supplier_name}</div>
-                      <div className="text-[11px] text-secondary font-mono tracking-widest">{po.supplier_code}</div>
+                      <div className="font-bold truncate max-w-[200px]" title={po.supplier_name}>
+                        {po.supplier_name}
+                      </div>
+                      <div className="text-[11px] text-secondary font-mono tracking-widest">
+                        {po.supplier_code}
+                      </div>
                     </td>
                     <td className="py-2 px-3 text-xs font-mono font-semibold text-secondary tracking-wide">
                       {formatDate(po.order_date)}
@@ -379,7 +403,7 @@ export function PurchasesPage() {
           total={meta.total}
           limit={limit}
           onPageChange={(p) => setPage(p)}
-          itemName={language === 'ar' ? 'طلبات الشراء' : 'purchase orders'}
+          itemName={t('purchases.purchaseOrders')}
         />
       </div>
 

@@ -23,7 +23,7 @@ export function InventoryAdjustmentForm({
   isLoading,
   onCancel,
 }: InventoryAdjustmentFormProps) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [type, setType] = useState<AdjustmentType>('stock_addition');
   const [changeValue, setChangeValue] = useState('');
   const [notes, setNotes] = useState('');
@@ -48,15 +48,21 @@ export function InventoryAdjustmentForm({
 
   const getWarningTranslation = (msg: string) => {
     if (!msg) return '';
-    if (language !== 'ar') return msg;
-    if (msg.startsWith('Addition quantity')) return 'يجب أن تكون كمية الإضافة غير سالبة';
-    if (msg.startsWith('Change quantity')) return 'يجب أن تكون كمية التغيير غير سالبة';
-    if (msg.startsWith('Cannot adjust past zero'))
-      return `لا يمكن تعديل المخزون لأقل من الصفر. أقصى كمية صرف مسموح بها هي ${item.quantity}`;
-    if (msg.startsWith('Inventory count cannot be negative'))
-      return 'لا يمكن أن تكون كمية المخزون سالبة';
-    if (msg.startsWith('Please enter a valid positive'))
-      return 'يرجى إدخال كمية تغيير إيجابية صالحة';
+    if (msg.startsWith('Addition quantity')) {
+      return t('inventory.errorAdditionNegative');
+    }
+    if (msg.startsWith('Change quantity')) {
+      return t('inventory.errorChangeNegative');
+    }
+    if (msg.startsWith('Cannot adjust past zero')) {
+      return t('inventory.errorMinLimit').replace('{max}', String(item.quantity));
+    }
+    if (msg.startsWith('Inventory count cannot be negative')) {
+      return t('inventory.errorInventoryNegative');
+    }
+    if (msg.startsWith('Please enter a valid positive')) {
+      return t('inventory.errorInvalidPositive');
+    }
     return msg;
   };
 
@@ -66,11 +72,7 @@ export function InventoryAdjustmentForm({
 
     const val = parseFloat(changeValue);
     if (isNaN(val) || val <= 0) {
-      setWarningMessage(
-        language === 'ar'
-          ? 'يرجى إدخال كمية تغيير إيجابية صالحة'
-          : 'Please enter a valid positive change quantity',
-      );
+      setWarningMessage('Please enter a valid positive change quantity');
       return;
     }
 

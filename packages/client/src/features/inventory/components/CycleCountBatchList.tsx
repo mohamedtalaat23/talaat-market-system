@@ -39,7 +39,7 @@ export function CycleCountBatchList() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Batch Cycle Counts</h1>
-        <button 
+        <button
           onClick={() => setShowNewModal(true)}
           className="flex items-center space-x-2 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
@@ -49,12 +49,14 @@ export function CycleCountBatchList() {
       </div>
 
       <div className="flex space-x-4 mb-6 border-b border-input-border">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 px-2 flex items-center space-x-2 font-medium border-b-2 transition-colors ${
-              activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-white'
+              activeTab === tab.id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-secondary hover:text-white'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -77,22 +79,34 @@ export function CycleCountBatchList() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="p-8 text-center text-secondary">Loading...</td></tr>
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-secondary">
+                  Loading...
+                </td>
+              </tr>
             ) : batches?.data?.length === 0 ? (
-              <tr><td colSpan={6} className="p-8 text-center text-secondary">No cycle counts found.</td></tr>
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-secondary">
+                  No cycle counts found.
+                </td>
+              </tr>
             ) : (
               batches?.data?.map((batch: any) => (
-                <tr 
-                  key={batch.id} 
+                <tr
+                  key={batch.id}
                   className="border-b border-input-border/50 hover:bg-card-hover cursor-pointer transition-colors"
                   onClick={() => setActiveBatchId(batch.id)}
                 >
-                  <td className="p-4 font-mono text-sm">{batch.id.substring(0,8)}...</td>
+                  <td className="p-4 font-mono text-sm">{batch.id.substring(0, 8)}...</td>
                   <td className="p-4 uppercase text-xs font-bold text-primary">{batch.type}</td>
                   <td className="p-4">{batch.location || '-'}</td>
                   <td className="p-4 uppercase text-xs font-bold text-secondary">{batch.status}</td>
-                  <td className="p-4 text-secondary">{new Date(batch.created_at).toLocaleDateString()}</td>
-                  <td className="p-4 font-medium">EGP {Number(batch.total_variance_value).toFixed(2)}</td>
+                  <td className="p-4 text-secondary">
+                    {new Date(batch.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="p-4 font-medium">
+                    EGP {Number(batch.total_variance_value).toFixed(2)}
+                  </td>
                 </tr>
               ))
             )}
@@ -105,16 +119,19 @@ export function CycleCountBatchList() {
           <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-input-border overflow-hidden">
             <div className="p-6 border-b border-input-border flex justify-between items-center">
               <h2 className="text-xl font-bold">New Cycle Count</h2>
-              <button onClick={() => setShowNewModal(false)} className="text-secondary hover:text-white">
+              <button
+                onClick={() => setShowNewModal(false)}
+                className="text-secondary hover:text-white"
+              >
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary mb-2">Count Type</label>
-                <select 
-                  value={newType} 
-                  onChange={e => setNewType(e.target.value)}
+                <select
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
                   className="w-full bg-input-bg border border-input-border rounded-lg p-3 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="blind">Blind Count (System quantities hidden)</option>
@@ -123,21 +140,26 @@ export function CycleCountBatchList() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Location / Zone (Optional)</label>
-                <input 
-                  type="text" 
-                  value={newLocation} 
-                  onChange={e => setNewLocation(e.target.value)}
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Location / Zone (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newLocation}
+                  onChange={(e) => setNewLocation(e.target.value)}
                   placeholder="e.g. Aisle 4, Dairy Cooler"
                   className="w-full bg-input-bg border border-input-border rounded-lg p-3 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
             <div className="p-6 border-t border-input-border bg-card-hover flex justify-end space-x-3">
-              <button onClick={() => setShowNewModal(false)} className="px-4 py-2 text-secondary hover:text-white font-medium">
+              <button
+                onClick={() => setShowNewModal(false)}
+                className="px-4 py-2 text-secondary hover:text-white font-medium"
+              >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleCreate}
                 disabled={createBatch.isPending}
                 className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50"

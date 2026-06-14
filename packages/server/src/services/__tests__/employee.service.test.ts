@@ -17,6 +17,7 @@ jest.mock('../../middleware/logger', () => ({
 describe('EmployeeService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (employeeRepository.findAllWithPinHashes as jest.Mock).mockResolvedValue([]);
   });
 
   describe('getEmployees', () => {
@@ -67,8 +68,8 @@ describe('EmployeeService', () => {
     it('should successfully create employee and hash password/pin', async () => {
       (employeeRepository.findByUsername as jest.Mock).mockResolvedValue(null);
       (bcrypt.hash as jest.Mock)
-        .mockResolvedValueOnce('hashed_pass')
-        .mockResolvedValueOnce('hashed_pin');
+        .mockResolvedValueOnce('hashed_pin')
+        .mockResolvedValueOnce('hashed_pass');
       const mockCreated = { id: 1, username: 'newuser' };
       (employeeRepository.create as jest.Mock).mockResolvedValue(mockCreated);
 
@@ -80,8 +81,8 @@ describe('EmployeeService', () => {
         role: 'cashier',
       });
 
-      expect(bcrypt.hash).toHaveBeenNthCalledWith(1, 'password', 12);
-      expect(bcrypt.hash).toHaveBeenNthCalledWith(2, '1234', 12);
+      expect(bcrypt.hash).toHaveBeenNthCalledWith(1, '1234', 12);
+      expect(bcrypt.hash).toHaveBeenNthCalledWith(2, 'password', 12);
       expect(employeeRepository.create).toHaveBeenCalledWith({
         full_name: 'New User',
         username: 'newuser',
@@ -130,10 +131,14 @@ describe('EmployeeService', () => {
 
       expect(bcrypt.hash).toHaveBeenNthCalledWith(1, 'newpassword', 12);
       expect(bcrypt.hash).toHaveBeenNthCalledWith(2, '4321', 12);
-      expect(employeeRepository.update).toHaveBeenCalledWith(1, {
-        password_hash: 'hashed_pass',
-        pin_hash: 'hashed_pin',
-      });
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        1,
+        {
+          password_hash: 'hashed_pass',
+          pin_hash: 'hashed_pin',
+        },
+        expect.any(Function),
+      );
       expect(result).toEqual(mockUpdated);
     });
   });

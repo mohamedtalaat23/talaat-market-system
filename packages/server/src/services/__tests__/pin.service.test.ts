@@ -5,9 +5,13 @@ import bcrypt from 'bcryptjs';
 jest.mock('../../config/database', () => {
   const mockDb = jest.fn().mockImplementation(() => {
     return {
+      select: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       whereIn: jest.fn().mockReturnThis(),
       whereNull: jest.fn().mockReturnThis(),
+      increment: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
       first: jest.fn(),
     };
   });
@@ -23,9 +27,13 @@ describe('PinService', () => {
     jest.clearAllMocks();
     mockFirst = jest.fn();
     (db as unknown as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       whereIn: jest.fn().mockReturnThis(),
       whereNull: jest.fn().mockReturnThis(),
+      increment: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
       first: mockFirst,
     });
   });
@@ -44,6 +52,7 @@ describe('PinService', () => {
       role: 'manager',
       is_active: true,
       pin_hash: 'hashed_pin',
+      failed_pin_attempts: 0,
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
@@ -54,12 +63,15 @@ describe('PinService', () => {
   });
 
   it('should lock out manager after 5 failed attempts', async () => {
-    mockFirst.mockResolvedValue({
+    let attemptsCount = 0;
+    mockFirst.mockImplementation(async () => ({
       id: 2,
       role: 'manager',
       is_active: true,
       pin_hash: 'hashed_pin2',
-    });
+      failed_pin_attempts: attemptsCount++,
+      pin_locked_until: attemptsCount > 5 ? new Date(Date.now() + 5 * 60 * 1000) : null,
+    }));
     (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
     // Call 4 times
@@ -84,6 +96,7 @@ describe('PinService', () => {
       role: 'manager',
       is_active: true,
       pin_hash: 'hashed_pin3',
+      failed_pin_attempts: 2,
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 

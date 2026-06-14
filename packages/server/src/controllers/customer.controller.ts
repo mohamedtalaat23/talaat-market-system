@@ -17,7 +17,13 @@ export class CustomerController {
       const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
       const offset = (page - 1) * limit;
 
-      const { data: customers, total } = await customerRepository.findAll(search, limit, offset, sortBy, sortOrder);
+      const { data: customers, total } = await customerRepository.findAll(
+        search,
+        limit,
+        offset,
+        sortBy,
+        sortOrder,
+      );
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
@@ -157,8 +163,8 @@ export class CustomerController {
       const { amount, notes, payment_method } = req.body;
       const userId = (req as any).user?.id || null;
 
-      // Query the active cashier shift to link repayment cash to the drawer
-      const activeShift = userId ? await posRepository.getCurrentShift(userId) : null;
+      // Query the active cashier shift by employee ID to link repayment cash to the drawer
+      const activeShift = userId ? await posRepository.getOpenShiftByEmployee(userId) : null;
 
       if (!activeShift) {
         res.status(HTTP_STATUS.BAD_REQUEST).json({

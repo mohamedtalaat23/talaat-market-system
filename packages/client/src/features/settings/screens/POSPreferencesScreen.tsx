@@ -57,7 +57,12 @@ export function POSPreferencesScreen() {
           </h4>
 
           <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, allow_negative_inventory: !form.allow_negative_inventory })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() =>
+                setForm({ ...form, allow_negative_inventory: !form.allow_negative_inventory })
+              }
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"
@@ -82,14 +87,21 @@ export function POSPreferencesScreen() {
               </label>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, require_manager_pin_voids: !form.require_manager_pin_voids })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() =>
+                setForm({ ...form, require_manager_pin_voids: !form.require_manager_pin_voids })
+              }
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"
                   id="require_manager_pin_voids"
                   className="w-5 h-5 rounded border-border/60 text-primary focus:ring-primary/20 bg-card cursor-pointer transition-all"
                   checked={form.require_manager_pin_voids}
-                  onChange={(e) => setForm({ ...form, require_manager_pin_voids: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({ ...form, require_manager_pin_voids: e.target.checked })
+                  }
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
@@ -125,7 +137,9 @@ export function POSPreferencesScreen() {
               value={form.low_stock_threshold}
               onChange={(e) => setForm({ ...form, low_stock_threshold: Number(e.target.value) })}
             />
-            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed max-w-xl">{t('settings.defaultLowStockDesc')}</p>
+            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed max-w-xl">
+              {t('settings.defaultLowStockDesc')}
+            </p>
           </div>
         </div>
 

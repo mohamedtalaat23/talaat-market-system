@@ -90,7 +90,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <ErrorBoundary>
-          <BrowserRouter>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
               {/* Public route */}
               <Route path="login" element={<LoginPage />} />
@@ -182,7 +182,7 @@ export function App() {
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="customers/:id" element={<CustomerDetailScreen />} />
                 <Route
-                  path="reports/*"
+                  path="reports"
                   element={
                     <ProtectedRoute allowedRoles={['admin', 'manager']}>
                       <ReportsLayout />
@@ -196,7 +196,7 @@ export function App() {
                   <Route path="overrides" element={<OverrideAuditScreen />} />
                 </Route>
                 <Route
-                  path="settings/*"
+                  path="settings"
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <SettingsLayout />

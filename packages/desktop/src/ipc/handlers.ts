@@ -37,6 +37,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
+          javascript: false,
         },
       });
 

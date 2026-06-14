@@ -160,6 +160,6 @@ export function ReceiptPreviewModal() {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

@@ -20,7 +20,7 @@ export class AuditLogService {
    */
   async logEvent(input: AuditLogInput): Promise<void> {
     const queryBuilder = input.trx ? input.trx('audit_logs') : db('audit_logs');
-    
+
     await queryBuilder.insert({
       entity_type: input.entityType,
       entity_id: input.entityId || null,

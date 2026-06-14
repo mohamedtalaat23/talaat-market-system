@@ -186,9 +186,7 @@ export function PrintQueueMonitor() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-foreground">
-                Printer Type
-              </label>
+              <label className="block text-[11px] font-bold text-foreground">Printer Type</label>
               <select
                 className="w-full bg-card border border-border/80 rounded-lg px-2.5 py-2 text-foreground font-medium text-xs focus:outline-none focus:border-success focus:ring-1 focus:ring-success/20 transition-all shadow-sm cursor-pointer"
                 value={printerConfig.type}
@@ -199,9 +197,7 @@ export function PrintQueueMonitor() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-foreground">
-                Paper Width
-              </label>
+              <label className="block text-[11px] font-bold text-foreground">Paper Width</label>
               <select
                 className="w-full bg-card border border-border/80 rounded-lg px-2.5 py-2 text-foreground font-medium text-xs focus:outline-none focus:border-success focus:ring-1 focus:ring-success/20 transition-all shadow-sm cursor-pointer"
                 value={printerConfig.paperWidth}
@@ -279,7 +275,9 @@ export function PrintQueueMonitor() {
           >
             {status.message}
           </span>
-          <div className={`flex items-center space-x-1.5 shrink-0 px-2.5 py-1 rounded-md border bg-card ${status.online ? 'border-success/30' : 'border-danger/30'}`}>
+          <div
+            className={`flex items-center space-x-1.5 shrink-0 px-2.5 py-1 rounded-md border bg-card ${status.online ? 'border-success/30' : 'border-danger/30'}`}
+          >
             <span
               className={`h-2 w-2 rounded-full shadow-sm ${status.online ? 'bg-success animate-pulse shadow-success/40' : 'bg-danger shadow-danger/40'}`}
             />
@@ -306,9 +304,12 @@ export function PrintQueueMonitor() {
               <div className="flex items-center justify-between bg-gradient-to-r from-success/10 to-success/5 border border-success/30 shadow-sm text-success p-3 rounded-xl text-xs animate-in slide-in-from-bottom-2 fade-in">
                 <span className="flex items-center font-bold">
                   <RefreshCw size={14} className="mr-2 animate-spin text-success" />
-                  Spooling {processingJobs.length} print job{processingJobs.length > 1 ? 's' : ''}...
+                  Spooling {processingJobs.length} print job{processingJobs.length > 1 ? 's' : ''}
+                  ...
                 </span>
-                <span className="font-mono text-[10px] font-black tracking-widest px-1.5 py-0.5 rounded bg-success/20">ERP</span>
+                <span className="font-mono text-[10px] font-black tracking-widest px-1.5 py-0.5 rounded bg-success/20">
+                  ERP
+                </span>
               </div>
             )}
 
@@ -321,7 +322,8 @@ export function PrintQueueMonitor() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <span className="font-black block text-xs tracking-wide">
-                      Print Failed: <span className="font-mono ml-0.5">{job.receipt.receiptNumber}</span>
+                      Print Failed:{' '}
+                      <span className="font-mono ml-0.5">{job.receipt.receiptNumber}</span>
                     </span>
                     <span
                       className="text-[11px] font-medium opacity-90 block leading-tight truncate max-w-[170px]"

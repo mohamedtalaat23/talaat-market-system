@@ -3,7 +3,12 @@ import { posRepository } from '../repositories/pos.repository';
 import { z } from 'zod';
 import { db } from '../config/database';
 import { pinService } from '../services/pin.service';
-import { checkoutSchema, reprintSchema, refundSaleSchema, voidSaleSchema } from '../validators/pos.validator';
+import {
+  checkoutSchema,
+  reprintSchema,
+  refundSaleSchema,
+  voidSaleSchema,
+} from '../validators/pos.validator';
 
 export class POSController {
   checkout = async (req: Request, res: Response) => {
@@ -16,19 +21,17 @@ export class POSController {
       // If a manager PIN is supplied, authenticate it securely with lockout protection
       if (payload.manager_pin) {
         if (!payload.manager_id) {
-          return res
-            .status(400)
-            .json({
-              success: false,
-              message: 'Manager ID is required for PIN authorization override.',
-            });
+          return res.status(400).json({
+            success: false,
+            message: 'Manager ID is required for PIN authorization override.',
+          });
         }
 
         const verification = await pinService.verifyPin(
           Number(payload.manager_id),
           String(payload.manager_pin),
           cashierId,
-          req.ip
+          req.ip,
         );
         if (!verification.success) {
           return res.status(403).json({ success: false, message: verification.message });
@@ -67,7 +70,9 @@ export class POSController {
 
       const existing = await posRepository.getCurrentShift(registerId);
       if (existing) {
-        return res.status(400).json({ success: false, message: 'This register already has an open shift.' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'This register already has an open shift.' });
       }
 
       const shift = await posRepository.openShift(cashierId, startingCash, registerId);
@@ -84,13 +89,21 @@ export class POSController {
       const userRole = (req as any).user.role;
 
       const summary = await posRepository.getShiftSummary(shift_id);
-      
+
       // Authorization Check
       if (summary.employee_id !== userId && !['manager', 'admin'].includes(userRole)) {
-        return res.status(403).json({ success: false, message: 'You are not authorized to close this shift.' });
+        return res
+          .status(403)
+          .json({ success: false, message: 'You are not authorized to close this shift.' });
       }
 
-      const shift = await posRepository.closeShift(shift_id, ending_cash, summary.expected_cash, notes, userId);
+      const shift = await posRepository.closeShift(
+        shift_id,
+        ending_cash,
+        summary.expected_cash,
+        notes,
+        userId,
+      );
       return res.status(200).json({ success: true, data: shift });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -138,10 +151,23 @@ export class POSController {
   createDrawerAdjustment = async (req: Request, res: Response) => {
     try {
       const shiftId = Number(req.params.id);
-      const payload = req.body;
+      const { manager_id, manager_pin, ...rest } = req.body;
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(manager_id),
+        String(manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
+
       const adjustment = await posRepository.createDrawerAdjustment({
         shift_id: shiftId,
-        ...payload
+        manager_id,
+        ...rest,
       });
       return res.status(201).json({ success: true, data: adjustment });
     } catch (error: any) {
@@ -261,6 +287,17 @@ export class POSController {
     try {
       const saleId = String(req.params.id);
       const payload = refundSaleSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(payload.manager_id),
+        String(payload.manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
 
       const result = await posRepository.processRefund({
         sale_id: saleId,
@@ -285,6 +322,17 @@ export class POSController {
     try {
       const saleId = String(req.params.id);
       const payload = voidSaleSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(payload.manager_id),
+        String(payload.manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
 
       const sale = await posRepository.getReceiptById(saleId);
       if (!sale) throw new Error('Sale not found');

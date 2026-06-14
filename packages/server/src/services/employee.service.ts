@@ -72,7 +72,7 @@ export class EmployeeService {
     if (data.pin) {
       const activeEmployees = await employeeRepository.findAllWithPinHashes();
       for (const emp of activeEmployees) {
-        if (emp.pin_hash && await bcrypt.compare(data.pin, emp.pin_hash)) {
+        if (emp.pin_hash && (await bcrypt.compare(data.pin, emp.pin_hash))) {
           throw new ConflictError('PIN is already in use by another active employee');
         }
       }
@@ -105,7 +105,7 @@ export class EmployeeService {
     currentUserRole?: string,
     currentUserId?: number,
     ipAddress?: string,
-    reason?: string
+    reason?: string,
   ): Promise<Employee> {
     logger.info('Updating employee details', { id });
 
@@ -139,7 +139,7 @@ export class EmployeeService {
     if (data.pin) {
       const activeEmployees = await employeeRepository.findAllWithPinHashes();
       for (const emp of activeEmployees) {
-        if (emp.id !== id && emp.pin_hash && await bcrypt.compare(data.pin, emp.pin_hash)) {
+        if (emp.id !== id && emp.pin_hash && (await bcrypt.compare(data.pin, emp.pin_hash))) {
           throw new ConflictError('PIN is already in use by another active employee');
         }
       }
@@ -178,7 +178,7 @@ export class EmployeeService {
           trx,
         });
       }
-      
+
       return updatedRow;
     });
 

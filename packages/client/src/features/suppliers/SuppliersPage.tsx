@@ -200,7 +200,10 @@ export function SuppliersPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {items.map((supplier) => (
-                  <tr key={supplier.id} className="table-row-hover hover:bg-card-hover/40 transition-colors group">
+                  <tr
+                    key={supplier.id}
+                    className="table-row-hover hover:bg-card-hover/40 transition-colors group"
+                  >
                     {/* Code */}
                     <td className="px-6 py-4 font-mono text-xs font-semibold text-secondary">
                       {supplier.supplier_code}

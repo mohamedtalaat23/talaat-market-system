@@ -15,11 +15,19 @@ export class PinService {
     managerId: number,
     pin: string,
     requestingUserId?: number,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<{ success: boolean; message: string }> {
     // I should get the employee by ID directly.
     const row = await db('employees')
-      .select('id', 'pin_hash', 'role', 'is_active', 'deleted_at', 'failed_pin_attempts', 'pin_locked_until')
+      .select(
+        'id',
+        'pin_hash',
+        'role',
+        'is_active',
+        'deleted_at',
+        'failed_pin_attempts',
+        'pin_locked_until',
+      )
       .where('id', managerId)
       .whereIn('role', ['manager', 'admin'])
       .where('is_active', true)
@@ -67,7 +75,8 @@ export class PinService {
 
         return {
           success: false,
-          message: 'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
+          message:
+            'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
         };
       } else {
         await employeeRepository.incrementFailedPinAttempts(managerId);

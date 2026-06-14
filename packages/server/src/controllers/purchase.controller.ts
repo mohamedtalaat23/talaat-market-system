@@ -24,7 +24,14 @@ export class PurchaseController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsedFilters = queryFilterSchema.parse(req.query);
-      const filters: { status?: string; supplier_id?: number; page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {
+      const filters: {
+        status?: string;
+        supplier_id?: number;
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+      } = {
         page: parsedFilters.page,
         limit: parsedFilters.limit,
       };
@@ -202,9 +209,9 @@ export class PurchaseController {
         res.status(401).json({ status: 'error', message: 'Unauthorized' });
         return;
       }
-      const items = payload.items.map(item => ({
+      const items = payload.items.map((item) => ({
         ...item,
-        shortage_reason: item.shortage_reason ?? null
+        shortage_reason: item.shortage_reason ?? null,
       }));
       await purchaseRepository.receiveGoods(id, items, receiverId, payload.notes || undefined);
       res.json({
@@ -213,13 +220,11 @@ export class PurchaseController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            status: 'error',
-            message: 'Invalid goods receipt payload',
-            errors: error.errors,
-          });
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid goods receipt payload',
+          errors: error.errors,
+        });
         return;
       }
       logger.error('Error in purchase controller receive:', error);

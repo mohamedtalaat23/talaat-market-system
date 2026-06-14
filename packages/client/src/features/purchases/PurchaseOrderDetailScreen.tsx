@@ -12,7 +12,16 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { GoodsReceiptModal } from './components/GoodsReceiptModal';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ArrowLeft, Calendar, User, FileText, Truck, CheckCircle2, XCircle, History } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  FileText,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  History,
+} from 'lucide-react';
 
 export function PurchaseOrderDetailScreen() {
   const { id: idParam } = useParams<{ id: string }>();
@@ -22,7 +31,7 @@ export function PurchaseOrderDetailScreen() {
 
   const { data: poResponse, isLoading, error } = usePurchaseOrder(id);
   const po = poResponse?.data;
-  
+
   const { data: receiptsResponse } = usePurchaseReceipts(id);
   const receipts = receiptsResponse?.data || [];
 
@@ -361,46 +370,46 @@ export function PurchaseOrderDetailScreen() {
                     const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
                     const remaining = Math.max(0, item.ordered_quantity - resolved);
                     return (
-                    <tr key={item.id || idx} className="hover:bg-card-hover/10 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-foreground">{item.product_name}</div>
-                        {item.product_name_ar && (
-                          <div className="text-xs text-secondary font-normal dir-rtl mt-0.5">
-                            {item.product_name_ar}
-                          </div>
+                      <tr key={item.id || idx} className="hover:bg-card-hover/10 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-foreground">{item.product_name}</div>
+                          {item.product_name_ar && (
+                            <div className="text-xs text-secondary font-normal dir-rtl mt-0.5">
+                              {item.product_name_ar}
+                            </div>
+                          )}
+                          {po.status !== 'draft' && remaining > 0 && (
+                            <div className="text-xs text-warning font-mono mt-1">
+                              Pending: {remaining}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono text-secondary">
+                          {item.barcode || 'N/A'}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-semibold text-foreground">
+                          {item.ordered_quantity}
+                        </td>
+                        {po.status !== 'draft' && po.status !== 'ordered' && (
+                          <>
+                            <td className="py-3 px-4 text-center font-mono font-bold text-success">
+                              {item.received_quantity}
+                            </td>
+                            <td className="py-3 px-4 text-center font-mono font-bold text-warning">
+                              {item.shortage_quantity}
+                            </td>
+                          </>
                         )}
-                        {po.status !== 'draft' && remaining > 0 && (
-                          <div className="text-xs text-warning font-mono mt-1">
-                            Pending: {remaining}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono text-secondary">
-                        {item.barcode || 'N/A'}
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono font-semibold text-foreground">
-                        {item.ordered_quantity}
-                      </td>
-                      {po.status !== 'draft' && po.status !== 'ordered' && (
-                        <>
-                          <td className="py-3 px-4 text-center font-mono font-bold text-success">
-                            {item.received_quantity}
-                          </td>
-                          <td className="py-3 px-4 text-center font-mono font-bold text-warning">
-                            {item.shortage_quantity}
-                          </td>
-                        </>
-                      )}
-                      <td className="py-3 px-4 text-center text-secondary font-mono uppercase">
-                        {item.unit}
-                      </td>
-                      <td className="py-3 px-4 text-end font-mono text-foreground">
-                        {formatCurrency(item.unit_cost)}
-                      </td>
-                      <td className="py-3 px-4 text-end font-mono font-bold text-foreground">
-                        {formatCurrency(item.line_total)}
-                      </td>
-                    </tr>
+                        <td className="py-3 px-4 text-center text-secondary font-mono uppercase">
+                          {item.unit}
+                        </td>
+                        <td className="py-3 px-4 text-end font-mono text-foreground">
+                          {formatCurrency(item.unit_cost)}
+                        </td>
+                        <td className="py-3 px-4 text-end font-mono font-bold text-foreground">
+                          {formatCurrency(item.line_total)}
+                        </td>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -417,10 +426,15 @@ export function PurchaseOrderDetailScreen() {
               </div>
               <div className="p-5 space-y-6">
                 {receipts.map((receipt) => (
-                  <div key={receipt.id} className="border border-border rounded-lg p-4 bg-neutral-900/20">
+                  <div
+                    key={receipt.id}
+                    className="border border-border rounded-lg p-4 bg-neutral-900/20"
+                  >
                     <div className="flex justify-between items-start border-b border-border pb-3 mb-3">
                       <div>
-                        <div className="font-mono text-sm font-bold text-foreground">{receipt.receipt_number}</div>
+                        <div className="font-mono text-sm font-bold text-foreground">
+                          {receipt.receipt_number}
+                        </div>
                         <div className="text-xs text-secondary mt-1">
                           {formatDate(receipt.created_at)} • Received by {receipt.receiver_name}
                         </div>
@@ -435,20 +449,24 @@ export function PurchaseOrderDetailScreen() {
                       </div>
                     )}
                     <table className="w-full text-left text-xs">
-                       <thead>
-                         <tr className="text-secondary border-b border-border/50">
-                           <th className="py-2">Product</th>
-                           <th className="py-2 text-center">Received</th>
-                         </tr>
-                       </thead>
-                       <tbody className="divide-y divide-border/30">
-                         {receipt.items.map(ri => (
-                           <tr key={ri.id}>
-                             <td className="py-2 text-foreground font-semibold">{ri.product_name}</td>
-                             <td className="py-2 text-center font-mono text-success font-bold">{ri.quantity_received}</td>
-                           </tr>
-                         ))}
-                       </tbody>
+                      <thead>
+                        <tr className="text-secondary border-b border-border/50">
+                          <th className="py-2">Product</th>
+                          <th className="py-2 text-center">Received</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30">
+                        {receipt.items.map((ri) => (
+                          <tr key={ri.id}>
+                            <td className="py-2 text-foreground font-semibold">
+                              {ri.product_name}
+                            </td>
+                            <td className="py-2 text-center font-mono text-success font-bold">
+                              {ri.quantity_received}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
                     </table>
                   </div>
                 ))}

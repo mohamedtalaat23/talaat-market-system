@@ -36,9 +36,9 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
     if (purchaseOrder?.items) {
       setItems(
         purchaseOrder.items
-          .filter(item => {
-             const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
-             return resolved < item.ordered_quantity;
+          .filter((item) => {
+            const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
+            return resolved < item.ordered_quantity;
           })
           .map((item) => {
             const resolved = (item.received_quantity || 0) + (item.shortage_quantity || 0);
@@ -57,7 +57,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
               new_shortage_quantity: 0,
               shortage_reason: '',
             };
-        }),
+          }),
       );
     }
   }, [purchaseOrder]);
@@ -105,7 +105,9 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         return;
       }
       if (item.quantity_to_receive + item.new_shortage_quantity > item.remaining_quantity) {
-        toast.error(`Total resolution for "${item.name}" cannot exceed the remaining quantity (${item.remaining_quantity})`);
+        toast.error(
+          `Total resolution for "${item.name}" cannot exceed the remaining quantity (${item.remaining_quantity})`,
+        );
         return;
       }
     }
@@ -114,13 +116,15 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
       items: any[];
       notes?: string;
     } = {
-      items: items.map((item) => ({
-        po_item_id: item.po_item_id,
-        product_id: item.product_id,
-        quantity_to_receive: item.quantity_to_receive,
-        shortage_quantity: item.new_shortage_quantity,
-        shortage_reason: item.shortage_reason || null,
-      })).filter(i => i.quantity_to_receive > 0 || i.shortage_quantity > 0),
+      items: items
+        .map((item) => ({
+          po_item_id: item.po_item_id,
+          product_id: item.product_id,
+          quantity_to_receive: item.quantity_to_receive,
+          shortage_quantity: item.new_shortage_quantity,
+          shortage_reason: item.shortage_reason || null,
+        }))
+        .filter((i) => i.quantity_to_receive > 0 || i.shortage_quantity > 0),
     };
 
     if (notes) {
@@ -210,55 +214,63 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
               <tbody className="divide-y divide-neutral-900">
                 {items.length === 0 ? (
                   <tr>
-                     <td colSpan={5} className="py-8 text-center text-secondary italic">All items fully resolved for this PO.</td>
+                    <td colSpan={5} className="py-8 text-center text-secondary italic">
+                      All items fully resolved for this PO.
+                    </td>
                   </tr>
-                ) : items.map((item) => (
-                  <tr key={item.product_id} className="hover:bg-white text-neutral-300">
-                    <td className="py-2.5 px-3">
-                      <div className="font-semibold text-input-text">{item.name}</div>
-                      <div className="text-xs text-secondary font-mono">{item.barcode || 'N/A'} - {item.unit}</div>
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-secondary">
-                      {item.remaining_quantity}
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
-                      <Input
-                        type="number"
-                        min="0"
-                        max={item.remaining_quantity}
-                        step="any"
-                        value={item.quantity_to_receive}
-                        onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
-                        className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-success w-full focus:border-success"
-                      />
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
-                      <Input
-                        type="number"
-                        min="0"
-                        max={item.remaining_quantity}
-                        step="any"
-                        value={item.new_shortage_quantity}
-                        onChange={(e) => handleShortageChange(item.product_id, Number(e.target.value))}
-                        className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-warning w-full focus:border-warning"
-                      />
-                    </td>
-                    <td className="py-2.5 px-3">
-                       <select 
+                ) : (
+                  items.map((item) => (
+                    <tr key={item.product_id} className="hover:bg-white text-neutral-300">
+                      <td className="py-2.5 px-3">
+                        <div className="font-semibold text-input-text">{item.name}</div>
+                        <div className="text-xs text-secondary font-mono">
+                          {item.barcode || 'N/A'} - {item.unit}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-center font-mono font-semibold text-secondary">
+                        {item.remaining_quantity}
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <Input
+                          type="number"
+                          min="0"
+                          max={item.remaining_quantity}
+                          step="any"
+                          value={item.quantity_to_receive}
+                          onChange={(e) => handleQtyChange(item.product_id, Number(e.target.value))}
+                          className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-success w-full focus:border-success"
+                        />
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <Input
+                          type="number"
+                          min="0"
+                          max={item.remaining_quantity}
+                          step="any"
+                          value={item.new_shortage_quantity}
+                          onChange={(e) =>
+                            handleShortageChange(item.product_id, Number(e.target.value))
+                          }
+                          className="bg-input-bg border-input-border text-center py-1 h-8 text-xs font-mono font-bold text-warning w-full focus:border-warning"
+                        />
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <select
                           className="bg-input-bg border border-input-border text-input-text text-xs rounded p-1 w-full h-8 placeholder:text-input-placeholder"
                           value={item.shortage_reason}
                           onChange={(e) => handleReasonChange(item.product_id, e.target.value)}
                           disabled={item.new_shortage_quantity <= 0}
-                       >
+                        >
                           <option value="">- Select -</option>
                           <option value="backordered">Backordered</option>
                           <option value="supplier_cancelled">Supplier Cancelled</option>
                           <option value="damaged_in_transit">Damaged in Transit</option>
                           <option value="substituted">Substituted</option>
-                       </select>
-                    </td>
-                  </tr>
-                ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -294,6 +306,6 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

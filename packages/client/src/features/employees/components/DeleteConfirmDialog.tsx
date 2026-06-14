@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useDeleteEmployee } from '../hooks/useEmployeeQueries';
 import toast from 'react-hot-toast';
@@ -54,8 +54,8 @@ export function DeleteConfirmDialog() {
 
   const isDeleting = deleteMutation.isPending;
 
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4 select-text">
+  return createPortal(
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 select-text">
       {/* Backdrop click close */}
       <div
         className="absolute inset-0"
@@ -66,36 +66,43 @@ export function DeleteConfirmDialog() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-md rounded-lg border border-destructive/20 bg-modal text-foreground p-6 shadow-xl relative z-10 animate-fade-in text-center"
+        className="w-full max-w-md bg-card border border-border/40 rounded-3xl shadow-2xl shadow-black/20 relative z-10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden text-center p-8"
         role="dialog"
         aria-modal="true"
         aria-labelledby="emp-delete-confirm-title"
         aria-describedby="emp-delete-confirm-desc"
       >
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive mb-4">
-          <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 border border-destructive/20 text-destructive mb-6 shadow-inner">
+          <AlertTriangle className="h-10 w-10" aria-hidden="true" />
         </div>
 
         <h3
           id="emp-delete-confirm-title"
-          className="text-lg font-bold text-foreground mb-2 select-none"
+          className="text-2xl font-black tracking-tight text-foreground mb-3 select-none"
         >
           {t('employees.deleteTitle')}
         </h3>
 
-        <p id="emp-delete-confirm-desc" className="text-sm text-secondary mb-6 leading-relaxed">
+        <p
+          id="emp-delete-confirm-desc"
+          className="text-sm font-medium text-secondary mb-8 leading-relaxed px-4"
+        >
           {t('employees.deleteDesc').replace('{name}', employee.full_name)}
         </p>
 
-        <div className="flex justify-end gap-2 border-t border-border pt-4 mt-6 select-none">
-          <Button variant="outline" onClick={closeModal} disabled={isDeleting}>
+        <div className="flex gap-3 pt-2 select-none">
+          <button
+            onClick={closeModal}
+            disabled={isDeleting}
+            className="flex-1 py-3.5 bg-card hover:bg-muted text-foreground font-bold rounded-xl border border-border/60 shadow-sm transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {t('common.cancel')}
-          </Button>
+          </button>
 
-          <Button
+          <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 flex items-center gap-1.5 font-semibold focus-visible:ring-2 focus-visible:ring-destructive"
+            className="flex-1 py-3.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-black uppercase tracking-widest text-[11px] rounded-xl shadow-md shadow-destructive/20 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDeleting ? (
               <>
@@ -104,14 +111,15 @@ export function DeleteConfirmDialog() {
               </>
             ) : (
               <>
-                <Trash2 size={14} />
+                <Trash2 size={16} />
                 <span>{t('employees.remove')}</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 export default DeleteConfirmDialog;

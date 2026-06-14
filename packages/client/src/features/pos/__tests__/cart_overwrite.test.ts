@@ -9,29 +9,61 @@ describe('Cart Overwrite Protection Flow', () => {
 
   it('preserves the active cart by suspending it before resuming another cart', () => {
     const store = usePOSStore.getState();
-    
+
     // 1. Add items to active cart (Cart A)
-    store.addItem({ product_id: 1, name: 'Item A', unit_price: 10, quantity: 1, discount: 0, unit: 'pcs', inventory_quantity: 10, barcode: '123' });
-    store.addItem({ product_id: 2, name: 'Item B', unit_price: 20, quantity: 2, discount: 0, unit: 'pcs', inventory_quantity: 10, barcode: '456' });
-    
+    store.addItem({
+      product_id: 1,
+      name: 'Item A',
+      unit_price: 10,
+      quantity: 1,
+      discount: 0,
+      unit: 'pcs',
+      inventory_quantity: 10,
+      barcode: '123',
+    });
+    store.addItem({
+      product_id: 2,
+      name: 'Item B',
+      unit_price: 20,
+      quantity: 2,
+      discount: 0,
+      unit: 'pcs',
+      inventory_quantity: 10,
+      barcode: '456',
+    });
+
     expect(usePOSStore.getState().cart.length).toBe(2);
 
     // 2. Mock a pre-existing suspended cart (Cart B)
     usePOSStore.setState({
-      heldCarts: [{
-        hold_id: 'cart-b',
-        cashier_id: 1,
-        cart: [{ cart_id: '1', product_id: 3, name: 'Item C', unit_price: 5, quantity: 1, discount: 0, unit: 'pcs', inventory_quantity: 10, barcode: '789' }],
-        timestamp: new Date().toISOString(),
-        cashReceived: 0,
-        paymentMethod: 'cash',
-        globalDiscount: 0
-      }]
+      heldCarts: [
+        {
+          hold_id: 'cart-b',
+          cashier_id: 1,
+          cart: [
+            {
+              cart_id: '1',
+              product_id: 3,
+              name: 'Item C',
+              unit_price: 5,
+              quantity: 1,
+              discount: 0,
+              unit: 'pcs',
+              inventory_quantity: 10,
+              barcode: '789',
+            },
+          ],
+          timestamp: new Date().toISOString(),
+          cashReceived: 0,
+          paymentMethod: 'cash',
+          globalDiscount: 0,
+        },
+      ],
     });
 
     // 3. User clicks "Suspend Current Cart" on the overwrite modal
     usePOSStore.getState().holdCurrentCart(1);
-    
+
     // Active cart should be cleared
     expect(usePOSStore.getState().cart.length).toBe(0);
     // Held carts should now be 2
@@ -52,21 +84,44 @@ describe('Cart Overwrite Protection Flow', () => {
 
   it('discards the active cart before resuming another cart', () => {
     const store = usePOSStore.getState();
-    
+
     // 1. Add items to active cart (Cart A)
-    store.addItem({ product_id: 1, name: 'Item A', unit_price: 10, quantity: 1, discount: 0, unit: 'pcs', inventory_quantity: 10, barcode: '123' });
-    
+    store.addItem({
+      product_id: 1,
+      name: 'Item A',
+      unit_price: 10,
+      quantity: 1,
+      discount: 0,
+      unit: 'pcs',
+      inventory_quantity: 10,
+      barcode: '123',
+    });
+
     // 2. Mock a pre-existing suspended cart (Cart B)
     usePOSStore.setState({
-      heldCarts: [{
-        hold_id: 'cart-b',
-        cashier_id: 1,
-        cart: [{ cart_id: '1', product_id: 3, name: 'Item C', unit_price: 5, quantity: 1, discount: 0, unit: 'pcs', inventory_quantity: 10, barcode: '789' }],
-        timestamp: new Date().toISOString(),
-        cashReceived: 0,
-        paymentMethod: 'cash',
-        globalDiscount: 0
-      }]
+      heldCarts: [
+        {
+          hold_id: 'cart-b',
+          cashier_id: 1,
+          cart: [
+            {
+              cart_id: '1',
+              product_id: 3,
+              name: 'Item C',
+              unit_price: 5,
+              quantity: 1,
+              discount: 0,
+              unit: 'pcs',
+              inventory_quantity: 10,
+              barcode: '789',
+            },
+          ],
+          timestamp: new Date().toISOString(),
+          cashReceived: 0,
+          paymentMethod: 'cash',
+          globalDiscount: 0,
+        },
+      ],
     });
 
     // 3. User clicks "Discard Current Cart" on the overwrite modal

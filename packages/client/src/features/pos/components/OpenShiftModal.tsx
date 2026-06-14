@@ -112,6 +112,6 @@ export function OpenShiftModal() {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

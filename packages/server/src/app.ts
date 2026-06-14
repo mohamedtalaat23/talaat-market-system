@@ -73,7 +73,10 @@ export function createApp(): express.Application {
           return callback(null, true);
         }
         // Allow Vite dev server in development
-        if (isDev && (origin === `${httpProto}localhost:5173` || origin === `${httpProto}127.0.0.1:5173`)) {
+        if (
+          isDev &&
+          (origin === `${httpProto}localhost:5173` || origin === `${httpProto}127.0.0.1:5173`)
+        ) {
           return callback(null, true);
         }
         // Allow any RFC 1918 private LAN address (client registers)

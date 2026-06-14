@@ -148,7 +148,7 @@ export class EmployeeRepository {
         'failed_login_attempts',
         'locked_until',
         'failed_pin_attempts',
-        'pin_locked_until'
+        'pin_locked_until',
       )
       .where('username', username)
       .first();
@@ -276,7 +276,7 @@ export class EmployeeRepository {
         'failed_login_attempts',
         'locked_until',
         'failed_pin_attempts',
-        'pin_locked_until'
+        'pin_locked_until',
       )
       .where('is_active', true)
       .whereNull('deleted_at')

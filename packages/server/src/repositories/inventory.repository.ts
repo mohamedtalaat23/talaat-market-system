@@ -30,7 +30,17 @@ export interface InventoryFilters {
 
 export interface LogAdjustmentInput {
   product_id: number;
-  adjustment_type: 'stock_addition' | 'stock_removal' | 'damage' | 'expiry' | 'manual_adjustment' | 'sale' | 'return' | 'initial_stock' | 'purchase_receipt' | 'stock_reconciliation';
+  adjustment_type:
+    | 'stock_addition'
+    | 'stock_removal'
+    | 'damage'
+    | 'expiry'
+    | 'manual_adjustment'
+    | 'sale'
+    | 'return'
+    | 'initial_stock'
+    | 'purchase_receipt'
+    | 'stock_reconciliation';
   quantity_change: number;
   old_quantity: number;
   new_quantity: number;
@@ -72,7 +82,11 @@ export class InventoryRepository {
     }
 
     if (filters.search) {
-      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedSearch = filters.search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
@@ -84,7 +98,7 @@ export class InventoryRepository {
 
     // Sorting
     let sortField = 'products.name';
-    
+
     if (filters.sortBy) {
       switch (filters.sortBy) {
         case 'stock':
@@ -126,7 +140,11 @@ export class InventoryRepository {
     }
 
     if (filters.search) {
-      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedSearch = filters.search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
@@ -239,7 +257,17 @@ export interface InventoryAdjustment {
   product_name: string;
   product_barcode: string | null;
   product_unit: string;
-  adjustment_type: 'stock_addition' | 'stock_removal' | 'damage' | 'expiry' | 'manual_adjustment' | 'sale' | 'return' | 'initial_stock' | 'purchase_receipt' | 'stock_reconciliation';
+  adjustment_type:
+    | 'stock_addition'
+    | 'stock_removal'
+    | 'damage'
+    | 'expiry'
+    | 'manual_adjustment'
+    | 'sale'
+    | 'return'
+    | 'initial_stock'
+    | 'purchase_receipt'
+    | 'stock_reconciliation';
   quantity_change: number;
   old_quantity: number;
   new_quantity: number;

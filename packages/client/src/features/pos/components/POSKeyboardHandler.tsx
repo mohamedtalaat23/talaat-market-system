@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/services/api-client';
 import { printerService } from '../services/printer.service';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function POSKeyboardHandler() {
   const addItem = usePOSStore((state) => state.addItem);
   const openModal = useModalStore((state) => state.openModal);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
   const canExit = user?.role === 'admin' || user?.role === 'manager';
 
   // Scanner detection logic
@@ -190,9 +192,16 @@ export function POSKeyboardHandler() {
         case 'F5':
           openModal('pos_product_search');
           break;
-        case 'F6':
-          openModal('pos_suspended_carts');
+        case 'F6': {
+          e.preventDefault();
+          if (state.cart.length > 0) {
+            state.holdCurrentCart(user?.id || 1);
+            toast.success(t('pos.cartSuspended'));
+          } else {
+            openModal('pos_suspended_carts');
+          }
           break;
+        }
         case 'F7':
           openModal('pos_customer_select');
           break;
@@ -207,7 +216,7 @@ export function POSKeyboardHandler() {
             e.preventDefault();
             const modals = useModalStore.getState().activeModals;
             if (!modals.pos_quick_return) {
-               openModal('pos_quick_return'); // HUI-7 Idempotent Modal Spam Fix
+              openModal('pos_quick_return'); // HUI-7 Idempotent Modal Spam Fix
             }
           }
           break;

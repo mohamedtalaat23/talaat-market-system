@@ -26,7 +26,10 @@ export function ShiftReconciliationScreen() {
   const renderVarianceBadge = (variance: number | null) => {
     if (variance === null) {
       return (
-        <Badge variant="secondary" className="font-mono bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+        <Badge
+          variant="secondary"
+          className="font-mono bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+        >
           <HelpCircle className="w-3 h-3 mr-1" />
           N/A
         </Badge>
@@ -34,14 +37,20 @@ export function ShiftReconciliationScreen() {
     }
     if (variance === 0) {
       return (
-        <Badge variant="success" className="font-mono bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+        <Badge
+          variant="success"
+          className="font-mono bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+        >
           <CheckCircle className="w-3 h-3 mr-1" />
           {formatCurrency(0)}
         </Badge>
       );
     }
     return (
-      <Badge variant="destructive" className="font-mono bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800 shadow-sm animate-pulse">
+      <Badge
+        variant="destructive"
+        className="font-mono bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800 shadow-sm animate-pulse"
+      >
         <AlertTriangle className="w-3 h-3 mr-1" />
         {formatCurrency(variance)}
       </Badge>
@@ -101,10 +110,20 @@ export function ShiftReconciliationScreen() {
                       <TableCell className="font-medium text-foreground group-hover:text-primary transition-colors">
                         {shift.cashier_name || 'Unknown'}
                       </TableCell>
-                      <TableCell className="text-secondary">{shift.register_name || 'Main Register'}</TableCell>
-                      <TableCell className="text-secondary font-mono text-xs">{formatDateTime(new Date(shift.start_time))}</TableCell>
+                      <TableCell className="text-secondary">
+                        {shift.register_name || 'Main Register'}
+                      </TableCell>
                       <TableCell className="text-secondary font-mono text-xs">
-                        {shift.end_time ? formatDateTime(new Date(shift.end_time)) : <span className="text-primary font-medium">{t('reports.ongoing') || 'Ongoing'}</span>}
+                        {formatDateTime(new Date(shift.start_time))}
+                      </TableCell>
+                      <TableCell className="text-secondary font-mono text-xs">
+                        {shift.end_time ? (
+                          formatDateTime(new Date(shift.end_time))
+                        ) : (
+                          <span className="text-primary font-medium">
+                            {t('reports.ongoing') || 'Ongoing'}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right font-mono font-medium">
                         {formatCurrency(shift.starting_cash)}

@@ -106,7 +106,10 @@ export function EmployeeForm({
       {/* Primary detail inputs */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+          <label
+            htmlFor="fullName"
+            className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5"
+          >
             <User className="w-3.5 h-3.5" />
             {t('employees.fullName')}
           </label>
@@ -121,7 +124,10 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="empUsername" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+          <label
+            htmlFor="empUsername"
+            className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5"
+          >
             <User className="w-3.5 h-3.5" />
             {t('employees.usernameLabel')}
           </label>
@@ -136,7 +142,10 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="empRole" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+          <label
+            htmlFor="empRole"
+            className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5"
+          >
             <Shield className="w-3.5 h-3.5" />
             {t('employees.roleLevel')}
           </label>
@@ -155,7 +164,10 @@ export function EmployeeForm({
 
         {/* Credentials sections - never preloaded, isolated state */}
         <div className="space-y-1.5 pt-2 border-t border-border/40 sm:border-t-0 sm:pt-0">
-          <label htmlFor="empPassword" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+          <label
+            htmlFor="empPassword"
+            className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5"
+          >
             <Lock className="w-3.5 h-3.5" />
             {mode === 'create' ? t('employees.passwordLabel') : t('employees.passwordUpdate')}
           </label>
@@ -175,7 +187,10 @@ export function EmployeeForm({
         </div>
 
         <div className="space-y-1.5 pt-2 border-t border-border/40 sm:border-t-0 sm:pt-0">
-          <label htmlFor="empPin" className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+          <label
+            htmlFor="empPin"
+            className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5"
+          >
             <KeyRound className="w-3.5 h-3.5" />
             {t('employees.pinLabel')}
           </label>
@@ -204,7 +219,11 @@ export function EmployeeForm({
           htmlFor="isEmpActive"
           className="text-sm font-semibold text-foreground cursor-pointer select-none flex items-center gap-2"
         >
-          {isActive ? <CheckCircle2 className="w-4 h-4 text-success" /> : <XCircle className="w-4 h-4 text-secondary" />}
+          {isActive ? (
+            <CheckCircle2 className="w-4 h-4 text-success" />
+          ) : (
+            <XCircle className="w-4 h-4 text-secondary" />
+          )}
           {t('employees.accountActive')}
         </label>
       </div>

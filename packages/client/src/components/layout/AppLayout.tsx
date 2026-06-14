@@ -133,26 +133,39 @@ export const AppLayout = React.memo(() => {
                 key={path}
                 to={path}
                 className={({ isActive }) => {
-                  const baseClasses = "flex items-center rounded-xl transition-all duration-200";
-                  const expandedClasses = "gap-3 py-3 pl-[16px] pr-4 rtl:pl-4 rtl:pr-[16px] border-l-[4px] rtl:border-l-0 rtl:border-r-[4px]";
-                  const collapsedClasses = "justify-center w-11 h-11 mx-auto p-0 group";
-                  
-                  const activeExpanded = "bg-[#10B981]/15 text-[#10B981] border-l-[#10B981] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]";
-                  const inactiveExpanded = "border-transparent text-white/60 hover:text-white hover:bg-white/5 font-medium";
-                  
-                  const activeCollapsed = "bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 font-bold shadow-sm rounded-xl";
-                  const inactiveCollapsed = "text-white/60 hover:text-white hover:bg-white/10 border border-transparent rounded-xl";
-                  
+                  const baseClasses = 'flex items-center rounded-xl transition-all duration-200';
+                  const expandedClasses =
+                    'gap-3 py-3 pl-[16px] pr-4 rtl:pl-4 rtl:pr-[16px] border-l-[4px] rtl:border-l-0 rtl:border-r-[4px]';
+                  const collapsedClasses = 'justify-center w-11 h-11 mx-auto p-0 group';
+
+                  const activeExpanded =
+                    'bg-[#10B981]/15 text-[#10B981] border-l-[#10B981] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]';
+                  const inactiveExpanded =
+                    'border-transparent text-white/60 hover:text-white hover:bg-white/5 font-medium';
+
+                  const activeCollapsed =
+                    'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 font-bold shadow-sm rounded-xl';
+                  const inactiveCollapsed =
+                    'text-white/60 hover:text-white hover:bg-white/10 border border-transparent rounded-xl';
+
                   return `${baseClasses} ${collapsed ? collapsedClasses : expandedClasses} ${
                     isActive
-                      ? collapsed ? activeCollapsed : activeExpanded
-                      : collapsed ? inactiveCollapsed : inactiveExpanded
+                      ? collapsed
+                        ? activeCollapsed
+                        : activeExpanded
+                      : collapsed
+                        ? inactiveCollapsed
+                        : inactiveExpanded
                   }`;
                 }}
                 end={path === '/'}
                 title={collapsed ? translatedLabel : undefined}
               >
-                <Icon size={collapsed ? 22 : 18} className={`shrink-0 ${collapsed && 'transition-transform group-hover:scale-110'}`} strokeWidth={collapsed ? 2.5 : 2} />
+                <Icon
+                  size={collapsed ? 22 : 18}
+                  className={`shrink-0 ${collapsed && 'transition-transform group-hover:scale-110'}`}
+                  strokeWidth={collapsed ? 2.5 : 2}
+                />
                 {!collapsed && <span className="truncate">{translatedLabel}</span>}
               </NavLink>
             );

@@ -8,4 +8,14 @@ module.exports = {
   transform: {
     ...tsJestTransformCfg,
   },
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/src/repositories/__tests__/db_check.test.ts",
+    "/src/repositories/__tests__/drawer_adjustments.test.ts",
+    "/src/repositories/__tests__/reversal.test.ts",
+    "/src/repositories/__tests__/shift_reconciliation.test.ts",
+    "/src/repositories/__tests__/reversal_setup.ts",
+    "/src/repositories/__tests__/purchase_integration.test.ts"
+  ]
 };

@@ -75,7 +75,13 @@ export function useCreateCycleCount() {
 export function useUpdateCycleCountItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { cycle_count_id: string; product_id: number; counted_qty: number; location?: string; notes?: string }) => {
+    mutationFn: async (data: {
+      cycle_count_id: string;
+      product_id: number;
+      counted_qty: number;
+      location?: string;
+      notes?: string;
+    }) => {
       const res = await apiClient.put(`/cycle-counts/${data.cycle_count_id}/items`, data);
       return res.data;
     },
@@ -89,7 +95,9 @@ export function useScanCycleCountItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { cycle_count_id: string; barcode: string }) => {
-      const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/scan`, { barcode: data.barcode });
+      const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/scan`, {
+        barcode: data.barcode,
+      });
       return res.data;
     },
     onSuccess: (_, variables) => {
@@ -104,7 +112,12 @@ export function useScanCycleCountItem() {
 export function usePostCycleCount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { cycle_count_id: string; idempotency_key: string; manager_id?: number; pin?: string }) => {
+    mutationFn: async (data: {
+      cycle_count_id: string;
+      idempotency_key: string;
+      manager_id?: number;
+      pin?: string;
+    }) => {
       const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/post`, data);
       return res.data;
     },

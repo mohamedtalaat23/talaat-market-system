@@ -8,7 +8,9 @@ export function RegistersScreen() {
   return (
     <div className="max-w-5xl select-text space-y-8 pb-10">
       <div className="flex items-center justify-between border-b border-border/40 pb-5">
-        <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.registers')}</h3>
+        <h3 className="text-2xl font-black tracking-tight text-foreground">
+          {t('settings.registers')}
+        </h3>
         <button
           onClick={() => toast('Register management is coming in a future update.', { icon: '🏗️' })}
           className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 tracking-wide"
@@ -21,9 +23,15 @@ export function RegistersScreen() {
         <table className="w-full text-sm text-start">
           <thead className="bg-muted/40 backdrop-blur-md border-b border-border/60 text-secondary">
             <tr>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">{t('settings.registerName')}</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">{t('common.status')}</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">{t('common.actions')}</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">
+                {t('settings.registerName')}
+              </th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">
+                {t('common.status')}
+              </th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">
+                {t('common.actions')}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40">
@@ -42,7 +50,9 @@ export function RegistersScreen() {
               </td>
               <td className="px-6 py-5 text-center">
                 <button
-                  onClick={() => toast('Register editing is coming in a future update.', { icon: '🏗️' })}
+                  onClick={() =>
+                    toast('Register editing is coming in a future update.', { icon: '🏗️' })
+                  }
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >
                   {t('common.edit')}
@@ -63,7 +73,9 @@ export function RegistersScreen() {
               </td>
               <td className="px-6 py-5 text-center">
                 <button
-                  onClick={() => toast('Register editing is coming in a future update.', { icon: '🏗️' })}
+                  onClick={() =>
+                    toast('Register editing is coming in a future update.', { icon: '🏗️' })
+                  }
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >
                   {t('common.edit')}

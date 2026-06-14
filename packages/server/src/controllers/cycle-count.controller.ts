@@ -12,7 +12,11 @@ import { ConflictError, NotFoundError, ValidationError } from '../middleware/err
  * PENDING_APPROVAL -> CANCELLED
  */
 
-export async function createCycleCount(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function createCycleCount(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { type, location } = req.body;
     const created_by = (req as any).user?.id;
@@ -21,14 +25,16 @@ export async function createCycleCount(req: Request, res: Response, next: NextFu
       throw new ValidationError('Invalid cycle count type');
     }
 
-    const [newCycleCount] = await db('cycle_counts').insert({
-      type,
-      location,
-      status: 'draft',
-      created_by,
-      total_variance_value: 0,
-      expires_at: db.raw("NOW() + INTERVAL '24 hours'")
-    }).returning('*');
+    const [newCycleCount] = await db('cycle_counts')
+      .insert({
+        type,
+        location,
+        status: 'draft',
+        created_by,
+        total_variance_value: 0,
+        expires_at: db.raw("NOW() + INTERVAL '24 hours'"),
+      })
+      .returning('*');
 
     res.status(HTTP_STATUS.CREATED).json({ success: true, data: newCycleCount });
   } catch (error) {
@@ -36,7 +42,11 @@ export async function createCycleCount(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function getCycleCounts(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getCycleCounts(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
@@ -59,15 +69,19 @@ export async function getCycleCounts(req: Request, res: Response, next: NextFunc
         total: Number(count),
         page,
         limit,
-        totalPages: Math.ceil(Number(count) / limit)
-      }
+        totalPages: Math.ceil(Number(count) / limit),
+      },
     });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getCycleCountById(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getCycleCountById(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { id } = req.params;
     const cycleCount = await db('cycle_counts').where({ id }).first();
@@ -76,11 +90,7 @@ export async function getCycleCountById(req: Request, res: Response, next: NextF
     const items = await db('cycle_count_items')
       .join('products', 'cycle_count_items.product_id', 'products.id')
       .where('cycle_count_id', id)
-      .select(
-        'cycle_count_items.*',
-        'products.name as product_name',
-        'products.barcode'
-      )
+      .select('cycle_count_items.*', 'products.name as product_name', 'products.barcode')
       .orderBy('cycle_count_items.created_at', 'asc');
 
     res.status(HTTP_STATUS.OK).json({ success: true, data: { ...cycleCount, items } });
@@ -89,7 +99,11 @@ export async function getCycleCountById(req: Request, res: Response, next: NextF
   }
 }
 
-export async function updateCycleCountItems(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function updateCycleCountItems(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { id } = req.params;
     const { product_id, counted_qty, location, notes } = req.body;
@@ -123,7 +137,7 @@ export async function updateCycleCountItems(req: Request, res: Response, next: N
             variance,
             notes,
             location: location || existingItem.location,
-            updated_at: db.fn.now()
+            updated_at: db.fn.now(),
           });
       } else {
         await trx('cycle_count_items').insert({
@@ -133,7 +147,7 @@ export async function updateCycleCountItems(req: Request, res: Response, next: N
           counted_qty,
           variance,
           notes,
-          location
+          location,
         });
       }
     });
@@ -144,7 +158,11 @@ export async function updateCycleCountItems(req: Request, res: Response, next: N
   }
 }
 
-export async function scanCycleCountItem(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function scanCycleCountItem(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { id } = req.params;
     const { barcode } = req.body;
@@ -173,14 +191,17 @@ export async function scanCycleCountItem(req: Request, res: Response, next: Next
       const system_qty = inv ? Number(inv.quantity) : 0;
 
       // 4. Atomic Upsert for counted_qty + 1
-      await trx.raw(`
+      await trx.raw(
+        `
         INSERT INTO cycle_count_items (cycle_count_id, product_id, system_qty, counted_qty, variance)
         VALUES (?, ?, ?, 1, 1 - ?)
         ON CONFLICT (cycle_count_id, product_id) DO UPDATE SET
           counted_qty = cycle_count_items.counted_qty + 1,
           variance = cycle_count_items.counted_qty + 1 - cycle_count_items.system_qty,
           updated_at = NOW()
-      `, [id, product_id, system_qty, system_qty]);
+      `,
+        [id, product_id, system_qty, system_qty],
+      );
     });
 
     res.status(HTTP_STATUS.OK).json({ success: true, message: 'Item scanned successfully' });
@@ -189,7 +210,11 @@ export async function scanCycleCountItem(req: Request, res: Response, next: Next
   }
 }
 
-export async function postCycleCount(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function postCycleCount(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { id } = req.params;
     const { idempotency_key, manager_id, pin } = req.body;
@@ -217,19 +242,19 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
       // Enforce Ownership
       const currentUser = await trx('employees').where('id', current_user_id).first();
       if (!currentUser) throw new ConflictError('User not found');
-      
+
       const isCreator = cycleCount.created_by === current_user_id;
       const isAssigned = cycleCount.assigned_to === current_user_id;
       const isManagerOrAdmin = ['manager', 'admin'].includes(currentUser.role);
-      
+
       if (!isCreator && !isAssigned && !isManagerOrAdmin) {
-         throw new ConflictError('You are not authorized to post this cycle count.');
+        throw new ConflictError('You are not authorized to post this cycle count.');
       }
 
       // Change status to posting to prevent concurrent posting
-      await trx('cycle_counts').where({ id }).update({ 
-        status: 'posting', 
-        idempotency_key 
+      await trx('cycle_counts').where({ id }).update({
+        status: 'posting',
+        idempotency_key,
       });
 
       // 2. Fetch items and recalculate actual variance using LIVE unit_cost
@@ -245,21 +270,23 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
         // Lock inventory row
         const inv = await trx('inventory').where('product_id', item.product_id).forUpdate().first();
         const liveQty = inv ? Number(inv.quantity) : 0;
-        
+
         // Lock product row to get unit_cost
         const prod = await trx('products').where('id', item.product_id).first();
         const liveCost = prod ? Number(prod.cost_price) : 0;
 
-        // Apply Variance: The user counted X. When they counted, system was Y. 
+        // Apply Variance: The user counted X. When they counted, system was Y.
         // Variance = (X - Y). E.g. counted 12, system was 10. Variance is +2.
-        // We apply +2 to the liveQty. 
+        // We apply +2 to the liveQty.
         const variance = Number(item.variance);
         const finalVarianceCost = variance * liveCost;
         totalVarianceValue += Math.abs(finalVarianceCost);
 
         // Check negative inventory boundary BEFORE saving
         if (liveQty + variance < 0) {
-          throw new ConflictError(`Cycle count variance exceeds available inventory for product ${prod?.name}. Recount required.`);
+          throw new ConflictError(
+            `Cycle count variance exceeds available inventory for product ${prod?.name}. Recount required.`,
+          );
         }
 
         // Threshold checks
@@ -271,13 +298,13 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
           variance_applied: variance,
           live_qty_after: liveQty + variance,
           live_unit_cost: liveCost,
-          final_variance_cost: finalVarianceCost
+          final_variance_cost: finalVarianceCost,
         });
 
         // Update item with exact snapshot values
         await trx('cycle_count_items').where('id', item.id).update({
           unit_cost: liveCost,
-          final_variance_cost: finalVarianceCost
+          final_variance_cost: finalVarianceCost,
         });
       }
 
@@ -288,7 +315,9 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
         if (!manager_id || !pin) {
           // Send it to pending approval
           await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
-          throw new ConflictError(`Approval required. Total Variance: EGP ${totalVarianceValue.toFixed(2)}`);
+          throw new ConflictError(
+            `Approval required. Total Variance: EGP ${totalVarianceValue.toFixed(2)}`,
+          );
         }
 
         const employee = await trx('employees').where('id', manager_id).first();
@@ -297,18 +326,18 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
         const { pinService } = await import('../services/pin.service');
         const verification = await pinService.verifyPin(manager_id, pin, current_user_id, req.ip);
         if (!verification.success) {
-           await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
-           throw new ConflictError('Invalid Manager PIN');
+          await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
+          throw new ConflictError('Invalid Manager PIN');
         }
 
         if (requiresAdminApproval && employee.role !== 'admin') {
-           await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
-           throw new ConflictError('Total variance exceeds EGP 5000. Admin approval required.');
+          await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
+          throw new ConflictError('Total variance exceeds EGP 5000. Admin approval required.');
         }
 
         if (requiresManagerApproval && !['manager', 'admin'].includes(employee.role)) {
-           await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
-           throw new ConflictError('Manager approval required.');
+          await trx('cycle_counts').where({ id }).update({ status: 'pending_approval' });
+          throw new ConflictError('Manager approval required.');
         }
       }
 
@@ -330,7 +359,7 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
           new_quantity: snapshot.live_qty_after,
           reason_code: 'CYCLE_COUNT',
           notes: `Cycle Count Batch #${id}`,
-          created_by: current_user_id
+          created_by: current_user_id,
         });
       }
 
@@ -338,17 +367,23 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
       const postingSnapshot = {
         live_inventory_rows: postingSnapshotRows.length,
         total_variance_value: totalVarianceValue,
-        approval_level: requiresAdminApproval ? 'admin' : (requiresManagerApproval ? 'manager' : 'none'),
-        posted_by: manager_id || current_user_id
+        approval_level: requiresAdminApproval
+          ? 'admin'
+          : requiresManagerApproval
+            ? 'manager'
+            : 'none',
+        posted_by: manager_id || current_user_id,
       };
 
-      await trx('cycle_counts').where({ id }).update({
-        status: 'posted',
-        total_variance_value: totalVarianceValue,
-        approved_by: manager_id || null,
-        posting_snapshot: JSON.stringify(postingSnapshot),
-        posted_at: db.fn.now()
-      });
+      await trx('cycle_counts')
+        .where({ id })
+        .update({
+          status: 'posted',
+          total_variance_value: totalVarianceValue,
+          approved_by: manager_id || null,
+          posting_snapshot: JSON.stringify(postingSnapshot),
+          posted_at: db.fn.now(),
+        });
     });
 
     res.status(HTTP_STATUS.OK).json({ success: true, message: 'Cycle count posted successfully' });
@@ -357,7 +392,11 @@ export async function postCycleCount(req: Request, res: Response, next: NextFunc
   }
 }
 
-export async function cancelCycleCount(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function cancelCycleCount(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { id } = req.params;
     await db.transaction(async (trx) => {

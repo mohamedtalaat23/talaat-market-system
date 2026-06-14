@@ -103,7 +103,7 @@ export function InventoryAdjustmentModal() {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default InventoryAdjustmentModal;

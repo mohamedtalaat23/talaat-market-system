@@ -136,7 +136,10 @@ export function ManagerOverrideModal() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10 text-danger mb-4 shadow-inner border border-danger/20">
             <ShieldAlert size={36} className="drop-shadow-sm" />
           </div>
-          <h3 id="override-modal-title" className="text-2xl font-black text-foreground text-center tracking-tight">
+          <h3
+            id="override-modal-title"
+            className="text-2xl font-black text-foreground text-center tracking-tight"
+          >
             {t('pos.managerAuthTitle')}
           </h3>
           <p className="text-secondary text-sm mt-1.5 text-center font-medium">{actionName}</p>
@@ -150,31 +153,45 @@ export function ManagerOverrideModal() {
                 {payload.displayMetadata.customer && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">Customer:</span>
-                    <span className="text-foreground font-semibold">{payload.displayMetadata.customer}</span>
+                    <span className="text-foreground font-semibold">
+                      {payload.displayMetadata.customer}
+                    </span>
                   </div>
                 )}
                 {payload.displayMetadata.amount !== undefined && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">Amount:</span>
-                    <span className="font-mono text-foreground font-black text-base">EGP {Number(payload.displayMetadata.amount).toFixed(2)}</span>
+                    <span className="font-mono text-foreground font-black text-base">
+                      EGP {Number(payload.displayMetadata.amount).toFixed(2)}
+                    </span>
                   </div>
                 )}
                 {payload.displayMetadata.actionType && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">Type:</span>
-                    <span className="text-foreground font-semibold bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">{payload.displayMetadata.actionType}</span>
+                    <span className="text-foreground font-semibold bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
+                      {payload.displayMetadata.actionType}
+                    </span>
                   </div>
                 )}
                 {payload.displayMetadata.direction && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">Direction:</span>
-                    <span className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}>{payload.displayMetadata.direction}</span>
+                    <span
+                      className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}
+                    >
+                      {payload.displayMetadata.direction}
+                    </span>
                   </div>
                 )}
                 {payload.displayMetadata.inventoryEffect && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">Inventory:</span>
-                    <span className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}>{payload.displayMetadata.inventoryEffect}</span>
+                    <span
+                      className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}
+                    >
+                      {payload.displayMetadata.inventoryEffect}
+                    </span>
                   </div>
                 )}
               </div>
@@ -202,7 +219,13 @@ export function ManagerOverrideModal() {
                 id="manager-select"
                 disabled={isSubmitting}
                 className="w-full h-12 bg-background border border-border/60 rounded-xl px-4 text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 text-sm font-semibold transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right 0.5rem center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  paddingRight: `2.5rem`,
+                }}
                 value={selectedManagerId}
                 onChange={(e) => setSelectedManagerId(Number(e.target.value))}
               >
@@ -249,6 +272,6 @@ export function ManagerOverrideModal() {
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

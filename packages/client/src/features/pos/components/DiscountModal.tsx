@@ -186,6 +186,6 @@ export function DiscountModal() {
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

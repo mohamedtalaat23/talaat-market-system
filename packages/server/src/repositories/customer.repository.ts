@@ -64,7 +64,11 @@ export class CustomerRepository {
     let query = db('customers').whereNull('deleted_at');
 
     if (search) {
-      const escapedSearch = search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedSearch = search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       query = query.andWhere((builder) => {
         builder
           .where('name', 'ilike', `%${escapedSearch}%`)

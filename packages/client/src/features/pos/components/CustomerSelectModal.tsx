@@ -309,6 +309,6 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

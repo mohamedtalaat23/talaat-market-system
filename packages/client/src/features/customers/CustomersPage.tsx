@@ -212,7 +212,10 @@ export function CustomersPage() {
             <p className="text-sm text-secondary mt-1 max-w-sm mx-auto">
               {t('customers.noCustomersDesc')}
             </p>
-            <Button onClick={handleCreate} className="mt-4 bg-success hover:bg-success/90 text-white">
+            <Button
+              onClick={handleCreate}
+              className="mt-4 bg-success hover:bg-success/90 text-white"
+            >
               <Plus size={16} className="me-1.5" />
               {t('customers.registerCustomer')}
             </Button>

@@ -20,12 +20,12 @@ interface ProductTableProps {
 /** Returns a color swatch style for a category pill based on the name. */
 function getCategoryColor(name: string): string {
   const palette: Record<string, string> = {
-    'Bakery': 'bg-amber-100 text-amber-700 border-amber-200',
-    'Beverages': 'bg-blue-100 text-blue-700 border-blue-200',
+    Bakery: 'bg-amber-100 text-amber-700 border-amber-200',
+    Beverages: 'bg-blue-100 text-blue-700 border-blue-200',
     'Dairy & Eggs': 'bg-yellow-100 text-yellow-700 border-yellow-200',
     'Household & Cleaning': 'bg-purple-100 text-purple-700 border-purple-200',
     'Pantry & Groceries': 'bg-green-100 text-green-700 border-green-200',
-    'Produce': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    Produce: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     'Snacks & Sweets': 'bg-rose-100 text-rose-700 border-rose-200',
   };
   return palette[name] || 'bg-primary/8 text-primary border-primary/20';
@@ -51,10 +51,16 @@ export function ProductTable({
   const { t, language } = useTranslation();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm" role="region" aria-label="Product Catalog Table">
+    <div
+      className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"
+      role="region"
+      aria-label="Product Catalog Table"
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm" role="table">
-          <caption className="sr-only">List of store products with names, prices, and stock indicators</caption>
+          <caption className="sr-only">
+            List of store products with names, prices, and stock indicators
+          </caption>
 
           {/* ── Header ────────────────────────────────────────────── */}
           <thead>
@@ -67,7 +73,10 @@ export function ProductTable({
                 onSort={onSort || (() => {})}
                 className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary"
               />
-              <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-start">
+              <th
+                scope="col"
+                className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-start"
+              >
                 {t('products.barcode')}
               </th>
               <SortableHeader
@@ -78,7 +87,10 @@ export function ProductTable({
                 onSort={onSort || (() => {})}
                 className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary"
               />
-              <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-end">
+              <th
+                scope="col"
+                className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-end"
+              >
                 {t('products.costPrice')}
               </th>
               <SortableHeader
@@ -90,7 +102,10 @@ export function ProductTable({
                 onSort={onSort || (() => {})}
                 className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary"
               />
-              <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center">
+              <th
+                scope="col"
+                className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center"
+              >
                 {t('products.margin')}
               </th>
               <SortableHeader
@@ -102,10 +117,16 @@ export function ProductTable({
                 onSort={onSort || (() => {})}
                 className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary"
               />
-              <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center">
+              <th
+                scope="col"
+                className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center"
+              >
                 {t('common.status')}
               </th>
-              <th scope="col" className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center">
+              <th
+                scope="col"
+                className="py-3 px-4 font-semibold text-xs uppercase tracking-wider text-secondary text-center"
+              >
                 {t('common.actions')}
               </th>
             </tr>
@@ -124,9 +145,10 @@ export function ProductTable({
                 const qty = product.inventory_quantity ?? 0;
                 const isLow = qty <= product.min_stock_level;
                 const margin = getMargin(product);
-                const categoryName = language === 'ar' && product.category_name_ar
-                  ? product.category_name_ar
-                  : product.category_name || t('products.uncategorized');
+                const categoryName =
+                  language === 'ar' && product.category_name_ar
+                    ? product.category_name_ar
+                    : product.category_name || t('products.uncategorized');
 
                 return (
                   <tr
@@ -141,16 +163,25 @@ export function ProductTable({
                           <Package size={16} />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-semibold text-foreground leading-tight truncate max-w-[200px]" title={product.name}>
+                          <div
+                            className="font-semibold text-foreground leading-tight truncate max-w-[200px]"
+                            title={product.name}
+                          >
                             {product.name}
                           </div>
                           {product.name_ar && (
-                            <div className="text-xs text-secondary font-arabic mt-0.5 truncate max-w-[200px]" title={product.name_ar}>
+                            <div
+                              className="text-xs text-secondary font-arabic mt-0.5 truncate max-w-[200px]"
+                              title={product.name_ar}
+                            >
                               {product.name_ar}
                             </div>
                           )}
                           {product.description && (
-                            <div className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]" title={product.description}>
+                            <div
+                              className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]"
+                              title={product.description}
+                            >
                               {product.description}
                             </div>
                           )}
@@ -166,17 +197,24 @@ export function ProductTable({
                           <span>{product.barcode}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-secondary/50 italic">{t('products.looseProduce')}</span>
+                        <span className="text-xs text-secondary/50 italic">
+                          {t('products.looseProduce')}
+                        </span>
                       )}
                     </td>
 
                     {/* Category */}
                     <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(product.category_name || '')}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(product.category_name || '')}`}
+                      >
                         {categoryName}
                       </span>
                       {product.supplier_name && (
-                        <div className="text-xs text-secondary/60 mt-1 truncate max-w-[120px]" title={product.supplier_name}>
+                        <div
+                          className="text-xs text-secondary/60 mt-1 truncate max-w-[120px]"
+                          title={product.supplier_name}
+                        >
                           {product.supplier_name}
                         </div>
                       )}
@@ -199,10 +237,25 @@ export function ProductTable({
                     {/* Margin */}
                     <td className="py-3 px-4 text-center">
                       <div className="inline-flex items-center gap-1">
-                        <TrendingUp size={12} className={margin >= 20 ? 'text-emerald-500' : margin >= 10 ? 'text-amber-500' : 'text-rose-500'} />
-                        <span className={`text-xs font-bold tabular-nums ${
-                          margin >= 20 ? 'text-emerald-600' : margin >= 10 ? 'text-amber-600' : 'text-rose-600'
-                        }`}>
+                        <TrendingUp
+                          size={12}
+                          className={
+                            margin >= 20
+                              ? 'text-emerald-500'
+                              : margin >= 10
+                                ? 'text-amber-500'
+                                : 'text-rose-500'
+                          }
+                        />
+                        <span
+                          className={`text-xs font-bold tabular-nums ${
+                            margin >= 20
+                              ? 'text-emerald-600'
+                              : margin >= 10
+                                ? 'text-amber-600'
+                                : 'text-rose-600'
+                          }`}
+                        >
                           {margin}%
                         </span>
                       </div>
@@ -211,11 +264,17 @@ export function ProductTable({
                     {/* Stock */}
                     <td className="py-3 px-4 text-end">
                       <div className="flex flex-col items-end gap-0.5">
-                        <span className={`font-mono text-sm font-semibold tabular-nums ${isLow ? 'text-destructive' : 'text-foreground'}`}>
-                          {qty} <span className="text-xs font-normal text-secondary">{product.unit}</span>
+                        <span
+                          className={`font-mono text-sm font-semibold tabular-nums ${isLow ? 'text-destructive' : 'text-foreground'}`}
+                        >
+                          {qty}{' '}
+                          <span className="text-xs font-normal text-secondary">{product.unit}</span>
                         </span>
                         {isLow && (
-                          <span className="flex items-center gap-0.5 text-[10px] text-destructive uppercase tracking-wider font-bold" aria-label="Low stock alert">
+                          <span
+                            className="flex items-center gap-0.5 text-[10px] text-destructive uppercase tracking-wider font-bold"
+                            aria-label="Low stock alert"
+                          >
                             <ShieldAlert size={9} aria-hidden="true" />
                             <span>{t('products.lowStock')}</span>
                           </span>
@@ -261,7 +320,9 @@ export function ProductTable({
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
                       <Package className="h-8 w-8 text-secondary/40" aria-hidden="true" />
                     </div>
-                    <p className="font-semibold text-foreground">{t('products.noProductsCatalog')}</p>
+                    <p className="font-semibold text-foreground">
+                      {t('products.noProductsCatalog')}
+                    </p>
                     <p className="text-sm text-secondary">{t('products.tryAdjustingFilters')}</p>
                     {hasFilters && (
                       <Button

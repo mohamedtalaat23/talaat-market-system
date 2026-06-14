@@ -56,9 +56,12 @@ function formatChartDate(dateStr: string): string {
 }
 
 function getRankBadgeClass(rank: number): string {
-  if (rank === 1) return 'bg-gradient-to-br from-yellow-200 to-amber-400 text-amber-900 border-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.4)]';
-  if (rank === 2) return 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-800 border-slate-300 shadow-sm';
-  if (rank === 3) return 'bg-gradient-to-br from-orange-200 to-orange-400 text-orange-900 border-orange-300 shadow-sm';
+  if (rank === 1)
+    return 'bg-gradient-to-br from-yellow-200 to-amber-400 text-amber-900 border-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.4)]';
+  if (rank === 2)
+    return 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-800 border-slate-300 shadow-sm';
+  if (rank === 3)
+    return 'bg-gradient-to-br from-orange-200 to-orange-400 text-orange-900 border-orange-300 shadow-sm';
   return 'bg-card text-secondary border-border shadow-sm';
 }
 
@@ -89,9 +92,8 @@ export function WeeklyReportScreen() {
 
   const peakDayDate = useMemo(() => {
     if (!reportData?.days.length) return null;
-    return reportData.days.reduce((best, day) =>
-      day.net_revenue > best.net_revenue ? day : best,
-    ).date;
+    return reportData.days.reduce((best, day) => (day.net_revenue > best.net_revenue ? day : best))
+      .date;
   }, [reportData?.days]);
 
   const avgDailyRevenue = reportData ? reportData.totals.net_revenue / 7 : 0;
@@ -202,7 +204,9 @@ export function WeeklyReportScreen() {
           <Card className="rounded-2xl border-destructive/20">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <AlertCircle className="h-10 w-10 text-destructive mb-3" />
-              <p className="text-destructive font-medium">{t('reports.failedToLoadWeeklyReport')}</p>
+              <p className="text-destructive font-medium">
+                {t('reports.failedToLoadWeeklyReport')}
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -296,7 +300,11 @@ export function WeeklyReportScreen() {
                     >
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--color-primary-500)" stopOpacity={0.25} />
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-primary-500)"
+                            stopOpacity={0.25}
+                          />
                           <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
@@ -447,38 +455,43 @@ export function WeeklyReportScreen() {
                       <Table>
                         <TableHeader className="table-header-sticky bg-muted/40 backdrop-blur-md">
                           <TableRow className="bg-transparent hover:bg-transparent border-b-border/60">
-                          <TableHead className="w-16 text-center">{t('reports.rank')}</TableHead>
-                          <TableHead>{t('reports.productName')}</TableHead>
-                          <TableHead className="text-right">{t('reports.unitsSold')}</TableHead>
-                          <TableHead className="text-right">{t('reports.revenue')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {reportData.top_products.map((prod, index) => (
-                          <TableRow key={index} className="group hover:bg-primary/[0.02] transition-colors border-border/40">
-                            <TableCell className="text-center">
-                              <span
-                                className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-[13px] font-black ${getRankBadgeClass(index + 1)}`}
-                              >
-                                {index + 1}
-                              </span>
-                            </TableCell>
-                            <TableCell className="font-medium">{prod.product_name}</TableCell>
-                            <TableCell className="text-right font-semibold">
-                              {prod.total_quantity_sold}
-                            </TableCell>
-                            <TableCell className="text-right font-mono tabular-nums">
-                              {formatCurrency(prod.total_revenue)}
-                            </TableCell>
+                            <TableHead className="w-16 text-center">{t('reports.rank')}</TableHead>
+                            <TableHead>{t('reports.productName')}</TableHead>
+                            <TableHead className="text-right">{t('reports.unitsSold')}</TableHead>
+                            <TableHead className="text-right">{t('reports.revenue')}</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {reportData.top_products.map((prod, index) => (
+                            <TableRow
+                              key={index}
+                              className="group hover:bg-primary/[0.02] transition-colors border-border/40"
+                            >
+                              <TableCell className="text-center">
+                                <span
+                                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-[13px] font-black ${getRankBadgeClass(index + 1)}`}
+                                >
+                                  {index + 1}
+                                </span>
+                              </TableCell>
+                              <TableCell className="font-medium">{prod.product_name}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {prod.total_quantity_sold}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {formatCurrency(prod.total_revenue)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </div>
 
                     <div className="relative h-[400px] lg:h-auto min-h-[400px] no-print rounded-2xl border border-border/80 bg-gradient-to-br from-card to-primary/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 group">
                       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[bottom_1px_center] pointer-events-none rounded-2xl"></div>
-                      <div className="absolute top-4 right-6 text-xs font-bold text-primary/40 uppercase tracking-widest">{t('reports.unitsSold')}</div>
+                      <div className="absolute top-4 right-6 text-xs font-bold text-primary/40 uppercase tracking-widest">
+                        {t('reports.unitsSold')}
+                      </div>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={reportData.top_products}

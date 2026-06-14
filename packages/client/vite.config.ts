@@ -50,17 +50,7 @@ export default defineConfig({
     // Minimum chunk size warning threshold (500KB default → 750KB)
     chunkSizeWarningLimit: 750,
     rollupOptions: {
-      output: {
-        // Split vendor chunks for better caching
-        manualChunks: {
-          // React + routing
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // Data layer
-          'vendor-query': ['@tanstack/react-query', 'axios', 'zustand'],
-          // UI utilities
-          'vendor-ui': ['recharts', 'lucide-react', 'react-hot-toast'],
-        },
-      },
+      output: {},
     },
   },
 

@@ -232,6 +232,6 @@ export function RecordPaymentModal({
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

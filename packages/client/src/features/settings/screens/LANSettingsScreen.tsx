@@ -108,7 +108,9 @@ export function LANSettingsScreen() {
           <Wifi className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.lanTitle')}</h3>
+          <h3 className="text-2xl font-black tracking-tight text-foreground">
+            {t('settings.lanTitle')}
+          </h3>
           <p className="text-sm text-secondary font-medium mt-1">{t('settings.lanDesc')}</p>
         </div>
       </div>
@@ -123,11 +125,17 @@ export function LANSettingsScreen() {
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'standalone' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+          <div
+            className={`p-3 rounded-xl w-fit mb-4 ${mode === 'standalone' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}
+          >
             <Monitor size={24} />
           </div>
-          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.standalone')}</h4>
-          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.standaloneDesc')}</p>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">
+            {t('settings.standalone')}
+          </h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">
+            {t('settings.standaloneDesc')}
+          </p>
         </div>
 
         {/* Master Selector */}
@@ -139,11 +147,17 @@ export function LANSettingsScreen() {
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'master' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+          <div
+            className={`p-3 rounded-xl w-fit mb-4 ${mode === 'master' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}
+          >
             <Server size={24} />
           </div>
-          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.hostMaster')}</h4>
-          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.hostMasterDesc')}</p>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">
+            {t('settings.hostMaster')}
+          </h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">
+            {t('settings.hostMasterDesc')}
+          </p>
         </div>
 
         {/* Client Selector */}
@@ -155,11 +169,17 @@ export function LANSettingsScreen() {
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
           }`}
         >
-          <div className={`p-3 rounded-xl w-fit mb-4 ${mode === 'client' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}>
+          <div
+            className={`p-3 rounded-xl w-fit mb-4 ${mode === 'client' ? 'bg-success/20 text-success' : 'bg-secondary/10 text-secondary group-hover:bg-success/10 group-hover:text-success'}`}
+          >
             <Laptop size={24} />
           </div>
-          <h4 className="font-bold text-foreground text-lg tracking-tight">{t('settings.clientTerminal')}</h4>
-          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">{t('settings.clientTerminalDesc')}</p>
+          <h4 className="font-bold text-foreground text-lg tracking-tight">
+            {t('settings.clientTerminal')}
+          </h4>
+          <p className="text-xs text-secondary font-medium mt-1.5 leading-relaxed">
+            {t('settings.clientTerminalDesc')}
+          </p>
         </div>
       </div>
 
@@ -221,12 +241,10 @@ export function LANSettingsScreen() {
                   : 'bg-gradient-to-br from-danger/5 to-danger/10 border-danger/30 text-danger'
               }`}
             >
-              <div className={`p-2.5 rounded-xl shrink-0 ${pingResult.success ? 'bg-success/20' : 'bg-danger/20'}`}>
-                {pingResult.success ? (
-                  <Wifi size={24} />
-                ) : (
-                  <WifiOff size={24} />
-                )}
+              <div
+                className={`p-2.5 rounded-xl shrink-0 ${pingResult.success ? 'bg-success/20' : 'bg-danger/20'}`}
+              >
+                {pingResult.success ? <Wifi size={24} /> : <WifiOff size={24} />}
               </div>
               <div className="mt-0.5">
                 <p className="font-bold text-sm uppercase tracking-widest drop-shadow-sm">
@@ -253,7 +271,9 @@ export function LANSettingsScreen() {
               <span
                 className={`h-3 w-3 rounded-full shadow-sm ${status === 'online' ? 'bg-success animate-pulse shadow-success/40' : 'bg-danger shadow-danger/40'}`}
               />
-              <span className={`text-sm font-black uppercase tracking-widest pr-1 ${status === 'online' ? 'text-success' : 'text-danger'}`}>
+              <span
+                className={`text-sm font-black uppercase tracking-widest pr-1 ${status === 'online' ? 'text-success' : 'text-danger'}`}
+              >
                 {status === 'online' ? t('settings.onlineSynced') : t('settings.offlineOutage')}
               </span>
             </div>
@@ -290,7 +310,9 @@ export function LANSettingsScreen() {
             <div className="p-4 rounded-full bg-secondary/5 mb-3">
               <AlertCircle size={36} className="text-secondary/50" />
             </div>
-            <span className="text-sm text-secondary font-bold tracking-wide">{t('settings.bufferEmpty')}</span>
+            <span className="text-sm text-secondary font-bold tracking-wide">
+              {t('settings.bufferEmpty')}
+            </span>
           </div>
         ) : (
           <div className="overflow-hidden border border-border/60 rounded-2xl shadow-sm bg-card">
@@ -319,7 +341,8 @@ export function LANSettingsScreen() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-end font-black text-foreground text-sm tabular-nums">
-                      {Number(sale.saleData.total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5">EGP</span>
+                      {Number(sale.saleData.total).toFixed(2)}{' '}
+                      <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </td>
                     <td className="px-5 py-4 text-center">
                       <div className="flex justify-center gap-2.5">
@@ -377,12 +400,14 @@ export function LANSettingsScreen() {
                   <div>
                     <p className="font-bold text-foreground">{item.product_name}</p>
                     <p className="text-xs text-secondary font-medium mt-0.5">
-                      <span className="font-bold">{item.quantity}</span> {item.unit} &times; {Number(item.unit_price).toFixed(2)}
+                      <span className="font-bold">{item.quantity}</span> {item.unit} &times;{' '}
+                      {Number(item.unit_price).toFixed(2)}
                     </p>
                   </div>
                   <div className="text-end">
                     <p className="font-black text-foreground text-sm tabular-nums">
-                      {Number(item.line_total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5">EGP</span>
+                      {Number(item.line_total).toFixed(2)}{' '}
+                      <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </p>
                     {item.discount > 0 && (
                       <p className="text-[11px] font-bold text-danger mt-0.5">
@@ -404,18 +429,25 @@ export function LANSettingsScreen() {
               {selectedSale.saleData.discount_amount > 0 && (
                 <div className="flex justify-between text-danger font-bold">
                   <span>{t('settings.productDiscount')}</span>
-                  <span className="tabular-nums">-{Number(selectedSale.saleData.discount_amount).toFixed(2)} EGP</span>
+                  <span className="tabular-nums">
+                    -{Number(selectedSale.saleData.discount_amount).toFixed(2)} EGP
+                  </span>
                 </div>
               )}
               {selectedSale.saleData.global_discount > 0 && (
                 <div className="flex justify-between text-danger font-bold">
                   <span>{t('settings.globalDiscount')}</span>
-                  <span className="tabular-nums">-{Number(selectedSale.saleData.global_discount).toFixed(2)} EGP</span>
+                  <span className="tabular-nums">
+                    -{Number(selectedSale.saleData.global_discount).toFixed(2)} EGP
+                  </span>
                 </div>
               )}
               <div className="flex justify-between text-base font-black text-foreground pt-3 border-t border-border/40 mt-2">
                 <span>{t('settings.totalAmount')}</span>
-                <span className="tabular-nums text-success">{Number(selectedSale.saleData.total).toFixed(2)} <span className="text-[10px] text-secondary ml-0.5 font-bold uppercase">EGP</span></span>
+                <span className="tabular-nums text-success">
+                  {Number(selectedSale.saleData.total).toFixed(2)}{' '}
+                  <span className="text-[10px] text-secondary ml-0.5 font-bold uppercase">EGP</span>
+                </span>
               </div>
             </div>
           </div>

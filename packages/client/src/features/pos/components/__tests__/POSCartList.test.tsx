@@ -56,7 +56,7 @@ describe('POSCartList', () => {
     expect(screen.getAllByText('2')[0]).toBeInTheDocument(); // Quantity
     expect(screen.getByText('25.50')).toBeInTheDocument(); // Unit price column
     expect(screen.getByText('46.00')).toBeInTheDocument(); // Total column: (2 * 25.50) - 5.00
-    expect(screen.getByText(/-5.00 EGP.*pos.itemDiscount/)).toBeInTheDocument();
+    expect(screen.getByText(/-5.00 (EGP|pos.currency).*pos.itemDiscount/)).toBeInTheDocument();
   });
 
   it('should change the active item when a table row is clicked', () => {

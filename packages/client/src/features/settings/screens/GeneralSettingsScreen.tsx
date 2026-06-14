@@ -68,7 +68,7 @@ export function GeneralSettingsScreen() {
       },
       onError: () => {
         toast.error('Failed to save settings');
-      }
+      },
     });
   };
 
@@ -178,7 +178,13 @@ export function GeneralSettingsScreen() {
               </label>
               <select
                 className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right 1rem center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  paddingRight: `2.5rem`,
+                }}
                 value={form.timezone}
                 onChange={(e) => setForm({ ...form, timezone: e.target.value })}
               >
@@ -195,7 +201,13 @@ export function GeneralSettingsScreen() {
               </label>
               <select
                 className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-mono font-bold appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right 1rem center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  paddingRight: `2.5rem`,
+                }}
                 value={form.date_format}
                 onChange={(e) => setForm({ ...form, date_format: e.target.value })}
               >
