@@ -2,6 +2,7 @@
   "name": "talaat-market",
   "version": "1.0.0",
   "description": "Talaat Market — Supermarket Management System",
+  "type": "module",
   "private": true,
   "workspaces": [
     "packages/client",
