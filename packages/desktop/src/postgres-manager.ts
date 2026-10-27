@@ -54,7 +54,14 @@ function writeEnvFile(filePath: string, values: Record<string, string>): void {
     }),
     '',
   ];
-  fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+  // 0600: this file holds the database password plus the JWT/session secrets,
+  // so it must not be readable by other OS users.
+  fs.writeFileSync(filePath, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
+  try {
+    fs.chmodSync(filePath, 0o600);
+  } catch {
+    // Windows does not implement POSIX permissions; the user profile ACL applies.
+  }
 }
 
 function runCommand(
@@ -182,6 +189,10 @@ export class PostgresManager {
     const sessionSecret =
       existingConfig['SESSION_SECRET'] || crypto.randomBytes(48).toString('hex');
     const jwtSecret = existingConfig['JWT_SECRET'] || crypto.randomBytes(48).toString('hex');
+    // First-run administrator password. Generated once per installation instead
+    // of shipping a published default; the operator is shown it a single time.
+    const initialAdminPassword =
+      existingConfig['INITIAL_ADMIN_PASSWORD'] || crypto.randomBytes(18).toString('base64url');
 
     if (firstRun) {
       await this.createApplicationDatabase(runtime, port, dbPassword);
@@ -206,6 +217,8 @@ export class PostgresManager {
       SESSION_SECRET: sessionSecret,
       JWT_SECRET: jwtSecret,
       JWT_EXPIRES_IN: '12h',
+      INITIAL_ADMIN_USERNAME: 'admin',
+      INITIAL_ADMIN_PASSWORD: initialAdminPassword,
       LOG_LEVEL: 'info',
       LOG_DIR: path.join(userData, 'logs'),
       BACKUP_DIR: path.join(userData, 'backups'),

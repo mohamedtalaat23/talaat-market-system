@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { ServerManager } from './server-manager';
 import { PostgresManager } from './postgres-manager';
@@ -202,6 +203,58 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 
+/**
+ * Surfaces the auto-generated first-run administrator password exactly once.
+ *
+ * The bootstrap step writes `initial-admin-credentials.txt` next to the managed
+ * config file. We display it, then delete it so it cannot be harvested later.
+ */
+async function showFirstRunAdminCredentials(
+  managedPostgres: { configPath: string } | null,
+): Promise<void> {
+  if (!managedPostgres?.configPath) return;
+
+  const credentialsPath = path.join(
+    path.dirname(managedPostgres.configPath),
+    'initial-admin-credentials.txt',
+  );
+
+  if (!fs.existsSync(credentialsPath)) return;
+
+  let username = 'admin';
+  let password = '';
+
+  try {
+    const content = fs.readFileSync(credentialsPath, 'utf8');
+    username = /^username=(.*)$/m.exec(content)?.[1]?.trim() || username;
+    password = /^password=(.*)$/m.exec(content)?.[1]?.trim() ?? '';
+  } catch (error) {
+    logger.warn('Could not read the first-run credentials file', error);
+    return;
+  }
+
+  if (!password) return;
+
+  await dialog.showMessageBox({
+    type: 'info',
+    title: 'Talaat Market — first-run credentials',
+    message: 'Administrator account created',
+    detail:
+      `Username: ${username}\n` +
+      `Password: ${password}\n\n` +
+      'You will be asked to choose a new password after signing in.\n' +
+      'Store this password somewhere safe — it will not be shown again.',
+    buttons: ['Continue'],
+    noLink: true,
+  });
+
+  try {
+    fs.unlinkSync(credentialsPath);
+  } catch (error) {
+    logger.warn('Could not delete the first-run credentials file', error);
+  }
+}
+
 app.on('ready', async () => {
   logger.info('Electron app ready');
   logger.info(`Platform: ${process.platform}, isDev: ${isDev}`);
@@ -214,6 +267,7 @@ app.on('ready', async () => {
     // In development: Express is already running separately
     if (!isDev) {
       await serverManager.runStartupTasks(childEnv);
+      await showFirstRunAdminCredentials(managedPostgres);
     }
 
     const serverPort = isDev ? SERVER_PORT_DEV : await serverManager.start(childEnv);
