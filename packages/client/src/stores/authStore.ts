@@ -6,6 +6,7 @@ export interface User {
   username: string;
   role: 'admin' | 'manager' | 'cashier';
   full_name?: string;
+  must_change_password?: boolean;
 }
 
 interface AuthState {
@@ -15,9 +16,11 @@ interface AuthState {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   loginWithPin: (pin: string) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   initializeAuth: () => Promise<void>;
 }
+
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -51,6 +54,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     localStorage.removeItem('talaat_token');
     set({ token: null, user: null, isAuthenticated: false, isLoading: false });
+  },
+
+  /**
+   * Rotate the signed-in employee's password.
+   *
+   * The server clears `must_change_password`; we mirror that locally so the
+   * forced-change guard releases immediately without a re-login.
+   */
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    await apiClient.post('/auth/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+
+    const currentUser = get().user;
+    if (currentUser) {
+      set({ user: { ...currentUser, must_change_password: false } });
+    }
   },
 
   initializeAuth: async () => {

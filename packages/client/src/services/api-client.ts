@@ -51,12 +51,17 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Extract server error messages if available
+    // Extract server error messages if available.
+    // The API nests failures as { success: false, error: { code, message } }.
+    const payload = error.response?.data;
     const message =
-      error.response?.data?.message || error.message || 'An unexpected error occurred';
+      payload?.error?.message ||
+      payload?.message ||
+      error.message ||
+      'An unexpected error occurred';
     const serverError = new Error(message);
     (serverError as any).status = error.response?.status;
-    (serverError as any).code = error.response?.data?.code;
+    (serverError as any).code = payload?.error?.code ?? payload?.code;
 
     return Promise.reject(serverError);
   },

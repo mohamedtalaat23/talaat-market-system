@@ -33,6 +33,7 @@ interface LoginResponse {
       username: string;
       role: 'admin' | 'manager' | 'cashier';
       full_name: string;
+      must_change_password?: boolean;
     };
   };
 }
@@ -115,7 +116,16 @@ export function LoginPage() {
           username: employee.username,
           role: employee.role,
           full_name: employee.full_name,
+          must_change_password: employee.must_change_password ?? false,
         });
+
+        // Provisioned accounts must rotate their temporary password first.
+        if (employee.must_change_password) {
+          toast.success(`Welcome, ${employee.full_name}! Please choose a new password.`);
+          navigate('/change-password', { replace: true });
+          return;
+        }
+
         toast.success(`Welcome back, ${employee.full_name}!`);
         navigate(from, { replace: true });
       } else {

@@ -195,7 +195,7 @@ export const AppLayout = React.memo(() => {
 
           {!collapsed && (
             <div className="flex items-center justify-center text-[10px] text-[#10B981]/70 font-bold uppercase tracking-widest px-1">
-              <span>Station 1</span>
+              <span>{t('topbar.station')}</span>
             </div>
           )}
         </div>

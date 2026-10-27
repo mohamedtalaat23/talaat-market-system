@@ -25,6 +25,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Accounts provisioned with a temporary password cannot reach the rest of
+  // the app until the password has been rotated.
+  if (user.must_change_password && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Role not authorized, redirect to dashboard
     return <Navigate to="/" replace />;
