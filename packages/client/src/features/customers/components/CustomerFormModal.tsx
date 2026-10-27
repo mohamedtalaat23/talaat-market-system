@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useCreateCustomer, useUpdateCustomer, Customer } from '../hooks/useCustomerQueries';
+import type { Customer } from '../hooks/useCustomerQueries';
+import { useCreateCustomer, useUpdateCustomer } from '../hooks/useCustomerQueries';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';

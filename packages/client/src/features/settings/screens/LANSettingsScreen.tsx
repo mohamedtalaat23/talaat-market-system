@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useLANStore, OfflineSale } from '@/features/pos/stores/useLANStore';
+import type { OfflineSale } from '@/features/pos/stores/useLANStore';
+import { useLANStore } from '@/features/pos/stores/useLANStore';
 import toast from 'react-hot-toast';
 import {
   Wifi,

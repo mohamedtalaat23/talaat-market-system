@@ -57,17 +57,17 @@ export function GeneralSettingsScreen() {
 
   const handleDiscard = () => {
     loadInitialSettings();
-    toast.success('Changes discarded');
+    toast.success(t('settings.toasts.changesDiscarded'));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(form, {
       onSuccess: () => {
-        toast.success('Settings saved successfully');
+        toast.success(t('settings.toasts.saveSuccess'));
       },
       onError: () => {
-        toast.error('Failed to save settings');
+        toast.error(t('settings.toasts.saveFailed'));
       },
     });
   };
@@ -143,7 +143,7 @@ export function GeneralSettingsScreen() {
         </div>
 
         {/* Financial & Localization */}
-        <div className="space-y-6 pb-6">
+        <div className="space-y-6 pb-6 border-b border-border/40">
           <h4 className="text-[11px] font-black text-primary uppercase tracking-widest select-none bg-primary/10 w-max px-3 py-1.5 rounded-md">
             {t('settings.financialL10n')}
           </h4>
@@ -219,11 +219,41 @@ export function GeneralSettingsScreen() {
           </div>
         </div>
 
+        {/* Database Disaster Recovery Section */}
+        <div className="space-y-6 pt-2 pb-6">
+          <h4 className="text-[11px] font-black text-emerald-500 uppercase tracking-widest select-none bg-emerald-500/10 w-max px-3 py-1.5 rounded-md">
+            Disaster Recovery & Database Backups
+          </h4>
+          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h5 className="font-bold text-foreground mb-1">Create System Snapshot Backup</h5>
+              <p className="text-xs text-muted-foreground max-w-md">
+                Exports an immutable snapshot JSON file containing store configuration, product catalog, category tree, and inventory stock levels.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const { apiClient } = await import('@/services/api-client');
+                  const res = await apiClient.post('/settings/backups');
+                  toast.success(`Backup created: ${res.data?.data?.filename}`);
+                } catch (e) {
+                  toast.error('Failed to generate backup');
+                }
+              }}
+              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0"
+            >
+              Create Snapshot Backup
+            </button>
+          </div>
+        </div>
+
         {/* ── Sticky Unsaved Changes Action Bar ── */}
         {isDirty && (
           <div className="sticky bottom-6 left-0 right-0 bg-white/95 dark:bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom-8 duration-300 z-20 select-none gap-4">
             <span className="text-sm font-bold text-foreground">
-              You have unsaved changes to your general settings
+              {t('settings.unsavedChanges')}
             </span>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
@@ -231,14 +261,14 @@ export function GeneralSettingsScreen() {
                 onClick={handleDiscard}
                 className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-card hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-border/60 text-secondary hover:text-foreground text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-sm focus:outline-none"
               >
-                Discard
+                {t('settings.discard')}
               </button>
               <button
                 type="submit"
                 disabled={isPending}
                 className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all focus:outline-none disabled:opacity-50 shadow-[0_4px_14px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.4)] hover:-translate-y-0.5 active:scale-95"
               >
-                {isPending ? 'Saving...' : 'Save Changes'}
+                {isPending ? t('settings.saving') : t('settings.saveChanges')}
               </button>
             </div>
           </div>

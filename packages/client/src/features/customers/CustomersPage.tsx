@@ -12,7 +12,8 @@ import {
   Trash2,
   UserCircle,
 } from 'lucide-react';
-import { useCustomers, useDeleteCustomer, Customer } from './hooks/useCustomerQueries';
+import type { Customer } from './hooks/useCustomerQueries';
+import { useCustomers, useDeleteCustomer } from './hooks/useCustomerQueries';
 import { CustomerFormModal } from './components/CustomerFormModal';
 import { RecordPaymentModal } from './components/RecordPaymentModal';
 import { useAuthStore } from '@/stores/authStore';

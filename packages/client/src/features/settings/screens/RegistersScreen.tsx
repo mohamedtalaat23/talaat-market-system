@@ -12,7 +12,7 @@ export function RegistersScreen() {
           {t('settings.registers')}
         </h3>
         <button
-          onClick={() => toast('Register management is coming in a future update.', { icon: '🏗️' })}
+          onClick={() => toast(t('settings.registersManagementComing'), { icon: '🏗️' })}
           className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 tracking-wide"
         >
           {t('settings.addRegister')}
@@ -41,7 +41,7 @@ export function RegistersScreen() {
                 <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm group-hover:scale-105 transition-transform">
                   <Store size={18} />
                 </div>
-                <span>Main Register 01</span>
+                <span>{t('settings.mainRegister')}</span>
               </td>
               <td className="px-6 py-5">
                 <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black bg-success/10 text-success border border-success/20 uppercase tracking-widest">
@@ -51,7 +51,7 @@ export function RegistersScreen() {
               <td className="px-6 py-5 text-center">
                 <button
                   onClick={() =>
-                    toast('Register editing is coming in a future update.', { icon: '🏗️' })
+                    toast(t('settings.registersEditingComing'), { icon: '🏗️' })
                   }
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >
@@ -64,7 +64,7 @@ export function RegistersScreen() {
                 <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm group-hover:scale-105 transition-transform">
                   <Store size={18} />
                 </div>
-                <span>Backup Register 02</span>
+                <span>{t('settings.backupRegister')}</span>
               </td>
               <td className="px-6 py-5">
                 <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black bg-success/10 text-success border border-success/20 uppercase tracking-widest">
@@ -74,7 +74,7 @@ export function RegistersScreen() {
               <td className="px-6 py-5 text-center">
                 <button
                   onClick={() =>
-                    toast('Register editing is coming in a future update.', { icon: '🏗️' })
+                    toast(t('settings.registersEditingComing'), { icon: '🏗️' })
                   }
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >

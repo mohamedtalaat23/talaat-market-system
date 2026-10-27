@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCreatePurchaseOrder } from '../hooks/usePurchaseQueries';
 import { useSuppliers } from '../../suppliers/hooks/useSupplierQueries';
-import { useProducts, Product } from '../../products/hooks/useProductQueries';
+import type { Product } from '../../products/hooks/useProductQueries';
+import { useProducts } from '../../products/hooks/useProductQueries';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { X, Search, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import toast from 'react-hot-toast';
 
 interface PurchaseOrderFormModalProps {
@@ -23,7 +25,15 @@ interface SelectedItem {
 }
 
 export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormModalProps) {
+  const { t, language } = useTranslation();
   const createPO = useCreatePurchaseOrder();
+
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat(language === 'ar' ? 'ar-EG' : 'en-EG', {
+      style: 'currency',
+      currency: 'EGP',
+    }).format(val);
+  };
 
   // Suppliers lookup
   const { data: suppliersData } = useSuppliers('', 1, 100);
@@ -53,7 +63,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
   const handleAddProduct = (prod: Product) => {
     // Prevent duplicate additions
     if (items.some((item) => item.product_id === prod.id)) {
-      toast.error('Product already added to this purchase order');
+      toast.error(t('purchases.toasts.productAlreadyAdded'));
       return;
     }
 
@@ -95,23 +105,23 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
     e.preventDefault();
 
     if (!supplierId) {
-      toast.error('Please select a supplier');
+      toast.error(t('purchases.toasts.selectSupplierError'));
       return;
     }
 
     if (items.length === 0) {
-      toast.error('Please add at least one product to this order');
+      toast.error(t('purchases.toasts.addOneProductError'));
       return;
     }
 
     // Validate quantities and costs
     for (const item of items) {
       if (item.ordered_quantity <= 0) {
-        toast.error(`Quantity for product "${item.name}" must be greater than 0`);
+        toast.error(t('purchases.toasts.qtyGreaterThanZero').replace('{name}', item.name));
         return;
       }
       if (item.unit_cost < 0) {
-        toast.error(`Cost price for product "${item.name}" cannot be negative`);
+        toast.error(t('purchases.toasts.costCannotBeNegative').replace('{name}', item.name));
         return;
       }
     }
@@ -143,7 +153,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-input-border bg-white">
           <h2 className="text-lg font-bold text-input-text flex items-center space-x-2">
-            <span>Draft New Purchase Order</span>
+            <span>{t('purchases.draftNewPO')}</span>
           </h2>
           <button onClick={onClose} className="text-secondary hover:text-input-text">
             <X size={18} />
@@ -155,14 +165,14 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           {/* Supplier & Header Config */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">Supplier *</label>
+              <label className="text-xs font-semibold text-secondary">{t('purchases.supplierRequired')}</label>
               <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : '')}
                 required
                 className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
               >
-                <option value="">Select Supplier</option>
+                <option value="">{t('purchases.selectSupplier')}</option>
                 {suppliers.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} ({s.supplier_code})
@@ -172,7 +182,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             </div>
 
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">Discount Amount (EGP)</label>
+              <label className="text-xs font-semibold text-secondary">{t('purchases.discountAmountEgp')}</label>
               <Input
                 type="number"
                 min="0"
@@ -185,7 +195,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             </div>
 
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">Tax Amount (EGP)</label>
+              <label className="text-xs font-semibold text-secondary">{t('purchases.taxAmountEgp')}</label>
               <Input
                 type="number"
                 min="0"
@@ -200,12 +210,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
           {/* Product Search & Influx Add */}
           <div className="relative space-y-1.5">
-            <label className="text-xs font-semibold text-secondary">Search Products to Add</label>
+            <label className="text-xs font-semibold text-secondary">{t('purchases.searchProductsAdd')}</label>
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
               <Input
                 type="text"
-                placeholder="Scan barcode or type product name..."
+                placeholder={t('purchases.scanBarcodeOrType')}
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
                 className="pl-9 bg-input-bg border-input-border focus:border-success"
@@ -217,7 +227,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
               <div className="absolute left-0 right-0 z-10 max-h-48 overflow-y-auto bg-input-bg border border-input-border rounded-lg shadow-xl divide-y divide-neutral-950">
                 {matchingProducts.length === 0 ? (
                   <div className="p-3 text-sm text-neutral-500 text-center">
-                    No matching products found
+                    {t('purchases.noMatchingProducts')}
                   </div>
                 ) : (
                   matchingProducts.map((prod) => (
@@ -229,12 +239,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                       <div>
                         <div className="font-semibold">{prod.name}</div>
                         <div className="text-xs text-neutral-500 font-mono">
-                          Barcode: {prod.barcode || 'N/A'} | Unit: {prod.unit}
+                          {t('products.barcode')}: {prod.barcode || t('common.na')} | {t('purchases.unit')}: {prod.unit}
                         </div>
                       </div>
                       <div className="flex items-center space-x-4 text-xs font-mono">
-                        <span className="text-secondary">Stock: {prod.inventory_quantity}</span>
-                        <span className="text-success font-bold">{prod.selling_price} EGP</span>
+                        <span className="text-secondary">{t('purchases.stockWithCount').replace('{count}', String(prod.inventory_quantity))}</span>
+                        <span className="text-success font-bold">{formatCurrency(Number(prod.selling_price))}</span>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -255,12 +265,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-input-border bg-white text-secondary font-semibold">
-                  <th className="py-2.5 px-3">Product</th>
-                  <th className="py-2.5 px-3 text-center">Barcode</th>
-                  <th className="py-2.5 px-3 text-center">Current Stock</th>
-                  <th className="py-2.5 px-3 text-center w-28">Cost Price (EGP) *</th>
-                  <th className="py-2.5 px-3 text-center w-28">Order Qty *</th>
-                  <th className="py-2.5 px-3 text-right">Line Subtotal</th>
+                  <th className="py-2.5 px-3">{t('purchases.product')}</th>
+                  <th className="py-2.5 px-3 text-center">{t('products.barcode')}</th>
+                  <th className="py-2.5 px-3 text-center">{t('purchases.currentStock')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.costPriceRequired')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.orderQtyRequired')}</th>
+                  <th className="py-2.5 px-3 text-right">{t('purchases.lineSubtotal')}</th>
                   <th className="py-2.5 px-3 text-center w-10"></th>
                 </tr>
               </thead>
@@ -268,7 +278,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                 {items.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-neutral-500">
-                      Add products using the search search input above.
+                      {t('purchases.addProductsInstruction')}
                     </td>
                   </tr>
                 ) : (
@@ -276,7 +286,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                     <tr key={item.product_id} className="hover:bg-white text-neutral-300">
                       <td className="py-2 px-3 font-semibold text-input-text">{item.name}</td>
                       <td className="py-2 px-3 text-center font-mono text-neutral-500">
-                        {item.barcode || 'N/A'}
+                        {item.barcode || t('common.na')}
                       </td>
                       <td className="py-2 px-3 text-center font-mono text-secondary">
                         {item.current_stock}
@@ -312,10 +322,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                         />
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-bold text-input-text">
-                        {new Intl.NumberFormat('en-EG', {
-                          style: 'currency',
-                          currency: 'EGP',
-                        }).format(item.ordered_quantity * item.unit_cost)}
+                        {formatCurrency(item.ordered_quantity * item.unit_cost)}
                       </td>
                       <td className="py-2 px-3 text-center">
                         <button
@@ -336,12 +343,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           {/* Notes area */}
           <div className="flex flex-col space-y-1.5">
             <label className="text-xs font-semibold text-secondary">
-              Order Notes / Audit Explanations
+              {t('purchases.orderNotesLabel')}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Provide delivery schedules, terms, or order specifications..."
+              placeholder={t('purchases.orderNotesPlaceholder')}
               rows={2}
               className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
             />
@@ -351,26 +358,22 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-input-border bg-white">
           <div className="flex items-center space-x-6 text-sm font-mono">
-            <div className="text-secondary">
-              Subtotal:{' '}
+            <div className="text-secondary font-mono">
+              {t('pos.subtotal')}:{' '}
               <span className="font-semibold text-input-text">
-                {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
-                  subtotal,
-                )}
+                {formatCurrency(subtotal)}
               </span>
             </div>
-            <div className="text-input-text font-bold text-base">
-              Grand Total:{' '}
+            <div className="text-input-text font-bold text-base font-mono">
+              {t('purchases.grandTotal')}:{' '}
               <span className="text-success">
-                {new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(
-                  total,
-                )}
+                {formatCurrency(total)}
               </span>
             </div>
           </div>
           <div className="flex space-x-3">
             <Button variant="ghost" type="button" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
@@ -378,7 +381,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
               disabled={createPO.isPending}
               className="bg-success hover:bg-success/90 text-white font-semibold flex items-center space-x-1.5"
             >
-              <span>Submit Draft</span>
+              <span>{t('purchases.submitDraft')}</span>
             </Button>
           </div>
         </div>

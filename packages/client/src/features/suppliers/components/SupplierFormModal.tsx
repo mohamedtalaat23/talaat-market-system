@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useCreateSupplier, useUpdateSupplier, Supplier } from '../hooks/useSupplierQueries';
+import type { Supplier } from '../hooks/useSupplierQueries';
+import { useCreateSupplier, useUpdateSupplier } from '../hooks/useSupplierQueries';
 import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/hooks/useTranslation';
 

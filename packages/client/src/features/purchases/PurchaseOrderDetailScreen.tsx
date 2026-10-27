@@ -80,7 +80,7 @@ export function PurchaseOrderDetailScreen() {
             variant="warning"
             className="bg-warning/15 text-warning border-warning/30 uppercase"
           >
-            Partially Received
+            {t('purchases.partiallyReceived')}
           </Badge>
         );
       case 'received':
@@ -232,7 +232,7 @@ export function PurchaseOrderDetailScreen() {
                   className="bg-success hover:bg-success/90 text-white font-bold gap-1.5"
                 >
                   <CheckCircle2 size={14} />
-                  {po.status === 'ordered' ? t('purchases.receiveInflux') : 'Continue Receiving'}
+                  {po.status === 'ordered' ? t('purchases.receiveInflux') : t('purchases.continueReceiving')}
                 </Button>
               </>
             )}
@@ -276,14 +276,14 @@ export function PurchaseOrderDetailScreen() {
                 <span className="text-xs text-secondary uppercase font-bold block mb-0.5">
                   {t('purchases.issuedBy')}
                 </span>
-                <span className="text-foreground">{po.creator_name || 'N/A'}</span>
+                <span className="text-foreground">{po.creator_name || t('common.na')}</span>
               </div>
               {po.status === 'received' && (
                 <div>
                   <span className="text-xs text-secondary uppercase font-bold block mb-0.5">
                     {t('purchases.receivedBy')}
                   </span>
-                  <span className="text-foreground">{po.receiver_name || 'N/A'}</span>
+                  <span className="text-foreground">{po.receiver_name || t('common.na')}</span>
                 </div>
               )}
             </div>
@@ -357,7 +357,7 @@ export function PurchaseOrderDetailScreen() {
                     {po.status !== 'draft' && po.status !== 'ordered' && (
                       <>
                         <th className="py-3 px-4 text-center">{t('purchases.receivedQty')}</th>
-                        <th className="py-3 px-4 text-center text-warning">Shortage</th>
+                        <th className="py-3 px-4 text-center text-warning">{t('purchases.shortage')}</th>
                       </>
                     )}
                     <th className="py-3 px-4 text-center">{t('purchases.unit')}</th>
@@ -380,12 +380,12 @@ export function PurchaseOrderDetailScreen() {
                           )}
                           {po.status !== 'draft' && remaining > 0 && (
                             <div className="text-xs text-warning font-mono mt-1">
-                              Pending: {remaining}
+                              {t('purchases.pendingShort')}: {remaining}
                             </div>
                           )}
                         </td>
                         <td className="py-3 px-4 text-center font-mono text-secondary">
-                          {item.barcode || 'N/A'}
+                          {item.barcode || t('common.na')}
                         </td>
                         <td className="py-3 px-4 text-center font-mono font-semibold text-foreground">
                           {item.ordered_quantity}
@@ -422,7 +422,7 @@ export function PurchaseOrderDetailScreen() {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border bg-input px-5 py-3 flex items-center gap-2">
                 <History size={16} className="text-secondary" />
-                <h3 className="text-sm font-semibold text-foreground">Receiving History</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t('purchases.receivingHistory')}</h3>
               </div>
               <div className="p-5 space-y-6">
                 {receipts.map((receipt) => (
@@ -436,7 +436,7 @@ export function PurchaseOrderDetailScreen() {
                           {receipt.receipt_number}
                         </div>
                         <div className="text-xs text-secondary mt-1">
-                          {formatDate(receipt.created_at)} • Received by {receipt.receiver_name}
+                          {formatDate(receipt.created_at)} • {t('purchases.receivedByLabel').replace('{name}', receipt.receiver_name)}
                         </div>
                       </div>
                       <Badge variant="outline" className="uppercase font-mono text-xs">
@@ -445,14 +445,14 @@ export function PurchaseOrderDetailScreen() {
                     </div>
                     {receipt.notes && (
                       <div className="text-xs text-secondary italic mb-4 bg-neutral-900/40 p-2 rounded">
-                        Notes: {receipt.notes}
+                        {t('purchases.notesLabel').replace('{notes}', receipt.notes)}
                       </div>
                     )}
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="text-secondary border-b border-border/50">
-                          <th className="py-2">Product</th>
-                          <th className="py-2 text-center">Received</th>
+                          <th className="py-2">{t('purchases.product')}</th>
+                          <th className="py-2 text-center">{t('purchases.receivedHeader')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/30">

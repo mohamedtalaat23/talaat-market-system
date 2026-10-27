@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { Check, X, AlertTriangle, Scan, Search } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { InlineManagerApproval } from '@/features/pos/components/InlineManagerApproval';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CycleCountGridProps {
   cycleCountId: string;
@@ -17,7 +18,10 @@ interface CycleCountGridProps {
 }
 
 export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
-  const { data: cycleCount, isLoading } = useCycleCount(cycleCountId);
+  const { t } = useTranslation();
+  const cycleCountResponse = useCycleCount(cycleCountId);
+  const cycleCount = cycleCountResponse.data;
+  const isLoading = cycleCountResponse.isLoading;
   const updateItem = useUpdateCycleCountItem();
   const scanItem = useScanCycleCountItem();
   const postBatch = usePostCycleCount();
@@ -59,13 +63,13 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
           barcode: code,
         });
       } catch (err: any) {
-        toast.error('Error scanning item');
+        toast.error(t('inventory.cycleCounts.toasts.errorScanning'));
       }
     }
   };
 
   const handleManualQtyChange = async (productId: number, qtyString: string) => {
-    let num = Number(qtyString);
+    const num = Number(qtyString);
     if (isNaN(num) || num < 0) return;
 
     try {
@@ -75,7 +79,7 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
         counted_qty: num,
       });
     } catch (err: any) {
-      toast.error('Failed to update quantity');
+      toast.error(t('inventory.cycleCounts.toasts.failedUpdateQty'));
     }
   };
 
@@ -97,17 +101,17 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
       }
 
       await postBatch.mutateAsync(payload);
-      toast.success('Cycle count posted successfully');
+      toast.success(t('inventory.cycleCounts.toasts.postedSuccess'));
       onClose();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to post cycle count');
+      toast.error(error.response?.data?.message || t('inventory.cycleCounts.toasts.failedPost'));
     } finally {
       setIsPosting(false);
       setPin('');
     }
   };
 
-  if (isLoading || !cycleCount) return <div className="p-8 text-center">Loading...</div>;
+  if (isLoading || !cycleCount) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
   const isBlind = cycleCount.type === 'blind';
   const totalVariance =
@@ -120,38 +124,38 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
   const requiresAdmin = totalVariance > 5000;
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
+    <div className="flex flex-col h-full bg-background relative text-left">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-card border-b border-input-border shadow-sm z-10">
         <div>
           <h1 className="text-xl font-bold flex items-center space-x-2">
             <Scan className="w-6 h-6 text-primary" />
-            <span>Batch Cycle Count</span>
-            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase ml-2">
-              {cycleCount.type}
+            <span>{t('inventory.cycleCounts.title')}</span>
+            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase ml-2 font-mono">
+              {t(`inventory.cycleCounts.types.${cycleCount.type as 'blind' | 'guided' | 'investigation'}`)}
             </span>
           </h1>
-          <p className="text-sm text-secondary">
-            Batch ID: {cycleCount.id.substring(0, 8)} | Status:{' '}
-            {cycleCount.status.replace('_', ' ').toUpperCase()} | Location:{' '}
-            {cycleCount.location || 'Store'}
+          <p className="text-sm text-secondary font-mono">
+            {t('inventory.cycleCounts.batchId')}: {cycleCount.id.substring(0, 8)} | {t('inventory.cycleCounts.status')}:{' '}
+            {cycleCount.status.replace('_', ' ').toUpperCase()} | {t('inventory.cycleCounts.location')}:{' '}
+            {cycleCount.location || t('inventory.storeFallback')}
           </p>
         </div>
 
         <div className="flex space-x-3 items-center">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-input-border rounded-lg hover:bg-card-hover transition-colors"
+            className="px-4 py-2 border border-input-border rounded-lg hover:bg-card-hover transition-colors font-medium text-sm"
           >
-            Save Draft (Esc)
+            {t('inventory.cycleCounts.saveDraft')}
           </button>
 
           <button
             onClick={() => cancelBatch.mutate(cycleCountId, { onSuccess: onClose })}
-            className="px-4 py-2 bg-danger/10 text-danger hover:bg-danger/20 rounded-lg flex items-center space-x-2 transition-colors"
+            className="px-4 py-2 bg-danger/10 text-danger hover:bg-danger/20 rounded-lg flex items-center space-x-2 transition-colors font-medium text-sm"
           >
             <X className="w-4 h-4" />
-            <span>Discard Batch</span>
+            <span>{t('inventory.cycleCounts.discardBatch')}</span>
           </button>
         </div>
       </div>
@@ -168,19 +172,19 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={handleScan}
-              placeholder="Scan barcode or type and press Enter..."
+              placeholder={t('inventory.cycleCounts.scanPlaceholder')}
               className="w-full pl-10 pr-4 py-3 bg-input-bg border-2 border-primary/50 focus:border-primary rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
               autoFocus
             />
           </div>
-          <div className="text-sm text-secondary px-4 border-l border-input-border">
+          <div className="text-sm text-secondary px-4 border-l border-input-border font-mono">
             <div>
-              Items Counted:{' '}
+              {t('inventory.cycleCounts.itemsCounted')}:{' '}
               <span className="font-bold text-white">{cycleCount.items?.length || 0}</span>
             </div>
             <div>
-              Total Variance:{' '}
-              <span className="font-bold text-white">EGP {totalVariance.toFixed(2)}</span>
+              {t('inventory.cycleCounts.totalVariance')}:{' '}
+              <span className="font-bold text-white">{totalVariance.toFixed(2)} {t('pos.currency')}</span>
             </div>
           </div>
         </div>
@@ -190,13 +194,13 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
           <table className="w-full text-left text-sm">
             <thead className="bg-card-hover border-b border-input-border">
               <tr>
-                <th className="p-3 font-medium text-secondary">Barcode</th>
-                <th className="p-3 font-medium text-secondary">Product</th>
+                <th className="p-3 font-medium text-secondary">{t('inventory.barcode')}</th>
+                <th className="p-3 font-medium text-secondary">{t('purchases.product')}</th>
                 {!isBlind && (
-                  <th className="p-3 font-medium text-secondary text-right">System Qty</th>
+                  <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.systemQty')}</th>
                 )}
-                <th className="p-3 font-medium text-secondary text-right">Counted Qty</th>
-                <th className="p-3 font-medium text-secondary text-right">Variance</th>
+                <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.countedQty')}</th>
+                <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.variance')}</th>
               </tr>
             </thead>
             <tbody>
@@ -209,12 +213,12 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
                     className={`border-b border-input-border/50 hover:bg-card-hover/50 transition-colors ${isFocused ? 'bg-primary/10 ring-1 ring-inset ring-primary' : ''}`}
                     onClick={() => setSelectedItemIndex(idx)}
                   >
-                    <td className="p-3 text-secondary">{item.barcode}</td>
+                    <td className="p-3 text-secondary font-mono">{item.barcode}</td>
                     <td className="p-3 font-medium">{item.product_name}</td>
                     {!isBlind && (
-                      <td className="p-3 text-right text-secondary">{item.system_qty}</td>
+                      <td className="p-3 text-right text-secondary font-mono">{item.system_qty}</td>
                     )}
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-right font-mono">
                       <input
                         type="number"
                         min="0"
@@ -226,7 +230,7 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
                       />
                     </td>
                     <td
-                      className={`p-3 text-right font-medium ${v > 0 ? 'text-success' : v < 0 ? 'text-danger' : 'text-secondary'}`}
+                      className={`p-3 text-right font-mono font-medium ${v > 0 ? 'text-success' : v < 0 ? 'text-danger' : 'text-secondary'}`}
                     >
                       {v > 0 ? '+' : ''}
                       {v}
@@ -237,7 +241,7 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
               {cycleCount.items?.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-secondary">
-                    Scan your first item to begin counting.
+                    {t('inventory.cycleCounts.scanFirstItem')}
                   </td>
                 </tr>
               )}
@@ -262,11 +266,11 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
                     <div className="font-bold text-warning uppercase flex items-center space-x-2">
                       <AlertTriangle className="w-4 h-4" />
                       <span>
-                        {requiresAdmin ? 'Admin Approval Required' : 'Manager Approval Required'}
+                        {requiresAdmin ? t('inventory.cycleCounts.adminApproval') : t('inventory.cycleCounts.managerApproval')}
                       </span>
                     </div>
-                    <div className="text-secondary text-sm mt-1">
-                      Batch Variance Exceeds Limit: EGP {totalVariance.toFixed(2)}
+                    <div className="text-secondary text-sm mt-1 font-mono">
+                      {t('inventory.cycleCounts.varianceExceeded').replace('{amount}', totalVariance.toFixed(2))}
                     </div>
                   </div>
                 }
@@ -281,14 +285,14 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
             disabled={
               isPosting || ((requiresManager || requiresAdmin) && (!pin || managerId === ''))
             }
-            className="px-8 py-3 bg-success hover:bg-success/90 text-white font-bold rounded-lg shadow-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="px-8 py-3 bg-success hover:bg-success/90 text-white font-bold rounded-lg shadow-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm"
           >
             {isPosting ? (
-              'Posting...'
+              t('inventory.cycleCounts.posting')
             ) : (
               <>
                 <Check className="w-5 h-5" />
-                <span>Submit & Post to Ledger</span>
+                <span>{t('inventory.cycleCounts.postToLedger')}</span>
               </>
             )}
           </button>

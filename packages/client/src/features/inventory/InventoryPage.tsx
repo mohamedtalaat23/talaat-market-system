@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { History } from 'lucide-react';
+import { History, Calendar, ClipboardList, LayoutGrid } from 'lucide-react';
 import {
   useInventory,
   useInventoryCategories,
@@ -14,7 +14,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { useModalStore } from '@/stores/modalStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { CycleCountBatchList } from './components/CycleCountBatchList';
-import { ClipboardList, LayoutGrid } from 'lucide-react';
+import { ProductBatchList } from './components/ProductBatchList';
 
 /**
  * Inventory Levels management orchestrator.
@@ -29,7 +29,7 @@ export function InventoryPage() {
   const [showLowStock, setShowLowStock] = useState(false);
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [activeTab, setActiveTab] = useState<'stock' | 'cycle_counts'>('stock');
+  const [activeTab, setActiveTab] = useState<'stock' | 'cycle_counts' | 'batches'>('stock');
 
   const openModal = useModalStore((state) => state.openModal);
 
@@ -136,7 +136,18 @@ export function InventoryPage() {
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
-          <span>Stock Levels</span>
+          <span>{t('inventory.stockLevels')}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('batches')}
+          className={`pb-3 flex items-center space-x-2 font-bold uppercase tracking-wider text-xs border-b-2 transition-all duration-300 ${
+            activeTab === 'batches'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-secondary hover:text-foreground'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          <span>Batches & Expiry (FEFO)</span>
         </button>
         <button
           onClick={() => setActiveTab('cycle_counts')}
@@ -147,7 +158,7 @@ export function InventoryPage() {
           }`}
         >
           <ClipboardList className="w-4 h-4" />
-          <span>Cycle Counts</span>
+          <span>{t('inventory.cycleCountsTab')}</span>
         </button>
       </div>
 
@@ -173,6 +184,8 @@ export function InventoryPage() {
             itemName="listings"
           />
         </>
+      ) : activeTab === 'batches' ? (
+        <ProductBatchList />
       ) : (
         <CycleCountBatchList />
       )}

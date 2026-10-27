@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useReceivePurchaseOrder, PurchaseOrder } from '../hooks/usePurchaseQueries';
+import type { PurchaseOrder } from '../hooks/usePurchaseQueries';
+import { useReceivePurchaseOrder } from '../hooks/usePurchaseQueries';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { X, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import toast from 'react-hot-toast';
 
 interface GoodsReceiptModalProps {
@@ -28,6 +30,7 @@ interface ReceiptItem {
 }
 
 export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsReceiptModalProps) {
+  const { t } = useTranslation();
   const receivePO = useReceivePurchaseOrder();
   const [items, setItems] = useState<ReceiptItem[]>([]);
   const [notes, setNotes] = useState<string>('');
@@ -90,23 +93,25 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
     e.preventDefault();
 
     if (items.length === 0) {
-      toast.error('No pending items to receive');
+      toast.error(t('purchases.toasts.specifyQtyOrShortage'));
       return;
     }
 
     // Validate quantities
     for (const item of items) {
       if (item.quantity_to_receive < 0) {
-        toast.error(`Received quantity for "${item.name}" cannot be negative`);
+        toast.error(t('purchases.qtyNegativeError').replace('{name}', item.name));
         return;
       }
       if (item.new_shortage_quantity < 0) {
-        toast.error(`Shortage quantity for "${item.name}" cannot be negative`);
+        toast.error(t('purchases.toasts.shortageCannotBeNegative').replace('{name}', item.name));
         return;
       }
       if (item.quantity_to_receive + item.new_shortage_quantity > item.remaining_quantity) {
         toast.error(
-          `Total resolution for "${item.name}" cannot exceed the remaining quantity (${item.remaining_quantity})`,
+          t('purchases.toasts.resolutionExceedsRemaining')
+            .replace('{name}', item.name)
+            .replace('{remaining}', String(item.remaining_quantity))
         );
         return;
       }
@@ -132,7 +137,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
     }
 
     if (payload.items.length === 0) {
-      toast.error('You must specify quantities to receive or shortage');
+      toast.error(t('purchases.toasts.specifyQtyOrShortage'));
       return;
     }
 
@@ -156,10 +161,10 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           <div>
             <h2 className="text-lg font-bold text-input-text flex items-center space-x-2">
               <CheckCircle2 className="h-5 w-5 text-success" />
-              <span>Verify Goods Receipt</span>
+              <span>{t('purchases.verifyGoodsReceipt')}</span>
             </h2>
             <p className="text-xs text-secondary mt-0.5 font-mono">
-              Purchase Order: {purchaseOrder.po_number}
+              {t('purchases.poLabel').replace('{po}', purchaseOrder.po_number)}
             </p>
           </div>
           <button onClick={onClose} className="text-secondary hover:text-input-text">
@@ -173,12 +178,9 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           <div className="p-4 rounded-lg bg-warning/15 border border-warning/30 text-warning text-xs leading-relaxed flex items-start space-x-3">
             <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <span className="font-bold">CRITICAL TRANSACTION WORKFLOW</span>
+              <span className="font-bold">{t('purchases.criticalWorkflow')}</span>
               <p>
-                Confirming this action will finalize the Purchase Order. This process executes
-                atomic database increments of catalog inventory levels, registers irreversible audit
-                adjustments, and dynamically recalculates catalog item unit costs using Weighted
-                Average Costing (AVCO). This process is permanent and cannot be undone.
+                {t('purchases.criticalWorkflowDesc')}
               </p>
             </div>
           </div>
@@ -187,13 +189,13 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           <div className="p-3.5 rounded-lg border border-input-border bg-white flex flex-col sm:flex-row justify-between text-xs gap-3">
             <div>
               <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
-                Supplier Name
+                {t('purchases.supplierName')}
               </span>
               <span className="text-input-text font-bold">{purchaseOrder.supplier_name}</span>
             </div>
             <div className="sm:text-right">
               <span className="text-secondary block mb-0.5 uppercase tracking-wider font-semibold">
-                Supplier Code
+                {t('purchases.supplierCode')}
               </span>
               <span className="text-input-text font-mono">{purchaseOrder.supplier_code}</span>
             </div>
@@ -204,18 +206,18 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-input-border bg-white text-secondary font-semibold">
-                  <th className="py-2.5 px-3">Product</th>
-                  <th className="py-2.5 px-3 text-center">Remaining</th>
-                  <th className="py-2.5 px-3 text-center w-28">Receive Qty</th>
-                  <th className="py-2.5 px-3 text-center w-28">Shortage Qty</th>
-                  <th className="py-2.5 px-3 w-36">Reason</th>
+                  <th className="py-2.5 px-3">{t('purchases.product')}</th>
+                  <th className="py-2.5 px-3 text-center">{t('purchases.remainingHeader')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.receiveQtyHeader')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.shortageQtyHeader')}</th>
+                  <th className="py-2.5 px-3 w-36">{t('purchases.reasonHeader')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-900">
                 {items.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-secondary italic">
-                      All items fully resolved for this PO.
+                      {t('purchases.allResolved')}
                     </td>
                   </tr>
                 ) : (
@@ -224,7 +226,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                       <td className="py-2.5 px-3">
                         <div className="font-semibold text-input-text">{item.name}</div>
                         <div className="text-xs text-secondary font-mono">
-                          {item.barcode || 'N/A'} - {item.unit}
+                          {item.barcode || t('common.na')} - {item.unit}
                         </div>
                       </td>
                       <td className="py-2.5 px-3 text-center font-mono font-semibold text-secondary">
@@ -261,11 +263,11 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                           onChange={(e) => handleReasonChange(item.product_id, e.target.value)}
                           disabled={item.new_shortage_quantity <= 0}
                         >
-                          <option value="">- Select -</option>
-                          <option value="backordered">Backordered</option>
-                          <option value="supplier_cancelled">Supplier Cancelled</option>
-                          <option value="damaged_in_transit">Damaged in Transit</option>
-                          <option value="substituted">Substituted</option>
+                          <option value="">{t('purchases.selectReason')}</option>
+                          <option value="backordered">{t('purchases.reasons.backordered')}</option>
+                          <option value="supplier_cancelled">{t('purchases.reasons.supplier_cancelled')}</option>
+                          <option value="damaged_in_transit">{t('purchases.reasons.damaged_in_transit')}</option>
+                          <option value="substituted">{t('purchases.reasons.substituted')}</option>
                         </select>
                       </td>
                     </tr>
@@ -278,12 +280,12 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
           {/* Notes Area */}
           <div className="flex flex-col space-y-1.5">
             <label className="text-xs font-semibold text-secondary">
-              Receipt Verification Notes
+              {t('purchases.receiptVerificationNotes')}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., Shortages noted due to delivery damage, all other items accounted for..."
+              placeholder={t('purchases.receiptNotesPlaceholder')}
               rows={2}
               className="w-full bg-input-bg text-input-text border border-input-border rounded-lg py-2 px-3 focus:outline-none focus:border-input-focus text-sm"
             />
@@ -293,7 +295,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         {/* Footer */}
         <div className="flex items-center justify-end p-4 border-t border-input-border bg-white space-x-3">
           <Button variant="ghost" type="button" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -301,7 +303,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
             disabled={receivePO.isPending}
             className="bg-success hover:bg-success/90 text-white font-bold flex items-center space-x-1.5"
           >
-            <span>Confirm Influx</span>
+            <span>{t('purchases.confirmInflux')}</span>
           </Button>
         </div>
       </div>
