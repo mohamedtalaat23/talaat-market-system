@@ -5,6 +5,7 @@ import { usePOSStore } from '../usePOSStore';
 import { X, Vault, ArrowDownRight, ArrowUpRight, FileText } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { InlineManagerApproval } from './InlineManagerApproval';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ADJUSTMENT_TYPES = [
   { value: 'safe_drop', label: 'Safe Drop', type: 'out', icon: Vault, color: 'text-danger' },
@@ -53,6 +54,7 @@ const ADJUSTMENT_TYPES = [
 ];
 
 export function DrawerAdjustmentModal() {
+  const { t } = useTranslation();
   const { activeModals, closeModal, modalPayloads } = useModalStore();
   const isOpen = activeModals.pos_drawer_adjustment;
   const payload = modalPayloads.pos_drawer_adjustment;
@@ -90,7 +92,7 @@ export function DrawerAdjustmentModal() {
     if (isNaN(numericAmount) || numericAmount <= 0) return;
     if (!activeShift) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
+      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
       return;
     }
 
@@ -106,7 +108,7 @@ export function DrawerAdjustmentModal() {
       });
 
       if (!verifyRes.data?.success) {
-        toast.error('Invalid Manager PIN');
+        toast.error(t('pos.toasts.invalidManagerPin'));
         setIsSubmitting(false);
         setPin('');
         return;
@@ -122,7 +124,7 @@ export function DrawerAdjustmentModal() {
 
       const response = await apiClient.post(`/pos/shifts/${activeShift.id}/adjustments`, payload);
       if (response.data?.success) {
-        toast.success('Drawer adjustment recorded');
+        toast.success(t('pos.toasts.drawerAdjustmentRecorded'));
 
         // Re-fetch shift to update expected cash
         const shiftRes = await apiClient.get('/pos/shifts/current');
@@ -134,7 +136,7 @@ export function DrawerAdjustmentModal() {
       }
     } catch (error: any) {
       const toast = (await import('react-hot-toast')).default;
-      toast.error(error.response?.data?.message || 'Failed to record adjustment');
+      toast.error(error.response?.data?.message || t('pos.failedRecordAdjustment'));
     } finally {
       setIsSubmitting(false);
       setPin('');
@@ -154,7 +156,7 @@ export function DrawerAdjustmentModal() {
               <Vault className="w-6 h-6 text-primary" />
             </div>
             <h2 className="text-2xl font-black tracking-tight text-foreground">
-              Drawer Adjustment
+              {t('pos.drawerAdjustment')}
             </h2>
           </div>
           <button
@@ -171,7 +173,7 @@ export function DrawerAdjustmentModal() {
         >
           <div className="space-y-2">
             <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
-              Adjustment Type
+              {t('pos.adjustmentType')}
             </label>
             <select
               value={type}
@@ -185,17 +187,17 @@ export function DrawerAdjustmentModal() {
                 paddingRight: `2.5rem`,
               }}
             >
-              <optgroup label="Money Out" className="font-bold">
-                {ADJUSTMENT_TYPES.filter((t) => t.type === 'out').map((t) => (
-                  <option key={t.value} value={t.value} className="font-medium">
-                    {t.label}
+              <optgroup label={t('pos.moneyOut')} className="font-bold">
+                {ADJUSTMENT_TYPES.filter((t_item) => t_item.type === 'out').map((t_item) => (
+                  <option key={t_item.value} value={t_item.value} className="font-medium">
+                    {t('pos.adjustmentTypes.' + t_item.value)}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="Money In" className="font-bold">
-                {ADJUSTMENT_TYPES.filter((t) => t.type === 'in').map((t) => (
-                  <option key={t.value} value={t.value} className="font-medium">
-                    {t.label}
+              <optgroup label={t('pos.moneyIn')} className="font-bold">
+                {ADJUSTMENT_TYPES.filter((t_item) => t_item.type === 'in').map((t_item) => (
+                  <option key={t_item.value} value={t_item.value} className="font-medium">
+                    {t('pos.adjustmentTypes.' + t_item.value)}
                   </option>
                 ))}
               </optgroup>
@@ -204,11 +206,11 @@ export function DrawerAdjustmentModal() {
 
           <div className="space-y-2">
             <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
-              Amount (EGP)
+              {t('pos.amountEgp')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-secondary font-bold select-none">EGP</span>
+                <span className="text-secondary font-bold select-none">{t('pos.currency')}</span>
               </div>
               <input
                 type="number"
@@ -231,19 +233,19 @@ export function DrawerAdjustmentModal() {
             </div>
             {isOut && (
               <p className="text-[11px] font-bold text-danger/80 uppercase tracking-wider select-none text-right mt-1">
-                This will decrease expected cash in drawer.
+                {t('pos.decreaseCashWarning')}
               </p>
             )}
             {!isOut && (
               <p className="text-[11px] font-bold text-success/80 uppercase tracking-wider select-none text-right mt-1">
-                This will increase expected cash in drawer.
+                {t('pos.increaseCashWarning')}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
             <label className="block text-xs font-bold text-foreground/80 tracking-wider uppercase select-none">
-              Notes (Optional)
+              {t('pos.notesOptional')}
             </label>
             <div className="relative">
               <div className="absolute top-4 left-4 pointer-events-none">
@@ -254,7 +256,7 @@ export function DrawerAdjustmentModal() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
                 className="w-full bg-background border border-border/60 rounded-xl py-3 pl-12 pr-4 text-foreground text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all resize-none font-medium placeholder:text-neutral-400"
-                placeholder="Add context or references"
+                placeholder={t('pos.addContext')}
               />
             </div>
           </div>
@@ -269,12 +271,12 @@ export function DrawerAdjustmentModal() {
               contextMetadata={
                 <div className="flex flex-col">
                   <div className="font-black text-xl tracking-tight text-foreground">
-                    {selectedTypeObj?.label}
+                    {selectedTypeObj && t('pos.adjustmentTypes.' + selectedTypeObj.value)}
                   </div>
                   <div
                     className={`font-mono font-bold tracking-widest text-sm mt-1 ${isOut ? 'text-danger' : 'text-success'}`}
                   >
-                    {isOut ? 'OUT' : 'IN'}: EGP {amount ? parseFloat(amount).toFixed(2) : '0.00'}
+                    {isOut ? t('pos.outLabel') : t('pos.inLabel')}: {t('pos.currency')} {amount ? parseFloat(amount).toFixed(2) : '0.00'}
                   </div>
                 </div>
               }
@@ -292,8 +294,10 @@ export function DrawerAdjustmentModal() {
               }`}
             >
               {isSubmitting
-                ? 'Processing...'
-                : `Authorize & ${isOut ? 'Withdraw' : 'Deposit'} ${amount ? `EGP ${amount}` : ''}`}
+                ? t('pos.processing')
+                : isOut
+                  ? t('pos.authorizeWithdraw').replace('{amount}', amount ? `${t('pos.currency')} ${amount}` : '')
+                  : t('pos.authorizeDeposit').replace('{amount}', amount ? `${t('pos.currency')} ${amount}` : '')}
             </button>
           </div>
         </form>

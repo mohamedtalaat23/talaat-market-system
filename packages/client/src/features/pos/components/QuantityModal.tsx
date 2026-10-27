@@ -4,8 +4,10 @@ import { X, Hash } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { usePOSStore } from '../usePOSStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function QuantityModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_quantity);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const closeModal = () => {
@@ -70,7 +72,7 @@ export function QuantityModal() {
             className="text-xl font-bold text-foreground flex items-center space-x-2"
           >
             <Hash size={24} className="text-success" />
-            <span>Update Quantity</span>
+            <span>{t('pos.updateQuantity')}</span>
           </h3>
           <button
             onClick={closeModal}
@@ -82,10 +84,10 @@ export function QuantityModal() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-background/60 p-4 border border-border rounded-lg">
-            <div className="text-sm font-semibold text-secondary mb-1">Product</div>
+            <div className="text-sm font-semibold text-secondary mb-1">{t('pos.productLabel')}</div>
             <div className="text-lg font-bold text-foreground truncate">{activeItem.name}</div>
             <div className="text-xs text-secondary mt-1">
-              Current Stock: {activeItem.inventory_quantity} {activeItem.unit}
+              {t('pos.currentStock')} {activeItem.inventory_quantity} {activeItem.unit}
             </div>
           </div>
 
@@ -94,7 +96,7 @@ export function QuantityModal() {
               htmlFor="quantity-input"
               className="block text-sm font-medium text-secondary mb-1"
             >
-              New Quantity ({activeItem.unit})
+              {t('pos.newQuantity')} ({activeItem.unit})
             </label>
             <input
               id="quantity-input"
@@ -113,7 +115,7 @@ export function QuantityModal() {
             disabled={!quantityStr || isNaN(Number(quantityStr))}
             className="w-full py-4 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-lg"
           >
-            Update Quantity
+            {t('pos.updateQuantity')}
           </button>
         </form>
       </div>

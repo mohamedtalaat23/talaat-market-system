@@ -19,8 +19,10 @@ import { apiClient } from '@/services/api-client';
 import { SyncService } from '../services/SyncService';
 import toast from 'react-hot-toast';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function LANSyncManager() {
+  const { t } = useTranslation();
   const { mode, status, hostAddress, offlineSales, setStatus } = useLANStore();
   // Local state mirrors the service singleton's flag for UI rendering only
   const [isFlushing, setIsFlushing] = useState(false);
@@ -51,7 +53,7 @@ export function LANSyncManager() {
 
         if (status !== 'online') {
           setStatus('online');
-          toast.success('Connection to Host Master restored', {
+          toast.success(t('pos.toasts.hostRestored'), {
             id: 'lan-status-toast',
             icon: '📶',
             duration: 3000,
@@ -60,7 +62,7 @@ export function LANSyncManager() {
       } catch {
         if (status !== 'offline') {
           setStatus('offline');
-          toast.error('Host Master is unreachable. Operating offline.', {
+          toast.error(t('pos.toasts.hostUnreachable'), {
             id: 'lan-status-toast',
             icon: '🔌',
             duration: 5000,
@@ -101,21 +103,21 @@ export function LANSyncManager() {
       {status === 'offline' && (
         <div className="flex items-center space-x-2 bg-danger/90 border border-danger/60 text-white px-4 py-2.5 rounded-lg shadow-xl backdrop-blur-sm animate-bounce">
           <WifiOff size={16} className="text-white/80 animate-pulse" />
-          <span className="text-xs font-semibold tracking-wide">OFFLINE REGISTER</span>
+          <span className="text-xs font-semibold tracking-wide">{t('pos.offlineRegister')}</span>
         </div>
       )}
       {status === 'online' && isFlushing && (
         <div className="flex items-center space-x-2 bg-success/90 border border-success/60 text-white px-4 py-2.5 rounded-lg shadow-xl backdrop-blur-sm">
           <RefreshCw size={16} className="text-white/80 animate-spin" />
           <span className="text-xs font-semibold tracking-wide">
-            SYNCING WITH MASTER ({offlineSales.length})
+            {t('pos.syncingWithMaster').replace('{count}', String(offlineSales.length))}
           </span>
         </div>
       )}
       {status === 'online' && !isFlushing && offlineSales.length === 0 && (
         <div className="flex items-center space-x-2 bg-card/80 border border-border/80 text-secondary px-3 py-1.5 rounded-md shadow-md opacity-30 hover:opacity-100 transition-opacity">
           <Wifi size={14} className="text-success" />
-          <span className="text-xs font-medium uppercase tracking-wider">Master Online</span>
+          <span className="text-xs font-medium uppercase tracking-wider">{t('pos.masterOnline')}</span>
         </div>
       )}
     </div>

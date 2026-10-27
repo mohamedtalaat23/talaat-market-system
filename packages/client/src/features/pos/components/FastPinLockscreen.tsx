@@ -5,6 +5,7 @@ import { apiClient } from '@/services/api-client';
 import { useEmployees } from '@/features/employees/hooks/useEmployeeQueries';
 import toast from 'react-hot-toast';
 import { User, AlertTriangle, Users } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FastPinLockscreenProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface FastPinLockscreenProps {
 }
 
 export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps) {
+  const { t } = useTranslation();
   const [pin, setPin] = useState('');
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,13 +57,13 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
           }
         }
       } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Invalid PIN');
+        toast.error(error.response?.data?.message || t('pos.toasts.invalidPinShort'));
         setPin('');
       } finally {
         setIsLoading(false);
       }
     },
-    [user, cart.length, login, onSuccess, selectedUsername],
+    [user, cart.length, login, onSuccess, selectedUsername, t],
   );
 
   // Auto-submit when 4 digits are reached
@@ -87,7 +89,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
       onSuccess();
       setPendingLogin(null);
       setPin('');
-      toast.success(`Cart taken over by ${pendingLogin.employee.full_name}`);
+      toast.success(t('pos.toasts.cartTakenOver').replace('{name}', pendingLogin.employee.full_name));
     }
   };
 
@@ -99,7 +101,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
       onSuccess();
       setPendingLogin(null);
       setPin('');
-      toast.success(`Cart suspended for ${user.full_name}`);
+      toast.success(t('pos.toasts.cartSuspendedFor').replace('{name}', user.full_name || ''));
     }
   };
 
@@ -119,10 +121,11 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
               <AlertTriangle className="h-8 w-8 text-amber-600" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-bold text-slate-900">Active Transaction</h2>
+              <h2 className="text-xl font-bold text-slate-900">{t('pos.activeTransaction')}</h2>
               <p className="mt-2 text-sm text-slate-600">
-                <span className="font-semibold">{user?.full_name}</span> has an active cart with{' '}
-                {cart.length} items.
+                {t('pos.activeCartMessage')
+                  .replace('{name}', user?.full_name || '')
+                  .replace('{count}', String(cart.length))}
               </p>
             </div>
 
@@ -131,19 +134,19 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
                 onClick={handleTakeOver}
                 className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
               >
-                Take Over Cart
+                {t('pos.takeOverCart')}
               </button>
               <button
                 onClick={handleSuspend}
                 className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
               >
-                Suspend Cart & Start Fresh
+                {t('pos.suspendCartStartFresh')}
               </button>
               <button
                 onClick={handleCancel}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
               >
-                Cancel Login
+                {t('pos.cancelLogin')}
               </button>
             </div>
           </div>
@@ -152,9 +155,9 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
             <div className="rounded-full bg-indigo-50 p-4 mb-6">
               <Users className="h-8 w-8 text-indigo-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Select Cashier</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('pos.selectCashier')}</h2>
             <p className="mt-2 mb-6 text-sm text-slate-500 text-center">
-              Who is operating the register?
+              {t('pos.whoIsOperating')}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
               {activeEmployees.map((emp) => (
@@ -175,7 +178,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
             {user && (
               <div className="mt-8 flex items-center justify-center space-x-2 text-sm text-slate-500">
                 <User className="h-4 w-4" />
-                <span>Currently: {user.full_name}</span>
+                <span>{t('pos.currentlyLabel').replace('{name}', user.full_name || '')}</span>
               </div>
             )}
           </div>
@@ -185,7 +188,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
               <button
                 onClick={() => setSelectedUsername(null)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
-                title="Back to User Selection"
+                title={t('pos.backToUserSelection')}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +218,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
               <div className="w-6" /> {/* Spacer for centering */}
             </div>
 
-            <h2 className="text-xl font-bold text-slate-900 mt-2">Enter PIN</h2>
+            <h2 className="text-xl font-bold text-slate-900 mt-2">{t('pos.enterPinShort')}</h2>
             <div className="my-8 flex space-x-4">
               {[0, 1, 2, 3].map((index) => (
                 <div
@@ -272,7 +275,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
             {user && selectedUsername === user.username && (
               <div className="mt-8 flex items-center justify-center space-x-2 text-sm text-slate-500">
                 <User className="h-4 w-4" />
-                <span>Currently Active User</span>
+                <span>{t('pos.currentlyActiveUser')}</span>
               </div>
             )}
           </div>

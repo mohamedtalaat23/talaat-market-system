@@ -153,18 +153,18 @@ export function SuspendedCartsModal() {
 
   const handleDiscardClick = (holdId: string, cashierId: number) => {
     if (user?.id !== cashierId && user?.role !== 'admin' && user?.role !== 'manager') {
-      toast.error("Only managers can discard other cashiers' suspended carts");
+      toast.error(t('pos.toasts.onlyManagersCarts'));
       return;
     }
-    if (window.confirm('Are you sure you want to permanently delete this suspended cart?')) {
+    if (window.confirm(t('pos.confirmDiscardSuspended'))) {
       removeHeldCart(holdId);
-      toast.success('Suspended cart discarded');
+      toast.success(t('pos.toasts.cartDiscarded'));
     }
   };
 
   const executeResume = (holdId: string) => {
     resumeCart(holdId);
-    toast.success('Suspended cart resumed');
+    toast.success(t('pos.toasts.cartResumed'));
     closeModal();
   };
 
@@ -203,8 +203,7 @@ export function SuspendedCartsModal() {
                 <div className="flex flex-col text-left">
                   <span>{t('pos.suspended')}</span>
                   <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mt-0.5">
-                    {heldCarts.length} {heldCarts.length === 1 ? 'held sale' : 'held sales'} in
-                    queue
+                    {t('pos.heldSalesCount').replace('{count}', String(heldCarts.length))}
                   </span>
                 </div>
               </h3>
@@ -248,8 +247,7 @@ export function SuspendedCartsModal() {
                     {t('pos.noSuspendedCarts')}
                   </h4>
                   <p className="text-xs text-secondary max-w-sm leading-relaxed">
-                    No active held sales are currently stored. You can suspend a customer's cart to
-                    clear the terminal registers and checkout subsequent clients.
+                    {t('pos.noSuspendedCartsDesc')}
                   </p>
                 </div>
               ) : (

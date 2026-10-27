@@ -4,8 +4,10 @@ import { useModalStore } from '@/stores/modalStore';
 import { X, AlertTriangle, RefreshCcw } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { InlineManagerApproval } from './InlineManagerApproval';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function RefundModal() {
+  const { t } = useTranslation();
   const { activeModals, closeModal, modalPayloads, openModal } = useModalStore();
   const isOpen = activeModals.pos_refund;
   const sale = modalPayloads.pos_refund?.sale;
@@ -59,7 +61,7 @@ export function RefundModal() {
   const handleProcessRefund = async () => {
     if (itemsToRefund.length === 0 || !sale) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
+      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
       return;
     }
 
@@ -73,7 +75,7 @@ export function RefundModal() {
         pin,
       });
       if (!verifyRes.data?.success) {
-        toast.error('Invalid Manager PIN');
+        toast.error(t('pos.toasts.invalidManagerPin'));
         setIsSubmitting(false);
         setPin('');
         return;
@@ -88,7 +90,7 @@ export function RefundModal() {
 
       const response = await apiClient.post(`/pos/sales/${sale.id}/refund`, payload);
       if (response.data?.success) {
-        toast.success('Refund processed successfully');
+        toast.success(t('pos.toasts.refundSuccess'));
         closeModal('pos_refund');
 
         const resultData = response.data.data;
@@ -116,7 +118,7 @@ export function RefundModal() {
       }
     } catch (error: any) {
       const toast = (await import('react-hot-toast')).default;
-      toast.error(error.response?.data?.message || 'Failed to process refund');
+      toast.error(error.response?.data?.message || t('pos.toasts.refundFailed'));
     } finally {
       setIsSubmitting(false);
       setPin('');
@@ -126,7 +128,7 @@ export function RefundModal() {
   const handleVoidSale = async () => {
     if (!sale) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error('Manager PIN required'));
+      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
       return;
     }
 
@@ -140,7 +142,7 @@ export function RefundModal() {
         pin,
       });
       if (!verifyRes.data?.success) {
-        toast.error('Invalid Manager PIN');
+        toast.error(t('pos.toasts.invalidManagerPin'));
         setIsSubmitting(false);
         setPin('');
         return;
@@ -148,11 +150,11 @@ export function RefundModal() {
 
       const response = await apiClient.post(`/pos/sales/${sale.id}/void`, {
         manager_id: managerId,
-        reason: reason || 'Void Transaction',
+        reason: reason || 'Void Sale',
       });
 
       if (response.data?.success) {
-        toast.success('Sale voided successfully');
+        toast.success(t('pos.toasts.voidSuccess'));
         closeModal('pos_refund');
 
         const resultData = response.data.data;
@@ -180,7 +182,7 @@ export function RefundModal() {
       }
     } catch (error: any) {
       const toast = (await import('react-hot-toast')).default;
-      toast.error(error.response?.data?.message || 'Failed to void sale');
+      toast.error(error.response?.data?.message || t('pos.toasts.voidFailed'));
     } finally {
       setIsSubmitting(false);
       setPin('');
@@ -282,7 +284,7 @@ export function RefundModal() {
               <RefreshCcw className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-black tracking-tight text-foreground">
-              Refund / Void Sale {sale.receipt_number}
+              {t('pos.refundVoidSaleHeader').replace('{receipt}', sale.receipt_number)}
             </h2>
           </div>
           <button
@@ -297,11 +299,11 @@ export function RefundModal() {
           <div className="flex justify-between items-center bg-card p-5 rounded-2xl border border-border/60 shadow-sm">
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-secondary mb-1">
-                Sale Total
+                {t('pos.saleTotal')}
               </p>
               <p className="text-2xl font-black text-foreground tabular-nums">
                 {Number(sale.total).toFixed(2)}{' '}
-                <span className="text-sm text-secondary ml-0.5">EGP</span>
+                <span className="text-sm text-secondary ml-0.5">{t('pos.currency')}</span>
               </p>
             </div>
             {isEligibleForVoid && (
@@ -310,7 +312,7 @@ export function RefundModal() {
                 className="px-5 py-2.5 bg-danger hover:bg-danger/90 text-white rounded-xl font-bold flex items-center space-x-2 transition-all shadow-md shadow-danger/20 hover:shadow-danger/30 hover:-translate-y-0.5"
               >
                 <AlertTriangle className="w-4 h-4" />
-                <span>Void Entire Sale</span>
+                <span>{t('pos.voidEntireSale')}</span>
               </button>
             )}
           </div>
@@ -319,12 +321,12 @@ export function RefundModal() {
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-muted/40 backdrop-blur-md">
                 <tr className="border-b border-border/60 text-[11px] font-black text-secondary uppercase tracking-widest">
-                  <th className="py-4 px-5">Item</th>
-                  <th className="py-4 px-5 text-center">Unit Price</th>
-                  <th className="py-4 px-5 text-center">Sold</th>
-                  <th className="py-4 px-5 text-center">Returned</th>
-                  <th className="py-4 px-5 text-center">Return Qty</th>
-                  <th className="py-4 px-5 text-center">Restock?</th>
+                  <th className="py-4 px-5">{t('pos.productLabel')}</th>
+                  <th className="py-4 px-5 text-center">{t('pos.price')}</th>
+                  <th className="py-4 px-5 text-center">{t('pos.sold')}</th>
+                  <th className="py-4 px-5 text-center">{t('pos.returned')}</th>
+                  <th className="py-4 px-5 text-center">{t('pos.returnQty')}</th>
+                  <th className="py-4 px-5 text-center">{t('pos.restockQ')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -346,7 +348,7 @@ export function RefundModal() {
                       </td>
                       <td className="py-4 px-5 text-center font-medium tabular-nums text-foreground">
                         {(Number(item.unit_price) - Number(item.discount || 0)).toFixed(2)}{' '}
-                        <span className="text-[10px] text-secondary ml-0.5">EGP</span>
+                        <span className="text-[10px] text-secondary ml-0.5">{t('pos.currency')}</span>
                       </td>
                       <td className="py-4 px-5 text-center font-medium text-foreground">
                         {item.quantity}
@@ -376,7 +378,7 @@ export function RefundModal() {
                             onClick={() => handleRestockToggle(item.id)}
                             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all disabled:opacity-50 shadow-sm ${isRestock ? 'bg-success/10 hover:bg-success/20 text-success border-success/30' : 'bg-danger/10 hover:bg-danger/20 text-danger border-danger/30'}`}
                           >
-                            {isRestock ? 'Restock' : 'Write-Off'}
+                            {isRestock ? t('pos.restock') : t('pos.writeoff')}
                           </button>
                         </div>
                       </td>
@@ -389,13 +391,13 @@ export function RefundModal() {
 
           <div>
             <label className="block text-xs font-black uppercase tracking-widest text-secondary mb-2">
-              Reason for Reversal
+              {t('pos.reasonForReversal')}
             </label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Customer Return, Damaged..."
+              placeholder={t('pos.placeholderRefundReason')}
               className="w-full bg-card border border-border/60 rounded-xl py-3.5 px-4 text-foreground text-sm font-medium shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-secondary/50"
             />
           </div>
@@ -412,34 +414,34 @@ export function RefundModal() {
               <>
                 <div className="text-lg font-black tracking-tight">
                   {itemsToRefund.length > 0
-                    ? `REFUND: ${refundTotal.toFixed(2)} EGP`
-                    : 'Please select items to refund'}
+                    ? t('pos.refundValueLabel').replace('{amount}', refundTotal.toFixed(2)).replace('{currency}', t('pos.currency'))
+                    : t('pos.selectItemsToRefund')}
                 </div>
                 {itemsToRefund.length > 0 && (
                   <div
                     className={`text-[11px] font-black uppercase tracking-widest mt-1 ${itemsToRefund.some((i: any) => !i.restock_inventory) ? 'text-danger' : 'text-success'}`}
                   >
                     {itemsToRefund.some((i: any) => !i.restock_inventory)
-                      ? 'WRITE-OFF (Contains Damage)'
-                      : 'RESTOCK'}
+                      ? t('pos.writeOffDamage')
+                      : t('pos.restock')}
                   </div>
                 )}
               </>
             }
           />
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex items-center justify-between font-bold">
             <div className="text-[10px] font-black uppercase tracking-widest text-secondary flex space-x-3 items-center opacity-70">
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   ↑/↓
                 </kbd>{' '}
-                Navigate
+                {t('pos.kbdNavigate')}
               </span>
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   ←/→
                 </kbd>{' '}
-                Qty
+                {t('pos.quantity')}
               </span>
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
@@ -453,19 +455,19 @@ export function RefundModal() {
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   W
                 </kbd>{' '}
-                Toggle
+                {t('pos.kbdToggle')}
               </span>
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   Enter
                 </kbd>{' '}
-                Submit
+                {t('pos.submit')}
               </span>
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   Esc
                 </kbd>{' '}
-                Cancel
+                {t('common.cancel')}
               </span>
             </div>
             <button
@@ -473,7 +475,7 @@ export function RefundModal() {
               disabled={refundTotal <= 0 || isSubmitting}
               className="px-8 py-3.5 bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase tracking-widest text-[11px] rounded-xl shadow-md shadow-warning/20 hover:shadow-lg hover:shadow-warning/30 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 transition-all"
             >
-              {isSubmitting ? 'Processing...' : 'Process Refund'}
+              {isSubmitting ? t('pos.processing') : t('pos.processRefund')}
             </button>
           </div>
         </div>

@@ -108,7 +108,11 @@ export function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-[11px] text-secondary font-bold uppercase tracking-wide">
                   <span className="text-primary">{stats!.todayTransactionCount}</span>{' '}
-                  <span>{stats!.todayTransactionCount === 1 ? 'transaction' : 'transactions'}</span>
+                  <span>
+                    {stats!.todayTransactionCount === 1
+                      ? t('dashboard.kpi.transaction')
+                      : t('dashboard.kpi.transactions')}
+                  </span>
                 </div>
               </>
             )}
@@ -134,7 +138,7 @@ export function DashboardPage() {
                   {stats!.todayTransactionCount.toLocaleString()}
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-[11px] text-secondary font-bold uppercase tracking-wide">
-                  <span className="text-success">Sales</span> <span>processed</span>
+                  <span className="text-success">{t('dashboard.kpi.salesProcessed')}</span>
                 </div>
               </>
             )}
@@ -160,7 +164,7 @@ export function DashboardPage() {
                   {stats!.employeesCount.toLocaleString()}
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-[11px] text-secondary font-bold uppercase tracking-wide">
-                  <span className="text-blue-500">Open</span> <span>registers</span>
+                  <span className="text-blue-500">{t('dashboard.kpi.openRegisters')}</span>
                 </div>
               </>
             )}
@@ -201,10 +205,10 @@ export function DashboardPage() {
                   {stats!.lowStockCount > 0 ? (
                     <>
                       <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Items below threshold</span>
+                      <span>{t('dashboard.kpi.itemsBelowThreshold')}</span>
                     </>
                   ) : (
-                    <span>All stock levels nominal</span>
+                    <span>{t('dashboard.kpi.allStockNominal')}</span>
                   )}
                 </div>
               </>
@@ -226,7 +230,7 @@ export function DashboardPage() {
                 <Activity className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="text-xl font-black tracking-tight text-foreground drop-shadow-sm">
-                Today's Activity
+                {t('dashboard.activity.title')}
               </CardTitle>
             </div>
           </CardHeader>
@@ -240,7 +244,7 @@ export function DashboardPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-primary transition-colors">
-                    Sales Today
+                    {t('dashboard.activity.salesToday')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-primary drop-shadow-sm">
                     EGP{' '}
@@ -252,7 +256,7 @@ export function DashboardPage() {
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-success transition-colors">
-                    Transactions
+                    {t('dashboard.activity.transactions')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-success">
                     {stats!.todayTransactionCount.toLocaleString()}
@@ -260,7 +264,7 @@ export function DashboardPage() {
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-blue-500 transition-colors">
-                    Active Cashiers
+                    {t('dashboard.activity.activeCashiers')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-blue-500">
                     {stats!.employeesCount.toLocaleString()}
@@ -268,7 +272,7 @@ export function DashboardPage() {
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-danger transition-colors">
-                    Refunds
+                    {t('dashboard.activity.refunds')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-danger">
                     {stats!.todayRefundsCount.toLocaleString()}
@@ -276,7 +280,7 @@ export function DashboardPage() {
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-warning transition-colors">
-                    Voids
+                    {t('dashboard.activity.voids')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-warning">
                     {stats!.todayVoidsCount.toLocaleString()}
@@ -284,7 +288,7 @@ export function DashboardPage() {
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-purple-500 transition-colors">
-                    Drawer Adjs.
+                    {t('dashboard.activity.drawerAdjs')}
                   </div>
                   <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-purple-500">
                     {stats!.todayDrawerAdjustmentsCount.toLocaleString()}
@@ -295,7 +299,7 @@ export function DashboardPage() {
             {!isLoading && stats!.todayTransactionCount === 0 && stats!.employeesCount === 0 && (
               <div className="mt-6 p-4 rounded-xl bg-secondary/5 border border-secondary/10 flex items-center justify-center">
                 <span className="text-sm font-semibold tracking-wide text-secondary uppercase">
-                  No activity recorded today
+                  {t('dashboard.activity.noActivity')}
                 </span>
               </div>
             )}
@@ -310,7 +314,7 @@ export function DashboardPage() {
                 <AlertOctagon className="h-6 w-6 text-warning" />
               </div>
               <CardTitle className="text-xl font-black tracking-tight text-foreground drop-shadow-sm">
-                Alerts &amp; Exceptions
+                {t('dashboard.alerts.title')}
               </CardTitle>
             </div>
           </CardHeader>
@@ -332,10 +336,10 @@ export function DashboardPage() {
                       <CheckCircle2 className="h-10 w-10 text-success" />
                     </div>
                     <h3 className="text-success font-black tracking-tight text-lg drop-shadow-sm">
-                      All systems nominal
+                      {t('dashboard.alerts.allNominal')}
                     </h3>
                     <p className="text-success/80 text-sm mt-1 font-semibold">
-                      No operational issues detected.
+                      {t('dashboard.alerts.noIssues')}
                     </p>
                   </div>
                 ) : (
@@ -352,10 +356,10 @@ export function DashboardPage() {
                           </div>
                           <div>
                             <div className="text-sm font-black tracking-tight text-foreground group-hover:text-danger transition-colors">
-                              Negative Inventory
+                              {t('dashboard.alerts.negativeInventoryTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {stats!.negativeInventoryCount} products require correction
+                              {t('dashboard.alerts.negativeInventoryDesc').replace('{count}', String(stats!.negativeInventoryCount))}
                             </div>
                           </div>
                         </div>
@@ -373,10 +377,10 @@ export function DashboardPage() {
                           </div>
                           <div>
                             <div className="text-sm font-black tracking-tight text-foreground group-hover:text-danger transition-colors">
-                              Unreconciled Shifts
+                              {t('dashboard.alerts.unreconciledShiftsTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {stats!.unreconciledShiftsCount} shifts pending review
+                              {t('dashboard.alerts.unreconciledShiftsDesc').replace('{count}', String(stats!.unreconciledShiftsCount))}
                             </div>
                           </div>
                         </div>
@@ -396,10 +400,10 @@ export function DashboardPage() {
                           </div>
                           <div>
                             <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
-                              Low Stock Products
+                              {t('dashboard.alerts.lowStockTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {stats!.lowStockCount} items below threshold
+                              {t('dashboard.alerts.lowStockDesc').replace('{count}', String(stats!.lowStockCount))}
                             </div>
                           </div>
                         </div>
@@ -417,10 +421,10 @@ export function DashboardPage() {
                           </div>
                           <div>
                             <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
-                              Pending Purchase Orders
+                              {t('dashboard.alerts.pendingOrdersTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {stats!.pendingPurchaseOrdersCount} active orders
+                              {t('dashboard.alerts.pendingOrdersDesc').replace('{count}', String(stats!.pendingPurchaseOrdersCount))}
                             </div>
                           </div>
                         </div>
@@ -438,10 +442,10 @@ export function DashboardPage() {
                           </div>
                           <div>
                             <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
-                              Pending Print Jobs
+                              {t('dashboard.alerts.pendingPrintTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {stats!.failedPrintJobsCount} receipts queued/failed
+                              {t('dashboard.alerts.pendingPrintDesc').replace('{count}', String(stats!.failedPrintJobsCount))}
                             </div>
                           </div>
                         </div>
@@ -470,7 +474,7 @@ export function DashboardPage() {
               {t('nav.pos') || 'Point of Sale'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              Open terminal
+              {t('dashboard.actions.openTerminal')}
             </div>
           </div>
         </Link>
@@ -487,7 +491,7 @@ export function DashboardPage() {
               {t('nav.reports') || 'Reports'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              Shift reconciliation
+              {t('dashboard.actions.shiftReconciliation')}
             </div>
           </div>
         </Link>
@@ -504,7 +508,7 @@ export function DashboardPage() {
               {t('nav.inventory') || 'Inventory'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              Stock &amp; adjustments
+              {t('dashboard.actions.stockAdjustments')}
             </div>
           </div>
         </Link>
@@ -521,7 +525,7 @@ export function DashboardPage() {
               {t('nav.products') || 'Products'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              Catalog &amp; pricing
+              {t('dashboard.actions.catalogPricing')}
             </div>
           </div>
         </Link>

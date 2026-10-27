@@ -24,7 +24,7 @@ export function POSKeyboardHandler() {
       if (Object.values(activeModals).some((isOpen) => isOpen)) return; // Block scanner if modal is open (HUI-3 Fix)
       if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
 
-      const loadingToastId = toast.loading(`Looking up barcode: ${barcode}`);
+      const loadingToastId = toast.loading(t('pos.toasts.lookingUpBarcode').replace('{barcode}', barcode));
 
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
@@ -38,7 +38,7 @@ export function POSKeyboardHandler() {
 
           // Handle inactive product
           if (!product.is_active) {
-            toast.error(`Product "${product.name}" is inactive and cannot be sold`);
+            toast.error(t('pos.toasts.productInactive').replace('{name}', product.name));
             return;
           }
 
@@ -54,19 +54,19 @@ export function POSKeyboardHandler() {
             inventory_quantity: product.inventory_quantity || 0,
           });
 
-          toast.success(`Added ${product.name} to cart`);
+          toast.success(t('pos.toasts.addedToCart').replace('{name}', product.name));
         } else {
-          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          toast.error(t('pos.toasts.barcodeNotFound').replace('{barcode}', barcode));
           openModal('pos_product_search', { initialSearch: barcode });
         }
       } catch (error: any) {
         toast.dismiss(loadingToastId);
         if (error.status === 404) {
-          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          toast.error(t('pos.toasts.barcodeNotFound').replace('{barcode}', barcode));
           openModal('pos_product_search', { initialSearch: barcode });
         } else {
           console.error('Failed to lookup product barcode:', error);
-          toast.error(error.message || 'Error looking up barcode');
+          toast.error(error.message || t('pos.toasts.errorLookupBarcode'));
         }
       }
     },
@@ -109,9 +109,9 @@ export function POSKeyboardHandler() {
                   });
                 }
               })
-              .catch(() => toast.error('Failed to load last receipt for printing'));
+              .catch(() => toast.error(t('pos.toasts.failedLoadReceipt')));
           } else {
-            toast.error('No recent receipt to print');
+            toast.error(t('pos.toasts.noRecentReceipt'));
           }
           return;
         }
@@ -130,12 +130,12 @@ export function POSKeyboardHandler() {
                     printerService.printReceipt(res.data.data, true);
                   }
                 } catch (error) {
-                  toast.error('Reprint failed');
+                  toast.error(t('pos.toasts.reprintFailed'));
                 }
               },
             });
           } else {
-            toast.error('No recent receipt to reprint');
+            toast.error(t('pos.toasts.noRecentReceiptReprint'));
           }
           return;
         }

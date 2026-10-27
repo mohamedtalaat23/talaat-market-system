@@ -87,7 +87,7 @@ export function ManagerOverrideModal() {
           payload.onSuccess(selectedManagerId);
         } else if (payload?.action === 'clear_cart') {
           state.clearCart();
-          toast.error('Cart Discarded');
+          toast.error(t('pos.toasts.cartDiscarded'));
         } else if (payload?.action === 'large_discount') {
           if (payload.target === 'cart') {
             state.setGlobalDiscount(payload.discountValue);
@@ -138,7 +138,7 @@ export function ManagerOverrideModal() {
           </div>
           <h3
             id="override-modal-title"
-            className="text-2xl font-black text-foreground text-center tracking-tight"
+            className="text-2xl font-black text-slate-900 text-center tracking-tight"
           >
             {t('pos.managerAuthTitle')}
           </h3>
@@ -152,7 +152,7 @@ export function ManagerOverrideModal() {
               <div className="space-y-2">
                 {payload.displayMetadata.customer && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">Customer:</span>
+                    <span className="text-secondary font-medium">{t('pos.customerLabelShort')}</span>
                     <span className="text-foreground font-semibold">
                       {payload.displayMetadata.customer}
                     </span>
@@ -160,15 +160,15 @@ export function ManagerOverrideModal() {
                 )}
                 {payload.displayMetadata.amount !== undefined && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">Amount:</span>
+                    <span className="text-secondary font-medium">{t('pos.amountLabelShort')}</span>
                     <span className="font-mono text-foreground font-black text-base">
-                      EGP {Number(payload.displayMetadata.amount).toFixed(2)}
+                      {t('pos.currency')} {Number(payload.displayMetadata.amount).toFixed(2)}
                     </span>
                   </div>
                 )}
                 {payload.displayMetadata.actionType && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">Type:</span>
+                    <span className="text-secondary font-medium">{t('pos.typeLabelShort')}</span>
                     <span className="text-foreground font-semibold bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
                       {payload.displayMetadata.actionType}
                     </span>
@@ -176,7 +176,7 @@ export function ManagerOverrideModal() {
                 )}
                 {payload.displayMetadata.direction && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">Direction:</span>
+                    <span className="text-secondary font-medium">{t('pos.directionLabelShort')}</span>
                     <span
                       className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}
                     >
@@ -186,7 +186,7 @@ export function ManagerOverrideModal() {
                 )}
                 {payload.displayMetadata.inventoryEffect && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">Inventory:</span>
+                    <span className="text-secondary font-medium">{t('pos.inventoryLabelShort')}</span>
                     <span
                       className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}
                     >
@@ -231,7 +231,7 @@ export function ManagerOverrideModal() {
               >
                 {managers.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.full_name} ({m.role.toUpperCase()})
+                    {m.full_name} ({m.role === 'admin' ? t('dashboard.roleAdmin') : m.role === 'manager' ? t('dashboard.roleManager') : t('dashboard.roleCashier')})
                   </option>
                 ))}
               </select>

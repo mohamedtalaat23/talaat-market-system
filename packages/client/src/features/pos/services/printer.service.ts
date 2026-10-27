@@ -1,4 +1,5 @@
-import { PrinterPayload, generateReceiptHtml } from './receipt-template';
+import type { PrinterPayload} from './receipt-template';
+import { generateReceiptHtml } from './receipt-template';
 
 export class PrinterService {
   /**

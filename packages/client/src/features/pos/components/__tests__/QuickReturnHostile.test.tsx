@@ -19,7 +19,15 @@ vi.mock('@/services/api-client', () => ({
 // Mock translation hook to avoid PreferencesProvider dependency
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => {
+      const dict: Record<string, string> = {
+        'dashboard.returns.btnCommitOnly': 'Commit Only',
+        'dashboard.returns.btnApproveCommit': 'Approve & Commit',
+        'dashboard.returns.physicalVerified': 'Physical items verified',
+        'dashboard.returns.alreadyApproved': '(Already Approved)',
+      };
+      return dict[key] || key;
+    },
     language: 'en',
   }),
 }));

@@ -7,8 +7,10 @@ import toast from 'react-hot-toast';
 import { Lock, X, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useLANStore } from '../stores/useLANStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function CloseShiftModal() {
+  const { t } = useTranslation();
   const { activeModals, closeModal, openModal, modalPayloads } = useModalStore();
   const isOpen = activeModals.pos_close_shift;
   const activeShift = usePOSStore((state) => state.activeShift);
@@ -79,7 +81,7 @@ export function CloseShiftModal() {
         }
       }
     } catch (error) {
-      toast.error('Failed to fetch shift summary');
+      toast.error(t('pos.toasts.failedFetchSummary'));
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +104,7 @@ export function CloseShiftModal() {
 
     const cash = parseFloat(endingCash);
     if (isNaN(cash) || cash < 0) {
-      toast.error('Please enter the actual cash counted');
+      toast.error(t('pos.toasts.enterActualCash'));
       return;
     }
 
@@ -122,7 +124,7 @@ export function CloseShiftModal() {
         timestamp: new Date().toISOString(),
       });
 
-      toast.success('Shift closed locally. Synching in background...', {
+      toast.success(t('pos.toasts.shiftClosedOffline'), {
         icon: '💾',
         duration: 4000,
       });
@@ -141,7 +143,7 @@ export function CloseShiftModal() {
       });
 
       if (response.data?.success) {
-        toast.success('Shift closed successfully');
+        toast.success(t('pos.toasts.shiftClosed'));
         setActiveShift(null);
         closeModal('pos_close_shift');
       }
@@ -154,7 +156,7 @@ export function CloseShiftModal() {
 
       if (mode === 'client' && isNetworkError) {
         toast.error(
-          'Network connection to Master server failed. Routing to local shift buffer...',
+          t('pos.toasts.shiftClosedOfflineFallback'),
           { duration: 4000 },
         );
         setStatus('offline');
@@ -171,7 +173,7 @@ export function CloseShiftModal() {
         setActiveShift(null);
         closeModal('pos_close_shift');
       } else {
-        toast.error(error.message || 'Failed to close shift');
+        toast.error(error.message || t('pos.toasts.failedCloseShift'));
       }
     } finally {
       setIsSubmitting(false);
@@ -191,7 +193,7 @@ export function CloseShiftModal() {
               <Lock className="w-6 h-6 text-danger" />
             </div>
             <h2 className="text-2xl font-black tracking-tight text-foreground">
-              Close Shift Report
+              {t('pos.closeShiftReport')}
             </h2>
           </div>
           <button
@@ -215,18 +217,18 @@ export function CloseShiftModal() {
                   <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5 text-warning" />
                   <div className="text-sm space-y-1.5">
                     <p className="font-black uppercase tracking-widest text-warning text-[11px]">
-                      Operational Warnings Detected
+                      {t('pos.operationalWarnings')}
                     </p>
                     <div className="font-medium space-y-1">
                       {summary.pending_prints > 0 && (
-                        <p>• {summary.pending_prints} receipt(s) pending print recovery.</p>
+                        <p>• {t('pos.pendingPrintsWarning').replace('{count}', String(summary.pending_prints))}</p>
                       )}
                       {myHeldCarts.length > 0 && (
-                        <p>• {myHeldCarts.length} cart(s) currently suspended.</p>
+                        <p>• {t('pos.suspendedCartsWarning').replace('{count}', String(myHeldCarts.length))}</p>
                       )}
                     </div>
                     <p className="pt-2 text-warning/80 font-bold text-[11px] uppercase tracking-wider">
-                      Manager override is required to force close this shift.
+                      {t('pos.managerOverrideRequiredClose')}
                     </p>
                   </div>
                 </div>
@@ -235,53 +237,53 @@ export function CloseShiftModal() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                    Starting Cash
+                    {t('pos.startingCash')}
                   </p>
                   <p className="text-2xl font-black font-mono tracking-tight text-foreground">
-                    EGP {summary.starting_cash.toFixed(2)}
+                    {t('pos.currency')} {summary.starting_cash.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                    Cash Sales
+                    {t('pos.cashSales')}
                   </p>
                   <p className="text-2xl font-black text-success font-mono tracking-tight">
-                    +EGP {summary.cash_sales.toFixed(2)}
+                    +{t('pos.currency')} {summary.cash_sales.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
-                    Card Sales
+                    {t('pos.cardSales')}
                   </p>
                   <p className="text-2xl font-black text-primary font-mono tracking-tight">
-                    EGP {summary.card_sales.toFixed(2)}
+                    {t('pos.currency')} {summary.card_sales.toFixed(2)}
                   </p>
                 </div>
                 <div className="bg-background border border-border/60 rounded-xl p-5 space-y-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] ring-1 ring-foreground/5">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">
-                    Expected Cash
+                    {t('pos.expectedCash')}
                   </p>
                   <p className="text-2xl font-black text-foreground font-mono tracking-tight">
-                    EGP {summary.expected_cash.toFixed(2)}
+                    {t('pos.currency')} {summary.expected_cash.toFixed(2)}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3 pt-6 border-t border-border/40">
                 <label className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-secondary">
-                  <span>Actual Cash Counted (EGP)</span>
+                  <span>{t('pos.actualCashCounted')}</span>
                   {endingCash && (
                     <span
                       className={`font-mono font-black text-sm tracking-widest ${discrepancy < 0 ? 'text-danger' : discrepancy > 0 ? 'text-success' : 'text-secondary'}`}
                     >
-                      Diff: {discrepancy > 0 ? '+' : ''}
+                      {t('pos.diff')} {discrepancy > 0 ? '+' : ''}
                       {discrepancy.toFixed(2)}
                     </span>
                   )}
                 </label>
                 <div className="relative">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary font-bold select-none">
-                    EGP
+                    {t('pos.currency')}
                   </span>
                   <input
                     type="number"
@@ -301,7 +303,7 @@ export function CloseShiftModal() {
               </div>
             </>
           ) : (
-            <p className="text-secondary text-center">No summary data available.</p>
+            <p className="text-secondary text-center">{t('pos.noSummaryData')}</p>
           )}
         </div>
 
@@ -311,7 +313,7 @@ export function CloseShiftModal() {
             onClick={() => closeModal('pos_close_shift')}
             className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-secondary hover:text-foreground bg-white dark:bg-card border border-border/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all text-sm uppercase tracking-wider shadow-sm focus:outline-none"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleCloseShift}
@@ -323,10 +325,10 @@ export function CloseShiftModal() {
             }`}
           >
             {isSubmitting
-              ? 'Processing...'
+              ? t('pos.processing')
               : needsOverride
-                ? 'Manager Override Required'
-                : 'Close Shift'}
+                ? t('pos.managerOverrideRequired')
+                : t('pos.closeShift')}
           </button>
         </div>
       </div>

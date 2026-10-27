@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePOSStore } from '../usePOSStore';
 import { Receipt, X, AlertTriangle, QrCode } from 'lucide-react';
 import { useScannerDetection } from '../hooks/useScannerDetection';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ScannedItem {
   sku_id: string;
@@ -19,6 +20,7 @@ interface ScannedItem {
 }
 
 export function QuickReturnWorkspace() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_quick_return);
   const closeModal = useModalStore((state) => state.closeModal);
   const user = useAuthStore((state) => state.user);
@@ -132,7 +134,7 @@ export function QuickReturnWorkspace() {
         ];
       });
     } catch (e: any) {
-      toast.error(e.message || 'Error scanning item');
+      toast.error(e.message || t('pos.toasts.itemScannedError'));
     }
   };
 
@@ -169,9 +171,9 @@ export function QuickReturnWorkspace() {
       }
 
       setItems(newItems);
-      toast.success('Transaction loaded');
+      toast.success(t('pos.transactionLoaded'));
     } catch (e: any) {
-      toast.error(e.message || 'Error loading receipt');
+      toast.error(e.message || t('pos.failedLoadReceiptShort'));
     }
   };
 
@@ -186,14 +188,14 @@ export function QuickReturnWorkspace() {
     try {
       await syncItem(queueId, newItems[idx], 0);
     } catch (e: any) {
-      toast.error('Failed to sync disposition');
+      toast.error(t('pos.toasts.syncDispositionFailed'));
     }
   };
 
   // HUI-2: O(1) Submit
   const handleSubmit = async () => {
     if (!queueId) {
-      toast.error('Queue is empty');
+      toast.error(t('pos.toasts.queueEmpty'));
       return;
     }
 
@@ -201,17 +203,17 @@ export function QuickReturnWorkspace() {
       (i) => !i.disposition || (i.disposition === 'NON_RESTOCKABLE' && !i.non_restock_reason),
     );
     if (missing) {
-      toast.error('Missing disposition or reason on some items');
+      toast.error(t('pos.toasts.missingDisposition'));
       return;
     }
 
     setIsSubmitting(true);
     try {
       await apiClient.post(`/return-queues/${queueId}/submit`);
-      toast.success('Return Queue Submitted to Manager');
+      toast.success(t('pos.toasts.returnQueueSubmitted'));
       closeModal('pos_quick_return');
     } catch (e: any) {
-      toast.error(e.response?.data?.error?.message || 'Failed to submit queue');
+      toast.error(e.response?.data?.error?.message || t('pos.failedSubmitQueue'));
     } finally {
       setIsSubmitting(false);
     }
@@ -251,14 +253,14 @@ export function QuickReturnWorkspace() {
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Receipt className="w-6 h-6 text-indigo-400" />
-              Quick Return Workspace
+              {t('pos.quickReturnWorkspace')}
             </h2>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setReceiptMode(true)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold ${receiptMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-300'}`}
               >
-                Receipt Mode [F8]
+                {t('pos.receiptModeKey')}
               </button>
             </div>
           </div>
@@ -269,14 +271,14 @@ export function QuickReturnWorkspace() {
                 ref={inputRef}
                 type="text"
                 onKeyDown={handleLookupReceipt}
-                placeholder="Scan Receipt Barcode and press Enter..."
+                placeholder={t('pos.scanReceiptBarcode')}
                 className="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg shadow-inner"
                 autoFocus
               />
             ) : (
               <div className="w-full bg-slate-900 border border-slate-700 text-slate-400 px-4 py-4 rounded-xl text-lg shadow-inner flex items-center gap-3">
                 <QrCode className="w-6 h-6" />
-                Scanner active... Please scan items.
+                {t('pos.scannerActivePrompt')}
               </div>
             )}
           </div>
@@ -285,17 +287,17 @@ export function QuickReturnWorkspace() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500">
                 <QrCode className="w-16 h-16 mb-4 opacity-20" />
-                <p className="text-lg font-medium">No items scanned</p>
-                <p className="text-sm">Scan items or press F8 for receipt lookup</p>
+                <p className="text-lg font-medium">{t('pos.noItemsScanned')}</p>
+                <p className="text-sm">{t('pos.scanItemsOrLookup')}</p>
               </div>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 text-sm">
-                    <th className="pb-3 px-2 font-medium">Item</th>
-                    <th className="pb-3 px-2 font-medium text-center">Qty</th>
-                    <th className="pb-3 px-2 font-medium">Disposition</th>
-                    <th className="pb-3 px-2 font-medium">Reason</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.productLabel')}</th>
+                    <th className="pb-3 px-2 font-medium text-center">{t('pos.quantity')}</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.disposition')}</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.reason')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
@@ -319,10 +321,10 @@ export function QuickReturnWorkspace() {
                           }
                         >
                           <option value="" disabled>
-                            Select...
+                            {t('pos.selectPlaceholder')}
                           </option>
-                          <option value="RESTOCK">RESTOCK</option>
-                          <option value="NON_RESTOCKABLE">WRITE-OFF</option>
+                          <option value="RESTOCK">{t('pos.restock')}</option>
+                          <option value="NON_RESTOCKABLE">{t('pos.writeoff')}</option>
                         </select>
                       </td>
                       <td className="py-4 px-2">
@@ -335,15 +337,15 @@ export function QuickReturnWorkspace() {
                             }
                           >
                             <option value="" disabled>
-                              Required...
+                              {t('pos.requiredPlaceholder')}
                             </option>
-                            <option value="DAMAGED">DAMAGED</option>
-                            <option value="EXPIRED">EXPIRED</option>
-                            <option value="OPENED">OPENED</option>
-                            <option value="CONTAMINATED">CONTAMINATED</option>
-                            <option value="SUPPLIER_RECALL">RECALL</option>
-                            <option value="CUSTOMER_DISSATISFACTION">DISSATISFACTION</option>
-                            <option value="OTHER">OTHER</option>
+                            <option value="DAMAGED">{t('pos.reasons.damaged')}</option>
+                            <option value="EXPIRED">{t('pos.reasons.expired')}</option>
+                            <option value="OPENED">{t('pos.reasons.opened')}</option>
+                            <option value="CONTAMINATED">{t('pos.reasons.contaminated')}</option>
+                            <option value="SUPPLIER_RECALL">{t('pos.reasons.recall')}</option>
+                            <option value="CUSTOMER_DISSATISFACTION">{t('pos.reasons.dissatisfaction')}</option>
+                            <option value="OTHER">{t('pos.reasons.other')}</option>
                           </select>
                         )}
                       </td>
@@ -360,11 +362,11 @@ export function QuickReturnWorkspace() {
           <div className="flex justify-between items-start mb-8">
             <div>
               <h3 className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">
-                Queue Status
+                {t('pos.queueStatus')}
               </h3>
               <div className="flex items-center gap-2">
                 <span className="flex h-3 w-3 rounded-full bg-emerald-500"></span>
-                <span className="text-white font-semibold">OPEN (DRAFT)</span>
+                <span className="text-white font-semibold">{t('pos.openDraft')}</span>
               </div>
             </div>
             <button
@@ -377,29 +379,29 @@ export function QuickReturnWorkspace() {
 
           <div className="space-y-6 flex-1">
             <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
-              <p className="text-slate-400 text-sm font-medium mb-1">Total Refund Value</p>
+              <p className="text-slate-400 text-sm font-medium mb-1">{t('pos.totalRefundValue')}</p>
               <p className="text-4xl font-bold text-white tracking-tight">
-                EGP {totalRefund.toFixed(2)}
+                {t('pos.currency')} {totalRefund.toFixed(2)}
               </p>
             </div>
 
             <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm space-y-4">
               <div className="flex justify-between">
-                <span className="text-slate-400">Total Items</span>
+                <span className="text-slate-400">{t('pos.totalItems')}</span>
                 <span className="text-white font-semibold">
                   {items.reduce((acc, i) => acc + i.quantity, 0)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Queue Type</span>
+                <span className="text-slate-400">{t('pos.queueType')}</span>
                 <span className="text-white font-semibold">
-                  {receiptMode ? 'RECEIPTED' : 'UNRECEIPTED'}
+                  {receiptMode ? t('pos.receipted') : t('pos.unreceipted')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Owner</span>
+                <span className="text-slate-400">{t('pos.owner')}</span>
                 <span className="text-white font-semibold">
-                  {(user as any)?.first_name || (user as any)?.name || 'Cashier'}
+                  {(user as any)?.first_name || (user as any)?.name || t('pos.cashier')}
                 </span>
               </div>
             </div>
@@ -411,9 +413,9 @@ export function QuickReturnWorkspace() {
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5" />
                 <div>
-                  <p className="text-red-400 font-medium text-sm">Action Required</p>
+                  <p className="text-red-400 font-medium text-sm">{t('pos.actionRequired')}</p>
                   <p className="text-red-400/80 text-xs mt-1">
-                    Some items are missing disposition or reason codes.
+                    {t('pos.missingDispositionReasonDesc')}
                   </p>
                 </div>
               </div>
@@ -426,7 +428,7 @@ export function QuickReturnWorkspace() {
               disabled={isSubmitting || items.length === 0}
               className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex justify-center items-center gap-2 text-lg"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit to Manager'}
+              {isSubmitting ? t('pos.submitting') : t('pos.submitToManager')}
               <span className="text-emerald-200 text-sm ml-2 font-normal hidden sm:inline">
                 (Ctrl+Enter)
               </span>
@@ -435,7 +437,7 @@ export function QuickReturnWorkspace() {
               onClick={() => closeModal('pos_quick_return')}
               className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-4 rounded-xl transition-colors"
             >
-              Cancel Return (Esc)
+              {t('pos.cancelReturnEsc')}
             </button>
           </div>
         </div>

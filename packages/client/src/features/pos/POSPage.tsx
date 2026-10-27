@@ -273,7 +273,7 @@ export function POSPage() {
     setScannerMultiplier(null);
 
     if (!usePOSStore.getState().activeShift) {
-      toast.error('Cannot look up product when shift is closed');
+      toast.error(t('pos.toasts.shiftClosed_lookup'));
       return;
     }
 
@@ -330,7 +330,7 @@ export function POSPage() {
 
   const handleAddProduct = (product: Product) => {
     if (!activeShift) {
-      toast.error('Shift is not open.');
+      toast.error(t('pos.toasts.shiftNotOpen'));
       return;
     }
     addItem({

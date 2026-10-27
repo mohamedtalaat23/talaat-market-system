@@ -254,18 +254,18 @@ export const POSSummary = React.memo(({ cart, paymentMethod, cashReceived }: POS
         <div className="bg-[#f8fafc] border border-border/40 rounded-2xl p-4 space-y-2 select-none flex flex-col relative overflow-hidden shadow-sm">
           <div className="flex justify-between text-sm text-secondary font-mono font-medium">
             <span>{t('pos.subtotal')}</span>
-            <span>EGP {subtotal.toFixed(2)}</span>
+            <span>{t('pos.currency')} {subtotal.toFixed(2)}</span>
           </div>
           {itemDiscounts > 0 && (
             <div className="flex justify-between text-sm text-success font-mono font-bold">
               <span>{t('pos.itemDiscounts')}</span>
-              <span>- EGP {itemDiscounts.toFixed(2)}</span>
+              <span>- {t('pos.currency')} {itemDiscounts.toFixed(2)}</span>
             </div>
           )}
           {globalDiscount > 0 && (
             <div className="flex justify-between text-sm text-success font-mono font-bold">
               <span>{t('pos.globalDiscount')}</span>
-              <span>- EGP {globalDiscount.toFixed(2)}</span>
+              <span>- {t('pos.currency')} {globalDiscount.toFixed(2)}</span>
             </div>
           )}
 

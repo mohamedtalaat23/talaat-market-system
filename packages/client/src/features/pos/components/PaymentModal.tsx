@@ -10,8 +10,10 @@ import { useAuthStore } from '@/stores/authStore';
 import { useLANStore } from '../stores/useLANStore';
 import toast from 'react-hot-toast';
 import { bankersRound } from '@/utils/currency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function PaymentModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_payment);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
@@ -208,7 +210,7 @@ export function PaymentModal() {
       // Update running shift tally locally
       updateLocalShiftTally(saleId);
 
-      toast.success('Offline checkout stored in local register queue', {
+      toast.success(t('pos.toasts.checkoutOffline'), {
         icon: '💾',
         duration: 4000,
       });
@@ -218,9 +220,9 @@ export function PaymentModal() {
 
       if (autoPrintReceipts) {
         toast.promise(printerService.printReceipt(saleData), {
-          loading: 'Printing offline receipt...',
-          success: 'Receipt printed successfully!',
-          error: 'Failed to print receipt',
+          loading: t('pos.toasts.printingReceipt'),
+          success: t('pos.toasts.receiptPrinted'),
+          error: t('pos.toasts.printFailed'),
         });
       } else {
         openModalAction('pos_receipt_preview', { sale: saleData });
@@ -257,7 +259,7 @@ export function PaymentModal() {
 
       const response = await apiClient.post('/pos/checkout', payload);
 
-      toast.success('Checkout successful!', { icon: '🎉' });
+      toast.success(t('pos.toasts.checkoutSuccess'), { icon: '🎉' });
       clearCart();
       closeModal();
 
@@ -276,9 +278,9 @@ export function PaymentModal() {
             }
           }),
           {
-            loading: 'Printing receipt...',
-            success: 'Receipt printed successfully!',
-            error: 'Failed to print receipt',
+            loading: t('pos.toasts.printingReceipt'),
+            success: t('pos.toasts.receiptPrinted'),
+            error: t('pos.toasts.printFailed'),
           },
         );
       } else {
@@ -292,7 +294,7 @@ export function PaymentModal() {
         error.status >= 500;
 
       if (mode === 'client' && isNetworkError) {
-        toast.error('Network connection to Master server failed. Routing to offline buffer...', {
+        toast.error(t('pos.toasts.checkoutOfflineFallback'), {
           duration: 4000,
         });
         setStatus('offline');
@@ -325,7 +327,7 @@ export function PaymentModal() {
             id="payment-modal-title"
             className="text-2xl font-bold text-input-text flex items-center space-x-2"
           >
-            <span>Checkout</span>
+            <span>{t('pos.checkout')}</span>
           </h3>
           <button
             onClick={closeModal}
@@ -341,17 +343,17 @@ export function PaymentModal() {
           <div className="space-y-4">
             <div className="bg-input-bg rounded-lg p-5 border border-input-border">
               <div className="flex justify-between text-secondary mb-2 text-lg">
-                <span>Subtotal</span>
-                <span>EGP {subtotal.toFixed(2)}</span>
+                <span>{t('pos.subtotal')}</span>
+                <span>{subtotal.toFixed(2)} {t('pos.currency')}</span>
               </div>
               <div className="flex justify-between text-success mb-2 text-lg">
-                <span>Discounts</span>
-                <span>- EGP {(itemDiscounts + globalDiscount).toFixed(2)}</span>
+                <span>{t('pos.discounts')}</span>
+                <span>- {(itemDiscounts + globalDiscount).toFixed(2)} {t('pos.currency')}</span>
               </div>
               <div className="w-full h-px bg-border my-4"></div>
               <div className="flex justify-between text-input-text text-4xl font-bold tracking-tight">
-                <span>Total</span>
-                <span>EGP {total.toFixed(2)}</span>
+                <span>{t('pos.total')}</span>
+                <span>{total.toFixed(2)} {t('pos.currency')}</span>
               </div>
             </div>
           </div>
@@ -365,7 +367,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'cash' ? 'bg-success/15 border-success text-success' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Banknote size={20} />
-                <span className="font-bold text-base">Cash [F1]</span>
+                <span className="font-bold text-base">{t('pos.cashF1')}</span>
               </button>
               <button
                 type="button"
@@ -373,7 +375,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'card' ? 'bg-primary/15 border-primary text-primary' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <CreditCard size={20} />
-                <span className="font-bold text-base">Card [F2]</span>
+                <span className="font-bold text-base">{t('pos.cardF2')}</span>
               </button>
               <button
                 type="button"
@@ -381,7 +383,7 @@ export function PaymentModal() {
                 className={`flex-1 py-3 rounded border flex items-center justify-center space-x-1.5 transition-colors ${paymentMethod === 'split' ? 'bg-warning/15 border-warning text-warning' : 'bg-card border-input-border text-secondary hover:bg-card-hover'}`}
               >
                 <Monitor size={20} />
-                <span className="font-bold text-base">Split [F3]</span>
+                <span className="font-bold text-base">{t('pos.splitF3')}</span>
               </button>
               <button
                 type="button"
@@ -396,8 +398,8 @@ export function PaymentModal() {
                 }`}
                 title={
                   selectedCustomer
-                    ? 'Charge to customer account'
-                    : 'Select customer (F7) to use debt'
+                    ? t('pos.chargeToAccount')
+                    : t('pos.selectCustomerToUseDebt')
                 }
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -408,7 +410,7 @@ export function PaymentModal() {
                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span className="font-bold text-base">Debt</span>
+                <span className="font-bold text-base">{t('pos.debt')}</span>
               </button>
             </div>
 
@@ -419,7 +421,7 @@ export function PaymentModal() {
                     htmlFor="cash-input"
                     className="block text-sm font-medium text-secondary mb-1"
                   >
-                    Cash Received (EGP)
+                    {t('pos.cashReceived')}
                   </label>
                   <input
                     id="cash-input"
@@ -437,18 +439,18 @@ export function PaymentModal() {
                 <div
                   className={`p-4 rounded border ${changeDue > 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-input-bg/40 border-input-border text-secondary'}`}
                 >
-                  <div className="text-sm font-medium mb-1">Change Due</div>
+                  <div className="text-sm font-medium mb-1">{t('pos.changeDue')}</div>
                   <div className="text-4xl font-bold tracking-tight">
-                    EGP {changeDue.toFixed(2)}
+                    {changeDue.toFixed(2)} {t('pos.currency')}
                   </div>
                 </div>
               </div>
             )}
 
             {paymentMethod === 'split' && (
-              <div className="space-y-4 bg-input-bg/45 p-4 border border-input-border rounded-lg">
+              <div className="space-y-4 bg-input-bg/45 p-4 border border-input-border rounded">
                 <div className="text-sm font-bold text-secondary uppercase tracking-wider mb-2">
-                  Split Allocation (EGP)
+                  {t('pos.splitAllocation')}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -456,7 +458,7 @@ export function PaymentModal() {
                       htmlFor="cash-portion"
                       className="block text-xs font-semibold text-secondary mb-1"
                     >
-                      Cash Portion
+                      {t('pos.cashPortion')}
                     </label>
                     <input
                       id="cash-portion"
@@ -474,7 +476,7 @@ export function PaymentModal() {
                       htmlFor="card-portion"
                       className="block text-xs font-semibold text-secondary mb-1"
                     >
-                      Card Portion
+                      {t('pos.cardPortion')}
                     </label>
                     <input
                       id="card-portion"
@@ -489,8 +491,10 @@ export function PaymentModal() {
                   </div>
                 </div>
                 <div className="text-xs text-muted text-center pt-2">
-                  Verify Cash portion ({Number(cashPortionStr || 0).toFixed(2)}) + Card portion (
-                  {Number(cardPortionStr || 0).toFixed(2)}) equals total ({total.toFixed(2)})
+                  {t('pos.splitVerifyPrompt')
+                    .replace('{cash}', Number(cashPortionStr || 0).toFixed(2))
+                    .replace('{card}', Number(cardPortionStr || 0).toFixed(2))
+                    .replace('{total}', total.toFixed(2))}
                 </div>
               </div>
             )}
@@ -499,18 +503,13 @@ export function PaymentModal() {
               <div className="space-y-4">
                 <div className="p-4 rounded border bg-danger/10 border-danger/20 text-danger">
                   <div className="text-xs font-bold uppercase tracking-wider text-danger mb-1">
-                    Buy on Credit (Debt Account)
+                    {t('pos.buyOnCredit')}
                   </div>
                   <p className="text-xs leading-relaxed text-secondary">
-                    The total sum of{' '}
-                    <strong className="text-danger font-mono">EGP {total.toFixed(2)}</strong> will
-                    be charged to the account of{' '}
-                    <strong className="text-input-text">{selectedCustomer.name}</strong>. Their new
-                    outstanding balance will be{' '}
-                    <strong className="text-danger font-mono">
-                      EGP {(Number(selectedCustomer.balance) - total).toFixed(2)}
-                    </strong>
-                    .
+                    {t('pos.debtWarningDesc')
+                      .replace('{total}', total.toFixed(2) + ' ' + t('pos.currency'))
+                      .replace('{name}', selectedCustomer.name)
+                      .replace('{balance}', (Number(selectedCustomer.balance) - total).toFixed(2) + ' ' + t('pos.currency'))}
                   </p>
                 </div>
               </div>
@@ -522,11 +521,11 @@ export function PaymentModal() {
               className="w-full py-5 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-xl flex items-center justify-center space-x-2 shadow-lg shadow-success/10"
             >
               {isSubmitting ? (
-                <span>Processing...</span>
+                <span>{t('dashboard.returns.btnProcessing')}</span>
               ) : (
                 <>
                   <CheckCircle2 size={28} />
-                  <span>Complete Sale (Enter)</span>
+                  <span>{t('pos.completeSale')}</span>
                 </>
               )}
             </button>

@@ -5,8 +5,10 @@ import { usePOSStore } from '../usePOSStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
 import { Wallet, X } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function OpenShiftModal() {
+  const { t } = useTranslation();
   const { activeModals, closeModal } = useModalStore();
   const isOpen = activeModals.pos_open_shift;
   const registerId = usePOSStore((state) => state.registerId);
@@ -20,7 +22,7 @@ export function OpenShiftModal() {
   const handleOpenShift = async () => {
     const cash = parseFloat(startingCash);
     if (isNaN(cash) || cash < 0) {
-      toast.error('Please enter a valid starting cash amount');
+      toast.error(t('pos.toasts.invalidStartCash'));
       return;
     }
 
@@ -32,13 +34,13 @@ export function OpenShiftModal() {
       });
 
       if (response.data?.success) {
-        toast.success('Shift opened successfully');
+        toast.success(t('pos.shiftOpened'));
         setActiveShift(response.data.data);
         closeModal('pos_open_shift');
         setStartingCash('');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to open shift');
+      toast.error(error.message || t('pos.failedOpenShift'));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,7 +53,7 @@ export function OpenShiftModal() {
         <div className="flex items-center justify-between p-4 border-b border-border bg-card-hover/50">
           <div className="flex items-center space-x-3">
             <Wallet className="w-5 h-5 text-success" />
-            <h2 className="text-lg font-semibold text-foreground">Open Register Shift</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t('pos.openRegisterShift')}</h2>
           </div>
           <button
             onClick={() => closeModal('pos_open_shift')}
@@ -64,17 +66,17 @@ export function OpenShiftModal() {
         {/* Content */}
         <div className="p-6 space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-secondary">Register ID</label>
+            <label className="text-sm font-medium text-secondary">{t('pos.registerId')}</label>
             <div className="p-3 bg-background rounded-lg text-secondary font-mono text-lg border border-border">
-              Terminal {registerId}
+              {t('pos.terminalLabel').replace('{id}', String(registerId))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-secondary">Starting Cash Drawer (EGP)</label>
+            <label className="text-sm font-medium text-secondary">{t('pos.startingCashDrawer')}</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-semibold">
-                £
+                {t('pos.currency')}
               </span>
               <input
                 type="number"
@@ -100,14 +102,14 @@ export function OpenShiftModal() {
             onClick={() => closeModal('pos_open_shift')}
             className="px-6 py-3 rounded-lg font-medium text-secondary bg-card-hover hover:bg-border transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleOpenShift}
             disabled={isSubmitting}
             className="px-8 py-3 rounded-lg font-bold text-white bg-success hover:bg-success/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Opening...' : 'Start Shift'}
+            {isSubmitting ? t('pos.opening') : t('pos.startShift')}
           </button>
         </div>
       </div>

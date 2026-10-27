@@ -4,10 +4,12 @@ import { apiClient } from '@/services/api-client';
 import { useAuthStore } from '@/stores/authStore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { ManagerApproveCommitModal } from './ManagerApproveCommitModal';
 
 export function ReturnApprovalDashboard() {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
 
   const { data: queues = [], refetch } = useQuery({
@@ -39,7 +41,7 @@ export function ReturnApprovalDashboard() {
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-indigo-500" />
             <CardTitle className="text-base font-bold text-foreground">
-              Return Approvals Required ({queues.length})
+              {t('dashboard.returns.title').replace('{count}', String(queues.length))}
             </CardTitle>
           </div>
         </CardHeader>
@@ -67,16 +69,23 @@ export function ReturnApprovalDashboard() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
-                        {q.queue_type} Return Queue
+                        {t('dashboard.returns.queueTitle').replace('{type}', q.queue_type)}
                       </div>
                       <div className="text-xs text-secondary mt-0.5 flex gap-3">
-                        <span>Created By: {q.owner_id === user?.id ? 'Me' : 'Cashier'}</span>
+                        <span>
+                          {t('dashboard.returns.createdBy').replace(
+                            '{owner}',
+                            q.owner_id === user?.id ? t('dashboard.returns.me') : t('dashboard.returns.cashier'),
+                          )}
+                        </span>
                         <span className="text-neutral-300">|</span>
                         <span>
-                          Value: EGP{' '}
-                          {q.items
-                            ?.reduce((acc: number, i: any) => acc + i.unit_price * i.quantity, 0)
-                            .toFixed(2) || '0.00'}
+                          {t('dashboard.returns.value').replace(
+                            '{amount}',
+                            q.items
+                              ?.reduce((acc: number, i: any) => acc + i.unit_price * i.quantity, 0)
+                              .toFixed(2) || '0.00',
+                          )}
                         </span>
                       </div>
                     </div>
@@ -84,12 +93,12 @@ export function ReturnApprovalDashboard() {
                   {isMine && (
                     <div className="text-xs font-semibold text-secondary flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      Awaiting other manager
+                      {t('dashboard.returns.awaitingOtherManager')}
                     </div>
                   )}
                   {!isMine && (
                     <div className="text-sm font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
-                      Review &rarr;
+                      {t('dashboard.returns.review')} &rarr;
                     </div>
                   )}
                 </button>

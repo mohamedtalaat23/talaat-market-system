@@ -77,10 +77,10 @@ export const POSCartList = React.memo(() => {
         <div className="flex-1 flex flex-col min-h-0">
           {/* Header Row */}
           <div className="grid grid-cols-[1fr_4.5rem_4.5rem_5.5rem] gap-2 px-3 py-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-b border-border/60 bg-neutral-100/50 shrink-0">
-            <span className="pl-6">Item</span>
-            <span className="text-center">Qty</span>
-            <span className="text-right">Price</span>
-            <span className="text-right pr-2">Total</span>
+            <span className="pl-6">{t('pos.productLabel')}</span>
+            <span className="text-center">{t('pos.quantity')}</span>
+            <span className="text-right">{t('pos.price')}</span>
+            <span className="text-right pr-2">{t('pos.total')}</span>
           </div>
 
           <div ref={listRef} className="flex-1 overflow-y-auto divide-y divide-border/40">
