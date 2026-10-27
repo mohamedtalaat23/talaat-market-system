@@ -1,10 +1,11 @@
 import { employeeRepository } from '../repositories/employee.repository';
-import { AuthenticationError } from '../middleware/errorHandler';
+import { AuthenticationError, ValidationError } from '../middleware/errorHandler';
 import { env } from '../config/env';
 import { logger } from '../middleware/logger';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { type Role } from '../config/constants';
+import { BCRYPT_ROUNDS, type Role } from '../config/constants';
+import { MIN_PASSWORD_LENGTH, isWeakSecret } from '../config/security';
 
 export interface LoginResult {
   token: string;
@@ -13,8 +14,10 @@ export interface LoginResult {
     username: string;
     role: Role;
     full_name: string;
+    must_change_password: boolean;
   };
 }
+
 
 export class AuthService {
   /**
@@ -122,8 +125,54 @@ export class AuthService {
         username: employee.username,
         role: employee.role as Role,
         full_name: employee.full_name,
+        must_change_password: employee.must_change_password ?? false,
       },
     };
+  }
+
+  /**
+   * Change the password of the currently authenticated employee.
+   *
+   * Requires the current password (a stolen JWT alone must not be enough to
+   * take over the account) and enforces the same password policy used for
+   * provisioning. Clears `must_change_password` on success.
+   */
+  async changePassword(
+    userId: number,
+    username: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await employeeRepository.getPasswordAndPinHash(username);
+
+    if (!user || user.id !== userId) {
+      throw new AuthenticationError('Invalid username or credentials');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isCurrentPasswordValid) {
+      logger.warn('Password change rejected: current password is incorrect', { username });
+      throw new AuthenticationError('Current password is incorrect');
+    }
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      throw new ValidationError(
+        `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      );
+    }
+
+    if (isWeakSecret(newPassword)) {
+      throw new ValidationError('New password is too common or too easy to guess');
+    }
+
+    if (await bcrypt.compare(newPassword, user.password_hash)) {
+      throw new ValidationError('New password must be different from the current password');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await employeeRepository.updatePassword(userId, passwordHash);
+
+    logger.info('Employee password changed (audit log)', { userId, username });
   }
 }
 

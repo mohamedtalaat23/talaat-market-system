@@ -132,13 +132,17 @@ export class POSRepository {
       if (direction === 'IN') {
         await trx('cashier_shifts')
           .where('id', shift.id)
-          .increment('expected_cash', payload.amount)
-          .update({ updated_at: trx.fn.now() });
+          .update({
+            expected_cash: trx.raw('expected_cash + ?', [payload.amount]),
+            updated_at: trx.fn.now(),
+          });
       } else {
         await trx('cashier_shifts')
           .where('id', shift.id)
-          .decrement('expected_cash', payload.amount)
-          .update({ updated_at: trx.fn.now() });
+          .update({
+            expected_cash: trx.raw('expected_cash - ?', [payload.amount]),
+            updated_at: trx.fn.now(),
+          });
       }
 
       // Audit Log
@@ -515,8 +519,10 @@ export class POSRepository {
 
           await trx('customers')
             .where('id', payload.customer_id)
-            .decrement('balance', total)
-            .update({ updated_at: trx.fn.now() });
+            .update({
+              balance: trx.raw('balance - ?', [total]),
+              updated_at: trx.fn.now(),
+            });
         }
 
         // 4. Process items and inventory
@@ -578,8 +584,10 @@ export class POSRepository {
         if (cashPaid > 0 && payload.shift_id) {
           await trx('cashier_shifts')
             .where('id', payload.shift_id)
-            .increment('expected_cash', cashPaid)
-            .update({ updated_at: trx.fn.now() });
+            .update({
+              expected_cash: trx.raw('expected_cash + ?', [cashPaid]),
+              updated_at: trx.fn.now(),
+            });
         }
 
         return { ...sale, items: insertedItems };

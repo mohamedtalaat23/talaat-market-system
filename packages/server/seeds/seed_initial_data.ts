@@ -10,6 +10,13 @@ import { fakerAR, fakerEN } from '@faker-js/faker';
  * inventory stock levels, customers, suppliers, and historical transactions.
  */
 export async function seed(knex: Knex): Promise<void> {
+  if (process.env['NODE_ENV'] === 'production' && process.env['ALLOW_PRODUCTION_SEED'] !== 'true') {
+    throw new Error(
+      'Refusing to run the destructive development seed in production. ' +
+        'Set ALLOW_PRODUCTION_SEED=true only on a disposable demo installation.',
+    );
+  }
+
   console.log('Seeding: Starting Database Wipe...');
 
   // 1. Clean existing tables in reverse dependency order using TRUNCATE CASCADE
@@ -54,6 +61,7 @@ export async function seed(knex: Knex): Promise<void> {
       pin_hash: adminPin,
       role: 'admin',
       is_active: true,
+      must_change_password: true,
     },
     {
       full_name: 'Talaat Manager',
@@ -62,6 +70,7 @@ export async function seed(knex: Knex): Promise<void> {
       pin_hash: managerPin,
       role: 'manager',
       is_active: true,
+      must_change_password: true,
     },
     {
       full_name: 'Ahmed Hassan',
@@ -70,6 +79,7 @@ export async function seed(knex: Knex): Promise<void> {
       pin_hash: cashier1Pin,
       role: 'cashier',
       is_active: true,
+      must_change_password: true,
     },
     {
       full_name: 'Mahmoud Ali',
@@ -78,6 +88,7 @@ export async function seed(knex: Knex): Promise<void> {
       pin_hash: cashier2Pin,
       role: 'cashier',
       is_active: true,
+      must_change_password: true,
     },
     {
       full_name: 'Sarah Ibrahim',
@@ -86,6 +97,7 @@ export async function seed(knex: Knex): Promise<void> {
       pin_hash: cashier3Pin,
       role: 'cashier',
       is_active: true,
+      must_change_password: true,
     },
   ]).returning('*');
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 import path from 'path';
+import { isWeakSecret } from './security';
 
 const envFiles = [
   process.env['TALAAT_CONFIG_PATH'],
@@ -46,6 +47,16 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters long'),
   JWT_EXPIRES_IN: z.string().default('12h'),
 
+  // First-run administrator provisioning.
+  // The password is optional: when omitted, bootstrap generates a strong random
+  // one and writes it to a 0600 credentials file instead of using a default.
+  INITIAL_ADMIN_USERNAME: z.string().trim().min(3).max(50).default('admin'),
+  INITIAL_ADMIN_PASSWORD: z.string().optional(),
+  INITIAL_ADMIN_PIN: z
+    .string()
+    .regex(/^\d{4,6}$/, 'INITIAL_ADMIN_PIN must be 4 to 6 digits')
+    .optional(),
+
   // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_DIR: z.string().default('logs'),
@@ -70,6 +81,33 @@ if (!parseResult.success) {
   });
   console.error('\nPlease check your .env file against .env.example');
   process.exit(1);
+}
+
+// ── Production secret hygiene ─────────────────────────────────────────────────
+// Fail closed instead of silently accepting placeholder secrets copied from
+// `.env.example` / `.env.production` (e.g. `dev_jwt_secret_...`).
+if (parseResult.data.NODE_ENV === 'production') {
+  const weakVariables: string[] = [];
+
+  for (const key of ['JWT_SECRET', 'SESSION_SECRET', 'DB_PASSWORD'] as const) {
+    if (isWeakSecret(parseResult.data[key])) {
+      weakVariables.push(key);
+    }
+  }
+
+  if (
+    parseResult.data.INITIAL_ADMIN_PASSWORD &&
+    isWeakSecret(parseResult.data.INITIAL_ADMIN_PASSWORD)
+  ) {
+    weakVariables.push('INITIAL_ADMIN_PASSWORD');
+  }
+
+  if (weakVariables.length > 0) {
+    console.error('❌ Refusing to start in production with weak or placeholder secrets:');
+    weakVariables.forEach((key) => console.error(`  ${key}`));
+    console.error('\nGenerate strong values first (for example: openssl rand -hex 64).');
+    process.exit(1);
+  }
 }
 
 export const env = parseResult.data;

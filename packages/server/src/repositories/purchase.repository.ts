@@ -442,15 +442,19 @@ export class PurchaseRepository {
             } else {
               await trx('inventory')
                 .where('product_id', item.product_id)
-                .increment('quantity', addStock)
-                .update({ updated_at: trx.fn.now() });
+                .update({
+                  quantity: trx.raw('quantity + ?', [addStock]),
+                  updated_at: trx.fn.now(),
+                });
             }
           } catch (err: any) {
             if (err.code === '23505') {
               await trx('inventory')
                 .where('product_id', item.product_id)
-                .increment('quantity', addStock)
-                .update({ updated_at: trx.fn.now() });
+                .update({
+                  quantity: trx.raw('quantity + ?', [addStock]),
+                  updated_at: trx.fn.now(),
+                });
             } else {
               throw err;
             }

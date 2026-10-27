@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MIN_PASSWORD_LENGTH } from '../config/security';
 
 /**
  * Zod validation schemas for authentication and employee management requests.
@@ -22,6 +23,22 @@ export const fastPinLoginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
 });
+
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, 'Current password is required').max(100),
+    new_password: z
+      .string()
+      .min(
+        MIN_PASSWORD_LENGTH,
+        `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      )
+      .max(100),
+  })
+  .refine((data) => data.current_password !== data.new_password, {
+    message: 'New password must be different from the current password',
+    path: ['new_password'],
+  });
 
 export const createEmployeeSchema = z.object({
   full_name: z.string().trim().min(1, 'Full name is required').max(150),

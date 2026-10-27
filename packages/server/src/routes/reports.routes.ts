@@ -14,6 +14,7 @@ reportsRouter.use(requireRoles('admin', 'manager'));
 
 reportsRouter.get('/shifts', controller.getShifts);
 reportsRouter.get('/shifts/:id', controller.getShiftDetail);
+reportsRouter.get('/shifts/:id/export', controller.exportShift);
 reportsRouter.get('/weekly', controller.getWeeklyReport);
 reportsRouter.get('/overrides', controller.getOverrides);
 

@@ -44,6 +44,34 @@ export class SettingsController {
       next(error);
     }
   }
+
+  async createBackup(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { backupService } = await import('../services/backup.service');
+      const backup = await backupService.createBackup();
+      res.json({
+        status: 'success',
+        data: backup,
+      });
+    } catch (error) {
+      logger.error('Error creating database backup:', error);
+      next(error);
+    }
+  }
+
+  async listBackups(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { backupService } = await import('../services/backup.service');
+      const backups = await backupService.listBackups();
+      res.json({
+        status: 'success',
+        data: backups,
+      });
+    } catch (error) {
+      logger.error('Error listing database backups:', error);
+      next(error);
+    }
+  }
 }
 
 export const settingsController = new SettingsController();

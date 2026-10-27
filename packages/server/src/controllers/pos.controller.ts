@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { posRepository } from '../repositories/pos.repository';
 import { z } from 'zod';
 import { db } from '../config/database';
@@ -131,14 +131,13 @@ export class POSController {
         return res.status(404).json({ success: false, message: 'Shift not found.' });
       }
 
-      // Cashiers can only view their own shift summaries, UNLESS they are sharing a register.
-      // Wait, in a shared register, any cashier can close the shift, but audit requires manager?
-      // Actually, if we allow Fast PIN switching, a cashier should be able to view the shift summary
-      // for the register they are currently operating.
-      // Let's relax this to just require the user to be active.
-      // The frontend restricts closing to managers or the shift owner in UI.
+      // Cashiers may only view their own shift summaries.
+      // Managers and admins may view any shift.
       if (user.role === 'cashier' && shift.employee_id !== user.id) {
-        // We'll allow it for Fast PIN switching (Drawer Sharing).
+        return res.status(403).json({
+          success: false,
+          message: 'You are not authorized to view this shift.',
+        });
       }
 
       const summary = await posRepository.getShiftSummary(shiftId);

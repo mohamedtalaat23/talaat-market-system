@@ -14,5 +14,7 @@ settingsRouter.use(requireRoles('admin'));
 
 settingsRouter.get('/', settingsController.getSettings.bind(settingsController));
 settingsRouter.put('/', settingsController.updateSettings.bind(settingsController));
+settingsRouter.get('/backups', settingsController.listBackups.bind(settingsController));
+settingsRouter.post('/backups', settingsController.createBackup.bind(settingsController));
 
 export { settingsRouter };

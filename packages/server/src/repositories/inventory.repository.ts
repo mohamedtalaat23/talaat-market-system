@@ -249,6 +249,73 @@ export class InventoryRepository {
       product_cost_price: Number(row.product_cost_price),
     };
   }
+
+  /**
+   * Fetch batches for a product or expiring batches within N days.
+   */
+  async findBatches(filters?: { product_id?: number; days_to_expiry?: number }): Promise<ProductBatch[]> {
+    const query = db('product_batches')
+      .join('products', 'products.id', 'product_batches.product_id')
+      .select(
+        'product_batches.*',
+        'products.name as product_name',
+        'products.barcode as product_barcode',
+        'products.unit as product_unit',
+      )
+      .whereNull('products.deleted_at')
+      .where('product_batches.quantity', '>', 0);
+
+    if (filters?.product_id) {
+      query.where('product_batches.product_id', filters.product_id);
+    }
+
+    if (filters?.days_to_expiry) {
+      query.whereRaw("product_batches.expiration_date <= CURRENT_DATE + (? || ' days')::interval", [
+        Number(filters.days_to_expiry),
+      ]);
+    }
+
+    query.orderBy('product_batches.expiration_date', 'asc');
+
+    const rows = await query;
+    return rows.map((r) => ({
+      ...r,
+      quantity: Number(r.quantity),
+      cost_price: r.cost_price ? Number(r.cost_price) : null,
+    }));
+  }
+
+  /**
+   * Insert a new batch record.
+   */
+  async createBatch(
+    data: {
+      product_id: number;
+      batch_number: string;
+      expiration_date: string;
+      quantity: number;
+      cost_price?: number;
+    },
+    trx?: Knex.Transaction,
+  ): Promise<ProductBatch> {
+    const conn = trx || db;
+    const [inserted] = await conn('product_batches')
+      .insert({
+        product_id: data.product_id,
+        batch_number: data.batch_number,
+        expiration_date: data.expiration_date,
+        quantity: data.quantity,
+        cost_price: data.cost_price || null,
+      })
+      .returning('*');
+
+    return {
+      ...inserted,
+      quantity: Number(inserted.quantity),
+      cost_price: inserted.cost_price ? Number(inserted.cost_price) : null,
+    };
+  }
+
 }
 
 export interface InventoryAdjustment {
@@ -274,6 +341,20 @@ export interface InventoryAdjustment {
   notes: string | null;
   created_by: number | null;
   creator_name: string | null;
+  created_at: Date;
+}
+
+export interface ProductBatch {
+  id: string;
+  product_id: number;
+  product_name?: string;
+  product_barcode?: string | null;
+  product_unit?: string;
+  batch_number: string;
+  expiration_date: string;
+  quantity: number;
+  cost_price: number | null;
+  received_at: Date;
   created_at: Date;
 }
 

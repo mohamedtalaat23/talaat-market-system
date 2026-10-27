@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import {
-  purchaseRepository,
+import type {
   CreatePOInput,
-  UpdatePOInput,
+  UpdatePOInput} from '../repositories/purchase.repository';
+import {
+  purchaseRepository
 } from '../repositories/purchase.repository';
 import { createPOSchema, updatePOSchema, receivePOSchema } from '../validators/purchase.validator';
 import { logger } from '../middleware/logger';

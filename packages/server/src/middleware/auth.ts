@@ -2,8 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { employeeRepository } from '../repositories/employee.repository';
-import { AuthenticationError, AuthorizationError } from './errorHandler';
-import { type Role } from '../config/constants';
+import { AppError, AuthenticationError, AuthorizationError } from './errorHandler';
+import { HTTP_STATUS, type Role } from '../config/constants';
 import { logger } from './logger';
 
 interface JWTPayload {
@@ -18,11 +18,38 @@ interface CachedEmployee {
   role: Role;
   is_active: boolean;
   deleted_at: Date | string | null;
+  must_change_password: boolean;
   expiresAt: number;
 }
 
 // 60-second Time-To-Live in-memory employee auth status cache
 const employeeAuthCache = new Map<number, CachedEmployee>();
+
+/**
+ * Endpoints that must stay reachable while an account is flagged
+ * `must_change_password`, otherwise the user can never satisfy the requirement.
+ */
+const PASSWORD_CHANGE_ALLOWED_PATHS = ['/auth/change-password', '/auth/logout', '/auth/me'];
+
+/**
+ * Drops cached authorization state.
+ *
+ * Call after changing a password/role/status so the change takes effect
+ * immediately instead of waiting for the 60-second cache TTL.
+ */
+export function invalidateAuthCache(userId?: number): void {
+  if (userId === undefined) {
+    employeeAuthCache.clear();
+    return;
+  }
+  employeeAuthCache.delete(userId);
+}
+
+function isPasswordChangeAllowedPath(req: Request): boolean {
+  const pathname = (req.originalUrl || '').split('?')[0] ?? '';
+  return PASSWORD_CHANGE_ALLOWED_PATHS.some((allowed) => pathname.endsWith(allowed));
+}
+
 
 /**
  * Stateless Authentication Middleware
@@ -62,6 +89,7 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
         role: employee.role as Role,
         is_active: !!employee.is_active,
         deleted_at: employee.deleted_at,
+        must_change_password: !!employee.must_change_password,
         expiresAt: now + 60 * 1000, // 60-second TTL
       };
       employeeAuthCache.set(decoded.id, cached);
@@ -74,11 +102,29 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
       return next(new AuthenticationError('This user account has been disabled'));
     }
 
+    // Accounts provisioned with a temporary password must rotate it before
+    // they can use any other endpoint.
+    if (cached.must_change_password && !isPasswordChangeAllowedPath(req)) {
+      logger.warn('Access blocked: password change required', {
+        username: decoded.username,
+        path: req.originalUrl,
+      });
+      return next(
+        new AppError(
+          'PASSWORD_CHANGE_REQUIRED',
+          'You must change your password before accessing this resource',
+          HTTP_STATUS.FORBIDDEN,
+          { must_change_password: true },
+        ),
+      );
+    }
+
     // Attach basic details to request object
     req.user = {
       id: cached.id,
       username: cached.username,
       role: cached.role,
+      must_change_password: cached.must_change_password,
     };
 
     next();

@@ -72,7 +72,7 @@ export async function getWeeklyReport(
     }
 
     // Add time boundary to end date if it's just a YYYY-MM-DD
-    let weekStartStr = String(week_start);
+    const weekStartStr = String(week_start);
     let weekEndStr = String(week_end);
     if (weekEndStr.length === 10) {
       weekEndStr = `${weekEndStr}T23:59:59.999Z`;
@@ -110,6 +110,20 @@ export async function getOverrides(req: Request, res: Response, next: NextFuncti
       data: result.items,
       meta: result.meta,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function exportShift(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { exportService } = await import('../services/export.service');
+    const shiftId = String(req.params.id);
+    const { filename, content } = await exportService.exportShiftReportCSV(shiftId);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.status(HTTP_STATUS.OK).send(content);
   } catch (error) {
     next(error);
   }

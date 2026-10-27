@@ -11,6 +11,7 @@ export interface Employee {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
+  must_change_password: boolean;
 }
 
 export interface EmployeeAuthDetails {
@@ -25,7 +26,9 @@ export interface EmployeeAuthDetails {
   locked_until: Date | null;
   failed_pin_attempts: number;
   pin_locked_until: Date | null;
+  must_change_password: boolean;
 }
+
 
 export interface CreateEmployeeInput {
   full_name: string;
@@ -64,6 +67,7 @@ export class EmployeeRepository {
     'created_at',
     'updated_at',
     'deleted_at',
+    'must_change_password',
   ];
 
   /**
@@ -149,6 +153,7 @@ export class EmployeeRepository {
         'locked_until',
         'failed_pin_attempts',
         'pin_locked_until',
+        'must_change_password',
       )
       .where('username', username)
       .first();
@@ -221,6 +226,24 @@ export class EmployeeRepository {
   }
 
   /**
+   * Persist a new password hash and clear the "must change password" flag.
+   * Also clears any failed-attempt lockout so the user is not stranded.
+   */
+  async updatePassword(
+    id: number,
+    password_hash: string,
+    trx?: Knex.Transaction,
+  ): Promise<void> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    await queryBuilder.where('id', id).update({
+      password_hash,
+      must_change_password: false,
+      failed_login_attempts: 0,
+      locked_until: null,
+    });
+  }
+
+  /**
    * Increment failed PIN attempts.
    */
   async incrementFailedPinAttempts(id: number, trx?: Knex.Transaction): Promise<void> {
@@ -277,6 +300,7 @@ export class EmployeeRepository {
         'locked_until',
         'failed_pin_attempts',
         'pin_locked_until',
+        'must_change_password',
       )
       .where('is_active', true)
       .whereNull('deleted_at')

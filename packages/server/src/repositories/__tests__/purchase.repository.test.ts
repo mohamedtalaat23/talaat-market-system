@@ -140,8 +140,8 @@ describe('PurchaseRepository', () => {
         expect.objectContaining({ cost_price: 8.67, updated_at: expect.any(Date) }),
       );
 
-      // Verify physical stock incremented
-      expect(mockQueryBuilder.increment).toHaveBeenCalledWith('quantity', 10);
+      // Verify line items received quantity incremented
+      expect(mockQueryBuilder.increment).toHaveBeenCalledWith('received_quantity', 10);
 
       // Verify PO status finalized to received
       expect(mockQueryBuilder.update).toHaveBeenCalledWith(

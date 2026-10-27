@@ -67,6 +67,50 @@ export const inventoryAdjustmentsQuerySchema = z.object({
   product_id: z.coerce.number().int().positive().optional(),
 });
 
+/**
+ * Product batch / expiration tracking.
+ *
+ * `expiration_date` is stored as a PostgreSQL `date`, so it is validated as a
+ * real calendar date in ISO form (YYYY-MM-DD) instead of relying on the driver.
+ */
+function isIsoCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number) as [number, number, number];
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
+}
+
+export const createBatchSchema = z.object({
+  product_id: z.coerce.number().int().positive('Invalid product ID'),
+  batch_number: z
+    .string()
+    .trim()
+    .min(1, 'Batch number is required')
+    .max(100, 'Batch number must be 100 characters or fewer'),
+  expiration_date: z
+    .string()
+    .trim()
+    .refine(isIsoCalendarDate, 'Expiration date must be a valid date in YYYY-MM-DD format'),
+  quantity: z.coerce.number().positive('Batch quantity must be greater than zero'),
+  cost_price: z.coerce.number().nonnegative('Cost price cannot be negative').optional(),
+});
+
+export const batchQuerySchema = z.object({
+  product_id: z.coerce.number().int().positive('Invalid product ID').optional(),
+  days_to_expiry: z.coerce
+    .number()
+    .int()
+    .min(0, 'days_to_expiry cannot be negative')
+    .max(3650, 'days_to_expiry is unrealistically large')
+    .optional(),
+});
+
 export const productIdParamSchema = z.object({
   productId: z.coerce.number().int().positive('Invalid product ID'),
 });

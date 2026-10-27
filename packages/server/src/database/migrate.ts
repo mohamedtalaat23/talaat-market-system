@@ -1,4 +1,5 @@
 import { db, connectDatabase, disconnectDatabase } from '../config/database';
+import { env } from '../config/env';
 import { logger } from '../middleware/logger';
 
 /**
@@ -49,6 +50,17 @@ async function run() {
         logger.info(`✅ Successfully rolled back batch ${batchNo}: ${log.join(', ')}`);
       }
     } else if (command === 'seed') {
+      // The development seed TRUNCATEs every business table and inserts demo
+      // accounts with published passwords. Never allow that to run silently
+      // against a real installation.
+      if (env.NODE_ENV === 'production' && process.env['ALLOW_PRODUCTION_SEED'] !== 'true') {
+        logger.error('❌ Refusing to run the development seed in production.');
+        logger.error('   It truncates all business tables and creates demo credentials.');
+        logger.error('   Set ALLOW_PRODUCTION_SEED=true only on a disposable demo install.');
+        exitCode = 1;
+        return;
+      }
+
       logger.info('🌱 Seeding database...');
       logger.info('ℹ️ Note: Seeds clear tables first and insert fresh realistic supermarket data.');
 

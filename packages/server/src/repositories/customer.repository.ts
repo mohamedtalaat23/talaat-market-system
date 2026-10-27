@@ -241,8 +241,10 @@ export class CustomerRepository {
       // 3. Update cached balance on customer row
       const [updatedCustomer] = await trx('customers')
         .where('id', customerId)
-        .increment('balance', amount)
-        .update({ updated_at: trx.fn.now() })
+        .update({
+          balance: trx.raw('balance + ?', [amount]),
+          updated_at: trx.fn.now(),
+        })
         .returning('*');
 
       return updatedCustomer;

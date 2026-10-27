@@ -127,3 +127,54 @@ export async function getAdjustments(
     next(error);
   }
 }
+
+/**
+ * GET /inventory/batches
+ *
+ * Fetches product batches and FEFO expiration alerts.
+ */
+export async function getBatches(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const filters = req.query as unknown as Parameters<typeof inventoryService.getBatches>[0];
+    const batches = await inventoryService.getBatches(filters);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: batches,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /inventory/batches
+ *
+ * Creates a new product batch with batch number and expiration date.
+ * Body is validated & coerced by `createBatchSchema` before reaching here.
+ */
+export async function createBatch(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const payload: {
+      product_id: number;
+      batch_number: string;
+      expiration_date: string;
+      quantity: number;
+      cost_price?: number;
+    } = {
+      product_id: req.body.product_id,
+      batch_number: req.body.batch_number,
+      expiration_date: req.body.expiration_date,
+      quantity: req.body.quantity,
+    };
+    if (req.body.cost_price !== undefined) payload.cost_price = req.body.cost_price;
+
+    const batch = await inventoryService.createBatch(payload);
+
+    res.status(HTTP_STATUS.CREATED).json({
+      success: true,
+      data: batch,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

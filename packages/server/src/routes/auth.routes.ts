@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import * as controller from '../controllers/auth.controller';
 import { validate } from '../middleware/validate';
-import { loginSchema, fastPinLoginSchema } from '../validators/employee.validator';
+import {
+  loginSchema,
+  fastPinLoginSchema,
+  changePasswordSchema,
+} from '../validators/employee.validator';
 import { requireAuth } from '../middleware/auth';
 import { authRateLimiter } from '../middleware/rateLimit';
 
@@ -21,5 +25,13 @@ authRouter.post('/logout', controller.logout);
 
 // GET /auth/me - Retrieve current authenticated user profile
 authRouter.get('/me', requireAuth, controller.getMe);
+
+// POST /auth/change-password - Rotate own password (also clears must_change_password)
+authRouter.post(
+  '/change-password',
+  requireAuth,
+  validate({ body: changePasswordSchema }),
+  controller.changePassword,
+);
 
 export { authRouter };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as controller from '../controllers/cycle-count.controller';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRoles } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 
 const cycleCountRouter = Router();
@@ -10,6 +10,9 @@ cycleCountRouter.use(standardRateLimiter);
 
 // Secure all routes with JWT authentication
 cycleCountRouter.use(requireAuth);
+
+// Cycle counting reconciles inventory, so it is restricted to managers and admins.
+cycleCountRouter.use(requireRoles('admin', 'manager'));
 
 cycleCountRouter.post('/', controller.createCycleCount);
 cycleCountRouter.get('/', controller.getCycleCounts);

@@ -1,13 +1,15 @@
 import { Router } from 'express';
 import * as controller from '../controllers/inventory.controller';
 import { validate } from '../middleware/validate';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRoles } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   updateInventorySchema,
   adjustInventorySchema,
   inventoryQuerySchema,
   inventoryAdjustmentsQuerySchema,
+  createBatchSchema,
+  batchQuerySchema,
   productIdParamSchema,
 } from '../validators/inventory.validator';
 
@@ -29,6 +31,17 @@ inventoryRouter.get(
   controller.getAdjustments,
 );
 
+// GET /inventory/batches - Get product batches & expiration alerts
+inventoryRouter.get('/batches', validate({ query: batchQuerySchema }), controller.getBatches);
+
+// POST /inventory/batches - Add a new product batch
+inventoryRouter.post(
+  '/batches',
+  requireRoles('admin', 'manager'),
+  validate({ body: createBatchSchema }),
+  controller.createBatch,
+);
+
 // GET /inventory/:productId - Get stock details for a product
 inventoryRouter.get(
   '/:productId',
@@ -39,6 +52,7 @@ inventoryRouter.get(
 // PUT /inventory/:productId - Set direct stock levels (manual correction)
 inventoryRouter.put(
   '/:productId',
+  requireRoles('admin', 'manager'),
   validate({ params: productIdParamSchema, body: updateInventorySchema }),
   controller.updateInventory,
 );
@@ -46,6 +60,7 @@ inventoryRouter.put(
 // POST /inventory/adjust - Perform relative adjustments (add, remove, damage, expired)
 inventoryRouter.post(
   '/adjust',
+  requireRoles('admin', 'manager'),
   validate({ body: adjustInventorySchema }),
   controller.adjustInventory,
 );
