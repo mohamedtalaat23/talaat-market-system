@@ -69,3 +69,6 @@ patch_*.ts
 fix_*.ts
 test_*.tmp
 *.patch
+
+# Production runtime staging
+packages/desktop/runtime-stage/

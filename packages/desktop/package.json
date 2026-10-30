@@ -1,27 +1,30 @@
 {
   "name": "talaat-market-desktop",
   "version": "1.0.0",
-  "description": "Talaat Market — Electron Desktop Shell",
+  "description": "Talaat Market \u2014 Electron Desktop Shell",
   "private": true,
   "homepage": "https://talaatmarket.local",
   "author": "Talaat Market",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "tsc --project tsconfig.json && wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && node ../../scripts/start-electron-dev.cjs",
-    "build": "tsc --project tsconfig.json && electron-builder",
-    "build:win": "tsc --project tsconfig.json && electron-builder --win",
-    "build:linux": "tsc --project tsconfig.json && electron-builder --linux",
+    "dev": "npm run compile && wait-on http://localhost:5173 && wait-on http://localhost:3001/api/v1/health && node ../../scripts/start-electron-dev.cjs",
+    "build": "npm run compile && npm run stage:runtime && electron-builder --publish never",
+    "build:win": "node ../../scripts/check-windows-runtime.cjs && npm run compile && npm run stage:runtime && electron-builder --win --publish never",
+    "build:linux": "npm run compile && npm run stage:runtime && electron-builder --linux --publish never",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "pack": "electron-builder --dir"
+    "pack": "npm run compile && npm run stage:runtime && electron-builder --dir --publish never",
+    "compile": "node ../../scripts/build-desktop.cjs",
+    "stage:runtime": "node ../../scripts/stage-runtime.cjs"
   },
   "dependencies": {
     "electron-store": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "electron": "^39.8.10",
+    "electron": "^45.1.0",
     "electron-builder": "^26.8.1",
+    "esbuild": "^0.28.2",
     "typescript": "^5.6.0",
     "wait-on": "^8.0.0"
   }

@@ -1,12 +1,11 @@
 appId: com.talaat.market
 productName: Talaat Market
 copyright: Copyright © 2026 Talaat Market
-electronVersion: 39.8.10
+electronVersion: 45.1.0
 
 # Files to include in the package
 files:
   - dist/**/*
-  - node_modules/**/*
   - package.json
 
 # Include the built client and server from the monorepo
@@ -15,7 +14,7 @@ extraResources:
     to: "client/dist"
   - from: "../server/dist"
     to: "server/dist"
-  - from: "../../node_modules"
+  - from: "runtime-stage/node_modules"
     to: "node_modules"
     filter:
       - "**/*"
@@ -23,6 +22,9 @@ extraResources:
     to: "postgres/win-x64"
     filter:
       - "**/*"
+
+  - from: "runtime-stage/runtime-inventory.json"
+    to: "runtime-inventory.json"
 
 # Build output directory
 directories:

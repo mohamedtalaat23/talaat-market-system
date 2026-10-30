@@ -3,17 +3,17 @@ import { ReceiptRenderer } from './receipt-renderer';
 import { EscPosFormatter } from './escpos-formatter';
 import { MockPrinterAdapter, UsbPrinterAdapter, type PrinterAdapter } from './printer-adapters';
 import Store from 'electron-store';
-import { BrowserWindow } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import type { WebContentsPrintOptions } from 'electron';
 
 const store = new Store() as any;
 
 export const DEFAULT_PRINTER_CONFIG: PrinterConfig = {
-  type: 'mock',
+  type: 'system',
   paperWidth: 80,
   devicePath: '/dev/usb/lp0',
   deviceName: '',
-  autoPrint: true,
+  autoPrint: false,
   retries: 3,
 };
 
@@ -24,6 +24,17 @@ export class PrintQueue {
 
   constructor() {
     this.config = (store.get('printerConfig') as PrinterConfig) || { ...DEFAULT_PRINTER_CONFIG };
+    this.queue = ((store.get('printJobs') as PrintJob[] | undefined) || []).map((job) =>
+      ['pending', 'processing', 'retrying'].includes(job.status)
+        ? {
+            ...job,
+            status: 'failed' as const,
+            error:
+              'Printing was interrupted. Check the physical receipt before retrying to avoid duplicate paper copies.',
+          }
+        : job,
+    );
+    store.set('printJobs', this.queue);
   }
 
   public getConfig(): PrinterConfig {
@@ -46,6 +57,7 @@ export class PrintQueue {
 
   public clearQueue(): void {
     this.queue = [];
+    store.set('printJobs', this.queue);
     console.log('[PrintQueue] Queue cleared by administrative request');
   }
 
@@ -96,7 +108,7 @@ export class PrintQueue {
   public async kickDrawer(): Promise<{ success: boolean; message: string }> {
     console.log('[PrintQueue] High-priority cash drawer kick requested. Bypassing print queue.');
 
-    if (this.config.type === 'system') {
+    if (this.config.type === 'system' || (app.isPackaged && this.config.type === 'mock')) {
       return {
         success: false,
         message: 'Cash drawer kick is not supported by Windows system printer mode',
@@ -179,6 +191,7 @@ export class PrintQueue {
   }
 
   private triggerProcessing(): void {
+    store.set('printJobs', this.queue);
     if (this.isProcessing) return;
 
     setImmediate(() => {
@@ -189,6 +202,7 @@ export class PrintQueue {
   }
 
   private async processNext(): Promise<void> {
+    if (this.isProcessing) return;
     const nextJob = this.queue.find((j) => j.status === 'pending');
     if (!nextJob) {
       this.isProcessing = false;
@@ -197,9 +211,13 @@ export class PrintQueue {
 
     this.isProcessing = true;
     nextJob.status = 'processing';
+    store.set('printJobs', this.queue);
     console.log(`[PrintQueue] Processing job: ${nextJob.id} (Attempt ${nextJob.attempts + 1})`);
 
     try {
+      if (app.isPackaged && this.config.type === 'mock') {
+        throw new Error('PRINTER_NOT_CONFIGURED: Select a real printer before printing.');
+      }
       if (this.config.type === 'system') {
         await this.printWithSystemPrinter(nextJob.receipt, this.config);
         nextJob.status = 'completed';

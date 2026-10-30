@@ -85,6 +85,13 @@ let mainWindow: BrowserWindow | null = null;
 const serverManager = new ServerManager();
 const postgresManager = new PostgresManager();
 
+// One owner per user profile: never race migrations or database startup.
+if (!app.requestSingleInstanceLock()) app.quit();
+app.on('second-instance', () => {
+  mainWindow?.show();
+  mainWindow?.focus();
+});
+
 // ── Force dark mode (supermarket staff prefer it) ────────────────────────────
 nativeTheme.themeSource = 'dark';
 
@@ -111,21 +118,12 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
       // Preload script runs before renderer, can access limited Node APIs
       preload: path.join(__dirname, 'preload.js'),
 
-      // SECURITY: These MUST remain false
+      // Renderer isolation is mandatory
       contextIsolation: true, // Renderer cannot access Node globals
       nodeIntegration: false, // Renderer has no Node.js APIs
 
-      // Sandbox assessment: `sandbox: false` is required because the preload is a
-      // compiled CommonJS module that requires a sibling module
-      // (`./ipc/channels`); sandboxed preloads may only require `electron` and a
-      // small allow-list, so enabling the sandbox needs a bundling step.
-      //
-      // Compensating controls in place instead:
-      //   - contextIsolation + no nodeIntegration
-      //   - every IPC payload schema-validated, sender frame verified
-      //   - window.open denied, cross-origin navigation blocked, webviews blocked
-      //   - strict CSP (below), webSecurity enabled in production
-      sandbox: false,
+      // Local preload imports are bundled; only Electron remains external.
+      sandbox: true,
 
       // Allow Vite dev server WebSocket for HMR in development
       webSecurity: !isDev,
@@ -358,10 +356,22 @@ app.on('window-all-closed', () => {
 });
 
 // Graceful shutdown — stop the forked server before quitting
-app.on('before-quit', async () => {
-  logger.info('App quitting — stopping server...');
-  await serverManager.stop();
-  await postgresManager.stop();
+let shutdownStarted = false;
+let shutdownComplete = false;
+app.on('before-quit', (event) => {
+  if (shutdownComplete) return;
+  event.preventDefault();
+  if (shutdownStarted) return;
+  shutdownStarted = true;
+  void (async () => {
+    try {
+      await serverManager.stop();
+      await postgresManager.stop();
+    } finally {
+      shutdownComplete = true;
+      app.quit();
+    }
+  })().catch((error: unknown) => logger.error('Shutdown failed', error));
 });
 
 // Handle uncaught errors in main process
