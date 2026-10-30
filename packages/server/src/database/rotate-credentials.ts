@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { db, connectDatabase, disconnectDatabase } from '../config/database';
 import { BCRYPT_ROUNDS } from '../config/constants';
@@ -73,29 +74,35 @@ async function rotateOne(
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const pinHash = options.pin ? await bcrypt.hash(options.pin, BCRYPT_ROUNDS) : undefined;
 
-  await db('employees').where('id', employee.id).update({
-    password_hash: passwordHash,
-    ...(pinHash ? { pin_hash: pinHash } : {}),
-    credential_rotation_required: false,
-    must_change_password: true,
-    password_changed_at: new Date(),
-    failed_login_attempts: 0,
-    locked_until: null,
-    failed_pin_attempts: 0,
-    pin_locked_until: null,
-    auth_epoch: db.raw('auth_epoch + 1'),
-    updated_at: db.fn.now(),
-  });
-
   const file = writeInitialAdminCredentials(
     employee.username,
     password,
     resolveCredentialsDir(process.env['TALAAT_CONFIG_PATH']),
+    `recovery-${employee.id}-${crypto.randomUUID()}.txt`,
   );
+
+  if (!file.ok)
+    throw new Error('Cannot persist recovery credentials; the employee account was not modified.');
+
+  await db('employees')
+    .where('id', employee.id)
+    .update({
+      password_hash: passwordHash,
+      pin_hash: pinHash ?? null,
+      credential_rotation_required: false,
+      must_change_password: true,
+      password_changed_at: new Date(),
+      failed_login_attempts: 0,
+      locked_until: null,
+      failed_pin_attempts: 0,
+      pin_locked_until: null,
+      auth_epoch: db.raw('auth_epoch + 1'),
+      updated_at: db.fn.now(),
+    });
 
   logger.warn('Rotated credentials for employee', {
     username: employee.username,
-    credentialsFile: file.ok ? file.path : '(could not be written — copy the password from the operator console)',
+    credentialsFile: file.path,
     pinRotated: Boolean(options.pin),
   });
 }

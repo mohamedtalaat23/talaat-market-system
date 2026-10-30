@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'src/repositories/__tests__/db_check.test.ts',
+      'src/repositories/__tests__/commercial.integration.test.ts',
       'src/repositories/__tests__/backup_restore.integration.test.ts',
       'src/repositories/__tests__/drawer_adjustments.test.ts',
       'src/repositories/__tests__/reversal.test.ts',

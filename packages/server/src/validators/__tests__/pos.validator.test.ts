@@ -93,6 +93,7 @@ describe('refundSaleSchema (POST /pos/sales/:id/refund)', () => {
     expect(refundSaleSchema.safeParse({}).success).toBe(false);
     expect(
       refundSaleSchema.safeParse({
+        idempotency_key: 'refund-test-key',
         manager_id: 2,
         manager_pin: '4821',
         reason: 'damaged',
@@ -105,6 +106,7 @@ describe('refundSaleSchema (POST /pos/sales/:id/refund)', () => {
     for (const quantity of [0, -2]) {
       expect(
         refundSaleSchema.safeParse({
+          idempotency_key: 'refund-test-key',
           manager_id: 2,
           manager_pin: '4821',
           reason: 'damaged',

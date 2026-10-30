@@ -125,6 +125,7 @@ export const voidSaleSchema = z.object({
 });
 
 export const refundSaleSchema = z.object({
+  idempotency_key: z.string().trim().min(1).max(100),
   manager_id: z.number().int().positive('Manager ID is required'),
   manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
   reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),

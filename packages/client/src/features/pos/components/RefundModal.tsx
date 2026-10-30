@@ -1,9 +1,10 @@
-import { useCallback, useState, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { X, AlertTriangle, RefreshCcw } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { InlineManagerApproval } from './InlineManagerApproval';
+import { bankersRound } from '@/utils/currency';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function RefundModal() {
@@ -11,6 +12,10 @@ export function RefundModal() {
   const { activeModals, closeModal, modalPayloads, openModal } = useModalStore();
   const isOpen = activeModals.pos_refund;
   const sale = modalPayloads.pos_refund?.sale;
+  const refundKey = useRef('');
+  useEffect(() => {
+    if (isOpen) refundKey.current = crypto.randomUUID();
+  }, [isOpen, sale?.id]);
 
   const [quantitiesToRefund, setQuantitiesToRefund] = useState<Record<number, number>>({});
   const [restockToggles, setRestockToggles] = useState<Record<number, boolean>>({});
@@ -28,12 +33,28 @@ export function RefundModal() {
   const items = useMemo(() => sale?.items || [], [sale]);
 
   const refundTotal = useMemo(() => {
-    return items.reduce((total: number, item: any) => {
-      const qty = quantitiesToRefund[item.id] || 0;
-      const unitPrice = Number(item.unit_price) - Number(item.discount || 0);
-      return total + qty * unitPrice;
-    }, 0);
-  }, [items, quantitiesToRefund]);
+    const ordered = [...items].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    const grossCents = ordered.reduce(
+      (sum, item) => sum + Math.round(Number(item.line_total) * 100),
+      0,
+    );
+    const paidCents = Math.round(Number(sale?.total || 0) * 100);
+    let cumulative = 0;
+    let allocated = 0;
+    let refundCents = 0;
+    for (const item of ordered) {
+      cumulative += Math.round(Number(item.line_total) * 100);
+      const next = grossCents ? bankersRound((paidCents * cumulative) / grossCents, 0) : 0;
+      const netLineCents = next - allocated;
+      allocated = next;
+      const previous = Number(item.refunded_quantity || 0);
+      const quantity = quantitiesToRefund[item.id] || 0;
+      refundCents +=
+        bankersRound((netLineCents * (previous + quantity)) / Number(item.quantity), 0) -
+        bankersRound((netLineCents * previous) / Number(item.quantity), 0);
+    }
+    return refundCents / 100;
+  }, [items, quantitiesToRefund, sale?.total]);
 
   const handleQtyChange = (itemId: number, maxQty: number, val: string) => {
     let num = Number(val);
@@ -91,6 +112,7 @@ export function RefundModal() {
         manager_id: managerId,
         reason: reason || 'Customer Return',
         refund_type: 'partial',
+        idempotency_key: refundKey.current,
         items: itemsToRefund,
       };
 

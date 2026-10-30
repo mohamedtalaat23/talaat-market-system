@@ -30,7 +30,7 @@ jest.mock('../../config/database', () => {
       forUpdate: () => builder,
       orderBy: () => builder,
       select: async () => (table === 'products' ? state.products : []),
-      first: async () => (table === 'cashier_shifts' ? { id: 1, status: 'open' } : null),
+      first: async () => (table === 'cashier_shifts' ? { id: 1, status: 'open', employee_id: 7, register_id: 1 } : null),
       insert: (row: Record<string, unknown> | Record<string, unknown>[]) => {
         if (table === 'sales') state.saleInsert = row as Record<string, unknown>;
         if (table === 'sale_items') state.itemInserts = row as Record<string, unknown>[];

@@ -10,6 +10,7 @@ jest.mock('../../repositories/pos.repository', () => ({
   posRepository: {
     syncOffline: jest.fn(),
     processRefund: jest.fn(),
+    getOpenShiftByEmployee: jest.fn().mockResolvedValue({ id: 9 }),
     checkout: jest.fn(),
   },
 }));
@@ -125,6 +126,7 @@ describe('POS offline sync — identity binding and tamper handling', () => {
 
 describe('POS reversals — manager authorisation', () => {
   const refundBody = {
+    idempotency_key: 'synthetic-refund-key',
     manager_id: 2,
     manager_pin: '4821',
     reason: 'Damaged goods',

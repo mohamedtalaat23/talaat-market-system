@@ -41,10 +41,11 @@ export function writeInitialAdminCredentials(
   username: string,
   password: string,
   targetDir: string = resolveCredentialsDir(process.env['TALAAT_CONFIG_PATH']),
+  filename: string = CREDENTIALS_FILE_NAME,
 ): CredentialsWriteResult {
   try {
     fs.mkdirSync(targetDir, { recursive: true });
-    const filePath = path.join(targetDir, CREDENTIALS_FILE_NAME);
+    const filePath = path.join(targetDir, path.basename(filename));
     const body = [
       '# Talaat Market — initial administrator credentials',
       '# Log in with these values, then change the password immediately.',

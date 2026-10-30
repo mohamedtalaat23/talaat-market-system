@@ -54,6 +54,22 @@ describe.skipIf(!targetDatabase)('backup and restore on PostgreSQL', () => {
     const backup = await backupService.createBackup();
     const options = { file: backup.filename, targetDatabase: targetDatabase! };
     expect((await restoreService.restore(options)).applied).toBe(false);
+    const backupFs = await import('node:fs');
+    const backupPath = await import('node:path');
+    const corruptFile = backupPath.join(backupService.directory, `corrupt-${Date.now()}.json`);
+    const corrupted = JSON.parse(
+      backupFs.readFileSync(backupPath.join(backupService.directory, backup.filename), 'utf8'),
+    );
+    corrupted.data.customers[0].name = 'Synthetic tampering';
+    backupFs.writeFileSync(corruptFile, JSON.stringify(corrupted));
+    try {
+      await expect(
+        restoreService.restore({ file: corruptFile, targetDatabase: targetDatabase!, apply: true }),
+      ).rejects.toMatchObject({ code: 'CHECKSUM_MISMATCH' });
+    } finally {
+      backupFs.unlinkSync(corruptFile);
+    }
+
     expect(Number((await target('employees').count('* as count').first())!.count)).toBe(0);
     const report = await restoreService.restore({ ...options, apply: true });
     expect(report.applied).toBe(true);

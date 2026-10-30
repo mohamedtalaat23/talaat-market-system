@@ -1,8 +1,9 @@
 import { db } from '../config/database';
+import type { Knex } from 'knex';
 import type { Product } from './product.repository';
 import { customerRepository } from './customer.repository';
 import { auditService } from '../services/audit.service';
-import { fromCents, toCents } from '../utils/money';
+import { allocateAcrossComponents, fromCents, toCents } from '../utils/money';
 import {
   allocateRefundTenders,
   computeRefundLineAmount,
@@ -19,6 +20,8 @@ export interface RefundItemInput {
 }
 
 export interface RefundInput {
+  payout_shift_id?: number;
+  idempotency_key?: string;
   sale_id: string;
   manager_id: number;
   reason: string;
@@ -203,30 +206,39 @@ export class POSRepository {
     notes: string | undefined,
     userId: number,
   ) {
-    const [shift] = await db('cashier_shifts')
-      .where({ id: shiftId, status: 'open' })
-      .update({
-        status: 'closed',
-        end_time: db.fn.now(),
-        ending_cash: endingCash,
-        expected_cash: expectedCash,
-        notes: notes || null,
-        updated_at: db.fn.now(),
-      })
-      .returning('*');
-
-    // Log the close shift event
-    await db('audit_logs').insert({
-      entity_type: 'cashier_shifts',
-      entity_id: String(shift.id),
-      action: 'shift_closed',
-      old_value: null,
-      new_value: JSON.stringify({ ending_cash: endingCash, expected_cash: expectedCash, notes }),
-      user_id: userId,
-      reason: notes || 'Shift closed',
+    return db.transaction(async (trx) => {
+      const current = await trx('cashier_shifts').where({ id: shiftId }).forUpdate().first();
+      if (!current) throw new Error('Shift not found');
+      if (current.status === 'closed') return current; // Safe network retry.
+      const summary = await this.getShiftSummary(shiftId, trx);
+      expectedCash = summary.expected_cash;
+      const [shift] = await trx('cashier_shifts')
+        .where({ id: shiftId })
+        .update({
+          status: 'closed',
+          end_time: trx.fn.now(),
+          ending_cash: endingCash,
+          expected_cash: expectedCash,
+          notes: notes || null,
+          updated_at: trx.fn.now(),
+        })
+        .returning('*');
+      await trx('audit_logs').insert({
+        entity_type: 'cashier_shifts',
+        entity_id: String(shift.id),
+        action: 'shift_closed',
+        old_value: null,
+        new_value: JSON.stringify({
+          ending_cash: endingCash,
+          expected_cash: expectedCash,
+          variance: fromCents(toCents(endingCash) - toCents(expectedCash)),
+          notes,
+        }),
+        user_id: userId,
+        reason: notes || 'Shift closed',
+      });
+      return shift;
     });
-
-    return shift;
   }
 
   /**
@@ -246,42 +258,42 @@ export class POSRepository {
   /**
    * Get shift summary for closing
    */
-  async getShiftSummary(shiftId: number) {
-    const shift = await db('cashier_shifts').where('id', shiftId).first();
+  async getShiftSummary(shiftId: number, connection: Knex = db) {
+    const shift = await connection('cashier_shifts').where('id', shiftId).first();
     if (!shift) throw new Error('Shift not found');
 
-    const salesSummary = await db('sales')
+    const salesSummary = await connection('sales')
       .where('shift_id', shiftId)
       .whereIn('status', ['completed', 'partially_refunded', 'refunded', 'voided'])
       .select(
-        db.raw('COUNT(id) as transaction_count'),
-        db.raw('COALESCE(SUM(cash_paid), 0) as cash_sales'),
-        db.raw('COALESCE(SUM(card_paid), 0) as card_sales'),
-        db.raw(
+        connection.raw('COUNT(id) as transaction_count'),
+        connection.raw('COALESCE(SUM(cash_paid), 0) as cash_sales'),
+        connection.raw('COALESCE(SUM(card_paid), 0) as card_sales'),
+        connection.raw(
           'COALESCE(SUM(COALESCE(discount_amount, 0) + COALESCE(global_discount, 0)), 0) as total_discounts',
         ),
-        db.raw(
+        connection.raw(
           "COALESCE(SUM(CASE WHEN print_status = 'pending_print' THEN 1 ELSE 0 END), 0) as pending_prints",
         ),
       )
       .first();
 
-    const refundsSummary = await db('refunds')
+    const refundsSummary = await connection('refunds')
       .join('sales', 'sales.id', 'refunds.sale_id')
-      .where('sales.shift_id', shiftId)
+      .where('refunds.shift_id', shiftId)
       .select(
-        db.raw('COALESCE(SUM(refunds.cash_refunded), 0) as cash_refunds'),
-        db.raw('COALESCE(SUM(refunds.card_refunded), 0) as card_refunds'),
+        connection.raw('COALESCE(SUM(refunds.cash_refunded), 0) as cash_refunds'),
+        connection.raw('COALESCE(SUM(refunds.card_refunded), 0) as card_refunds'),
       )
       .first();
 
-    const adjustmentSummary = await db('cash_drawer_adjustments')
+    const adjustmentSummary = await connection('cash_drawer_adjustments')
       .where('shift_id', shiftId)
       .select(
-        db.raw(
+        connection.raw(
           "COALESCE(SUM(CASE WHEN adjustment_type = 'IN' THEN amount ELSE 0 END), 0) as total_pay_ins",
         ),
-        db.raw(
+        connection.raw(
           "COALESCE(SUM(CASE WHEN adjustment_type = 'OUT' THEN amount ELSE 0 END), 0) as total_pay_outs",
         ),
       )
@@ -290,14 +302,14 @@ export class POSRepository {
     const payIns = Number(adjustmentSummary?.total_pay_ins || 0);
     const payOuts = Number(adjustmentSummary?.total_pay_outs || 0);
 
-    const paymentSummary = await db('customer_transactions')
+    const paymentSummary = await connection('customer_transactions')
       .where('shift_id', shiftId)
       .andWhere('transaction_type', 'payment')
       .select(
-        db.raw(
+        connection.raw(
           "COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END), 0) as cash_payments",
         ),
-        db.raw(
+        connection.raw(
           "COALESCE(SUM(CASE WHEN payment_method = 'card' THEN amount ELSE 0 END), 0) as card_payments",
         ),
       )
@@ -340,27 +352,18 @@ export class POSRepository {
     bypassInventoryCheck: boolean = false,
     isOfflineSync: boolean = false,
     discountAuthorized: boolean = false,
+    connection: Knex = db,
   ) {
     if (!payload.shift_id) {
       throw new Error('Active shift is required for checkout.');
     }
 
     try {
-      return await db.transaction(async (trx) => {
+      return await connection.transaction(async (trx) => {
         // 1. Acquire transaction-level advisory lock on the hashed idempotency key to strictly serialize concurrent checkout requests
         const hashQuery = await trx.raw('SELECT hashtext(?) as hash', [payload.idempotency_key]);
         const lockHash = hashQuery.rows[0].hash;
         await trx.raw('SELECT pg_advisory_xact_lock(?)', [lockHash]);
-
-        // Verify shift is open (only for online checkouts)
-        if (!isOfflineSync) {
-          const shift = await trx('cashier_shifts')
-            .where({ id: payload.shift_id, status: 'open' })
-            .first();
-          if (!shift) {
-            throw new Error('Shift must be open for checkout.');
-          }
-        }
 
         // 2. Perform a strict row-level lock check inside the serialized transaction block
         const existing = await trx('sales')
@@ -369,9 +372,26 @@ export class POSRepository {
           .first();
 
         if (existing) {
+          if (existing.cashier_id !== cashierId)
+            throw new Error('This checkout belongs to another employee.');
           const existingItems = await trx('sale_items').where('sale_id', existing.id);
           return { ...existing, items: existingItems };
         }
+
+        // Bind the drawer to the authenticated cashier, not client-supplied IDs.
+        const shift = await trx('cashier_shifts')
+          .where({ id: payload.shift_id })
+          .forUpdate()
+          .first();
+        if (
+          !shift ||
+          shift.employee_id !== cashierId ||
+          shift.register_id !== payload.register_id
+        ) {
+          throw new Error('Shift and register must belong to the authenticated cashier.');
+        }
+        if (!isOfflineSync && shift.status !== 'open')
+          throw new Error('Shift must be open for checkout.');
 
         if (payload.payment_method === 'debt' && !payload.customer_id) {
           throw new Error('A customer must be selected to checkout using the debt payment method.');
@@ -690,6 +710,7 @@ export class POSRepository {
         if (incomingIds.length > 0) this.whereIn('id', incomingIds);
         if (incomingKeys.length > 0) this.orWhereIn('idempotency_key', incomingKeys);
       })
+      .where('cashier_id', cashierId)
       .select('id', 'idempotency_key');
 
     const existingIdsSet = new Set(existingSales.map((s) => s.id));
@@ -702,10 +723,14 @@ export class POSRepository {
       return !hasId && !hasKey;
     });
 
+    const acknowledgedIds = payloads
+      .filter((p) => !salesToProcess.includes(p))
+      .map((p) => p.id || p.idempotency_key);
+
     if (salesToProcess.length === 0) {
       return {
         synced: 0,
-        syncedIds: [] as string[],
+        syncedIds: acknowledgedIds,
         failed: [] as { id: string; error: string; code?: string; quarantined?: boolean }[],
       };
     }
@@ -718,7 +743,7 @@ export class POSRepository {
     });
 
     // 3. Process each sale in its own isolated transaction
-    const syncedIds: string[] = [];
+    const syncedIds: string[] = [...acknowledgedIds];
     const failed: { id: string; error: string; code?: string; quarantined?: boolean }[] = [];
 
     for (const payload of sortedSales) {
@@ -750,7 +775,7 @@ export class POSRepository {
       }
     }
 
-    return { synced: syncedIds.length, syncedIds, failed };
+    return { synced: syncedIds.length - acknowledgedIds.length, syncedIds, failed };
   }
 
   /**
@@ -796,55 +821,35 @@ export class POSRepository {
     managerId: number,
     notes?: string,
   ) {
-    const row = await db('offline_sync_quarantine').where({ id }).first();
-    if (!row) throw new Error('Quarantined sale not found.');
-    if (row.status !== 'pending') throw new Error(`Quarantined sale is already ${row.status}.`);
-
-    if (decision === 'reject') {
-      await db('offline_sync_quarantine')
+    return db.transaction(async (trx) => {
+      const row = await trx('offline_sync_quarantine').where({ id }).forUpdate().first();
+      if (!row) throw new Error('Quarantined sale not found.');
+      if (row.status !== 'pending') throw new Error(`Quarantined sale is already ${row.status}.`);
+      const payload: CheckoutPayload =
+        typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload;
+      const sale =
+        decision === 'approve'
+          ? await this.checkout(payload, row.cashier_id, true, true, true, trx)
+          : null;
+      const status = decision === 'approve' ? 'approved' : 'rejected';
+      await trx('offline_sync_quarantine')
         .where({ id })
         .update({
-          status: 'rejected',
+          status,
           resolved_by: managerId,
-          resolved_at: db.fn.now(),
+          resolved_at: trx.fn.now(),
           resolution_notes: notes ?? null,
         });
-      await auditService.logEvent({
-        entityType: 'offline_sync_quarantine',
-        entityId: String(id),
-        action: 'offline_sale_rejected',
-        oldValue: { status: 'pending' },
-        newValue: { status: 'rejected' },
-        userId: managerId,
-        reason: notes ?? 'Offline sale rejected by manager',
+      await trx('audit_logs').insert({
+        entity_type: 'offline_sync_quarantine',
+        entity_id: String(id),
+        action: `offline_sale_${status}`,
+        user_id: managerId,
+        new_value: JSON.stringify({ status, sale_id: sale?.id }),
+        reason: notes || 'Manager offline sale decision',
       });
-      return { status: 'rejected', sale: null };
-    }
-
-    const payload =
-      typeof row.payload === 'string' ? (JSON.parse(row.payload) as CheckoutPayload) : row.payload;
-    const sale = await this.checkout(payload, row.cashier_id, true, true, true);
-
-    await db('offline_sync_quarantine')
-      .where({ id })
-      .update({
-        status: 'approved',
-        resolved_by: managerId,
-        resolved_at: db.fn.now(),
-        resolution_notes: notes ?? null,
-      });
-
-    await auditService.logEvent({
-      entityType: 'offline_sync_quarantine',
-      entityId: String(id),
-      action: 'offline_sale_approved',
-      oldValue: { status: 'pending' },
-      newValue: { status: 'approved', sale_id: sale.id },
-      userId: managerId,
-      reason: notes ?? 'Offline sale approved by manager',
+      return { status, sale };
     });
-
-    return { status: 'approved', sale };
   }
 
   /**
@@ -1002,19 +1007,45 @@ export class POSRepository {
       // 1. Lock sales row
       const sale = await trx('sales').where('id', input.sale_id).forUpdate().first();
       if (!sale) throw new Error('Sale not found');
+      if (input.idempotency_key) {
+        const existing = await trx('refunds')
+          .where({ sale_id: sale.id, idempotency_key: input.idempotency_key })
+          .first();
+        if (existing)
+          return {
+            refund_id: existing.id,
+            refund_receipt_number: existing.refund_receipt_number,
+            total_refunded: Number(existing.total_refunded),
+            status: sale.status,
+          };
+      }
       if (sale.status === 'voided') throw new Error('Sale is already voided');
+
+      const payoutShiftId = input.payout_shift_id ?? sale.shift_id;
+      const payoutShift = await trx('cashier_shifts')
+        .where({ id: payoutShiftId, status: 'open' })
+        .forUpdate()
+        .first();
+      if (!payoutShift) throw new Error('An open payout shift is required for refunds.');
 
       const originalSaleTotal = Number(sale.total);
       const alreadyRefundedAmount = Number(sale.refunded_amount);
 
-      // 2. Lock sale_items rows
-      const itemIds = input.items.map((i) => i.sale_item_id);
+      if (new Set(input.items.map((item) => item.sale_item_id)).size !== input.items.length) {
+        throw new Error('Duplicate refund lines are not allowed.');
+      }
+      // Lock all receipt lines in stable order, then distribute the amount
+      // actually paid (including the cart discount) across the whole receipt.
       const saleItems = await trx('sale_items')
-        .whereIn('id', itemIds)
-        .andWhere('sale_id', input.sale_id)
-        .orderBy('product_id', 'asc')
+        .where('sale_id', input.sale_id)
+        .orderBy('id', 'asc')
         .forUpdate();
-
+      const refundable = allocateAcrossComponents(
+        saleItems.map((item) => toCents(item.line_total)),
+        0,
+        toCents(sale.total),
+      );
+      const netLineTotals = new Map(saleItems.map((item, index) => [item.id, refundable[index]!]));
       const saleItemsMap = new Map(saleItems.map((item) => [item.id, item]));
 
       // Sort items by product_id ASC to ensure consistent inventory lock ordering
@@ -1042,7 +1073,7 @@ export class POSRepository {
         // Cumulative (not per-unit) allocation, so refunding a 10.00 line of
         // three units in three steps returns exactly 10.00 — never 9.99.
         const itemRefundCents = computeRefundLineAmount({
-          lineTotalCents: toCents(dbItem.line_total),
+          lineTotalCents: netLineTotals.get(dbItem.id)!,
           saleQuantity: Number(dbItem.quantity),
           alreadyRefundedQuantity: Number(dbItem.refunded_quantity),
           refundQuantity: reqItem.quantity,
@@ -1103,8 +1134,21 @@ export class POSRepository {
 
       // 3. Allocate the refund across the original tenders proportionally, with
       // no cent lost or created (cash/card/debt shares always sum to the refund).
+      const history = await trx('refunds')
+        .where({ sale_id: sale.id })
+        .select(
+          trx.raw('COALESCE(SUM(cash_refunded), 0) AS cash'),
+          trx.raw('COALESCE(SUM(card_refunded), 0) AS card'),
+          trx.raw('COALESCE(SUM(debt_reversed), 0) AS debt'),
+        )
+        .first();
       const tenderAllocation = allocateRefundTenders({
         saleTotalCents,
+        refundedComponentsCents: [
+          toCents(history.cash),
+          toCents(history.card),
+          toCents(history.debt),
+        ],
         cashPaidCents: toCents(sale.cash_paid),
         cardPaidCents: toCents(sale.card_paid),
         debtPaidCents: toCents(sale.debt_paid),
@@ -1126,8 +1170,9 @@ export class POSRepository {
         .insert({
           sale_id: sale.id,
           refund_receipt_number: formattedRefundReceipt,
+          idempotency_key: input.idempotency_key ?? null,
           manager_id: input.manager_id,
-          shift_id: sale.shift_id,
+          shift_id: payoutShiftId,
           refund_type: input.refund_type,
           original_sale_total: originalSaleTotal,
           total_refunded: totalRefundAmount,
@@ -1153,9 +1198,9 @@ export class POSRepository {
         .update({ updated_at: trx.fn.now() });
 
       // Deduct cash from shift if applicable
-      if (cashRefunded > 0 && sale.shift_id) {
+      if (cashRefunded > 0 && payoutShiftId) {
         await trx('cashier_shifts')
-          .where('id', sale.shift_id)
+          .where('id', payoutShiftId)
           .decrement('expected_cash', cashRefunded)
           .update({ updated_at: trx.fn.now() });
       }
@@ -1169,8 +1214,8 @@ export class POSRepository {
           formattedRefundReceipt,
           `Refund for sale ${sale.receipt_number}`,
           input.manager_id,
-          sale.shift_id,
-          sale.register_id,
+          payoutShiftId,
+          payoutShift.register_id,
           'cash',
           trx,
         );

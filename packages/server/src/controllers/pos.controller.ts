@@ -381,11 +381,15 @@ export class POSController {
         return res.status(403).json({ success: false, message: verification.message });
       }
 
+      const payoutShift = await posRepository.getOpenShiftByEmployee(cashierId);
+      if (!payoutShift) throw new Error('Open your register shift before processing a refund.');
       const result = await posRepository.processRefund({
+        payout_shift_id: payoutShift.id,
         sale_id: saleId,
         manager_id: payload.manager_id,
         reason: payload.reason,
         items: payload.items,
+        idempotency_key: payload.idempotency_key,
         refund_type: 'partial',
       });
 
@@ -433,7 +437,10 @@ export class POSController {
           .json({ success: false, message: 'Sale is already fully refunded or voided.' });
       }
 
+      const payoutShift = await posRepository.getOpenShiftByEmployee(cashierId);
+      if (!payoutShift) throw new Error('Open your register shift before processing a refund.');
       const result = await posRepository.processRefund({
+        payout_shift_id: payoutShift.id,
         sale_id: saleId,
         manager_id: payload.manager_id,
         reason: payload.reason,

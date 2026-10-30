@@ -46,6 +46,16 @@ describe('PinService', () => {
     expect(result.message).toContain('Manager account not found');
   });
 
+  it.each(['credential_rotation_required', 'must_change_password'])(
+    'rejects approvals while %s is set',
+    async (flag) => {
+      mockFirst.mockResolvedValue({ id: 1, pin_hash: 'hashed_pin', [flag]: true });
+      const result = await pinService.verifyPin(1, '482913');
+      expect(result.success).toBe(false);
+      expect(bcrypt.compare).not.toHaveBeenCalled();
+    },
+  );
+
   it('should return error on incorrect PIN and countdown attempts', async () => {
     mockFirst.mockResolvedValue({
       id: 1,

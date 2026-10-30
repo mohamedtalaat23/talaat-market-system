@@ -27,6 +27,8 @@ export class PinService {
         'deleted_at',
         'failed_pin_attempts',
         'pin_locked_until',
+        'credential_rotation_required',
+        'must_change_password',
       )
       .where('id', managerId)
       .whereIn('role', ['manager', 'admin'])
@@ -38,6 +40,14 @@ export class PinService {
       return {
         success: false,
         message: 'Manager account not found or PIN quick-login is not configured',
+      };
+    }
+
+    if (row.credential_rotation_required || row.must_change_password) {
+      return {
+        success: false,
+        message:
+          'Manager must complete credential recovery and password rotation before approving actions.',
       };
     }
 

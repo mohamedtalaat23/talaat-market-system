@@ -85,7 +85,6 @@ describe('sale-math', () => {
     });
   });
 
-
   describe('computeTenders', () => {
     const format = (value: number) => (value / 100).toFixed(2);
 
@@ -153,7 +152,6 @@ describe('sale-math', () => {
       ).toThrow(/requires an amount/);
     });
   });
-
 
   describe('refund math', () => {
     it('refunds a line in parts and still returns exactly the line total', () => {
@@ -256,5 +254,27 @@ describe('sale-math', () => {
       });
       expect(() => resolveRefundState(1000, 900, 101)).toThrow(/exceed the original sale total/);
     });
+  });
+});
+
+describe('refund tender history rounding regression', () => {
+  it('never refunds a tender twice while exhausting a three-cent split', () => {
+    const history: [number, number, number] = [0, 0, 0];
+    for (let i = 0; i < 3; i++) {
+      const allocation = allocateRefundTenders({
+        saleTotalCents: 3,
+        cashPaidCents: 1,
+        cardPaidCents: 1,
+        debtPaidCents: 1,
+        alreadyRefundedCents: i,
+        refundCents: 1,
+        refundedComponentsCents: history,
+      });
+      history[0] += allocation.cashCents;
+      history[1] += allocation.cardCents;
+      history[2] += allocation.debtCents;
+      expect(history.every((value) => value >= 0 && value <= 1)).toBe(true);
+    }
+    expect(history).toEqual([1, 1, 1]);
   });
 });

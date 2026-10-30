@@ -12,7 +12,7 @@ jest.mock('../../config/database', () => {
     shift: Record<string, unknown> | null;
   } = {
     products: [],
-    shift: { id: 1, status: 'open' },
+    shift: { id: 1, status: 'open', employee_id: 7, register_id: 1 },
   };
 
   const makeBuilder = (table: string) => {

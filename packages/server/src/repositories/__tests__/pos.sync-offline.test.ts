@@ -50,7 +50,7 @@ describe('POSRepository.syncOffline de-duplication', () => {
     const result = await repository.syncOffline([payload()], 7);
 
     expect(checkoutSpy).not.toHaveBeenCalled();
-    expect(result).toEqual({ synced: 0, syncedIds: [], failed: [] });
+    expect(result).toEqual({ synced: 0, syncedIds: ['offline-key-1'], failed: [] });
   });
 
   it('does not re-process a sale whose client id already exists', async () => {
@@ -90,7 +90,7 @@ describe('POSRepository.syncOffline de-duplication', () => {
     // already happened) and are flagged so the repository logs anomalies.
     expect(bypassInventory).toBe(true);
     expect(isOfflineSync).toBe(true);
-    expect(result).toEqual({ synced: 1, syncedIds: ['sale-2'], failed: [] });
+    expect(result).toEqual({ synced: 1, syncedIds: ['offline-key-1', 'sale-2'], failed: [] });
   });
 
   it('isolates a poison sale instead of failing the whole batch', async () => {

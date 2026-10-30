@@ -8,10 +8,7 @@ import { fromCents, toCents } from '../utils/money';
  */
 export class CustomerPaymentError extends Error {
   public code:
-    | 'AMOUNT_INVALID'
-    | 'NO_OUTSTANDING_BALANCE'
-    | 'PAYMENT_EXCEEDS_BALANCE'
-    | 'SHIFT_NOT_OPEN';
+    'AMOUNT_INVALID' | 'NO_OUTSTANDING_BALANCE' | 'PAYMENT_EXCEEDS_BALANCE' | 'SHIFT_NOT_OPEN';
 
   constructor(code: CustomerPaymentError['code'], message: string) {
     super(message);
@@ -263,6 +260,17 @@ export class CustomerRepository {
 
     try {
       return await db.transaction(async (trx) => {
+        // 1. Lock the customer row so concurrent payments serialise.
+        const customer = await trx('customers')
+          .where({ id: input.customerId })
+          .whereNull('deleted_at')
+          .forUpdate()
+          .first();
+
+        if (!customer) {
+          throw new Error(`Customer with ID ${input.customerId} not found or deleted.`);
+        }
+
         // 0. Idempotency: a retried request must not post a second payment.
         if (input.idempotencyKey) {
           const existing = await trx('customer_transactions')
@@ -283,17 +291,6 @@ export class CustomerRepository {
               outstandingAfter: currentBalanceCents < 0 ? fromCents(-currentBalanceCents) : 0,
             };
           }
-        }
-
-        // 1. Lock the customer row so concurrent payments serialise.
-        const customer = await trx('customers')
-          .where({ id: input.customerId })
-          .whereNull('deleted_at')
-          .forUpdate()
-          .first();
-
-        if (!customer) {
-          throw new Error(`Customer with ID ${input.customerId} not found or deleted.`);
         }
 
         const balanceCents = toCents(customer.balance);
@@ -319,7 +316,7 @@ export class CustomerRepository {
         if (input.shiftId !== null) {
           const shift = await trx('cashier_shifts')
             .where({ id: input.shiftId, status: 'open' })
-            .first();
+            .forUpdate().first();
 
           if (!shift) {
             throw new CustomerPaymentError(
@@ -400,7 +397,6 @@ export class CustomerRepository {
    * Positive amount increases balance (credit/payment), Negative reduces balance (debt).
    * Used by refunds and manual adjustments, which are not cash collections.
    */
-
 
   async recordTransaction(
     customerId: number,

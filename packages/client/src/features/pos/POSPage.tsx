@@ -51,12 +51,6 @@ export function POSPage() {
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   // Widget expand states removed in UI.6 Rework
 
-  // Expose stores to window for E2E testing inspection/control
-  useEffect(() => {
-    (window as any).__modalStore = useModalStore;
-    (window as any).__posStore = usePOSStore;
-  }, [openModal]);
-
   // Trigger Manager PIN override popup on mount before unlocking page
   useEffect(() => {
     openModal('pos_manager_override', {
@@ -84,6 +78,7 @@ export function POSPage() {
   const cashReceived = usePOSStore((state) => state.cashReceived);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
   const activeShift = usePOSStore((state) => state.activeShift);
+  const registerId = usePOSStore((state) => state.registerId);
   const lastSaleId = usePOSStore((state) => state.lastSaleId);
   const heldCarts = usePOSStore((state) => state.heldCarts);
   const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
@@ -132,7 +127,7 @@ export function POSPage() {
     const fetchShift = async () => {
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
-          '/pos/shifts/current',
+          `/pos/shifts/current?register_id=${registerId}`,
         );
         if (response.data?.success) {
           setActiveShift(response.data.data);
@@ -143,7 +138,7 @@ export function POSPage() {
       }
     };
     void fetchShift();
-  }, [setActiveShift]);
+  }, [setActiveShift, registerId]);
 
   // Shift summary fetching removed in UI.6 Rework
 

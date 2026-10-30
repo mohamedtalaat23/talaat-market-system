@@ -26,6 +26,14 @@ describe('first-run administrator credential handling', () => {
     fs.rmSync(workDir, { recursive: true, force: true });
   });
 
+  it('keeps each recovered employee credential in a separate private file', () => {
+    const a = writeInitialAdminCredentials('employee-a', 'synthetic-password-a', workDir, 'recovery-a.txt');
+    const b = writeInitialAdminCredentials('employee-b', 'synthetic-password-b', workDir, 'recovery-b.txt');
+    expect(a.ok && b.ok).toBe(true);
+    expect(fs.readFileSync(a.path!, 'utf8')).toContain('username=employee-a');
+    expect(fs.readFileSync(b.path!, 'utf8')).toContain('username=employee-b');
+  });
+
   describe('resolveCredentialsDir', () => {
     it('writes next to the managed config file when TALAAT_CONFIG_PATH is set', () => {
       const configPath = path.join(workDir, 'config.env');

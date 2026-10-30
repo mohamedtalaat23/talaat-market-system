@@ -1,5 +1,11 @@
 import { bankersRound } from '../utils/currency';
-import { allocateAcrossComponents, fromCents, multiplyCents, sumCents, toCents } from '../utils/money';
+import {
+  allocateAcrossComponents,
+  fromCents,
+  multiplyCents,
+  sumCents,
+  toCents,
+} from '../utils/money';
 
 /**
  * Pure sale/refund arithmetic.
@@ -71,7 +77,6 @@ export interface ComputeSaleTotalsInput {
   globalDiscount?: number | undefined;
   taxCents?: number | undefined;
 }
-
 
 /**
  * Validates and totals a cart. Throws `SaleMathError` for anything that would
@@ -323,6 +328,7 @@ export function computeRefundLineAmount(input: RefundLineInput): number {
 }
 
 export interface RefundAllocationInput {
+  refundedComponentsCents?: readonly [number, number, number];
   saleTotalCents: number;
   cashPaidCents: number;
   cardPaidCents: number;
@@ -364,6 +370,28 @@ export function allocateRefundTenders(input: RefundAllocationInput): RefundAlloc
         saleTotalCents,
       ).toFixed(2)}).`,
     );
+  }
+
+  if (input.refundedComponentsCents) {
+    const remaining = [cashPaidCents, cardPaidCents, debtPaidCents].map(
+      (paid, index) => paid - input.refundedComponentsCents![index]!,
+    );
+    if (
+      remaining.some((value) => value < 0) ||
+      sumCents(input.refundedComponentsCents) !== alreadyRefundedCents ||
+      refundCents > sumCents(remaining)
+    ) {
+      throw new SaleMathError(
+        'REFUND_LEDGER_MISMATCH',
+        'Refund tender history does not match the remaining sale balance.',
+      );
+    }
+    const [cashCents = 0, cardCents = 0, debtCents = 0] = allocateAcrossComponents(
+      remaining,
+      0,
+      refundCents,
+    );
+    return { cashCents, cardCents, debtCents };
   }
 
   const components = [cashPaidCents, cardPaidCents, debtPaidCents];
