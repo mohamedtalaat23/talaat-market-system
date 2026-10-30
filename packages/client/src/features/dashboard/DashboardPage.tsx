@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
+import { OfflineApprovalPanel } from './components/OfflineApprovalPanel';
 import { ReturnApprovalDashboard } from './components/ReturnApprovalDashboard';
 
 interface DashboardStats {
@@ -217,6 +218,7 @@ export function DashboardPage() {
         </Card>
       </div>
 
+      <OfflineApprovalPanel />
       <ReturnApprovalDashboard />
 
       {/* ── Operational Overview ── */}

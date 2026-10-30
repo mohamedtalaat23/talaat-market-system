@@ -1,5 +1,23 @@
 export const translations = {
   en: {
+    offlineApproval: {
+      title: 'Offline sales awaiting review',
+      help: 'These sales have not been posted. Approval posts the recorded sale once; rejection keeps a permanent record without changing stock. Check the physical goods and money before deciding.',
+      loading: 'Loading offline sales…',
+      failed: 'Unable to load or update offline sales.',
+      retry: 'Retry',
+      empty: 'No offline sales awaiting approval.',
+      cashier: 'Cashier',
+      review: 'Review sale',
+      discount: 'Cart discount',
+      decision: 'Decision',
+      approve: 'Approve and post sale',
+      reject: 'Reject without posting',
+      notes: 'Decision notes',
+      pin: 'Your manager PIN',
+      saving: 'Saving decision…',
+      confirm: 'Confirm decision',
+    },
     nav: {
       dashboard: 'Dashboard',
       pos: 'Point of Sale',
@@ -111,8 +129,10 @@ export const translations = {
         hostUnreachable: 'Host Master is unreachable. Operating offline.',
         failedFetchSummary: 'Failed to fetch shift summary',
         enterActualCash: 'Please enter the actual cash counted',
-        shiftClosedOfflineFallback: 'Network connection to Master server failed. Routing to local shift buffer...',
-        checkoutOfflineFallback: 'Network connection to Master server failed. Routing to offline buffer...',
+        shiftClosedOfflineFallback:
+          'Network connection to Master server failed. Routing to local shift buffer...',
+        checkoutOfflineFallback:
+          'Network connection to Master server failed. Routing to offline buffer...',
         failedCloseShift: 'Failed to close shift',
         noItemSelected: 'No item selected',
         discountExceedsLine: 'Discount cannot exceed line total',
@@ -227,7 +247,8 @@ export const translations = {
       noSuspendedCarts: 'No suspended carts found.',
       confirmDiscardSuspended: 'Are you sure you want to permanently delete this suspended cart?',
       heldSalesCount: '{count} held sale(s) in queue',
-      noSuspendedCartsDesc: 'No active held sales are currently stored. You can suspend a customer\'s cart to clear the terminal registers and checkout subsequent clients.',
+      noSuspendedCartsDesc:
+        "No active held sales are currently stored. You can suspend a customer's cart to clear the terminal registers and checkout subsequent clients.",
       cashierId: 'Cashier ID: {id}',
       activeCartOverwrite: 'Active Cart Overwrite',
       overwriteWarning:
@@ -241,7 +262,7 @@ export const translations = {
       completeSale: 'Complete Sale (Enter)',
       receiptNo: 'Receipt:',
       date: 'Date:',
-       totalUpperReceipt: 'TOTAL',
+      totalUpperReceipt: 'TOTAL',
       thankYou: 'Thank you for shopping!',
       printEnter: 'Print (Enter)',
       actualCashCounted: 'Actual Cash Counted (EGP)',
@@ -306,9 +327,11 @@ export const translations = {
       splitAllocation: 'Split Allocation (EGP)',
       cashPortion: 'Cash Portion',
       cardPortion: 'Card Portion',
-      splitVerifyPrompt: 'Verify Cash portion ({cash}) + Card portion ({card}) equals total ({total})',
+      splitVerifyPrompt:
+        'Verify Cash portion ({cash}) + Card portion ({card}) equals total ({total})',
       buyOnCredit: 'Buy on Credit (Debt Account)',
-      debtWarningDesc: 'The total sum of {total} will be charged to the account of {name}. Their new outstanding balance will be {balance}.',
+      debtWarningDesc:
+        'The total sum of {total} will be charged to the account of {name}. Their new outstanding balance will be {balance}.',
       pressEnterToPrint: 'Press ENTER to print and continue',
       shiftOpened: 'Shift opened successfully',
       failedOpenShift: 'Failed to open shift',
@@ -425,7 +448,8 @@ export const translations = {
         other: 'Other',
       },
       loadingMatchingProducts: 'Loading matching products...',
-      typeAtLeast2Chars: 'Type at least 2 characters to search products by name, SKU, or barcode...',
+      typeAtLeast2Chars:
+        'Type at least 2 characters to search products by name, SKU, or barcode...',
       noProductsFoundFor: 'No products found for "{query}"',
       skuLabelShort: 'SKU',
       barcodeLabelShort: 'Barcode',
@@ -866,7 +890,8 @@ export const translations = {
         costCannotBeNegative: 'Cost price for product "{name}" cannot be negative',
         specifyQtyOrShortage: 'You must specify quantities to receive or shortage',
         shortageCannotBeNegative: 'Shortage quantity for "{name}" cannot be negative',
-        resolutionExceedsRemaining: 'Total resolution for "{name}" cannot exceed the remaining quantity ({remaining})',
+        resolutionExceedsRemaining:
+          'Total resolution for "{name}" cannot exceed the remaining quantity ({remaining})',
       },
     },
     suppliers: {
@@ -934,7 +959,8 @@ export const translations = {
       stockAlert: 'Stock Alert',
       noBarcode: 'No Barcode',
       catalogEmpty: 'Catalog is Empty',
-      catalogEmptyDesc: 'No active supermarket catalog products are currently assigned to this supplier.',
+      catalogEmptyDesc:
+        'No active supermarket catalog products are currently assigned to this supplier.',
       lowStockBadge: 'Low Stock ({count})',
       healthyBadge: 'Healthy',
       confirmDelete: 'Confirm Soft Deletion',
@@ -943,8 +969,10 @@ export const translations = {
       proceedDelete: 'Proceed Delete',
       deleting: 'Deleting...',
       deleteSupplier: 'Delete Supplier',
-      inactiveWarning: 'Supplier is marked inactive. Warnings will display if active products are chosen.',
-      suspendedWarning: 'Supplier is suspended. Newly created products cannot be assigned to this supplier.',
+      inactiveWarning:
+        'Supplier is marked inactive. Warnings will display if active products are chosen.',
+      suspendedWarning:
+        'Supplier is suspended. Newly created products cannot be assigned to this supplier.',
       noNotes: 'No custom procurement notes registered for this supplier profile.',
       productsCount: '{count} Products',
       productName: 'Product Name',
@@ -1300,6 +1328,24 @@ export const translations = {
     },
   },
   ar: {
+    offlineApproval: {
+      title: 'مبيعات دون اتصال تنتظر المراجعة',
+      help: 'لم يتم ترحيل هذه المبيعات. الموافقة ترحّل البيع مرة واحدة، والرفض يحتفظ بسجل دائم دون تغيير المخزون. راجع البضاعة والنقد قبل القرار.',
+      loading: 'جارٍ تحميل المبيعات…',
+      failed: 'تعذر تحميل أو تحديث المبيعات.',
+      retry: 'إعادة المحاولة',
+      empty: 'لا توجد مبيعات تنتظر الموافقة.',
+      cashier: 'الكاشير',
+      review: 'مراجعة البيع',
+      discount: 'خصم الفاتورة',
+      decision: 'القرار',
+      approve: 'الموافقة وترحيل البيع',
+      reject: 'الرفض دون ترحيل',
+      notes: 'ملاحظات القرار',
+      pin: 'الرمز السري الخاص بك',
+      saving: 'جارٍ حفظ القرار…',
+      confirm: 'تأكيد القرار',
+    },
     nav: {
       dashboard: 'لوحة التحكم',
       pos: 'الكاشير',
@@ -1409,7 +1455,8 @@ export const translations = {
         hostUnreachable: 'الخادم الرئيسي غير متاح. العمل دون اتصال.',
         failedFetchSummary: 'فشل تحميل ملخص الوردية',
         enterActualCash: 'يرجى إدخال المبلغ الفعلي المتاح',
-        shiftClosedOfflineFallback: 'فشل الاتصال بالخادم الرئيسي. جاري التوجيه إلى المخزن المؤقت للورديات...',
+        shiftClosedOfflineFallback:
+          'فشل الاتصال بالخادم الرئيسي. جاري التوجيه إلى المخزن المؤقت للورديات...',
         checkoutOfflineFallback: 'فشل الاتصال بالشبكة. جاري التوجيه إلى المخزن المؤقت للطلبات...',
         failedCloseShift: 'فشل إغلاق الوردية',
         noItemSelected: 'لم يتم اختيار أي صنف',
@@ -1524,7 +1571,8 @@ export const translations = {
       noSuspendedCarts: 'لم يتم العثور على سلات معلقة.',
       confirmDiscardSuspended: 'هل أنت متأكد من حذف هذه السلة المعلقة نهائياً؟',
       heldSalesCount: '{count} سلة معلقة في قائمة الانتظار',
-      noSuspendedCartsDesc: 'لا توجد سلات معلقة حالياً. يمكنك تعليق سلة العميل لإخلاء جهاز الكاشير ومعالجة معاملات عملاء آخرين.',
+      noSuspendedCartsDesc:
+        'لا توجد سلات معلقة حالياً. يمكنك تعليق سلة العميل لإخلاء جهاز الكاشير ومعالجة معاملات عملاء آخرين.',
       cashierId: 'معرف الكاشير: {id}',
       activeCartOverwrite: 'تجاوز السلة النشطة',
       overwriteWarning:
@@ -1538,7 +1586,7 @@ export const translations = {
       completeSale: 'إتمام البيع (Enter)',
       receiptNo: 'رقم الفاتورة:',
       date: 'التاريخ:',
-       totalUpperReceipt: 'الإجمالي الكلي',
+      totalUpperReceipt: 'الإجمالي الكلي',
       thankYou: 'شكراً لزيارتكم!',
       printEnter: 'طباعة (Enter)',
       actualCashCounted: 'الكاش الفعلي في الدرج (ج.م)',
@@ -1603,9 +1651,11 @@ export const translations = {
       splitAllocation: 'توزيع الدفع المختلط (ج.م)',
       cashPortion: 'جزء الكاش',
       cardPortion: 'جزء الفيزا',
-      splitVerifyPrompt: 'تأكد أن جزء الكاش ({cash}) + جزء الفيزا ({card}) يساوي الإجمالي ({total})',
+      splitVerifyPrompt:
+        'تأكد أن جزء الكاش ({cash}) + جزء الفيزا ({card}) يساوي الإجمالي ({total})',
       buyOnCredit: 'شراء آجل (حساب دين)',
-      debtWarningDesc: 'سيتم خصم الإجمالي بقيمة {total} من حساب العميل {name}. الرصيد الجديد سيكون {balance}.',
+      debtWarningDesc:
+        'سيتم خصم الإجمالي بقيمة {total} من حساب العميل {name}. الرصيد الجديد سيكون {balance}.',
       pressEnterToPrint: 'اضغط ENTER للطباعة والاستمرار',
       shiftOpened: 'تم فتح الوردية بنجاح',
       failedOpenShift: 'فشل فتح الوردية',
@@ -2160,7 +2210,8 @@ export const translations = {
         costCannotBeNegative: 'لا يمكن أن يكون سعر التكلفة للمنتج "{name}" سالباً',
         specifyQtyOrShortage: 'يجب تحديد الكميات المستلمة أو كميات العجز',
         shortageCannotBeNegative: 'لا يمكن أن تكون كمية العجز للمنتج "{name}" سالبة',
-        resolutionExceedsRemaining: 'إجمالي التسوية للمنتج "{name}" لا يمكن أن يتجاوز الكمية المتبقية ({remaining})',
+        resolutionExceedsRemaining:
+          'إجمالي التسوية للمنتج "{name}" لا يمكن أن يتجاوز الكمية المتبقية ({remaining})',
       },
     },
     suppliers: {
