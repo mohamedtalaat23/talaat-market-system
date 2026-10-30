@@ -4,6 +4,7 @@ import { EscPosFormatter } from './escpos-formatter';
 import { MockPrinterAdapter, UsbPrinterAdapter, type PrinterAdapter } from './printer-adapters';
 import Store from 'electron-store';
 import { BrowserWindow } from 'electron';
+import type { WebContentsPrintOptions } from 'electron';
 
 const store = new Store() as any;
 
@@ -402,9 +403,9 @@ export class PrintQueue {
         </html>
       `;
 
-      printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+      void printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
       printWindow.webContents.once('did-finish-load', () => {
-        const printOptions: import('electron').WebContentsPrintOptions = {
+        const printOptions: WebContentsPrintOptions = {
           silent: Boolean(config.deviceName),
           printBackground: true,
           margins: {

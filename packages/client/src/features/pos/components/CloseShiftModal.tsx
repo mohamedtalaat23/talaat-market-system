@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { usePOSStore } from '../usePOSStore';
@@ -24,14 +24,6 @@ export function CloseShiftModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsOverride, setNeedsOverride] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && activeShift) {
-      fetchSummary();
-      setEndingCash('');
-      setNeedsOverride(false);
-    }
-  }, [isOpen, activeShift]);
-
   // Check for successful manager override
   useEffect(() => {
     if (isOpen && needsOverride && modalPayloads.pos_close_shift?.override_granted) {
@@ -39,7 +31,7 @@ export function CloseShiftModal() {
     }
   }, [isOpen, needsOverride, modalPayloads.pos_close_shift]);
 
-  const fetchSummary = async () => {
+  const fetchSummary = useCallback(async () => {
     if (!activeShift) return;
     setIsLoading(true);
     try {
@@ -80,12 +72,20 @@ export function CloseShiftModal() {
           setNeedsOverride(true);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error(t('pos.toasts.failedFetchSummary'));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeShift, heldCarts, user?.id, t]);
+
+  useEffect(() => {
+    if (isOpen && activeShift) {
+      void fetchSummary();
+      setEndingCash('');
+      setNeedsOverride(false);
+    }
+  }, [isOpen, activeShift, fetchSummary]);
 
   if (!isOpen) return null;
 
@@ -155,10 +155,7 @@ export function CloseShiftModal() {
         error.status >= 500;
 
       if (mode === 'client' && isNetworkError) {
-        toast.error(
-          t('pos.toasts.shiftClosedOfflineFallback'),
-          { duration: 4000 },
-        );
+        toast.error(t('pos.toasts.shiftClosedOfflineFallback'), { duration: 4000 });
         setStatus('offline');
         addOfflineShiftClosure({
           id: crypto.randomUUID(),
@@ -221,10 +218,22 @@ export function CloseShiftModal() {
                     </p>
                     <div className="font-medium space-y-1">
                       {summary.pending_prints > 0 && (
-                        <p>• {t('pos.pendingPrintsWarning').replace('{count}', String(summary.pending_prints))}</p>
+                        <p>
+                          •{' '}
+                          {t('pos.pendingPrintsWarning').replace(
+                            '{count}',
+                            String(summary.pending_prints),
+                          )}
+                        </p>
                       )}
                       {myHeldCarts.length > 0 && (
-                        <p>• {t('pos.suspendedCartsWarning').replace('{count}', String(myHeldCarts.length))}</p>
+                        <p>
+                          •{' '}
+                          {t('pos.suspendedCartsWarning').replace(
+                            '{count}',
+                            String(myHeldCarts.length),
+                          )}
+                        </p>
                       )}
                     </div>
                     <p className="pt-2 text-warning/80 font-bold text-[11px] uppercase tracking-wider">
@@ -293,7 +302,9 @@ export function CloseShiftModal() {
                     value={endingCash}
                     onChange={(e) => setEndingCash(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCloseShift();
+                      if (e.key === 'Enter') {
+                        void handleCloseShift();
+                      }
                       if (e.key === 'Escape') closeModal('pos_close_shift');
                     }}
                     className="w-full bg-background border border-border/60 rounded-xl h-16 pl-14 pr-6 text-3xl font-black tabular-nums tracking-tight text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 transition-all placeholder:text-neutral-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Hash } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
@@ -10,11 +10,11 @@ export function QuantityModal() {
   const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_quantity);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     closeModalAction('pos_quantity');
     // Return focus to body so scanner continues to work
     document.body.focus();
-  };
+  }, [closeModalAction]);
 
   const cart = usePOSStore((state) => state.cart);
   const activeItemIndex = usePOSStore((state) => state.activeItemIndex);
@@ -38,7 +38,7 @@ export function QuantityModal() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   if (!isOpen || !activeItem) return null;
 

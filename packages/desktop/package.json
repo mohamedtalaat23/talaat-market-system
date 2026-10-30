@@ -12,6 +12,7 @@
     "build:win": "tsc --project tsconfig.json && electron-builder --win",
     "build:linux": "tsc --project tsconfig.json && electron-builder --linux",
     "typecheck": "tsc --noEmit",
+    "test": "jest",
     "pack": "electron-builder --dir"
   },
   "dependencies": {

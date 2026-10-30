@@ -69,7 +69,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
   // Auto-submit when 4 digits are reached
   useEffect(() => {
     if (pin.length === 4 && !isLoading && !pendingLogin) {
-      handlePinSubmit(pin);
+      void handlePinSubmit(pin);
     }
   }, [pin, isLoading, pendingLogin, handlePinSubmit]);
 
@@ -89,7 +89,9 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
       onSuccess();
       setPendingLogin(null);
       setPin('');
-      toast.success(t('pos.toasts.cartTakenOver').replace('{name}', pendingLogin.employee.full_name));
+      toast.success(
+        t('pos.toasts.cartTakenOver').replace('{name}', pendingLogin.employee.full_name),
+      );
     }
   };
 

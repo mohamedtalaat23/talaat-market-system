@@ -34,6 +34,24 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Step 1.5: Lock accounts that still hold published default credentials.
+  // Runs once per installation (marker in settings) and never blocks boot.
+  void import('./database/credential-hygiene')
+    .then(({ runCredentialHygiene }) => runCredentialHygiene())
+    .then((result) => {
+      if (result.flagged > 0) {
+        logger.warn(
+          `${result.flagged} account(s) were locked because they used published default credentials. ` +
+            'Rotate them locally with: npm run admin:rotate -- --all',
+        );
+      }
+    })
+    .catch((error) => {
+      logger.error('Credential hygiene scan failed to run', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+
   // Step 2: Create and start the HTTP or HTTPS server
   const app = createApp();
   let server: any;

@@ -71,10 +71,10 @@ export function LANSyncManager() {
       }
     };
 
-    checkConnection();
+    void checkConnection();
     const interval = setInterval(checkConnection, 30000);
     return () => clearInterval(interval);
-  }, [mode, status, hostAddress, setStatus]);
+  }, [mode, status, hostAddress, setStatus, t]);
 
   // ── Sync Trigger ────────────────────────────────────────────────────────────
   // Fires once when status transitions to 'online' or when the offline queue
@@ -89,7 +89,7 @@ export function LANSyncManager() {
     flushingRef.current = true;
     setIsFlushing(true);
 
-    SyncService.tryFlush().finally(() => {
+    void SyncService.tryFlush().finally(() => {
       flushingRef.current = false;
       setIsFlushing(false);
     });
@@ -117,7 +117,9 @@ export function LANSyncManager() {
       {status === 'online' && !isFlushing && offlineSales.length === 0 && (
         <div className="flex items-center space-x-2 bg-card/80 border border-border/80 text-secondary px-3 py-1.5 rounded-md shadow-md opacity-30 hover:opacity-100 transition-opacity">
           <Wifi size={14} className="text-success" />
-          <span className="text-xs font-medium uppercase tracking-wider">{t('pos.masterOnline')}</span>
+          <span className="text-xs font-medium uppercase tracking-wider">
+            {t('pos.masterOnline')}
+          </span>
         </div>
       )}
     </div>

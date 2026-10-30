@@ -91,7 +91,7 @@ export function useCreateEmployee() {
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      void queryClient.invalidateQueries({ queryKey: ['employees'] });
     },
   });
 }
@@ -110,7 +110,7 @@ export function useUpdateEmployee() {
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      void queryClient.invalidateQueries({ queryKey: ['employees'] });
     },
   });
 }
@@ -125,7 +125,7 @@ export function useDeleteEmployee() {
       await apiClient.delete(`/employees/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      void queryClient.invalidateQueries({ queryKey: ['employees'] });
     },
   });
 }

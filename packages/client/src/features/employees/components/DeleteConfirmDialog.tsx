@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
@@ -18,7 +18,7 @@ export function DeleteConfirmDialog() {
   const isOpen = useModalStore((state) => state.activeModals.employee_delete);
   const payload = useModalStore((state) => state.modalPayloads.employee_delete);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('employee_delete');
+  const closeModal = useCallback(() => closeModalAction('employee_delete'), [closeModalAction]);
 
   const deleteMutation = useDeleteEmployee();
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);

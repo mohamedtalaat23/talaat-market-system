@@ -22,7 +22,7 @@ async function run() {
   // 1. Verify DB connection and log status
   try {
     await connectDatabase();
-  } catch (error) {
+  } catch {
     logger.error('❌ Database connection verification failed. Aborting operations.');
     logger.error(
       'Please check that PostgreSQL is installed, running, and credentials in .env are correct.',
@@ -113,4 +113,4 @@ async function run() {
   }
 }
 
-run();
+void run();

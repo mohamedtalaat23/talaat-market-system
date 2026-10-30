@@ -28,12 +28,12 @@ export function PrintQueueMonitor() {
       // Poll queue & status every 3 seconds
       const interval = setInterval(() => {
         if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-          fetchQueueAndStatus();
+          void fetchQueueAndStatus();
         }
       }, 3000);
 
-      fetchQueueAndStatus();
-      loadPrinterSettings();
+      void fetchQueueAndStatus();
+      void loadPrinterSettings();
 
       return () => clearInterval(interval);
     }
@@ -69,7 +69,7 @@ export function PrintQueueMonitor() {
       const success = await window.electronAPI.retryPrintJob(jobId);
       if (success) {
         toast.success(t('pos.toasts.retryingPrint'));
-        fetchQueueAndStatus();
+        void fetchQueueAndStatus();
       } else {
         toast.error(t('pos.toasts.failedRetryPrint'));
       }
@@ -84,7 +84,7 @@ export function PrintQueueMonitor() {
       try {
         await window.electronAPI.clearPrintQueue();
         toast.success(t('pos.toasts.printHistoryCleared'));
-        fetchQueueAndStatus();
+        void fetchQueueAndStatus();
       } catch (err: any) {
         toast.error(err.message || t('pos.toasts.failedClearPrintQueue'));
       }
@@ -104,7 +104,10 @@ export function PrintQueueMonitor() {
       if (res.success) {
         toast.success(t('pos.toasts.testPrintSuccess'), { id: toastId });
       } else {
-        toast.error(t('pos.toasts.testPrintFailed').replace('{error}', res.message), { id: toastId, duration: 5000 });
+        toast.error(t('pos.toasts.testPrintFailed').replace('{error}', res.message), {
+          id: toastId,
+          duration: 5000,
+        });
       }
     } catch (err: any) {
       setIsTesting(false);
@@ -121,7 +124,7 @@ export function PrintQueueMonitor() {
       if (success) {
         toast.success(t('pos.toasts.printerSavedActive'), { icon: '💾' });
         setShowSettings(false);
-        fetchQueueAndStatus();
+        void fetchQueueAndStatus();
       } else {
         toast.error(t('pos.toasts.failedSavePrinter'));
       }
@@ -167,7 +170,9 @@ export function PrintQueueMonitor() {
             type="button"
             onClick={() => {
               setShowSettings(!showSettings);
-              if (!showSettings) loadPrinterSettings();
+              if (!showSettings) {
+                void loadPrinterSettings();
+              }
             }}
             className={`p-1.5 rounded-lg border transition-all ${showSettings ? 'bg-success/10 text-success border-success/30 shadow-sm' : 'bg-card text-secondary hover:text-foreground border-border/60 hover:border-primary/40 hover:bg-card-hover'}`}
             title={t('pos.printerSettingsTooltip')}
@@ -186,7 +191,9 @@ export function PrintQueueMonitor() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-foreground">{t('pos.printerType')}</label>
+              <label className="block text-[11px] font-bold text-foreground">
+                {t('pos.printerType')}
+              </label>
               <select
                 className="w-full bg-card border border-border/80 rounded-lg px-2.5 py-2 text-foreground font-medium text-xs focus:outline-none focus:border-success focus:ring-1 focus:ring-success/20 transition-all shadow-sm cursor-pointer"
                 value={printerConfig.type}
@@ -197,7 +204,9 @@ export function PrintQueueMonitor() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-foreground">{t('pos.paperWidth')}</label>
+              <label className="block text-[11px] font-bold text-foreground">
+                {t('pos.paperWidth')}
+              </label>
               <select
                 className="w-full bg-card border border-border/80 rounded-lg px-2.5 py-2 text-foreground font-medium text-xs focus:outline-none focus:border-success focus:ring-1 focus:ring-success/20 transition-all shadow-sm cursor-pointer"
                 value={printerConfig.paperWidth}

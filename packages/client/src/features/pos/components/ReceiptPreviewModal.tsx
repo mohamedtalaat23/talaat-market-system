@@ -14,7 +14,7 @@ export function ReceiptPreviewModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_receipt_preview);
   const payload = useModalStore((state) => state.modalPayloads.pos_receipt_preview);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('pos_receipt_preview');
+  const closeModal = useCallback(() => closeModalAction('pos_receipt_preview'), [closeModalAction]);
 
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
   const sale = payload?.sale;
@@ -37,7 +37,7 @@ export function ReceiptPreviewModal() {
       toast.error(t('pos.toasts.printFailed'));
       closeModal();
     }
-  }, [sale, closeModal]);
+  }, [sale, closeModal, t]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,12 +45,12 @@ export function ReceiptPreviewModal() {
         closeModal();
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        handlePrint();
+        void handlePrint();
       }
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handlePrint]);
+  }, [isOpen, handlePrint, closeModal]);
 
   if (!isOpen || !payload?.sale) return null;
 
@@ -77,7 +77,9 @@ export function ReceiptPreviewModal() {
 
         <div className="text-center mb-6">
           <CheckCircle size={48} className="mx-auto text-success mb-2" />
-          <h2 className="text-2xl font-bold uppercase tracking-widest">{t('login.talaatMarket')}</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-widest">
+            {t('login.talaatMarket')}
+          </h2>
           <p className="text-secondary mt-1">123 Supermarket St, Cairo</p>
           <p className="text-secondary">Tel: +20 123 456 7890</p>
         </div>
@@ -106,7 +108,9 @@ export function ReceiptPreviewModal() {
                   <span>
                     {item.quantity} x {Number(item.unit_price).toFixed(2)} {t('pos.currency')}
                   </span>
-                  <span>{Number(item.line_total).toFixed(2)} {t('pos.currency')}</span>
+                  <span>
+                    {Number(item.line_total).toFixed(2)} {t('pos.currency')}
+                  </span>
                 </div>
                 {Number(item.discount) > 0 && (
                   <div className="text-right text-danger">
@@ -120,28 +124,40 @@ export function ReceiptPreviewModal() {
         <div className="border-t border-dashed border-border pt-2 space-y-1 mb-6">
           <div className="flex justify-between text-muted">
             <span>{t('pos.subtotal')}</span>
-            <span>{subtotal.toFixed(2)} {t('pos.currency')}</span>
+            <span>
+              {subtotal.toFixed(2)} {t('pos.currency')}
+            </span>
           </div>
           {(itemDiscounts > 0 || globalDiscount > 0) && (
             <div className="flex justify-between text-danger">
               <span>{t('pos.discounts')}</span>
-              <span>- {(itemDiscounts + globalDiscount).toFixed(2)} {t('pos.currency')}</span>
+              <span>
+                - {(itemDiscounts + globalDiscount).toFixed(2)} {t('pos.currency')}
+              </span>
             </div>
           )}
           <div className="flex justify-between font-bold text-lg mt-2">
             <span>{t('pos.totalUpperReceipt')}</span>
-            <span>{total.toFixed(2)} {t('pos.currency')}</span>
+            <span>
+              {total.toFixed(2)} {t('pos.currency')}
+            </span>
           </div>
         </div>
 
         <div className="border-t border-b border-dashed border-border py-2 mb-6 space-y-1 text-muted">
           <div className="flex justify-between">
-            <span>{t('pos.paymentMethod')} ({t('pos.' + sale.payment_method)})</span>
-            <span>{Number(sale.cash_received || total).toFixed(2)} {t('pos.currency')}</span>
+            <span>
+              {t('pos.paymentMethod')} ({t('pos.' + sale.payment_method)})
+            </span>
+            <span>
+              {Number(sale.cash_received || total).toFixed(2)} {t('pos.currency')}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>{t('pos.change')}</span>
-            <span>{Number(sale.change_given || 0).toFixed(2)} {t('pos.currency')}</span>
+            <span>
+              {Number(sale.change_given || 0).toFixed(2)} {t('pos.currency')}
+            </span>
           </div>
         </div>
 

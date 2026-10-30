@@ -73,7 +73,9 @@ export function OpenShiftModal() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-secondary">{t('pos.startingCashDrawer')}</label>
+            <label className="text-sm font-medium text-secondary">
+              {t('pos.startingCashDrawer')}
+            </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-semibold">
                 {t('pos.currency')}
@@ -86,7 +88,9 @@ export function OpenShiftModal() {
                 value={startingCash}
                 onChange={(e) => setStartingCash(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleOpenShift();
+                  if (e.key === 'Enter') {
+                    void handleOpenShift();
+                  }
                   if (e.key === 'Escape') closeModal('pos_open_shift');
                 }}
                 className="w-full bg-background border border-border rounded-lg py-4 pl-10 pr-4 text-2xl font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-success transition-all placeholder:text-muted"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ShieldAlert } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
@@ -14,12 +14,12 @@ export function ManagerOverrideModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_manager_override);
   const payload = useModalStore((state) => state.modalPayloads.pos_manager_override);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     closeModalAction('pos_manager_override');
     if (payload?.onCancel) {
       payload.onCancel();
     }
-  };
+  }, [closeModalAction, payload]);
 
   const { data: managers = [] } = useManagers();
   const [selectedManagerId, setSelectedManagerId] = useState<number | ''>('');
@@ -44,7 +44,7 @@ export function ManagerOverrideModal() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isSubmitting]);
+  }, [isOpen, isSubmitting, closeModal]);
 
   if (!isOpen) return null;
 
@@ -152,7 +152,9 @@ export function ManagerOverrideModal() {
               <div className="space-y-2">
                 {payload.displayMetadata.customer && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">{t('pos.customerLabelShort')}</span>
+                    <span className="text-secondary font-medium">
+                      {t('pos.customerLabelShort')}
+                    </span>
                     <span className="text-foreground font-semibold">
                       {payload.displayMetadata.customer}
                     </span>
@@ -176,7 +178,9 @@ export function ManagerOverrideModal() {
                 )}
                 {payload.displayMetadata.direction && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">{t('pos.directionLabelShort')}</span>
+                    <span className="text-secondary font-medium">
+                      {t('pos.directionLabelShort')}
+                    </span>
                     <span
                       className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}
                     >
@@ -186,7 +190,9 @@ export function ManagerOverrideModal() {
                 )}
                 {payload.displayMetadata.inventoryEffect && (
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary font-medium">{t('pos.inventoryLabelShort')}</span>
+                    <span className="text-secondary font-medium">
+                      {t('pos.inventoryLabelShort')}
+                    </span>
                     <span
                       className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}
                     >
@@ -231,7 +237,13 @@ export function ManagerOverrideModal() {
               >
                 {managers.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.full_name} ({m.role === 'admin' ? t('dashboard.roleAdmin') : m.role === 'manager' ? t('dashboard.roleManager') : t('dashboard.roleCashier')})
+                    {m.full_name} (
+                    {m.role === 'admin'
+                      ? t('dashboard.roleAdmin')
+                      : m.role === 'manager'
+                        ? t('dashboard.roleManager')
+                        : t('dashboard.roleCashier')}
+                    )
                   </option>
                 ))}
               </select>

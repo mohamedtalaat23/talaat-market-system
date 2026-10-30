@@ -64,9 +64,7 @@ export function SupplierDetailScreen() {
     return (
       <div className="text-center py-12 font-sans text-input-text">
         <h3 className="text-lg font-semibold text-danger">{t('suppliers.notFound')}</h3>
-        <p className="text-sm text-neutral-500 mt-2">
-          {t('suppliers.notFoundDesc')}
-        </p>
+        <p className="text-sm text-neutral-500 mt-2">{t('suppliers.notFoundDesc')}</p>
         <button
           onClick={() => navigate('/suppliers')}
           className="mt-6 rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold hover:bg-card-hover hover:text-input-text transition-colors"
@@ -171,17 +169,13 @@ export function SupplierDetailScreen() {
             {supplier.status === 'inactive' && (
               <div className="rounded-lg border border-warning/30 bg-warning/15 p-2.5 text-xs text-warning flex items-start space-x-2">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-                <span>
-                  {t('suppliers.inactiveWarning')}
-                </span>
+                <span>{t('suppliers.inactiveWarning')}</span>
               </div>
             )}
             {supplier.status === 'suspended' && (
               <div className="rounded-lg border border-danger/20 bg-danger/15 p-2.5 text-xs text-danger flex items-start space-x-2">
                 <ShieldAlert size={15} className="mt-0.5 shrink-0" />
-                <span>
-                  {t('suppliers.suspendedWarning')}
-                </span>
+                <span>{t('suppliers.suspendedWarning')}</span>
               </div>
             )}
           </div>
@@ -198,7 +192,9 @@ export function SupplierDetailScreen() {
                 </span>
                 <div className="font-semibold text-input-text">
                   {supplier.contact_name || (
-                    <span className="text-neutral-600 font-normal italic">{t('suppliers.notSpecified')}</span>
+                    <span className="text-neutral-600 font-normal italic">
+                      {t('suppliers.notSpecified')}
+                    </span>
                   )}
                 </div>
               </div>
@@ -243,7 +239,9 @@ export function SupplierDetailScreen() {
                   <MapPin size={13} className="text-neutral-500 mt-1 shrink-0" />
                   <span>
                     {supplier.address || (
-                      <span className="text-neutral-600 font-normal italic">{t('suppliers.notSpecified')}</span>
+                      <span className="text-neutral-600 font-normal italic">
+                        {t('suppliers.notSpecified')}
+                      </span>
                     )}
                   </span>
                 </div>
@@ -267,7 +265,9 @@ export function SupplierDetailScreen() {
         <div className="lg:col-span-2 space-y-4">
           <div className="rounded-xl border border-input-border bg-white overflow-hidden">
             <div className="border-b border-input-border bg-input-bg px-6 py-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-input-text">{t('suppliers.linkedCatalog')}</h3>
+              <h3 className="text-base font-semibold text-input-text">
+                {t('suppliers.linkedCatalog')}
+              </h3>
               <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-850 border border-neutral-750 text-secondary">
                 {t('suppliers.productsCount').replace('{count}', String(catalog.length))}
               </span>
@@ -278,7 +278,9 @@ export function SupplierDetailScreen() {
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-input-bg border border-input-border text-secondary mb-3">
                   <Archive size={18} />
                 </div>
-                <h4 className="text-sm font-semibold text-neutral-300">{t('suppliers.catalogEmpty')}</h4>
+                <h4 className="text-sm font-semibold text-neutral-300">
+                  {t('suppliers.catalogEmpty')}
+                </h4>
                 <p className="text-xs text-neutral-500 mt-1 max-w-xs mx-auto">
                   {t('suppliers.catalogEmptyDesc')}
                 </p>
@@ -306,7 +308,9 @@ export function SupplierDetailScreen() {
                           {/* Barcode */}
                           <td className="px-6 py-4 text-xs font-mono text-secondary">
                             {product.barcode || (
-                              <span className="text-neutral-600 font-sans italic">{t('suppliers.noBarcode')}</span>
+                              <span className="text-neutral-600 font-sans italic">
+                                {t('suppliers.noBarcode')}
+                              </span>
                             )}
                           </td>
 
@@ -351,7 +355,10 @@ export function SupplierDetailScreen() {
                             {isLowStock ? (
                               <span className="inline-flex items-center rounded bg-warning/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-warning border border-warning/30">
                                 <AlertTriangle size={10} className="mr-1 shrink-0" />
-                                {t('suppliers.lowStockBadge').replace('{count}', String(product.min_stock_level))}
+                                {t('suppliers.lowStockBadge').replace(
+                                  '{count}',
+                                  String(product.min_stock_level),
+                                )}
                               </span>
                             ) : (
                               <span className="inline-flex items-center rounded bg-success/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-success border border-success/30">
@@ -375,7 +382,7 @@ export function SupplierDetailScreen() {
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);
-          refetch(); // Refetch details after edit
+          void refetch(); // Refetch details after edit
         }}
         supplier={supplier}
       />
@@ -403,7 +410,10 @@ export function SupplierDetailScreen() {
                     <span className="font-semibold block mb-1">
                       {t('suppliers.activeLinkWarning')}
                     </span>
-                    {t('suppliers.activeCatalogWarningDesc').replace('{count}', String(catalog.length))}
+                    {t('suppliers.activeCatalogWarningDesc').replace(
+                      '{count}',
+                      String(catalog.length),
+                    )}
                   </div>
                 )}
               </div>

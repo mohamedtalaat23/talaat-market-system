@@ -5,8 +5,10 @@ import { db } from '../config/database';
 import { pinService } from '../services/pin.service';
 import {
   checkoutSchema,
+  quarantineDecisionSchema,
   reprintSchema,
   refundSaleSchema,
+  syncOfflineSchema,
   voidSaleSchema,
 } from '../validators/pos.validator';
 
@@ -17,6 +19,7 @@ export class POSController {
       const cashierId = (req as any).user.id;
 
       let bypassInventoryCheck = false;
+      let discountAuthorized = false;
 
       // If a manager PIN is supplied, authenticate it securely with lockout protection
       if (payload.manager_pin) {
@@ -37,9 +40,18 @@ export class POSController {
           return res.status(403).json({ success: false, message: verification.message });
         }
         bypassInventoryCheck = true;
+        // A *verified* PIN is what authorises large discounts. A bare manager_id
+        // in the payload must never be enough (it is client-controlled).
+        discountAuthorized = true;
       }
 
-      const sale = await posRepository.checkout(payload, cashierId, bypassInventoryCheck);
+      const sale = await posRepository.checkout(
+        payload,
+        cashierId,
+        bypassInventoryCheck,
+        false,
+        discountAuthorized,
+      );
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -238,13 +250,26 @@ export class POSController {
 
   syncOffline = async (req: Request, res: Response) => {
     try {
-      const syncSchema = z.object({
-        transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
-      });
-      const { transactions } = syncSchema.parse(req.body);
+      const { transactions, manager_id, manager_pin } = syncOfflineSchema.parse(req.body);
       const cashierId = (req as any).user.id;
 
-      const result = await posRepository.syncOffline(transactions, cashierId);
+      // Offline price/discount overrides are only honoured when a manager PIN is
+      // verified server-side (same lockout-protected path as online checkout).
+      let managerAuthorized = false;
+      if (manager_pin !== undefined) {
+        const verification = await pinService.verifyPin(
+          Number(manager_id),
+          String(manager_pin),
+          cashierId,
+          req.ip,
+        );
+        if (!verification.success) {
+          return res.status(403).json({ success: false, message: verification.message });
+        }
+        managerAuthorized = true;
+      }
+
+      const result = await posRepository.syncOffline(transactions, cashierId, managerAuthorized);
       return res.status(200).json({ success: true, ...result });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -255,6 +280,64 @@ export class POSController {
       return res
         .status(400)
         .json({ success: false, message: error.message || 'Offline sync failed' });
+    }
+  };
+
+  /**
+   * GET /pos/sync/quarantine
+   *
+   * Offline sales that could not be replayed without a manager decision.
+   */
+  listQuarantinedSales = async (_req: Request, res: Response) => {
+    try {
+      const rows = await posRepository.listQuarantinedSales('pending');
+      return res.status(200).json({ success: true, data: rows });
+    } catch (error: any) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Failed to list quarantined sales.' });
+    }
+  };
+
+  /**
+   * POST /pos/sync/quarantine/:id/resolve
+   *
+   * Manager decision on a quarantined offline sale. Approving re-runs the
+   * original checkout with the discount/price override authorized; rejecting
+   * records the decision and never posts the sale.
+   */
+  resolveQuarantinedSale = async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const { decision, manager_id, manager_pin, notes } = quarantineDecisionSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(manager_id),
+        String(manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
+
+      const result = await posRepository.resolveQuarantinedSale(
+        id,
+        decision,
+        Number(manager_id),
+        notes ?? undefined,
+      );
+      return res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+      }
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Failed to resolve quarantined sale.' });
     }
   };
 

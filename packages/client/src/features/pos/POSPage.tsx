@@ -142,8 +142,8 @@ export function POSPage() {
         setActiveShift(null);
       }
     };
-    fetchShift();
-  }, []);
+    void fetchShift();
+  }, [setActiveShift]);
 
   // Shift summary fetching removed in UI.6 Rework
 
@@ -221,7 +221,7 @@ export function POSPage() {
   };
 
   useEffect(() => {
-    loadRecentActivities();
+    void loadRecentActivities();
   }, [lastSaleId]);
 
   // Auto-focus search input on mount and global Esc/F5 presses
@@ -306,7 +306,7 @@ export function POSPage() {
         focusSearchInput();
         return;
       }
-    } catch (error) {
+    } catch {
       toast.dismiss(loadingToastId);
     }
 

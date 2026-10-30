@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { posController } from '../controllers/pos.controller';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRoles } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 import { validate } from '../middleware/validate';
 import {
   checkoutSchema,
+  quarantineDecisionSchema,
   reprintSchema,
   posIdParamSchema,
   receiptIdParamSchema,
@@ -30,6 +31,22 @@ router.use(requireAuth);
 router.post('/checkout', validate({ body: checkoutSchema }), posController.checkout);
 
 router.post('/sync', validate({ body: syncOfflineSchema }), posController.syncOffline);
+
+// Offline replay approval queue (manager/admin only). Sales whose replayed price
+// or discount cannot be accepted without authorization are parked here instead of
+// being posted at the client-supplied amount.
+router.get(
+  '/sync/quarantine',
+  requireRoles('manager', 'admin'),
+  posController.listQuarantinedSales,
+);
+
+router.post(
+  '/sync/quarantine/:id/resolve',
+  requireRoles('manager', 'admin'),
+  validate({ params: posIdParamSchema, body: quarantineDecisionSchema }),
+  posController.resolveQuarantinedSale,
+);
 
 // Print Recovery & Reprints
 router.post(

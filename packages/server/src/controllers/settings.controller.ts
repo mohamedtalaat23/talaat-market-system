@@ -45,10 +45,14 @@ export class SettingsController {
     }
   }
 
-  async createBackup(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createBackup(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { backupService } = await import('../services/backup.service');
-      const backup = await backupService.createBackup();
+      // Credential hashes are included by default so the snapshot can actually be
+      // restored. `include_credentials=false` produces a safer-to-share export that
+      // requires re-provisioning every employee after a restore.
+      const includeCredentials = req.body?.include_credentials !== false;
+      const backup = await backupService.createBackup({ includeCredentials });
       res.json({
         status: 'success',
         data: backup,

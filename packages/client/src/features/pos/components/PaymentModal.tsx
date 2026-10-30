@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CreditCard, Banknote, CheckCircle2, Monitor } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
@@ -17,7 +17,7 @@ export function PaymentModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_payment);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
-  const closeModal = () => closeModalAction('pos_payment');
+  const closeModal = useCallback(() => closeModalAction('pos_payment'), [closeModalAction]);
 
   const cart = usePOSStore((state) => state.cart);
   const paymentMethod = usePOSStore((state) => state.paymentMethod);
@@ -105,7 +105,7 @@ export function PaymentModal() {
     const idempotency_key = idempotencyKeyRef.current || crypto.randomUUID(); // Fallback if ref is somehow empty
     const { mode, status, addOfflineSale, setStatus } = useLANStore.getState();
 
-    const updateLocalShiftTally = (saleDataId: string) => {
+    const updateLocalShiftTally = (_saleDataId: string) => {
       const activeShift = usePOSStore.getState().activeShift;
       if (activeShift) {
         let cashSalesAdd = 0;
@@ -219,7 +219,7 @@ export function PaymentModal() {
       setLastSaleId(saleId);
 
       if (autoPrintReceipts) {
-        toast.promise(printerService.printReceipt(saleData), {
+        void toast.promise(printerService.printReceipt(saleData), {
           loading: t('pos.toasts.printingReceipt'),
           success: t('pos.toasts.receiptPrinted'),
           error: t('pos.toasts.printFailed'),
@@ -270,7 +270,7 @@ export function PaymentModal() {
       updateLocalShiftTally(saleData.id);
 
       if (autoPrintReceipts) {
-        toast.promise(
+        void toast.promise(
           printerService.printReceipt(saleData).then(() => {
             // Decoupled status update - only post if online and not offline sale
             if (saleData.id && !saleData.is_offline && status === 'online') {
@@ -344,16 +344,22 @@ export function PaymentModal() {
             <div className="bg-input-bg rounded-lg p-5 border border-input-border">
               <div className="flex justify-between text-secondary mb-2 text-lg">
                 <span>{t('pos.subtotal')}</span>
-                <span>{subtotal.toFixed(2)} {t('pos.currency')}</span>
+                <span>
+                  {subtotal.toFixed(2)} {t('pos.currency')}
+                </span>
               </div>
               <div className="flex justify-between text-success mb-2 text-lg">
                 <span>{t('pos.discounts')}</span>
-                <span>- {(itemDiscounts + globalDiscount).toFixed(2)} {t('pos.currency')}</span>
+                <span>
+                  - {(itemDiscounts + globalDiscount).toFixed(2)} {t('pos.currency')}
+                </span>
               </div>
               <div className="w-full h-px bg-border my-4"></div>
               <div className="flex justify-between text-input-text text-4xl font-bold tracking-tight">
                 <span>{t('pos.total')}</span>
-                <span>{total.toFixed(2)} {t('pos.currency')}</span>
+                <span>
+                  {total.toFixed(2)} {t('pos.currency')}
+                </span>
               </div>
             </div>
           </div>
@@ -397,9 +403,7 @@ export function PaymentModal() {
                       : 'bg-input-bg/20 border-input-border text-muted cursor-not-allowed border-dashed'
                 }`}
                 title={
-                  selectedCustomer
-                    ? t('pos.chargeToAccount')
-                    : t('pos.selectCustomerToUseDebt')
+                  selectedCustomer ? t('pos.chargeToAccount') : t('pos.selectCustomerToUseDebt')
                 }
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -509,7 +513,12 @@ export function PaymentModal() {
                     {t('pos.debtWarningDesc')
                       .replace('{total}', total.toFixed(2) + ' ' + t('pos.currency'))
                       .replace('{name}', selectedCustomer.name)
-                      .replace('{balance}', (Number(selectedCustomer.balance) - total).toFixed(2) + ' ' + t('pos.currency'))}
+                      .replace(
+                        '{balance}',
+                        (Number(selectedCustomer.balance) - total).toFixed(2) +
+                          ' ' +
+                          t('pos.currency'),
+                      )}
                   </p>
                 </div>
               </div>

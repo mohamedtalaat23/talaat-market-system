@@ -21,7 +21,6 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
 }
 
-
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
@@ -46,7 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return true;
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -63,10 +62,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    * forced-change guard releases immediately without a re-login.
    */
   changePassword: async (currentPassword: string, newPassword: string) => {
-    await apiClient.post('/auth/change-password', {
+    const response = await apiClient.post('/auth/change-password', {
       current_password: currentPassword,
       new_password: newPassword,
     });
+
+    // Rotating the password bumps the account's auth epoch, which invalidates the
+    // token used for this request. The server returns a replacement token for this
+    // session; every other session is now signed out.
+    const nextToken: string | undefined = response.data?.data?.token;
+    if (nextToken) {
+      localStorage.setItem('talaat_token', nextToken);
+      set({ token: nextToken });
+    }
 
     const currentUser = get().user;
     if (currentUser) {
@@ -96,7 +104,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } else {
         get().logout();
       }
-    } catch (error) {
+    } catch {
       get().logout();
     }
   },

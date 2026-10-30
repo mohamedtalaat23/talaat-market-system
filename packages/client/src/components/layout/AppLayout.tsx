@@ -80,7 +80,7 @@ export const AppLayout = React.memo(() => {
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
-    } catch (e) {
+    } catch {
       // Ignore network errors on logout for stateless client clearing
     } finally {
       logout();

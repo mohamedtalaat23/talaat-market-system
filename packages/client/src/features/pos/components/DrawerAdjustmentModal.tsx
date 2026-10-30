@@ -92,7 +92,9 @@ export function DrawerAdjustmentModal() {
     if (isNaN(numericAmount) || numericAmount <= 0) return;
     if (!activeShift) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
+      void import('react-hot-toast').then(({ default: toast }) =>
+        toast.error(t('pos.toasts.managerPinRequired')),
+      );
       return;
     }
 
@@ -276,7 +278,8 @@ export function DrawerAdjustmentModal() {
                   <div
                     className={`font-mono font-bold tracking-widest text-sm mt-1 ${isOut ? 'text-danger' : 'text-success'}`}
                   >
-                    {isOut ? t('pos.outLabel') : t('pos.inLabel')}: {t('pos.currency')} {amount ? parseFloat(amount).toFixed(2) : '0.00'}
+                    {isOut ? t('pos.outLabel') : t('pos.inLabel')}: {t('pos.currency')}{' '}
+                    {amount ? parseFloat(amount).toFixed(2) : '0.00'}
                   </div>
                 </div>
               }
@@ -296,8 +299,14 @@ export function DrawerAdjustmentModal() {
               {isSubmitting
                 ? t('pos.processing')
                 : isOut
-                  ? t('pos.authorizeWithdraw').replace('{amount}', amount ? `${t('pos.currency')} ${amount}` : '')
-                  : t('pos.authorizeDeposit').replace('{amount}', amount ? `${t('pos.currency')} ${amount}` : '')}
+                  ? t('pos.authorizeWithdraw').replace(
+                      '{amount}',
+                      amount ? `${t('pos.currency')} ${amount}` : '',
+                    )
+                  : t('pos.authorizeDeposit').replace(
+                      '{amount}',
+                      amount ? `${t('pos.currency')} ${amount}` : '',
+                    )}
             </button>
           </div>
         </form>

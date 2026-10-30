@@ -57,19 +57,22 @@ export async function changePassword(
     }
 
     const { current_password, new_password } = req.body;
-    await authService.changePassword(
+    const { token } = await authService.changePassword(
       req.user.id,
       req.user.username,
       current_password,
       new_password,
     );
 
-    // Drop cached auth state so the must_change_password gate clears immediately.
+    // The password rotation bumped the account's auth epoch, so every previously
+    // issued token (including the caller's) is now invalid. Return a fresh one for
+    // the session that performed the rotation.
     invalidateAuthCache(req.user.id);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
       message: 'Password changed successfully',
+      data: { token },
     });
   } catch (error) {
     next(error);

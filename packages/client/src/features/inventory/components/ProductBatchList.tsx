@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { apiClient } from '@/services/api-client';
 import { useProducts, type Product } from '@/features/products/hooks/useProductQueries';
@@ -55,7 +55,7 @@ export function ProductBatchList() {
     ...(debouncedSearch ? { search: debouncedSearch } : {}),
   });
 
-  const fetchBatches = async () => {
+  const fetchBatches = useCallback(async () => {
     setLoading(true);
     try {
       const query = daysFilter ? `?days_to_expiry=${daysFilter}` : '';
@@ -66,25 +66,25 @@ export function ProductBatchList() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchBatches();
   }, [daysFilter]);
 
-  const resetForm = () => {
+  useEffect(() => {
+    void fetchBatches();
+  }, [fetchBatches]);
+
+  const resetForm = useCallback(() => {
     setSelectedProduct(null);
     setProductSearch('');
     setDebouncedSearch('');
     setNewBatchNumber('');
     setNewExpirationDate('');
     setNewQuantity('');
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowAddModal(false);
     resetForm();
-  };
+  }, [resetForm]);
 
   useEffect(() => {
     if (!showAddModal) return;
@@ -95,7 +95,7 @@ export function ProductBatchList() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showAddModal]);
+  }, [showAddModal, closeModal]);
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,7 +118,7 @@ export function ProductBatchList() {
       });
       toast.success('Batch registered successfully');
       closeModal();
-      fetchBatches();
+      void fetchBatches();
     } catch (err) {
       toast.error(getErrorMessage(err, 'Failed to create batch'));
     } finally {
@@ -164,7 +164,8 @@ export function ProductBatchList() {
           <div>
             <h3 className="font-bold text-foreground">FEFO Batch & Expiration Tracking</h3>
             <p className="text-xs text-muted-foreground">
-              Tracks product batch numbers and flags items reaching expiration for FEFO stock management.
+              Tracks product batch numbers and flags items reaching expiration for FEFO stock
+              management.
             </p>
           </div>
         </div>
@@ -224,14 +225,18 @@ export function ProductBatchList() {
               {batches.map((batch) => (
                 <tr key={batch.id} className="hover:bg-muted/30 transition-colors">
                   <td className="py-3.5 px-4">
-                    <span className="font-bold text-foreground">{batch.product_name || `Product #${batch.product_id}`}</span>
+                    <span className="font-bold text-foreground">
+                      {batch.product_name || `Product #${batch.product_id}`}
+                    </span>
                     {batch.product_barcode && (
                       <span className="block text-xs font-mono text-muted-foreground">
                         {batch.product_barcode}
                       </span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-primary">{batch.batch_number}</td>
+                  <td className="py-3.5 px-4 font-mono font-bold text-primary">
+                    {batch.batch_number}
+                  </td>
                   <td className="py-3.5 px-4 font-mono">
                     {new Date(batch.expiration_date).toLocaleDateString()}
                   </td>

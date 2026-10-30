@@ -15,12 +15,10 @@ export function validate(schemas: { body?: ZodTypeAny; query?: ZodTypeAny; param
         req.body = await schemas.body.parseAsync(req.body);
       }
       if (schemas.query) {
-        req.query = (await schemas.query.parseAsync(req.query)) as unknown as import('qs').ParsedQs;
+        req.query = (await schemas.query.parseAsync(req.query)) as unknown as Request['query'];
       }
       if (schemas.params) {
-        req.params = (await schemas.params.parseAsync(
-          req.params,
-        )) as unknown as import('express-serve-static-core').ParamsDictionary;
+        req.params = (await schemas.params.parseAsync(req.params)) as unknown as Request['params'];
       }
       next();
     } catch (error) {

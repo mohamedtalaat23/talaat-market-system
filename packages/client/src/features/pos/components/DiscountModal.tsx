@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Tag } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
@@ -12,7 +12,7 @@ export function DiscountModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_discount);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
-  const closeModal = () => closeModalAction('pos_discount');
+  const closeModal = useCallback(() => closeModalAction('pos_discount'), [closeModalAction]);
 
   const cart = usePOSStore((state) => state.cart);
   const activeItemIndex = usePOSStore((state) => state.activeItemIndex);
@@ -39,7 +39,7 @@ export function DiscountModal() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   if (!isOpen) return null;
 

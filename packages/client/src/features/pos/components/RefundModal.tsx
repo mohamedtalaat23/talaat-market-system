@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
 import { X, AlertTriangle, RefreshCcw } from 'lucide-react';
@@ -25,7 +25,7 @@ export function RefundModal() {
 
   const isEligibleForVoid = sale?.status === 'completed';
 
-  const items = sale?.items || [];
+  const items = useMemo(() => sale?.items || [], [sale]);
 
   const refundTotal = useMemo(() => {
     return items.reduce((total: number, item: any) => {
@@ -50,18 +50,24 @@ export function RefundModal() {
     }));
   };
 
-  const itemsToRefund = items
-    .filter((item: any) => (quantitiesToRefund[item.id] || 0) > 0)
-    .map((item: any) => ({
-      sale_item_id: item.id,
-      quantity: quantitiesToRefund[item.id] || 0,
-      restock_inventory: restockToggles[item.id] ?? true,
-    }));
+  const itemsToRefund = useMemo(
+    () =>
+      items
+        .filter((item: any) => (quantitiesToRefund[item.id] || 0) > 0)
+        .map((item: any) => ({
+          sale_item_id: item.id,
+          quantity: quantitiesToRefund[item.id] || 0,
+          restock_inventory: restockToggles[item.id] ?? true,
+        })),
+    [items, quantitiesToRefund, restockToggles],
+  );
 
-  const handleProcessRefund = async () => {
+  const handleProcessRefund = useCallback(async () => {
     if (itemsToRefund.length === 0 || !sale) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
+      void import('react-hot-toast').then(({ default: toast }) =>
+        toast.error(t('pos.toasts.managerPinRequired')),
+      );
       return;
     }
 
@@ -123,12 +129,14 @@ export function RefundModal() {
       setIsSubmitting(false);
       setPin('');
     }
-  };
+  }, [itemsToRefund, sale, pin, managerId, reason, items, closeModal, openModal, t]);
 
   const handleVoidSale = async () => {
     if (!sale) return;
     if (!pin || managerId === '') {
-      import('react-hot-toast').then(({ default: toast }) => toast.error(t('pos.toasts.managerPinRequired')));
+      void import('react-hot-toast').then(({ default: toast }) =>
+        toast.error(t('pos.toasts.managerPinRequired')),
+      );
       return;
     }
 
@@ -197,7 +205,7 @@ export function RefundModal() {
       if (e.target instanceof HTMLInputElement && e.target.type === 'text') {
         if (e.key === 'Enter') {
           e.preventDefault();
-          handleProcessRefund();
+          void handleProcessRefund();
         }
         return;
       }
@@ -256,7 +264,7 @@ export function RefundModal() {
         }
         case 'Enter':
           e.preventDefault();
-          handleProcessRefund();
+          void handleProcessRefund();
           break;
         case 'Escape':
           e.preventDefault();
@@ -267,7 +275,7 @@ export function RefundModal() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, items, focusedRowIndex, quantitiesToRefund, reason]);
+  }, [isOpen, items, focusedRowIndex, quantitiesToRefund, reason, closeModal, handleProcessRefund]);
 
   if (!isOpen || !sale) return null;
 
@@ -348,7 +356,9 @@ export function RefundModal() {
                       </td>
                       <td className="py-4 px-5 text-center font-medium tabular-nums text-foreground">
                         {(Number(item.unit_price) - Number(item.discount || 0)).toFixed(2)}{' '}
-                        <span className="text-[10px] text-secondary ml-0.5">{t('pos.currency')}</span>
+                        <span className="text-[10px] text-secondary ml-0.5">
+                          {t('pos.currency')}
+                        </span>
                       </td>
                       <td className="py-4 px-5 text-center font-medium text-foreground">
                         {item.quantity}
@@ -414,7 +424,9 @@ export function RefundModal() {
               <>
                 <div className="text-lg font-black tracking-tight">
                   {itemsToRefund.length > 0
-                    ? t('pos.refundValueLabel').replace('{amount}', refundTotal.toFixed(2)).replace('{currency}', t('pos.currency'))
+                    ? t('pos.refundValueLabel')
+                        .replace('{amount}', refundTotal.toFixed(2))
+                        .replace('{currency}', t('pos.currency'))
                     : t('pos.selectItemsToRefund')}
                 </div>
                 {itemsToRefund.length > 0 && (

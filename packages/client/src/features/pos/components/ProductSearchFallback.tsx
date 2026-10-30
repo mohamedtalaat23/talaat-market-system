@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Search } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -14,7 +14,7 @@ export function ProductSearchFallback() {
   const isOpen = useModalStore((state) => state.activeModals.pos_product_search);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const payload = useModalStore((state) => state.modalPayloads.pos_product_search);
-  const closeModal = () => closeModalAction('pos_product_search');
+  const closeModal = useCallback(() => closeModalAction('pos_product_search'), [closeModalAction]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -61,7 +61,7 @@ export function ProductSearchFallback() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   // Only show results when search term has at least 2 characters
   const showResults = debouncedSearch.trim().length >= 2;
@@ -82,7 +82,7 @@ export function ProductSearchFallback() {
     enabled: isOpen && showResults,
   });
 
-  const products = data?.data || [];
+  const products = useMemo(() => data?.data || [], [data]);
 
   // Reset selected index when products list changes
   useEffect(() => {
@@ -241,8 +241,12 @@ export function ProductSearchFallback() {
                           )}
                         </div>
                         <div className="flex items-center space-x-3 text-xs text-secondary mt-0.5">
-                          <span>{t('pos.skuLabelShort')}: {product.id}</span>
-                          <span>{t('pos.barcodeLabelShort')}: {product.barcode || t('pos.naLabel')}</span>
+                          <span>
+                            {t('pos.skuLabelShort')}: {product.id}
+                          </span>
+                          <span>
+                            {t('pos.barcodeLabelShort')}: {product.barcode || t('pos.naLabel')}
+                          </span>
                           <span>
                             {t('pos.stockLabelShort')}:{' '}
                             {product.inventory_quantity !== undefined

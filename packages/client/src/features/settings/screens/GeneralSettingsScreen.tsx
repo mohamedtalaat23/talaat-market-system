@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useSettings, useUpdateSettings } from '../hooks/useSettingsQueries';
 import { Spinner } from '@/components/ui/Spinner';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -21,7 +21,7 @@ export function GeneralSettingsScreen() {
   });
 
   // Load initial settings
-  const loadInitialSettings = () => {
+  const loadInitialSettings = useCallback(() => {
     if (settings) {
       setForm({
         store_name: settings.store_name || '',
@@ -34,11 +34,11 @@ export function GeneralSettingsScreen() {
         date_format: settings.date_format || 'DD/MM/YYYY',
       });
     }
-  };
+  }, [settings]);
 
   useEffect(() => {
     loadInitialSettings();
-  }, [settings]);
+  }, [loadInitialSettings]);
 
   // Compute dirty state (has anything changed?)
   const isDirty = useMemo(() => {
@@ -219,33 +219,60 @@ export function GeneralSettingsScreen() {
           </div>
         </div>
 
-        {/* Database Disaster Recovery Section */}
+        {/* Full Backup Section */}
         <div className="space-y-6 pt-2 pb-6">
           <h4 className="text-[11px] font-black text-emerald-500 uppercase tracking-widest select-none bg-emerald-500/10 w-max px-3 py-1.5 rounded-md">
-            Disaster Recovery & Database Backups
+            Full Database Backup
           </h4>
-          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h5 className="font-bold text-foreground mb-1">Create System Snapshot Backup</h5>
-              <p className="text-xs text-muted-foreground max-w-md">
-                Exports an immutable snapshot JSON file containing store configuration, product catalog, category tree, and inventory stock levels.
-              </p>
+          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h5 className="font-bold text-foreground mb-1">Create a Full Backup</h5>
+                <p className="text-xs text-muted-foreground max-w-md">
+                  Exports every record the system needs to be rebuilt: sales and sale items, shifts,
+                  customers and their ledger, employees, purchases and receipts, refunds, inventory,
+                  batches, cycle counts, settings and audit logs. The file is written to the server&apos;s
+                  backup directory with owner-only permissions and contains financial and personal
+                  data — treat it as confidential.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const { apiClient } = await import('@/services/api-client');
+                    const res = await apiClient.post('/settings/backups', {});
+                    const filename = res.data?.data?.filename;
+                    const tables = res.data?.data?.tables;
+                    toast.success(
+                      tables ? `Full backup created: ${filename} (${tables} tables)` : `Backup created: ${filename}`,
+                    );
+                  } catch {
+                    toast.error('Failed to generate backup');
+                  }
+                }}
+                className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0"
+              >
+                Create Full Backup
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const { apiClient } = await import('@/services/api-client');
-                  const res = await apiClient.post('/settings/backups');
-                  toast.success(`Backup created: ${res.data?.data?.filename}`);
-                } catch (e) {
-                  toast.error('Failed to generate backup');
-                }
-              }}
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0"
-            >
-              Create Snapshot Backup
-            </button>
+
+            <div className="border-t border-border/50 pt-4">
+              <h6 className="text-[11px] font-black text-foreground/70 uppercase tracking-widest mb-2">
+                Restoring a Backup
+              </h6>
+              <p className="text-xs text-muted-foreground max-w-2xl">
+                Restoring is deliberately <span className="font-bold text-foreground">not available from this screen</span>:
+                it must never overwrite a live database. Run it from the server console instead, into a
+                separate, freshly created database, verify the data, and only then promote that database:
+              </p>
+              <pre className="mt-3 text-[11px] leading-relaxed bg-background/80 border border-border/60 rounded-xl p-4 overflow-x-auto font-mono text-foreground/80">
+{`createdb talaat_market_restore
+DB_NAME=talaat_market_restore npm run db:migrate
+npm run db:restore -- --file <backup>.json --target talaat_market_restore          # validate only
+npm run db:restore -- --file <backup>.json --target talaat_market_restore --apply  # write`}
+              </pre>
+            </div>
           </div>
         </div>
 

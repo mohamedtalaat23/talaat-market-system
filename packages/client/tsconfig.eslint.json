@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Linting must see test files too; the production build config deliberately
+    // excludes them (and enforces noUnusedLocals), so this config only relaxes
+    // that one flag and re-includes `__tests__`/`*.test.*`.
+    "noUnusedLocals": false
+  },
+  "include": ["src/**/*", "index.html"],
+  "exclude": ["node_modules", "dist"]
+}

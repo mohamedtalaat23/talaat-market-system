@@ -1,4 +1,4 @@
-import { useEffect, useMemo, memo, useState } from 'react';
+import { useCallback, useEffect, useMemo, memo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Clock, User as UserIcon, AlertTriangle, Save, Trash2 } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
@@ -87,10 +87,16 @@ export function SuspendedCartsModal() {
   const isOpen = useModalStore((state) => state.activeModals.pos_suspended_carts);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
-  const closeModal = () => {
+
+  const [overwriteTarget, setOverwriteTarget] = useState<{
+    holdId: string;
+    cashierId: number;
+  } | null>(null);
+
+  const closeModal = useCallback(() => {
     setOverwriteTarget(null);
     closeModalAction('pos_suspended_carts');
-  };
+  }, [closeModalAction]);
 
   const heldCarts = usePOSStore((state) => state.heldCarts);
   const resumeCart = usePOSStore((state) => state.resumeCart);
@@ -102,10 +108,26 @@ export function SuspendedCartsModal() {
   const user = useAuthStore((state) => state.user);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
-  const [overwriteTarget, setOverwriteTarget] = useState<{
-    holdId: string;
-    cashierId: number;
-  } | null>(null);
+  const executeResume = useCallback(
+    (holdId: string) => {
+      resumeCart(holdId);
+      toast.success(t('pos.toasts.cartResumed'));
+      closeModal();
+    },
+    [resumeCart, t, closeModal],
+  );
+
+  const handleSuspendCurrentAndResume = useCallback(() => {
+    if (!overwriteTarget) return;
+    holdCurrentCart(user?.id || 1);
+    executeResume(overwriteTarget.holdId);
+  }, [overwriteTarget, holdCurrentCart, user?.id, executeResume]);
+
+  const handleDiscardCurrentAndResume = useCallback(() => {
+    if (!overwriteTarget) return;
+    clearCart();
+    executeResume(overwriteTarget.holdId);
+  }, [overwriteTarget, clearCart, executeResume]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -130,7 +152,13 @@ export function SuspendedCartsModal() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, overwriteTarget]);
+  }, [
+    isOpen,
+    overwriteTarget,
+    closeModal,
+    handleSuspendCurrentAndResume,
+    handleDiscardCurrentAndResume,
+  ]);
 
   if (!isOpen) return null;
 
@@ -160,24 +188,6 @@ export function SuspendedCartsModal() {
       removeHeldCart(holdId);
       toast.success(t('pos.toasts.cartDiscarded'));
     }
-  };
-
-  const executeResume = (holdId: string) => {
-    resumeCart(holdId);
-    toast.success(t('pos.toasts.cartResumed'));
-    closeModal();
-  };
-
-  const handleSuspendCurrentAndResume = () => {
-    if (!overwriteTarget) return;
-    holdCurrentCart(user?.id || 1);
-    executeResume(overwriteTarget.holdId);
-  };
-
-  const handleDiscardCurrentAndResume = () => {
-    if (!overwriteTarget) return;
-    clearCart();
-    executeResume(overwriteTarget.holdId);
   };
 
   return createPortal(

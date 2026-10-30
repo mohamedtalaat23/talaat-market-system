@@ -4,6 +4,7 @@ import path from 'path';
 import { ServerManager } from './server-manager';
 import { PostgresManager } from './postgres-manager';
 import { registerIpcHandlers } from './ipc/handlers';
+import { createSenderGuard } from './ipc/validation';
 
 // ── Logger (simple console wrapper for main process with sensitive data redaction) ──
 function redactSensitiveData(args: unknown[]): unknown[] {
@@ -113,7 +114,18 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
       // SECURITY: These MUST remain false
       contextIsolation: true, // Renderer cannot access Node globals
       nodeIntegration: false, // Renderer has no Node.js APIs
-      sandbox: false, // Keep false for preload access; true for max security
+
+      // Sandbox assessment: `sandbox: false` is required because the preload is a
+      // compiled CommonJS module that requires a sibling module
+      // (`./ipc/channels`); sandboxed preloads may only require `electron` and a
+      // small allow-list, so enabling the sandbox needs a bundling step.
+      //
+      // Compensating controls in place instead:
+      //   - contextIsolation + no nodeIntegration
+      //   - every IPC payload schema-validated, sender frame verified
+      //   - window.open denied, cross-origin navigation blocked, webviews blocked
+      //   - strict CSP (below), webSecurity enabled in production
+      sandbox: false,
 
       // Allow Vite dev server WebSocket for HMR in development
       webSecurity: !isDev,
@@ -162,6 +174,39 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
         'Content-Security-Policy': [cspHeader],
       },
     });
+  });
+
+  // ── Navigation & window restrictions ─────────────────────────────────────
+  //
+  // The renderer only ever needs to be the app itself. Anything that tries to
+  // open a window, navigate away, or attach a <webview> is refused: those paths
+  // are how a phishing page or an injected script escapes into a privileged
+  // context.
+  const isAppUrl = (url: string): boolean =>
+    isDev ? url.startsWith(VITE_DEV_SERVER_URL) : url.startsWith('file://');
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    logger.warn('Blocked window.open from renderer', url);
+    return { action: 'deny' };
+  });
+
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!isAppUrl(url)) {
+      event.preventDefault();
+      logger.warn('Blocked navigation away from the application', url);
+    }
+  });
+
+  win.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+    logger.warn('Blocked <webview> attachment in renderer');
+  });
+
+  // Cascade the same protections to any window the app creates (e.g. hidden
+  // print windows).
+  app.on('web-contents-created', (_event, contents) => {
+    contents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    contents.on('will-attach-webview', (event) => event.preventDefault());
   });
 
   // Show when the page finishes loading
@@ -273,8 +318,15 @@ app.on('ready', async () => {
     const serverPort = isDev ? SERVER_PORT_DEV : await serverManager.start(childEnv);
     logger.info(`Server port: ${serverPort}`);
 
-    // Register all IPC handlers
-    registerIpcHandlers(ipcMain, serverPort);
+    // Register all IPC handlers. Every channel verifies the sender frame and
+    // schema-validates its arguments before doing any work.
+    registerIpcHandlers(ipcMain, {
+      serverPort,
+      assertTrustedSender: createSenderGuard({
+        getWindow: () => mainWindow,
+        allowedUrlPrefixes: isDev ? [VITE_DEV_SERVER_URL] : ['file://'],
+      }),
+    });
 
     // Create the browser window
     mainWindow = await createWindow(serverPort);

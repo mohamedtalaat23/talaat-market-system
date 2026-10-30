@@ -148,7 +148,7 @@ export function useCreateProduct() {
     },
     onSuccess: () => {
       // Invalidate products query to trigger cache refresh
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
@@ -167,7 +167,7 @@ export function useUpdateProduct() {
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
@@ -182,7 +182,7 @@ export function useDeleteProduct() {
       await apiClient.delete(`/products/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }

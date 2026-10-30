@@ -2,6 +2,15 @@ import { db } from '../config/database';
 import type { Product } from './product.repository';
 import { customerRepository } from './customer.repository';
 import { auditService } from '../services/audit.service';
+import { fromCents, toCents } from '../utils/money';
+import {
+  allocateRefundTenders,
+  computeRefundLineAmount,
+  computeSaleTotals,
+  computeTenders,
+  resolveRefundState,
+  SaleMathError,
+} from '../services/sale-math';
 
 export interface RefundItemInput {
   sale_item_id: string;
@@ -24,6 +33,33 @@ export class InventoryUnderflowError extends Error {
   constructor(productId: number, message: string) {
     super(message);
     this.name = 'InventoryUnderflowError';
+    this.product_id = productId;
+  }
+}
+
+/**
+ * Raised when an offline sale cannot be replayed without a manager decision
+ * (price below catalogue, or a discount above the authorization threshold).
+ *
+ * The sale is *not* posted: it is written to `offline_sync_quarantine` so a
+ * manager can review and approve it explicitly. Before this, tampered prices were
+ * accepted and merely written to the audit log.
+ */
+export class OfflineApprovalRequiredError extends Error {
+  public code: string;
+  public reason: 'price_deviation' | 'discount_threshold';
+  public product_id: number | null;
+
+  constructor(
+    code: 'OFFLINE_PRICE_APPROVAL_REQUIRED' | 'OFFLINE_DISCOUNT_APPROVAL_REQUIRED',
+    message: string,
+    reason: 'price_deviation' | 'discount_threshold',
+    productId: number | null = null,
+  ) {
+    super(message);
+    this.name = 'OfflineApprovalRequiredError';
+    this.code = code;
+    this.reason = reason;
     this.product_id = productId;
   }
 }
@@ -303,6 +339,7 @@ export class POSRepository {
     cashierId: number,
     bypassInventoryCheck: boolean = false,
     isOfflineSync: boolean = false,
+    discountAuthorized: boolean = false,
   ) {
     if (!payload.shift_id) {
       throw new Error('Active shift is required for checkout.');
@@ -350,80 +387,114 @@ export class POSRepository {
 
         const productMap = new Map(products.map((p) => [p.id, p]));
 
-        // 2. Calculate totals and enforce pricing/discount rules
-        let subtotal = 0;
-        let discountAmount = 0;
-        const globalDiscount = payload.global_discount || 0;
+        // 2. Re-price against the authoritative catalogue and total in cents.
+        //
+        // Offline replays are NOT authoritative for pricing: the catalogue price
+        // is re-read on the server. If the offline unit price is *higher* than
+        // the catalogue price the line is repriced downwards (the customer is
+        // never overcharged) and the deviation is audited; if it is *lower* the
+        // sale is only accepted with a manager override that the controller
+        // verified. Otherwise the sale is rejected as `OFFLINE_PRICE_APPROVAL_REQUIRED`
+        // and quarantined (never silently posted at the tampered price).
+        const pricingItems: CheckoutItem[] = [];
 
         for (const item of sortedItems) {
           const product = productMap.get(item.product_id);
           if (!product) throw new Error(`Product ${item.product_id} not found`);
 
+          const catalogueCents = toCents(product.selling_price);
+          const submittedCents = toCents(item.unit_price);
+
           if (!isOfflineSync) {
             // Online checkout: strict price enforcement
-            if (Number(item.unit_price) !== Number(product.selling_price)) {
+            if (submittedCents !== catalogueCents) {
               throw new Error(
                 `Price mismatch for ${product.name}. Expected ${product.selling_price}, got ${item.unit_price}. Please refresh the cart.`,
               );
             }
-          } else {
-            // Offline sync: log anomaly if price deviates
-            if (Number(item.unit_price) !== Number(product.selling_price)) {
-              await trx('audit_logs').insert({
-                entity_type: 'sales',
-                entity_id: payload.idempotency_key, // temporary ID until sale is inserted
-                action: 'offline_sync_price_anomaly',
-                old_value: String(product.selling_price),
-                new_value: String(item.unit_price),
-                user_id: cashierId,
-                reason: `Offline sync unit_price deviation for product ${product.id}`,
-              });
-            }
+            pricingItems.push(item);
+            continue;
           }
 
-          subtotal += item.unit_price * item.quantity;
-          discountAmount += item.discount;
-        }
-
-        const taxAmount = 0;
-        const total = subtotal - discountAmount - globalDiscount + taxAmount;
-
-        // Discount validation
-        const totalDiscount = discountAmount + globalDiscount;
-        if (subtotal > 0 && totalDiscount / subtotal > 0.2) {
-          if (!payload.manager_id && !isOfflineSync) {
-            throw new Error('Manager authorization required for discounts exceeding 20%');
-          } else if (!payload.manager_id && isOfflineSync) {
+          if (submittedCents > catalogueCents) {
             await trx('audit_logs').insert({
               entity_type: 'sales',
               entity_id: payload.idempotency_key,
-              action: 'offline_sync_discount_anomaly',
-              old_value: '0',
-              new_value: String(totalDiscount),
+              action: 'offline_sync_price_reduced',
+              old_value: String(item.unit_price),
+              new_value: String(product.selling_price),
               user_id: cashierId,
-              reason: `Offline sync discount > 20% without manager override`,
+              reason: `Offline unit_price above catalogue for product ${product.id}; repriced to catalogue`,
+            });
+            pricingItems.push({ ...item, unit_price: fromCents(catalogueCents) });
+            continue;
+          }
+
+          if (submittedCents < catalogueCents) {
+            if (!discountAuthorized) {
+              throw new OfflineApprovalRequiredError(
+                'OFFLINE_PRICE_APPROVAL_REQUIRED',
+                `Offline sale price for product ${item.product_id} (${fromCents(
+                  submittedCents,
+                ).toFixed(2)}) is below the catalogue price (${fromCents(catalogueCents).toFixed(
+                  2,
+                )}) and no manager approval was provided.`,
+                'price_deviation',
+                item.product_id,
+              );
+            }
+            await trx('audit_logs').insert({
+              entity_type: 'sales',
+              entity_id: payload.idempotency_key,
+              action: 'offline_sync_price_override_approved',
+              old_value: String(product.selling_price),
+              new_value: String(item.unit_price),
+              user_id: cashierId,
+              reason: `Offline unit_price below catalogue for product ${product.id}, authorised by manager PIN`,
             });
           }
+
+          pricingItems.push(item);
         }
 
-        if (total < 0) {
-          throw new Error('Sale total cannot be negative.');
-        }
+        const totals = computeSaleTotals({
+          items: pricingItems,
+          globalDiscount: payload.global_discount ?? 0,
+        });
 
-        if (payload.payment_method === 'cash') {
-          const cashReceived = payload.cash_received || 0;
-          if (cashReceived < total) {
-            throw new Error(`Insufficient cash received. Minimum required: ${total.toFixed(2)}`);
-          }
-        } else if (payload.payment_method === 'split') {
-          const cashAmount = payload.cash_amount || 0;
-          const cardAmount = payload.card_amount || 0;
-          if (cashAmount + cardAmount < total) {
-            throw new Error(
-              `Insufficient split payment amounts. Total provided: ${(cashAmount + cardAmount).toFixed(2)}, required: ${total.toFixed(2)}`,
+        // `discountAuthorized` is only true when a manager PIN was verified by the
+        // controller. A client-supplied `manager_id` alone is NOT proof of approval.
+        if (totals.requiresDiscountApproval && !discountAuthorized) {
+          if (isOfflineSync) {
+            throw new OfflineApprovalRequiredError(
+              'OFFLINE_DISCOUNT_APPROVAL_REQUIRED',
+              'Offline sale contains a discount above the authorized threshold and no manager approval was provided.',
+              'discount_threshold',
             );
           }
+          throw new SaleMathError(
+            'DISCOUNT_NOT_AUTHORIZED',
+            'Manager authorization required for discounts exceeding 20%',
+          );
         }
+
+        const tenders = computeTenders({
+          method: payload.payment_method,
+          totalCents: totals.totalCents,
+          cashReceived: payload.cash_received,
+          cashAmount: payload.cash_amount,
+          cardAmount: payload.card_amount,
+        });
+
+        const subtotal = fromCents(totals.subtotalCents);
+        const discountAmount = fromCents(totals.lineDiscountCents);
+        const globalDiscount = fromCents(totals.globalDiscountCents);
+        const taxAmount = fromCents(totals.taxCents);
+        const total = fromCents(totals.totalCents);
+        const changeGiven = fromCents(tenders.changeCents);
+        const cashPaid = fromCents(tenders.cashPaidCents);
+        const cardPaid = fromCents(tenders.cardPaidCents);
+        const debtPaid = fromCents(tenders.debtPaidCents);
 
         // 2. Generate Receipt Number using sequence
         const { rows } = await trx.raw(`SELECT nextval('receipt_number_seq') as seq`);
@@ -432,33 +503,6 @@ export class POSRepository {
         const receiptNumber = `STR01-REG${String(payload.register_id || 1).padStart(2, '0')}-${dateStr}-${seq}`;
 
         // 3. Create Sale Record
-        let changeGiven = 0;
-        if (payload.payment_method === 'cash') {
-          changeGiven = Math.max(0, (payload.cash_received || 0) - total);
-        } else if (payload.payment_method === 'split') {
-          changeGiven = Math.max(
-            0,
-            (payload.cash_amount || 0) + (payload.card_amount || 0) - total,
-          );
-          changeGiven = Math.min(changeGiven, payload.cash_amount || 0); // Can't give back more change than cash provided
-        }
-
-        // Compute Effective Tenders
-        let cashPaid = 0;
-        let cardPaid = 0;
-        let debtPaid = 0;
-
-        if (payload.payment_method === 'cash') {
-          cashPaid = total;
-        } else if (payload.payment_method === 'card') {
-          cardPaid = total;
-        } else if (payload.payment_method === 'debt') {
-          debtPaid = total;
-        } else if (payload.payment_method === 'split') {
-          cashPaid = (payload.cash_amount || 0) - changeGiven;
-          cardPaid = payload.card_amount || 0;
-        }
-
         const [sale] = await trx('sales')
           .insert({
             id: payload.id || trx.raw('gen_random_uuid()'),
@@ -472,9 +516,18 @@ export class POSRepository {
             global_discount: globalDiscount,
             tax_amount: taxAmount,
             total,
-            cash_received: payload.cash_received || null,
-            cash_amount: payload.payment_method === 'split' ? payload.cash_amount || null : null,
-            card_amount: payload.payment_method === 'split' ? payload.card_amount || null : null,
+            cash_received:
+              payload.payment_method === 'cash' && tenders.cashTenderedCents !== null
+                ? fromCents(tenders.cashTenderedCents)
+                : null,
+            cash_amount:
+              payload.payment_method === 'split' && tenders.cashTenderedCents !== null
+                ? fromCents(tenders.cashTenderedCents)
+                : null,
+            card_amount:
+              payload.payment_method === 'split' && tenders.cardTenderedCents !== null
+                ? fromCents(tenders.cardTenderedCents)
+                : null,
             change_given: changeGiven,
             cash_paid: cashPaid,
             card_paid: cardPaid,
@@ -526,13 +579,17 @@ export class POSRepository {
         }
 
         // 4. Process items and inventory
-        // (Products are already fetched and sorted as part of step 1)
+        // (Prices are validated above and sorted by product_id for lock ordering;
+        // line totals come from the cent-exact `totals.lines` array.)
         const saleItemsToInsert = [];
 
-        for (const item of sortedItems) {
+        for (const [index, item] of sortedItems.entries()) {
           const product = productMap.get(item.product_id)!;
+          const computedLine = totals.lines[index]!;
 
-          const lineTotal = item.unit_price * item.quantity - item.discount;
+          if (!product) {
+            throw new Error(`Product ${item.product_id} disappeared during checkout.`);
+          }
 
           saleItemsToInsert.push({
             sale_id: sale.id,
@@ -540,9 +597,9 @@ export class POSRepository {
             product_name: product.name,
             barcode: product.barcode,
             quantity: item.quantity,
-            unit_price: item.unit_price,
-            discount: item.discount,
-            line_total: lineTotal,
+            unit_price: fromCents(computedLine.unitPriceCents),
+            discount: fromCents(computedLine.discountCents),
+            line_total: fromCents(computedLine.lineTotalCents),
             cost_at_sale: product.cost_price || 0,
           });
 
@@ -615,12 +672,12 @@ export class POSRepository {
    * roll back the entire batch. The caller receives a breakdown of
    * which IDs succeeded and which failed.
    */
-  async syncOffline(payloads: CheckoutPayload[], cashierId: number) {
+  async syncOffline(payloads: CheckoutPayload[], cashierId: number, managerAuthorized = false) {
     if (payloads.length === 0) {
       return {
         synced: 0,
         syncedIds: [] as string[],
-        failed: [] as { id: string; error: string }[],
+        failed: [] as { id: string; error: string; code?: string; quarantined?: boolean }[],
       };
     }
 
@@ -649,7 +706,7 @@ export class POSRepository {
       return {
         synced: 0,
         syncedIds: [] as string[],
-        failed: [] as { id: string; error: string }[],
+        failed: [] as { id: string; error: string; code?: string; quarantined?: boolean }[],
       };
     }
 
@@ -662,16 +719,30 @@ export class POSRepository {
 
     // 3. Process each sale in its own isolated transaction
     const syncedIds: string[] = [];
-    const failed: { id: string; error: string }[] = [];
+    const failed: { id: string; error: string; code?: string; quarantined?: boolean }[] = [];
 
     for (const payload of sortedSales) {
       const saleIdentifier = payload.id || payload.idempotency_key;
       try {
         // Offline sales bypass inventory underflow checks since the physical sale already happened
-        await this.checkout(payload, cashierId, true, true);
+        await this.checkout(payload, cashierId, true, true, managerAuthorized);
         syncedIds.push(saleIdentifier);
       } catch (error: any) {
         console.error(`[SyncOffline] Failed to sync sale ${saleIdentifier}:`, error.message);
+
+        if (error instanceof OfflineApprovalRequiredError) {
+          // A tampered/lower price or an unauthorised discount is never posted
+          // silently: it is parked for an explicit manager decision.
+          await this.quarantineOfflineSale(payload, cashierId, error);
+          failed.push({
+            id: saleIdentifier,
+            error: error.message,
+            code: error.code,
+            quarantined: true,
+          });
+          continue;
+        }
+
         failed.push({
           id: saleIdentifier,
           error: error.message || 'Unknown sync error',
@@ -680,6 +751,100 @@ export class POSRepository {
     }
 
     return { synced: syncedIds.length, syncedIds, failed };
+  }
+
+  /**
+   * Persists an offline sale that requires manager approval. Idempotent: replaying
+   * the same sale updates the quarantine reason instead of duplicating the row.
+   */
+  async quarantineOfflineSale(
+    payload: CheckoutPayload,
+    cashierId: number,
+    error: OfflineApprovalRequiredError,
+  ) {
+    await db('offline_sync_quarantine')
+      .insert({
+        idempotency_key: payload.idempotency_key,
+        sale_id: payload.id ?? null,
+        cashier_id: cashierId,
+        reason: error.reason,
+        product_id: error.product_id,
+        detail: error.message,
+        payload: JSON.stringify(payload),
+        status: 'pending',
+        created_at: db.fn.now(),
+      })
+      .onConflict('idempotency_key')
+      .merge(['reason', 'detail', 'product_id', 'payload', 'cashier_id']);
+  }
+
+  /** Lists offline sales awaiting manager approval (oldest first). */
+  async listQuarantinedSales(status: 'pending' | 'approved' | 'rejected' = 'pending') {
+    return db('offline_sync_quarantine').where({ status }).orderBy('created_at', 'asc').limit(100);
+  }
+
+  /**
+   * Resolves a quarantined offline sale.
+   *
+   * `approve` re-runs the original checkout with `discountAuthorized = true`
+   * (a manager PIN must already have been verified by the controller). Rejecting
+   * marks the row rejected and leaves it on record — nothing is deleted.
+   */
+  async resolveQuarantinedSale(
+    id: number,
+    decision: 'approve' | 'reject',
+    managerId: number,
+    notes?: string,
+  ) {
+    const row = await db('offline_sync_quarantine').where({ id }).first();
+    if (!row) throw new Error('Quarantined sale not found.');
+    if (row.status !== 'pending') throw new Error(`Quarantined sale is already ${row.status}.`);
+
+    if (decision === 'reject') {
+      await db('offline_sync_quarantine')
+        .where({ id })
+        .update({
+          status: 'rejected',
+          resolved_by: managerId,
+          resolved_at: db.fn.now(),
+          resolution_notes: notes ?? null,
+        });
+      await auditService.logEvent({
+        entityType: 'offline_sync_quarantine',
+        entityId: String(id),
+        action: 'offline_sale_rejected',
+        oldValue: { status: 'pending' },
+        newValue: { status: 'rejected' },
+        userId: managerId,
+        reason: notes ?? 'Offline sale rejected by manager',
+      });
+      return { status: 'rejected', sale: null };
+    }
+
+    const payload =
+      typeof row.payload === 'string' ? (JSON.parse(row.payload) as CheckoutPayload) : row.payload;
+    const sale = await this.checkout(payload, row.cashier_id, true, true, true);
+
+    await db('offline_sync_quarantine')
+      .where({ id })
+      .update({
+        status: 'approved',
+        resolved_by: managerId,
+        resolved_at: db.fn.now(),
+        resolution_notes: notes ?? null,
+      });
+
+    await auditService.logEvent({
+      entityType: 'offline_sync_quarantine',
+      entityId: String(id),
+      action: 'offline_sale_approved',
+      oldValue: { status: 'pending' },
+      newValue: { status: 'approved', sale_id: sale.id },
+      userId: managerId,
+      reason: notes ?? 'Offline sale approved by manager',
+    });
+
+    return { status: 'approved', sale };
   }
 
   /**
@@ -859,7 +1024,7 @@ export class POSRepository {
         return (itemA?.product_id || 0) - (itemB?.product_id || 0);
       });
 
-      let totalRefundAmount = 0;
+      let totalRefundCents = 0;
       const refundItemsToInsert = [];
 
       // Process each item in sorted order to prevent deadlocks
@@ -874,16 +1039,21 @@ export class POSRepository {
           );
         }
 
-        // Proportional refund for the item
-        const itemRefundAmount =
-          (Number(dbItem.line_total) / Number(dbItem.quantity)) * reqItem.quantity;
-        totalRefundAmount += itemRefundAmount;
+        // Cumulative (not per-unit) allocation, so refunding a 10.00 line of
+        // three units in three steps returns exactly 10.00 — never 9.99.
+        const itemRefundCents = computeRefundLineAmount({
+          lineTotalCents: toCents(dbItem.line_total),
+          saleQuantity: Number(dbItem.quantity),
+          alreadyRefundedQuantity: Number(dbItem.refunded_quantity),
+          refundQuantity: reqItem.quantity,
+        });
+        totalRefundCents += itemRefundCents;
 
         refundItemsToInsert.push({
           sale_item_id: dbItem.id,
           product_id: dbItem.product_id,
           quantity_refunded: reqItem.quantity,
-          refund_amount: itemRefundAmount,
+          refund_amount: fromCents(itemRefundCents),
           restock_inventory: reqItem.restock_inventory,
         });
 
@@ -921,30 +1091,31 @@ export class POSRepository {
         }
       }
 
-      // Protect against monetary over-refund
-      if (totalRefundAmount + alreadyRefundedAmount > originalSaleTotal + 0.01) {
-        // 0.01 for rounding
-        throw new Error(`Total refund amount exceeds original sale total.`);
-      }
+      // Protect against monetary over-refund (exact integer comparison — the old
+      // implementation allowed an extra cent through a `+ 0.01` epsilon).
+      const saleTotalCents = toCents(sale.total);
+      const alreadyRefundedCents = toCents(sale.refunded_amount);
+      const { status: refundStatus } = resolveRefundState(
+        saleTotalCents,
+        alreadyRefundedCents,
+        totalRefundCents,
+      );
 
-      // 3. Proportional Split-Payment amounts
-      const cashPaid = Number(sale.cash_paid);
-      const cardPaid = Number(sale.card_paid);
-      const debtPaid = Number(sale.debt_paid);
+      // 3. Allocate the refund across the original tenders proportionally, with
+      // no cent lost or created (cash/card/debt shares always sum to the refund).
+      const tenderAllocation = allocateRefundTenders({
+        saleTotalCents,
+        cashPaidCents: toCents(sale.cash_paid),
+        cardPaidCents: toCents(sale.card_paid),
+        debtPaidCents: toCents(sale.debt_paid),
+        alreadyRefundedCents,
+        refundCents: totalRefundCents,
+      });
 
-      // Proportions
-      let cashRefunded = 0;
-      let cardRefunded = 0;
-      let debtReversed = 0;
-
-      if (originalSaleTotal > 0) {
-        const cashRatio = cashPaid / originalSaleTotal;
-        const cardRatio = cardPaid / originalSaleTotal;
-        const debtRatio = debtPaid / originalSaleTotal;
-        cashRefunded = totalRefundAmount * cashRatio;
-        cardRefunded = totalRefundAmount * cardRatio;
-        debtReversed = totalRefundAmount * debtRatio;
-      }
+      const totalRefundAmount = fromCents(totalRefundCents);
+      const cashRefunded = fromCents(tenderAllocation.cashCents);
+      const cardRefunded = fromCents(tenderAllocation.cardCents);
+      const debtReversed = fromCents(tenderAllocation.debtCents);
 
       // Insert refund record
       const rawResult = await trx.raw(`SELECT nextval('refund_receipt_number_seq') as seq`);
@@ -1006,16 +1177,12 @@ export class POSRepository {
       }
 
       // Update Sales status state machine
-      let newStatus = sale.status;
+      let newStatus: string = sale.status;
       if (input.refund_type === 'void') {
         newStatus = 'voided';
       } else {
-        const finalRefundedAmount = alreadyRefundedAmount + totalRefundAmount;
-        if (Math.abs(finalRefundedAmount - originalSaleTotal) < 0.01) {
-          newStatus = 'refunded';
-        } else {
-          newStatus = 'partially_refunded';
-        }
+        // Cent-exact comparison: no epsilon, no premature "fully refunded" state.
+        newStatus = refundStatus;
       }
 
       if (newStatus !== sale.status) {

@@ -62,7 +62,7 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
           cycle_count_id: cycleCountId,
           barcode: code,
         });
-      } catch (err: any) {
+      } catch {
         toast.error(t('inventory.cycleCounts.toasts.errorScanning'));
       }
     }
@@ -78,7 +78,7 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
         product_id: productId,
         counted_qty: num,
       });
-    } catch (err: any) {
+    } catch {
       toast.error(t('inventory.cycleCounts.toasts.failedUpdateQty'));
     }
   };
@@ -132,12 +132,15 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
             <Scan className="w-6 h-6 text-primary" />
             <span>{t('inventory.cycleCounts.title')}</span>
             <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase ml-2 font-mono">
-              {t(`inventory.cycleCounts.types.${cycleCount.type as 'blind' | 'guided' | 'investigation'}`)}
+              {t(
+                `inventory.cycleCounts.types.${cycleCount.type as 'blind' | 'guided' | 'investigation'}`,
+              )}
             </span>
           </h1>
           <p className="text-sm text-secondary font-mono">
-            {t('inventory.cycleCounts.batchId')}: {cycleCount.id.substring(0, 8)} | {t('inventory.cycleCounts.status')}:{' '}
-            {cycleCount.status.replace('_', ' ').toUpperCase()} | {t('inventory.cycleCounts.location')}:{' '}
+            {t('inventory.cycleCounts.batchId')}: {cycleCount.id.substring(0, 8)} |{' '}
+            {t('inventory.cycleCounts.status')}: {cycleCount.status.replace('_', ' ').toUpperCase()}{' '}
+            | {t('inventory.cycleCounts.location')}:{' '}
             {cycleCount.location || t('inventory.storeFallback')}
           </p>
         </div>
@@ -184,7 +187,9 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
             </div>
             <div>
               {t('inventory.cycleCounts.totalVariance')}:{' '}
-              <span className="font-bold text-white">{totalVariance.toFixed(2)} {t('pos.currency')}</span>
+              <span className="font-bold text-white">
+                {totalVariance.toFixed(2)} {t('pos.currency')}
+              </span>
             </div>
           </div>
         </div>
@@ -197,10 +202,16 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
                 <th className="p-3 font-medium text-secondary">{t('inventory.barcode')}</th>
                 <th className="p-3 font-medium text-secondary">{t('purchases.product')}</th>
                 {!isBlind && (
-                  <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.systemQty')}</th>
+                  <th className="p-3 font-medium text-secondary text-right">
+                    {t('inventory.cycleCounts.systemQty')}
+                  </th>
                 )}
-                <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.countedQty')}</th>
-                <th className="p-3 font-medium text-secondary text-right">{t('inventory.cycleCounts.variance')}</th>
+                <th className="p-3 font-medium text-secondary text-right">
+                  {t('inventory.cycleCounts.countedQty')}
+                </th>
+                <th className="p-3 font-medium text-secondary text-right">
+                  {t('inventory.cycleCounts.variance')}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -266,11 +277,16 @@ export function CycleCountGrid({ cycleCountId, onClose }: CycleCountGridProps) {
                     <div className="font-bold text-warning uppercase flex items-center space-x-2">
                       <AlertTriangle className="w-4 h-4" />
                       <span>
-                        {requiresAdmin ? t('inventory.cycleCounts.adminApproval') : t('inventory.cycleCounts.managerApproval')}
+                        {requiresAdmin
+                          ? t('inventory.cycleCounts.adminApproval')
+                          : t('inventory.cycleCounts.managerApproval')}
                       </span>
                     </div>
                     <div className="text-secondary text-sm mt-1 font-mono">
-                      {t('inventory.cycleCounts.varianceExceeded').replace('{amount}', totalVariance.toFixed(2))}
+                      {t('inventory.cycleCounts.varianceExceeded').replace(
+                        '{amount}',
+                        totalVariance.toFixed(2),
+                      )}
                     </div>
                   </div>
                 }

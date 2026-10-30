@@ -66,12 +66,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
       message: string;
     }>,
 
-  // Backup (Phase 5)
-  createBackup: (backupPath: string): Promise<void> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CREATE_BACKUP, backupPath) as Promise<void>,
+  // Backup
+  //
+  // Intentionally not exposed. Backups are created by the server
+  // (`POST /settings/backups`, surfaced in Settings → Full Database Backup) and
+  // restored offline with `npm run db:restore`. The previous bridge methods
+  // resolved successfully while doing nothing.
+  createBackup: (): Promise<never> =>
+    Promise.reject(
+      new Error('Backups are created by the server: Settings → Full Database Backup.'),
+    ),
 
-  restoreBackup: (backupPath: string): Promise<void> =>
-    ipcRenderer.invoke(IPC_CHANNELS.RESTORE_BACKUP, backupPath) as Promise<void>,
+  restoreBackup: (): Promise<never> =>
+    Promise.reject(
+      new Error('Restore runs offline: npm run db:restore -- --file <backup> --target <database>.'),
+    ),
 
   // File dialogs
   selectDirectory: (): Promise<string | null> =>

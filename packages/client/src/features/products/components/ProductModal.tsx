@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { ProductForm } from './ProductForm';
@@ -18,7 +18,7 @@ export function ProductModal() {
   const isOpen = useModalStore((state) => state.activeModals.product_form);
   const payload = useModalStore((state) => state.modalPayloads.product_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('product_form');
+  const closeModal = useCallback(() => closeModalAction('product_form'), [closeModalAction]);
 
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();

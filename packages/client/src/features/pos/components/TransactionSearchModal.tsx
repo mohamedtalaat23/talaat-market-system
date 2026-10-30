@@ -19,23 +19,26 @@ const TransactionSearchModal = () => {
   const lastSearchedQueryRef = useRef<string | null>(null);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
-  const searchSales = useCallback(async (searchQuery: string) => {
-    if (searchQuery === lastSearchedQueryRef.current) return;
-    lastSearchedQueryRef.current = searchQuery;
-    setIsLoading(true);
-    try {
-      const response = await apiClient.get<{ success: boolean; data: any[] }>(
-        `/pos/sales/search?q=${encodeURIComponent(searchQuery)}`,
-      );
-      if (response.data?.success) {
-        setSales(response.data.data);
+  const searchSales = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery === lastSearchedQueryRef.current) return;
+      lastSearchedQueryRef.current = searchQuery;
+      setIsLoading(true);
+      try {
+        const response = await apiClient.get<{ success: boolean; data: any[] }>(
+          `/pos/sales/search?q=${encodeURIComponent(searchQuery)}`,
+        );
+        if (response.data?.success) {
+          setSales(response.data.data);
+        }
+      } catch {
+        toast.error(t('pos.toasts.failedSearchTransactions'));
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      toast.error(t('pos.toasts.failedSearchTransactions'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [t]);
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -45,7 +48,7 @@ const TransactionSearchModal = () => {
       return;
     }
     lastSearchedQueryRef.current = null;
-    searchSales('');
+    void searchSales('');
     setQuery('');
   }, [isOpen, searchSales]);
 
@@ -176,7 +179,9 @@ const TransactionSearchModal = () => {
                       </td>
                       <td className="py-4 px-5 text-right font-black text-foreground tabular-nums">
                         {Number(sale.total).toFixed(2)}{' '}
-                        <span className="text-[10px] text-secondary ml-0.5">{t('pos.currency')}</span>
+                        <span className="text-[10px] text-secondary ml-0.5">
+                          {t('pos.currency')}
+                        </span>
                       </td>
                       <td className="py-4 px-5 text-right">
                         {sale.print_status === 'pending_print' ? (

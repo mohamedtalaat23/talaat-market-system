@@ -25,12 +25,16 @@
     "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,css}\"",
     "typecheck": "npm run typecheck --workspace=packages/server && npm run typecheck --workspace=packages/client && npm run typecheck --workspace=packages/desktop",
     "test:client": "npm run test --workspace=packages/client",
+    "test:desktop": "npm run test --workspace=packages/desktop",
     "test:e2e": "npm run test:e2e --workspace=packages/client",
     "test:server:unit": "npm run test:unit --workspace=packages/server",
     "test:server:integration": "npm run test:integration --workspace=packages/server",
     "db:migrate": "npm run migrate --workspace=packages/server",
     "db:rollback": "npm run migrate:rollback --workspace=packages/server",
     "db:seed": "npm run seed --workspace=packages/server",
+    "db:restore": "npm run db:restore --workspace=packages/server",
+    "admin:rotate": "npm run admin:rotate --workspace=packages/server",
+    "security:audit-credentials": "npm run security:audit-credentials --workspace=packages/server",
     "clean": "node scripts/clean.cjs"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useModalStore } from '@/stores/modalStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
@@ -187,13 +187,13 @@ export function QuickReturnWorkspace() {
     // Sync to backend instantly with 0 quantity adjustment but updated disposition
     try {
       await syncItem(queueId, newItems[idx], 0);
-    } catch (e: any) {
+    } catch {
       toast.error(t('pos.toasts.syncDispositionFailed'));
     }
   };
 
   // HUI-2: O(1) Submit
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!queueId) {
       toast.error(t('pos.toasts.queueEmpty'));
       return;
@@ -217,7 +217,7 @@ export function QuickReturnWorkspace() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [queueId, items, closeModal, t]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -234,12 +234,12 @@ export function QuickReturnWorkspace() {
       }
       if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault();
-        handleSubmit();
+        void handleSubmit();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isOpen, queueId, items]);
+  }, [isOpen, queueId, items, handleSubmit, closeModal]);
 
   if (!isOpen) return null;
 
@@ -344,7 +344,9 @@ export function QuickReturnWorkspace() {
                             <option value="OPENED">{t('pos.reasons.opened')}</option>
                             <option value="CONTAMINATED">{t('pos.reasons.contaminated')}</option>
                             <option value="SUPPLIER_RECALL">{t('pos.reasons.recall')}</option>
-                            <option value="CUSTOMER_DISSATISFACTION">{t('pos.reasons.dissatisfaction')}</option>
+                            <option value="CUSTOMER_DISSATISFACTION">
+                              {t('pos.reasons.dissatisfaction')}
+                            </option>
                             <option value="OTHER">{t('pos.reasons.other')}</option>
                           </select>
                         )}

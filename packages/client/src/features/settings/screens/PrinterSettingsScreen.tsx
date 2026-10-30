@@ -26,17 +26,17 @@ export function PrinterSettingsScreen() {
       setIsElectron(true);
 
       // Load active config
-      window.electronAPI.getPrinterConfig().then((cfg) => {
+      void window.electronAPI.getPrinterConfig().then((cfg) => {
         if (cfg) setConfig(cfg);
       });
 
       // Scan available USB port endpoints
-      window.electronAPI.discoverPrinters().then((ports) => {
+      void window.electronAPI.discoverPrinters().then((ports) => {
         setDiscoveredPorts(ports);
       });
 
       // Retrieve device online status
-      checkPrinterStatus();
+      void checkPrinterStatus();
     }
   }, []);
 
@@ -85,7 +85,7 @@ export function PrinterSettingsScreen() {
       toast.success(t('settings.configSaved'));
 
       // Re-scan ports & status
-      checkPrinterStatus();
+      void checkPrinterStatus();
       const ports = await window.electronAPI.discoverPrinters();
       setDiscoveredPorts(ports);
     } catch (err: any) {

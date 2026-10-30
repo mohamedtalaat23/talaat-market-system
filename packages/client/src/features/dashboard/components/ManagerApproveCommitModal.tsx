@@ -36,14 +36,14 @@ export function ManagerApproveCommitModal({ queueId, onClose }: Props) {
         }
 
         setQueue(q);
-      } catch (e: any) {
+      } catch {
         toast.error(t('dashboard.returns.toastLoadFailed'));
         onClose();
       } finally {
         setLoading(false);
       }
     };
-    fetchQueue();
+    void fetchQueue();
   }, [queueId, onClose, t]);
 
   const handleApproveAndCommit = async () => {
@@ -92,8 +92,12 @@ export function ManagerApproveCommitModal({ queueId, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-border bg-slate-50">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">{t('dashboard.returns.modalTitle')}</h2>
-            <p className="text-sm text-slate-500 mt-1">{t('dashboard.returns.queueId').replace('{id}', queueId)}</p>
+            <h2 className="text-xl font-bold text-slate-900">
+              {t('dashboard.returns.modalTitle')}
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              {t('dashboard.returns.queueId').replace('{id}', queueId)}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -158,10 +162,18 @@ export function ManagerApproveCommitModal({ queueId, onClose }: Props) {
                 <thead className="bg-slate-50 border-b border-border text-slate-500">
                   <tr>
                     <th className="py-3 px-4 font-semibold">{t('dashboard.returns.tableSku')}</th>
-                    <th className="py-3 px-4 font-semibold text-center">{t('dashboard.returns.tableQty')}</th>
-                    <th className="py-3 px-4 font-semibold text-right rtl:text-left">{t('dashboard.returns.tableUnitPrice')}</th>
-                    <th className="py-3 px-4 font-semibold">{t('dashboard.returns.tableDisposition')}</th>
-                    <th className="py-3 px-4 font-semibold">{t('dashboard.returns.tableReason')}</th>
+                    <th className="py-3 px-4 font-semibold text-center">
+                      {t('dashboard.returns.tableQty')}
+                    </th>
+                    <th className="py-3 px-4 font-semibold text-right rtl:text-left">
+                      {t('dashboard.returns.tableUnitPrice')}
+                    </th>
+                    <th className="py-3 px-4 font-semibold">
+                      {t('dashboard.returns.tableDisposition')}
+                    </th>
+                    <th className="py-3 px-4 font-semibold">
+                      {t('dashboard.returns.tableReason')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -170,7 +182,10 @@ export function ManagerApproveCommitModal({ queueId, onClose }: Props) {
                       <td className="py-3 px-4 font-medium text-slate-900">{item.sku_id}</td>
                       <td className="py-3 px-4 text-center font-bold">{item.quantity}</td>
                       <td className="py-3 px-4 text-right rtl:text-left">
-                        {t('dashboard.returns.refundValue').replace('{amount}', Number(item.unit_price || 0).toFixed(2))}
+                        {t('dashboard.returns.refundValue').replace(
+                          '{amount}',
+                          Number(item.unit_price || 0).toFixed(2),
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <span
@@ -198,7 +213,8 @@ export function ManagerApproveCommitModal({ queueId, onClose }: Props) {
               className="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 focus:ring-2 disabled:opacity-50 transition-all cursor-pointer"
             />
             <span className="text-slate-700 font-semibold select-none group-hover:text-slate-900 transition-colors text-lg">
-              {t('dashboard.returns.physicalVerified')} {queue.state === 'APPROVED' ? t('dashboard.returns.alreadyApproved') : ''}
+              {t('dashboard.returns.physicalVerified')}{' '}
+              {queue.state === 'APPROVED' ? t('dashboard.returns.alreadyApproved') : ''}
             </span>
           </label>
 

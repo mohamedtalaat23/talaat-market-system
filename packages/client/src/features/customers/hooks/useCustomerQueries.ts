@@ -75,6 +75,9 @@ export interface UpdateCustomerPayload {
 export interface RecordPaymentPayload {
   amount: number;
   notes?: string | null;
+  payment_method?: 'cash' | 'card';
+  /** Client-generated key so a retried submission cannot post twice. */
+  idempotency_key?: string;
 }
 
 /**
@@ -171,20 +174,35 @@ export function useRecordPayment(customerId: number) {
 
   return useMutation({
     mutationFn: async (payload: RecordPaymentPayload) => {
-      const { data } = await apiClient.post<{ status: string; data: Customer }>(
-        `/customers/${customerId}/payments`,
-        payload,
-      );
-      return data.data;
+      // A fresh key per submission makes the request idempotent: if the response
+      // is lost and the cashier retries, the server returns the original payment
+      // instead of posting a second one.
+      const { data } = await apiClient.post<{
+        status: string;
+        data: Customer;
+        meta?: { duplicate?: boolean; outstanding_after?: number };
+      }>(`/customers/${customerId}/payments`, {
+        ...payload,
+        idempotency_key: payload.idempotency_key ?? crypto.randomUUID(),
+      });
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      queryClient.invalidateQueries({ queryKey: ['customer', customerId] });
-      toast.success(t('customers.paymentSuccess'));
+    onSuccess: (response) => {
+      void queryClient.invalidateQueries({ queryKey: ['customers'] });
+      void queryClient.invalidateQueries({ queryKey: ['customer', customerId] });
+      toast.success(
+        response?.meta?.duplicate
+          ? t('customers.paymentAlreadyRecorded')
+          : t('customers.paymentSuccess'),
+      );
     },
     onError: (error: any) => {
-      const message = error.message || t('customers.paymentFailed');
-      toast.error(t(message));
+      // The server rejects overpayments (409), payments with no outstanding
+      // balance (409) and requests made without an open shift (400) with a
+      // machine-readable code; surface its message rather than a generic one.
+      const message =
+        error?.response?.data?.message || error.message || t('customers.paymentFailed');
+      toast.error(message);
     },
   });
 }

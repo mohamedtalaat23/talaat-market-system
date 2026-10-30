@@ -75,7 +75,9 @@ export function ReturnApprovalDashboard() {
                         <span>
                           {t('dashboard.returns.createdBy').replace(
                             '{owner}',
-                            q.owner_id === user?.id ? t('dashboard.returns.me') : t('dashboard.returns.cashier'),
+                            q.owner_id === user?.id
+                              ? t('dashboard.returns.me')
+                              : t('dashboard.returns.cashier'),
                           )}
                         </span>
                         <span className="text-neutral-300">|</span>
@@ -113,7 +115,7 @@ export function ReturnApprovalDashboard() {
           queueId={selectedQueueId}
           onClose={() => {
             setSelectedQueueId(null);
-            refetch();
+            void refetch();
           }}
         />
       )}

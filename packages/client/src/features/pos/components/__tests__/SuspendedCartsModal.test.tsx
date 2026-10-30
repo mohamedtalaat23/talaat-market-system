@@ -228,7 +228,7 @@ describe('SuspendedCartsModal & Focus Trap Integration', () => {
 
     // Grab all focusable elements
     const closeBtn = screen.getByRole('button', { name: '' }); // Lucide X button has no name
-    const discardBtn = screen.getByText('pos.discard');
+    const _discardBtn = screen.getByText('pos.discard');
     const resumeBtn = screen.getByText('pos.resume');
 
     // Focus close button (first element)

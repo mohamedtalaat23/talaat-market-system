@@ -13,6 +13,9 @@
     "bootstrap": "tsx src/database/bootstrap.ts",
     "migrate:rollback": "tsx src/database/migrate.ts rollback",
     "seed": "tsx src/database/migrate.ts seed",
+    "admin:rotate": "tsx src/database/rotate-credentials.ts",
+    "security:audit-credentials": "tsx src/database/audit-credentials.ts",
+    "db:restore": "tsx src/database/restore.ts",
     "test:unit": "jest",
     "test:integration": "vitest run"
   },

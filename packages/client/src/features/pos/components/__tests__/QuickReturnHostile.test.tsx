@@ -83,6 +83,9 @@ describe('Hostile Quick Return UI Tests', () => {
         );
         expect(queueCreates.length).toBe(1);
       });
+
+      // Do not leak the performance.now mock into the following tests.
+      nowSpy.mockRestore();
     });
   });
 
@@ -113,9 +116,7 @@ describe('Hostile Quick Return UI Tests', () => {
         data: { data: { queue_id: 'q123', state: 'APPROVED', items: [] } },
       });
 
-      const { getByText, getByRole } = render(
-        <ManagerApproveCommitModal queueId="q123" onClose={() => {}} />,
-      );
+      const { getByText } = render(<ManagerApproveCommitModal queueId="q123" onClose={() => {}} />);
 
       await waitFor(() => expect(getByText(/Commit Only/i)).toBeInTheDocument());
 

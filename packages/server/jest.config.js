@@ -11,6 +11,7 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
   testPathIgnorePatterns: [
     "/node_modules/",
+    "/src/repositories/__tests__/backup_restore.integration.test.ts",
     "/dist/",
     "/src/repositories/__tests__/db_check.test.ts",
     "/src/repositories/__tests__/drawer_adjustments.test.ts",

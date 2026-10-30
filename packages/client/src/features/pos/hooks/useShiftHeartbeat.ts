@@ -42,7 +42,7 @@ export function useShiftHeartbeat() {
     };
 
     // Initial validation check
-    checkShiftStatus();
+    void checkShiftStatus();
 
     // Re-check every 3 minutes (180000ms)
     const interval = setInterval(checkShiftStatus, 180000);

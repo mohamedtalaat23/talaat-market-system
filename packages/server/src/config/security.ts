@@ -43,6 +43,14 @@ const WEAK_SECRET_EXACT = new Set([
   '123456',
   '12345678',
   '123456789',
+  // Credentials published in this repository's seed script. Every installation
+  // provisioned from the seed (or from the old README quick start) used these.
+  'manager123',
+  'cashier123',
+  'cashier',
+  'supervisor123',
+  'demo1234',
+  'admin1234',
 ]);
 
 /** Common trivial PINs that must never be used on a production install. */
@@ -66,6 +74,57 @@ const WEAK_PINS = new Set([
   '123456',
   '654321',
 ]);
+
+/**
+ * Passwords that are published in this repository (README, seed script, docs)
+ * and therefore compromised on every installation that ever used them.
+ */
+export const KNOWN_DEFAULT_PASSWORDS: readonly string[] = [
+  'admin123',
+  'admin',
+  'password',
+  'passw0rd',
+  '123456',
+  'manager123',
+  'cashier123',
+  'supervisor123',
+  'demo1234',
+  'admin1234',
+];
+
+/** PINs published in this repository / trivially guessable. */
+export const KNOWN_DEFAULT_PINS: readonly string[] = [
+  '0000',
+  '1111',
+  '2222',
+  '3333',
+  '4444',
+  '5555',
+  '6666',
+  '7777',
+  '8888',
+  '9999',
+  '1234',
+  '4321',
+  '0123',
+  '1212',
+  '000000',
+  '111111',
+  '123456',
+  '654321',
+];
+
+/** True when the *submitted* password is a published default. */
+export function isKnownDefaultPassword(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return KNOWN_DEFAULT_PASSWORDS.includes(value.trim().toLowerCase());
+}
+
+/** True when the *submitted* PIN is a published default or trivially guessable. */
+export function isKnownDefaultPin(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return isWeakPin(value);
+}
 
 /**
  * Returns true when a secret/password is weak, a known default, or a

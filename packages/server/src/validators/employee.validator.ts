@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { MIN_PASSWORD_LENGTH } from '../config/security';
+import {
+  MIN_PASSWORD_LENGTH,
+  isKnownDefaultPassword,
+  isWeakPin,
+  isWeakSecret,
+} from '../config/security';
 
 /**
  * Zod validation schemas for authentication and employee management requests.
@@ -48,10 +53,19 @@ export const createEmployeeSchema = z.object({
     .min(3, 'Username must be at least 3 characters')
     .max(50)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain alphanumeric characters and underscores'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+    .max(100)
+    .refine((value) => !isWeakSecret(value) && !isKnownDefaultPassword(value), {
+      message: 'Password is a known default or too easy to guess',
+    }),
   pin: z
     .string()
     .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+    .refine((value) => !isWeakPin(value), {
+      message: 'PIN is trivially guessable (repeated or sequential digits)',
+    })
     .nullable()
     .optional(),
   role: z.enum(['admin', 'manager', 'cashier'], {
@@ -69,10 +83,20 @@ export const updateEmployeeSchema = z.object({
     .max(50)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain alphanumeric characters and underscores')
     .optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100).optional(),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+    .max(100)
+    .refine((value) => !isWeakSecret(value) && !isKnownDefaultPassword(value), {
+      message: 'Password is a known default or too easy to guess',
+    })
+    .optional(),
   pin: z
     .string()
     .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+    .refine((value) => !isWeakPin(value), {
+      message: 'PIN is trivially guessable (repeated or sequential digits)',
+    })
     .nullable()
     .optional(),
   role: z

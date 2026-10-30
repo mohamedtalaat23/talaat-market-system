@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calendar, Clipboard, History, ArrowRight, User } from 'lucide-react';
 import { useInventoryAdjustments } from '../hooks/useInventoryQueries';
@@ -19,7 +19,7 @@ export function AdjustmentHistoryViewer() {
   const isOpen = useModalStore((state) => state.activeModals.inventory_history);
   const payload = useModalStore((state) => state.modalPayloads.inventory_history);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('inventory_history');
+  const closeModal = useCallback(() => closeModalAction('inventory_history'), [closeModalAction]);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -62,15 +62,15 @@ export function AdjustmentHistoryViewer() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   // Reset page when product ID changes or modal opens
   useEffect(() => {
     setPage(1);
     if (isOpen) {
-      refetch();
+      void refetch();
     }
-  }, [productId, isOpen]);
+  }, [productId, isOpen, refetch]);
 
   if (!isOpen) return null;
 

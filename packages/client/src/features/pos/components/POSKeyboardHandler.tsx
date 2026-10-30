@@ -24,7 +24,9 @@ export function POSKeyboardHandler() {
       if (Object.values(activeModals).some((isOpen) => isOpen)) return; // Block scanner if modal is open (HUI-3 Fix)
       if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
 
-      const loadingToastId = toast.loading(t('pos.toasts.lookingUpBarcode').replace('{barcode}', barcode));
+      const loadingToastId = toast.loading(
+        t('pos.toasts.lookingUpBarcode').replace('{barcode}', barcode),
+      );
 
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
@@ -70,7 +72,7 @@ export function POSKeyboardHandler() {
         }
       }
     },
-    [addItem, openModal],
+    [addItem, openModal, t],
   );
 
   // Hook up scanner detection with <30ms threshold
@@ -104,8 +106,8 @@ export function POSKeyboardHandler() {
               .get(`/pos/receipts/${lastSaleId}`)
               .then((res) => {
                 if (res.data?.success) {
-                  printerService.printReceipt(res.data.data).then(() => {
-                    apiClient.post(`/pos/receipts/${lastSaleId}/print`);
+                  void printerService.printReceipt(res.data.data).then(() => {
+                    void apiClient.post(`/pos/receipts/${lastSaleId}/print`);
                   });
                 }
               })
@@ -127,9 +129,9 @@ export function POSKeyboardHandler() {
                   await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`);
                   const res = await apiClient.get(`/pos/receipts/${lastSaleId}`);
                   if (res.data?.success) {
-                    printerService.printReceipt(res.data.data, true);
+                    void printerService.printReceipt(res.data.data, true);
                   }
-                } catch (error) {
+                } catch {
                   toast.error(t('pos.toasts.reprintFailed'));
                 }
               },
@@ -260,7 +262,7 @@ export function POSKeyboardHandler() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canExit, navigate, openModal]);
+  }, [canExit, navigate, openModal, t, user?.id]);
 
   // This is a logic-only component that manages focus and shortcuts globally
   return null;

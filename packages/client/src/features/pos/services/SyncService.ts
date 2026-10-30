@@ -66,7 +66,8 @@ async function tryFlush(): Promise<boolean> {
 
       if (response.data?.success) {
         const syncedIds: string[] = response.data.syncedIds || [];
-        const failed: { id: string; error: string }[] = response.data.failed || [];
+        const failed: { id: string; error: string; code?: string; quarantined?: boolean }[] =
+          response.data.failed || [];
         const syncedSet = new Set(syncedIds);
 
         for (const sale of salesToFlush) {
@@ -75,7 +76,17 @@ async function tryFlush(): Promise<boolean> {
           }
         }
 
-        if (failed.length > 0 && syncedIds.length > 0) {
+        // Sales whose offline price/discount could not be authorised are held on
+        // the server (quarantined) and must be approved by a manager. They stay in
+        // the local queue so the cashier can see that they are unresolved.
+        const quarantined = failed.filter((entry) => entry.quarantined);
+
+        if (quarantined.length > 0) {
+          toast.error(
+            `${quarantined.length} offline sale(s) need manager approval (price/discount) and were not posted.`,
+            { id: toastId, icon: '🔒', duration: 8000 },
+          );
+        } else if (failed.length > 0 && syncedIds.length > 0) {
           toast.error(`${syncedIds.length} synced, ${failed.length} failed. Check server logs.`, {
             id: toastId,
             icon: '⚠️',

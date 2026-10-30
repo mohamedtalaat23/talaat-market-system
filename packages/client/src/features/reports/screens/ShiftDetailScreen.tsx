@@ -42,7 +42,7 @@ export function ShiftDetailScreen() {
       link.click();
       link.remove();
       toast.success('Shift CSV report downloaded');
-    } catch (err) {
+    } catch {
       toast.error('Failed to export shift report');
     }
   };

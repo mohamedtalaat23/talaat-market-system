@@ -12,6 +12,8 @@ export interface Employee {
   updated_at: Date;
   deleted_at: Date | null;
   must_change_password: boolean;
+  credential_rotation_required?: boolean;
+  auth_epoch?: number;
 }
 
 export interface EmployeeAuthDetails {
@@ -27,6 +29,8 @@ export interface EmployeeAuthDetails {
   failed_pin_attempts: number;
   pin_locked_until: Date | null;
   must_change_password: boolean;
+  credential_rotation_required: boolean;
+  auth_epoch: number;
 }
 
 
@@ -68,6 +72,8 @@ export class EmployeeRepository {
     'updated_at',
     'deleted_at',
     'must_change_password',
+    'credential_rotation_required',
+    'auth_epoch',
   ];
 
   /**
@@ -154,6 +160,8 @@ export class EmployeeRepository {
         'failed_pin_attempts',
         'pin_locked_until',
         'must_change_password',
+        'credential_rotation_required',
+        'auth_epoch',
       )
       .where('username', username)
       .first();
@@ -233,14 +241,76 @@ export class EmployeeRepository {
     id: number,
     password_hash: string,
     trx?: Knex.Transaction,
+  ): Promise<number> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    const [row] = await queryBuilder
+      .where('id', id)
+      .update({
+        password_hash,
+        must_change_password: false,
+        failed_login_attempts: 0,
+        locked_until: null,
+        password_changed_at: new Date(),
+        // Invalidate every previously issued token for this employee.
+        auth_epoch: db.raw('auth_epoch + 1'),
+      })
+      .returning('auth_epoch');
+
+    return Number(row?.auth_epoch ?? 0);
+  }
+
+  /**
+   * Flags (or clears) an account whose stored credential is a published default.
+   *
+   * Flagging also bumps `auth_epoch`, which immediately invalidates any token
+   * that was minted before the compromise was detected.
+   */
+  async setCredentialRotationRequired(
+    id: number,
+    required: boolean = true,
+    trx?: Knex.Transaction,
   ): Promise<void> {
     const queryBuilder = trx ? trx('employees') : db('employees');
     await queryBuilder.where('id', id).update({
-      password_hash,
-      must_change_password: false,
+      credential_rotation_required: required,
+      must_change_password: true,
+      auth_epoch: db.raw('auth_epoch + 1'),
+      updated_at: db.fn.now(),
+    });
+  }
+
+  /**
+   * Operator-driven credential replacement (local recovery path).
+   *
+   * Writes a new password hash (and optionally a new PIN hash), clears the
+   * compromise flag and bumps `auth_epoch` so all existing sessions die.
+   * When `requirePasswordChange` is true the employee must still choose their own
+   * password at first login after the reset.
+   */
+  async rotateCredentials(
+    id: number,
+    input: { password_hash: string; pin_hash?: string | null; requirePasswordChange?: boolean },
+    trx?: Knex.Transaction,
+  ): Promise<void> {
+    const queryBuilder = trx ? trx('employees') : db('employees');
+    const update: Record<string, unknown> = {
+      password_hash: input.password_hash,
+      credential_rotation_required: false,
+      must_change_password: input.requirePasswordChange ?? true,
       failed_login_attempts: 0,
       locked_until: null,
-    });
+      failed_pin_attempts: 0,
+      pin_locked_until: null,
+      password_changed_at: new Date(),
+      auth_epoch: db.raw('auth_epoch + 1'),
+      updated_at: db.fn.now(),
+    };
+
+    if (input.pin_hash !== undefined) {
+      update['pin_hash'] = input.pin_hash;
+    }
+
+    await queryBuilder.where('id', id).update(update);
   }
 
   /**

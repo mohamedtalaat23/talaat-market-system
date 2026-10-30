@@ -3,13 +3,20 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { employeeRepository } from '../repositories/employee.repository';
 import { AppError, AuthenticationError, AuthorizationError } from './errorHandler';
-import { HTTP_STATUS, type Role } from '../config/constants';
+import { HTTP_STATUS, ERROR_CODES, type Role } from '../config/constants';
 import { logger } from './logger';
 
 interface JWTPayload {
   id: number;
   username: string;
   role: Role;
+  /**
+   * Auth epoch. Tokens minted before migration 035 have no `ae` claim and are
+   * treated as 0, so an upgrade invalidates nothing by itself; rotating a
+   * credential (or locking a compromised account) bumps the column and
+   * immediately invalidates every token issued before the rotation.
+   */
+  ae?: number;
 }
 
 interface CachedEmployee {
@@ -19,6 +26,8 @@ interface CachedEmployee {
   is_active: boolean;
   deleted_at: Date | string | null;
   must_change_password: boolean;
+  credential_rotation_required: boolean;
+  auth_epoch: number;
   expiresAt: number;
 }
 
@@ -90,9 +99,22 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
         is_active: !!employee.is_active,
         deleted_at: employee.deleted_at,
         must_change_password: !!employee.must_change_password,
+        credential_rotation_required: !!employee.credential_rotation_required,
+        auth_epoch: Number(employee.auth_epoch ?? 0),
         expiresAt: now + 60 * 1000, // 60-second TTL
       };
       employeeAuthCache.set(decoded.id, cached);
+    }
+
+    // Session invalidation: a credential rotation (or the detection of a
+    // compromised account) bumps the epoch, which kills every token issued
+    // earlier — including the one the attacker is holding.
+    if (Number(decoded.ae ?? 0) !== cached.auth_epoch) {
+      employeeAuthCache.delete(decoded.id);
+      logger.warn('Authentication blocked: session invalidated by credential rotation', {
+        username: decoded.username,
+      });
+      return next(new AuthenticationError('Your session has expired. Please sign in again.'));
     }
 
     if (!cached.is_active || cached.deleted_at !== null) {
@@ -104,6 +126,22 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
     // Accounts provisioned with a temporary password must rotate it before
     // they can use any other endpoint.
+    if (cached.credential_rotation_required) {
+      logger.warn('Access blocked: account locked pending credential rotation', {
+        username: decoded.username,
+        path: req.originalUrl,
+      });
+      return next(
+        new AppError(
+          ERROR_CODES.CREDENTIAL_RESET_REQUIRED,
+          'This account is locked because it used a published default credential. ' +
+            'An administrator must rotate it locally with "npm run admin:rotate -- --username <name>".',
+          HTTP_STATUS.FORBIDDEN,
+          { credential_reset_required: true },
+        ),
+      );
+    }
+
     if (cached.must_change_password && !isPasswordChangeAllowedPath(req)) {
       logger.warn('Access blocked: password change required', {
         username: decoded.username,

@@ -34,8 +34,30 @@ export const checkoutSchema = z.object({
     .min(1, 'At least one item is required in the cart'),
 });
 
-export const syncOfflineSchema = z.object({
-  transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
+export const syncOfflineSchema = z
+  .object({
+    transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
+    /**
+     * Optional batch-level manager authorization for replaying offline sales that
+     * were priced below the catalogue price (or heavily discounted). The PIN is
+     * verified server-side before the replay is accepted.
+     */
+    manager_id: z.number().int().positive('Manager ID must be positive').optional(),
+    manager_pin: z
+      .string()
+      .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+      .optional(),
+  })
+  .refine((data) => (data.manager_id === undefined) === (data.manager_pin === undefined), {
+    message: 'manager_id and manager_pin must be supplied together',
+    path: ['manager_pin'],
+  });
+
+export const quarantineDecisionSchema = z.object({
+  decision: z.enum(['approve', 'reject']),
+  manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+  notes: z.string().trim().max(500).nullable().optional(),
 });
 
 export const posIdParamSchema = z.object({

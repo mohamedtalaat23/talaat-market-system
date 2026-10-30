@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPlus, UserCog } from 'lucide-react';
 import { EmployeeForm } from './EmployeeForm';
@@ -18,7 +18,7 @@ export function EmployeeModal() {
   const isOpen = useModalStore((state) => state.activeModals.employee_form);
   const payload = useModalStore((state) => state.modalPayloads.employee_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('employee_form');
+  const closeModal = useCallback(() => closeModalAction('employee_form'), [closeModalAction]);
 
   const createMutation = useCreateEmployee();
   const updateMutation = useUpdateEmployee();

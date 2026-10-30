@@ -73,7 +73,7 @@ export function App() {
   const { initializeAuth, isLoading } = useAuthStore();
 
   useEffect(() => {
-    initializeAuth();
+    void initializeAuth();
   }, [initializeAuth]);
 
   if (isLoading) {
