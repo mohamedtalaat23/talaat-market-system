@@ -114,7 +114,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
     if (!validationResult.success) {
       const fieldErrors: Record<string, string> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         if (err.path[0]) {
           fieldErrors[err.path[0] as string] = err.message;
         }

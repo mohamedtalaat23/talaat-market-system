@@ -43,7 +43,7 @@ export function RecordPaymentModal({
 
     const paymentSchema = z.object({
       amount: z.coerce
-        .number({ invalid_type_error: t('customers.amountNumberError') })
+        .number({ error: t('customers.amountNumberError') })
         .positive(t('customers.amountPositiveError')),
       notes: z
         .string()
@@ -59,7 +59,7 @@ export function RecordPaymentModal({
     });
 
     if (!validationResult.success) {
-      const errMessage = validationResult.error.errors[0]?.message || 'Invalid payment details';
+      const errMessage = validationResult.error.issues[0]?.message || 'Invalid payment details';
       setError(errMessage);
       toast.error(errMessage);
       return;

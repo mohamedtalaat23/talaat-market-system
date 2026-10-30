@@ -8,7 +8,7 @@ export const createSupplierSchema = z.object({
   email: z.string().trim().email('Invalid email format').or(z.literal('')).nullable().optional(),
   address: z.string().trim().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
-  status: z.enum(['active', 'inactive', 'suspended']).default('active').optional(),
+  status: z.enum(['active', 'inactive', 'suspended']).optional(),
 });
 
 export const updateSupplierSchema = z.object({

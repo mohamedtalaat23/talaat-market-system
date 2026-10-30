@@ -69,7 +69,7 @@ export const createEmployeeSchema = z.object({
     .nullable()
     .optional(),
   role: z.enum(['admin', 'manager', 'cashier'], {
-    errorMap: () => ({ message: 'Invalid role type' }),
+    error: 'Invalid role type',
   }),
   is_active: z.boolean().default(true),
 });
@@ -101,7 +101,7 @@ export const updateEmployeeSchema = z.object({
     .optional(),
   role: z
     .enum(['admin', 'manager', 'cashier'], {
-      errorMap: () => ({ message: 'Invalid role type' }),
+      error: 'Invalid role type',
     })
     .optional(),
   is_active: z.boolean().optional(),

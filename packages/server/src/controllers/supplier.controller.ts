@@ -28,7 +28,7 @@ export class SupplierController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid query filters', errors: error.issues });
         return;
       }
       logger.error('Error in supplier controller list:', error);
@@ -57,7 +57,7 @@ export class SupplierController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in supplier controller detail:', error);
@@ -83,7 +83,7 @@ export class SupplierController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Validation failed', errors: error.errors });
+          .json({ status: 'error', message: 'Validation failed', errors: error.issues });
         return;
       }
       if (error instanceof Error && error.message.includes('already in use')) {
@@ -114,7 +114,7 @@ export class SupplierController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Validation failed', errors: error.errors });
+          .json({ status: 'error', message: 'Validation failed', errors: error.issues });
         return;
       }
       logger.error('Error in supplier controller update:', error);
@@ -139,7 +139,7 @@ export class SupplierController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in supplier controller delete:', error);

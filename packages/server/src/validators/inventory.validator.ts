@@ -14,11 +14,11 @@ export const adjustInventorySchema = z
     adjustment_type: z.enum(
       ['stock_addition', 'stock_removal', 'damaged', 'expired', 'manual_correction'],
       {
-        errorMap: () => ({ message: 'Invalid adjustment type' }),
+        error: 'Invalid adjustment type',
       },
     ),
     quantity_change: z.coerce.number({
-      invalid_type_error: 'Quantity change must be a number',
+      error: 'Quantity change must be a number',
     }),
     notes: z.string().trim().max(1000).nullable().optional(),
   })

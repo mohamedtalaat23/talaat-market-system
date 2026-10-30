@@ -57,7 +57,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
 
       // Bubble up the specific inventory underflow error code to trigger the frontend Modal
@@ -219,7 +219,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -275,7 +275,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid sync payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid sync payload', errors: error.issues });
       }
       return res
         .status(400)
@@ -333,7 +333,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res
         .status(400)
@@ -394,7 +394,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message || 'Refund failed.' });
     }
@@ -446,7 +446,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message || 'Void failed.' });
     }
