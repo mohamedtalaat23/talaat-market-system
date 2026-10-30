@@ -62,12 +62,12 @@ const TransactionSearchModal = () => {
   const handleReprintRequest = (sale: any) => {
     openModal('pos_manager_override', {
       action: 'reprint_receipt',
-      onSuccess: async () => {
+      onSuccess: async (manager_id: number, pin: string) => {
         try {
-          await apiClient.post(`/pos/receipts/${sale.id}/reprint`);
+          await apiClient.post(`/pos/receipts/${sale.id}/reprint`, { manager_id, manager_pin: pin });
           // Note: we might want to close transaction search, but let's keep it open
           // Open receipt preview so they can print it
-          openModal('pos_receipt_preview', { sale });
+          openModal('pos_receipt_preview', { sale, approval: { manager_id, pin } });
         } catch {
           toast.error(t('pos.toasts.reprintAuthFailed'));
         }

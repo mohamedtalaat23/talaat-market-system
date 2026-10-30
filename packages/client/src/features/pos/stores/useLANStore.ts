@@ -71,8 +71,8 @@ interface LANState {
   setMode: (mode: LANMode) => void;
   setHostAddress: (address: string) => void;
   setStatus: (status: LANStatus) => void;
-  addOfflineSale: (sale: OfflineSale) => void;
-  removeOfflineSale: (id: string) => void;
+  addOfflineSale: (sale: OfflineSale) => Promise<void>;
+  removeOfflineSale: (id: string) => Promise<void>;
   clearOfflineSales: () => void;
   addOfflineShiftClosure: (closure: OfflineShiftClosure) => void;
   removeOfflineShiftClosure: (id: string) => void;
@@ -139,27 +139,12 @@ export const useLANStore = create<LANState>()(
       setMode: (mode) => set({ mode }),
       setHostAddress: (hostAddress) => set({ hostAddress }),
       setStatus: (status) => set({ status }),
-      addOfflineSale: (sale) => {
-        // Persist the new sale directly to Electron store if available and hydrated.
-        // This avoids a full O(n) diff on every state write (the old setItem approach).
-        if (isHydrated && window.electronAPI?.persistOfflineSale) {
-          void window.electronAPI
-            .persistOfflineSale(sale)
-            .catch((err: unknown) =>
-              console.error('[LAN] Failed to persist offline sale to Electron Store:', err),
-            );
-        }
+      addOfflineSale: async (sale) => {
+        if (window.electronAPI?.persistOfflineSale) await window.electronAPI.persistOfflineSale(sale);
         set((state) => ({ offlineSales: [...state.offlineSales, sale] }));
       },
-      removeOfflineSale: (id) => {
-        // Remove the sale directly from Electron store if available and hydrated.
-        if (isHydrated && window.electronAPI?.removeOfflineSale) {
-          void window.electronAPI
-            .removeOfflineSale(id)
-            .catch((err: unknown) =>
-              console.error('[LAN] Failed to remove offline sale from Electron Store:', err),
-            );
-        }
+      removeOfflineSale: async (id) => {
+        if (window.electronAPI?.removeOfflineSale) await window.electronAPI.removeOfflineSale(id);
         set((state) => ({ offlineSales: state.offlineSales.filter((sale) => sale.id !== id) }));
       },
       clearOfflineSales: () => set({ offlineSales: [] }),

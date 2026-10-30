@@ -22,7 +22,7 @@ export function ReceiptPreviewModal() {
   const handlePrint = useCallback(async () => {
     if (!sale) return;
     try {
-      await printerService.printReceipt(sale);
+      await printerService.printReceipt(sale, Boolean(payload?.approval), payload?.approval);
 
       const { status } = useLANStore.getState();
       // Mark as printed on the backend - only post if online and ID is positive
@@ -37,7 +37,7 @@ export function ReceiptPreviewModal() {
       toast.error(t('pos.toasts.printFailed'));
       closeModal();
     }
-  }, [sale, closeModal, t]);
+  }, [sale, payload?.approval, closeModal, t]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

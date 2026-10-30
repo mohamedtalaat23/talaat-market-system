@@ -236,7 +236,9 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
             icon={<Banknote size={16} />}
             onClick={() => {
               if (window.electronAPI) {
-                window.electronAPI.openCashDrawer().catch(console.error);
+                openModal('pos_manager_override', { action: 'drawer_adjustment', onSuccess: (manager_id: number, pin: string) => {
+                  void window.electronAPI?.openCashDrawer({ manager_id, pin }).catch((error: unknown) => toast.error(error instanceof Error ? error.message : 'Drawer authorization failed'));
+                } });
               }
               setTimeout(() => {
                 const searchInput = document.querySelector(

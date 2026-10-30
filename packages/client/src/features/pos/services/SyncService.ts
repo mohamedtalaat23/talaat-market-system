@@ -72,7 +72,7 @@ async function tryFlush(): Promise<boolean> {
 
         for (const sale of salesToFlush) {
           if (syncedSet.has(sale.id) || syncedSet.has(sale.payload.idempotency_key)) {
-            removeOfflineSale(sale.id);
+            await removeOfflineSale(sale.id);
           }
         }
 

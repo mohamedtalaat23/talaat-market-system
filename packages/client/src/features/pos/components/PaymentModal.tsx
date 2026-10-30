@@ -128,7 +128,7 @@ export function PaymentModal() {
       }
     };
 
-    const executeOfflineCheckout = () => {
+    const executeOfflineCheckout = async () => {
       const activeShift = usePOSStore.getState().activeShift;
       const shiftId = activeShift?.id || 1;
       const registerId = usePOSStore.getState().registerId || 1;
@@ -199,7 +199,7 @@ export function PaymentModal() {
       };
 
       // Spool locally to offline queue
-      addOfflineSale({
+      await addOfflineSale({
         id: offlineUuid,
         idempotency_key,
         payload,
@@ -231,7 +231,7 @@ export function PaymentModal() {
 
     // Resilient offline/timeout bypass
     if (mode === 'client' && status === 'offline') {
-      executeOfflineCheckout();
+      try { await executeOfflineCheckout(); } catch (failure) { toast.error(failure instanceof Error ? failure.message : 'Offline authorization unavailable'); }
       setIsSubmitting(false);
       return;
     }
@@ -298,7 +298,7 @@ export function PaymentModal() {
           duration: 4000,
         });
         setStatus('offline');
-        executeOfflineCheckout();
+        try { await executeOfflineCheckout(); } catch (failure) { toast.error(failure instanceof Error ? failure.message : 'Offline authorization unavailable'); }
       } else {
         toast.error(error.response?.data?.message || error.message || 'Checkout failed.');
       }

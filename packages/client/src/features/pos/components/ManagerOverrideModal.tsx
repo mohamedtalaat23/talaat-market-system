@@ -84,7 +84,7 @@ export function ManagerOverrideModal() {
         const state = usePOSStore.getState();
 
         if (payload?.onSuccess) {
-          payload.onSuccess(selectedManagerId);
+          payload.onSuccess(selectedManagerId, pin);
         } else if (payload?.action === 'clear_cart') {
           state.clearCart();
           toast.error(t('pos.toasts.cartDiscarded'));

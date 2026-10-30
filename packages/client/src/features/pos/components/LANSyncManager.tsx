@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/authStore';
 /**
  * LANSyncManager — Reactive UI + Heartbeat Coordinator
  *
@@ -23,6 +24,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function LANSyncManager() {
   const { t } = useTranslation();
+  const token = useAuthStore(s => s.token);
+  useEffect(() => { if (token) void useLANStore.persist.rehydrate(); }, [token]);
   const { mode, status, hostAddress, offlineSales, setStatus } = useLANStore();
   // Local state mirrors the service singleton's flag for UI rendering only
   const [isFlushing, setIsFlushing] = useState(false);

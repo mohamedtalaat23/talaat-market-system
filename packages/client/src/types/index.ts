@@ -190,7 +190,7 @@ export interface PrinterStatus {
 /** Type definition for the contextBridge-exposed electron API */
 export interface ElectronAPI {
   printReceipt: (data: unknown) => Promise<void>;
-  openCashDrawer: () => Promise<void>;
+  openCashDrawer: (approval?: { manager_id: number; pin: string }) => Promise<void>;
   createBackup: (path: string) => Promise<void>;
   restoreBackup: (path: string) => Promise<void>;
   getServerPort: () => Promise<number>;
@@ -199,7 +199,7 @@ export interface ElectronAPI {
   selectFile: (filters: unknown) => Promise<string | null>;
 
   // Native ESC/POS Hardware printing (Phase 12)
-  enqueuePrintJob: (receipt: Receipt) => Promise<{ success: boolean; jobId: string }>;
+  enqueuePrintJob: (receipt: Receipt, approval?: { manager_id: number; pin: string }) => Promise<{ success: boolean; jobId: string }>;
   getPrintJobs: () => Promise<PrintJob[]>;
   retryPrintJob: (jobId: string) => Promise<boolean>;
   clearPrintQueue: () => Promise<void>;

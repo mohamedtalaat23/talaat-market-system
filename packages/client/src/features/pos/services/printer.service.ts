@@ -1,11 +1,15 @@
-import type { PrinterPayload} from './receipt-template';
+import type { PrinterPayload } from './receipt-template';
 import { generateReceiptHtml } from './receipt-template';
 
 export class PrinterService {
   /**
    * Primary entry point to print a receipt
    */
-  public async printReceipt(sale: any, isReprint: boolean = false): Promise<{ success: boolean }> {
+  public async printReceipt(
+    sale: any,
+    isReprint: boolean = false,
+    approval?: { manager_id: number; pin: string },
+  ): Promise<{ success: boolean }> {
     // 1. Construct standard receipt domain model
     const receipt: any = {
       receiptNumber: sale.receipt_number || 'STR01-REG01-UNKNOWN',
@@ -48,12 +52,8 @@ export class PrinterService {
 
     // Try Electron Hardware Queue printing first
     if (window.electronAPI?.enqueuePrintJob) {
-      try {
-        await window.electronAPI.enqueuePrintJob(receipt);
-        return { success: true };
-      } catch (error) {
-        console.error('Electron hardware queue print failed, falling back to browser HTML', error);
-      }
+      await window.electronAPI.enqueuePrintJob(receipt, approval);
+      return { success: true }; // Authorization denial never falls back to browser printing.
     }
 
     // Fallback: Pre-render HTML

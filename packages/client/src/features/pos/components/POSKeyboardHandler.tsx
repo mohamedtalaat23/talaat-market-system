@@ -124,12 +124,12 @@ export function POSKeyboardHandler() {
           if (lastSaleId) {
             openModal('pos_manager_override', {
               action: 'reprint_receipt',
-              onSuccess: async () => {
+              onSuccess: async (manager_id: number, pin: string) => {
                 try {
-                  await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`);
+                  await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`, { manager_id, manager_pin: pin });
                   const res = await apiClient.get(`/pos/receipts/${lastSaleId}`);
                   if (res.data?.success) {
-                    void printerService.printReceipt(res.data.data, true);
+                    void printerService.printReceipt(res.data.data, true, { manager_id, pin });
                   }
                 } catch {
                   toast.error(t('pos.toasts.reprintFailed'));
