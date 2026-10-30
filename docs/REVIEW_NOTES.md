@@ -1,3 +1,9 @@
+> P0-2 update: hardware IPC is now resolved at code/testing level. See
+> [HARDWARE_IPC_SECURITY](HARDWARE_IPC_SECURITY.md) for the authority model,
+> permission matrix, offline bounds and remaining native acceptance risks.
+> Overall commercial release remains NOT READY; historical P0-2 statements below
+> are superseded by this update and the latest QA entry.
+
 # Latest commercial release assessment — October 30, 2026
 
 **Decision: NOT READY for a paying customer.** Current authoritative reports:

@@ -16,7 +16,7 @@ for every device/environment item. No checkbox implies evidence not recorded.
 - [x] Stage only locked runtime dependencies, reject build/test/client tools and generate inventory.
 - [x] Build a sandbox-compatible preload and exercise its restricted module surface.
 - [x] Boot the compiled server from a temporary directory with only staged dependencies; verify password rotation/token revocation.
-- [ ] Independently authorize/audit privileged hardware IPC, including offline cases.
+- [x] Independently authorize/audit privileged hardware IPC, including bounded offline cases (code/testing; Windows acceptance remains open).
 - [ ] Re-audit dependencies immediately before signing; compare actual artifact inventory with staging.
 
 ## Windows and installer gates

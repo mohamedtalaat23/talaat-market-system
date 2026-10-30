@@ -181,3 +181,17 @@ verify totals/account access/printing, and only then resume. Keep the accepted
 previous installer and backup with the release record. App binary rollback does
 not justify destructive schema rollback; never run `db:rollback` against business
 data without a separately reviewed recovery plan and explicit approval.
+
+## Hardware authorization setup (P0-2)
+
+See [HARDWARE_IPC_SECURITY](HARDWARE_IPC_SECURITY.md). Deploy matching desktop
+and backend versions. Standalone uses the local authenticated backend. For LAN,
+a technician must configure `HARDWARE_AUTHORITY_URL="https://host:port"` in the
+private userData `config.env`, with the actual server certificate trusted by the
+OS. Never disable TLS verification or let renderer LAN settings select the
+hardware identity authority. After restart, sign in and verify connectivity
+before going offline; cold offline authority is deliberately denied. Offline
+leases last at most 15 minutes/JWT expiry and 100 mutating admissions/dispatches.
+Administrative operations and manual drawer/reprints require an online authority.
+There are no implicit cash-receipt drawer pulses; explicitly authorize drawer
+opening. Preserve the audit and receipt-claim files, and test ownership/ACLs.

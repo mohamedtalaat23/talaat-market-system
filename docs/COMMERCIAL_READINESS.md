@@ -63,8 +63,9 @@ remote system, deployment or publishing operation was used.
 
 Cashier flow now has a real browser acceptance path, including a network failure
 and retry. Sustained all-day register use, scanner timing, simultaneous hardware
-printing and power-loss recovery are not certified. Manual drawer/printing IPC
-still needs per-operation authorization review; see P0-2.
+printing and power-loss recovery are not certified. Hardware IPC now has independent main-process authorization, bounded offline
+leases and durable audit. P0-2 is resolved at code/testing level; see
+[the threat model and limitations](HARDWARE_IPC_SECURITY.md).
 
 Managers have offline approval review and existing return/inventory/reconciliation
 screens. Shift close records expected/count/variance in its atomic audit entry;

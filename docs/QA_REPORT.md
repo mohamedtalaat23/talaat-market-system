@@ -1,3 +1,36 @@
+# P0-2 verification update — October 30, 2026
+
+P0-2 is resolved at code/testing level; native Windows/Electron/physical acceptance
+is still open. See [HARDWARE_IPC_SECURITY](HARDWARE_IPC_SECURITY.md) for the full
+threat model, permissions, offline policy, audit/replay model and changed files.
+
+Final rerun: **453 tests passed** — server unit 308, PostgreSQL integration 56
+(including two new real JWT/role/PIN/epoch hardware authority tests, no skipped
+restore tests), desktop 49, client 39 and real Chromium checkout 1. Lint and all
+workspace type checks pass; server/client builds and desktop/preload compilation
+pass. Restricted preload VM passes. The compiled Node/local-HTTP hardware smoke
+passes, including fsynced audit, persisted replay consumption and explicit
+revocation/HTTPS authority restrictions. CI includes this smoke but its remote
+run was not executed. Existing bundle/native-config warnings remain.
+
+New tests exercise the main gate and actual registered handlers rather than UI
+checks alone: unauthorized and forged identities, manager/admin/scoped PIN
+permissions, direct/alternate calls, concurrent fresh-nonce reprints, stale or
+replayed requests, expiry/budget/cold restart/revocation/clock rollback, audit and
+hardware failures, queued dispatch rechecks/results, ESC/POS injection and arbitrary
+printer paths. Client tests prevent fallback printing and destructive queue state
+updates after denial. No real employee credentials or business databases were used.
+
+No native Electron binary/headless display was available here. HTTPS LAN deployment,
+actual Windows renderer/frame restrictions, ACLs, device naming/drivers, physical
+printing/drawer faults, clock/power/disk recovery and operational offline limits
+require the deployment acceptance checklist. The Linux Node smoke is not Electron
+or hardware certification. No push, deployment or release publication occurred.
+
+---
+
+## Previous commercial-pass snapshot (historical results follow)
+
 # QA report — October 30, 2026
 
 **Release decision: NOT READY.** Tests use synthetic records only. Passing these
