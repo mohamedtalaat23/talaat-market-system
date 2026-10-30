@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const reprintSchema = z.object({
+  manager_id: z.number().int().positive().optional(),
   manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
 });
 

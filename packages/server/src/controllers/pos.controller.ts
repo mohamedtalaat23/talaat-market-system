@@ -199,16 +199,17 @@ export class POSController {
   reprintReceipt = async (req: Request, res: Response) => {
     try {
       const saleId = String(req.params.id);
-      const managerId = (req as any).user.id;
+      const callerId = req.user!.id;
       const managerRole = (req as any).user.role;
 
-      const { manager_pin } = reprintSchema.parse(req.body);
+      const { manager_pin, manager_id } = reprintSchema.parse(req.body);
+      const managerId = manager_id ?? callerId;
 
-      if (!['manager', 'admin'].includes(managerRole)) {
+      if (!manager_id && !['manager', 'admin'].includes(managerRole)) {
         return res.status(403).json({ success: false, message: 'Manager authorization required' });
       }
 
-      const verification = await pinService.verifyPin(managerId, manager_pin, managerId, req.ip);
+      const verification = await pinService.verifyPin(managerId, manager_pin, callerId, req.ip);
       if (!verification.success) {
         return res.status(403).json({ success: false, message: verification.message });
       }

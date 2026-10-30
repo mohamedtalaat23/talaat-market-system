@@ -271,10 +271,25 @@ export function parsePrinterConfigArgs(args: unknown[]): PrinterConfig {
     throw new IpcValidationError(channel, 'paperWidth', '58 or 80', paperWidth);
   }
 
+  const devicePath = str(record['devicePath'] ?? '', channel, 'devicePath', { max: 300 });
+  if (
+    record['type'] === 'usb' &&
+    !(
+      /^(?:\\\\[.]\\)?(?:COM|LPT)[1-9][0-9]*$/i.test(devicePath) ||
+      /^\/dev\/usb\/lp[0-9]+$/.test(devicePath)
+    )
+  ) {
+    throw new IpcValidationError(
+      channel,
+      'devicePath',
+      'a COM/LPT or /dev/usb/lp device',
+      devicePath,
+    );
+  }
   return {
     type: oneOf(record['type'], channel, 'type', ['mock', 'usb', 'system'] as const),
     paperWidth,
-    devicePath: str(record['devicePath'] ?? '', channel, 'devicePath', { max: 300 }),
+    devicePath,
     ...(typeof record['deviceName'] === 'string'
       ? { deviceName: str(record['deviceName'], channel, 'deviceName', { max: 200 }) }
       : {}),

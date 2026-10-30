@@ -46,7 +46,7 @@ it('cannot report a mock printer as a successful production print', async () => 
   expect(app.isPackaged).toBe(true);
   mockData['printerConfig'] = { type: 'mock', paperWidth: 80, retries: 1 };
   const queue = new PrintQueue();
-  queue.enqueue({ receiptNumber: 'SYNTHETIC', paymentMethod: 'cash' } as Receipt);
+  queue.enqueue({ receiptNumber: 'SYNTHETIC', paymentMethod: 'cash' } as Receipt, async () => {});
   await new Promise<void>((resolve) => setImmediate(resolve));
   expect(queue.getJobs()[0]?.status).toBe('failed');
   expect(queue.getJobs()[0]?.error).toMatch(/PRINTER_NOT_CONFIGURED/);

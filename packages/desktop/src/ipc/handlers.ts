@@ -1,3 +1,5 @@
+import path from 'path';
+import { createHardwareAuthorization } from './authorization';
 import { type IpcMain, type IpcMainInvokeEvent, dialog, app, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { printQueue } from './print-queue';
@@ -45,17 +47,52 @@ export function registerIpcHandlers(
   ipcMain: IpcMain,
   { serverPort, assertTrustedSender }: RegisterIpcOptions,
 ): void {
+  const claims = new Store({ name: 'hardware-print-claims' }) as unknown as {
+    get(key: string, fallback: string[]): string[];
+    set(key: string, value: string[]): void;
+  };
+  const authorization = createHardwareAuthorization(
+    serverPort,
+    path.join(app.getPath('userData'), 'hardware-audit.ndjson'),
+  );
   /** Wraps a handler with sender verification. */
   const handle = (
     channel: string,
     handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => unknown,
   ): void => {
     ipcMain.handle(channel, async (event, ...args) => {
-      assertTrustedSender(event);
-
       try {
-        return await handler(event, ...args);
+        assertTrustedSender(event);
+        const envelope = args.pop();
+        const receipt = channel === IPC_CHANNELS.ENQUEUE_PRINT_JOB ? parseReceiptArgs(args) : null;
+        const operation = () =>
+          receipt && claims.get('receipts', []).includes(receipt.receiptNumber)
+            ? IPC_CHANNELS.PRINT_RECEIPT
+            : channel;
+        return await authorization.execute(
+          operation,
+          envelope,
+          () => {
+            if (receipt)
+              claims.set('receipts', [
+                ...new Set([...claims.get('receipts', []), receipt.receiptNumber]),
+              ]);
+            return handler(event, ...args);
+          },
+          channel === IPC_CHANNELS.OPEN_CASH_DRAWER
+            ? args[0]
+            : channel === IPC_CHANNELS.REMOVE_OFFLINE_SALE
+              ? {
+                  idempotency_key: (
+                    offlineStore.get('offlineSales', []) as OfflineSaleRecord[]
+                  ).find((entry) => entry.id === args[0])?.payload['idempotency_key'],
+                }
+              : channel === IPC_CHANNELS.ENQUEUE_PRINT_JOB
+                ? args[1]
+                : undefined,
+        );
       } catch (error) {
+        authorization.rejected(channel);
         if (error instanceof IpcValidationError) {
           console.warn(`[IPC] Rejected ${channel}: ${error.message}`);
         }
@@ -150,7 +187,7 @@ export function registerIpcHandlers(
   handle(IPC_CHANNELS.ENQUEUE_PRINT_JOB, async (_event, ...args) => {
     const receipt = parseReceiptArgs(args);
     console.log('[IPC] enqueue-job called for receipt:', receipt.receiptNumber);
-    const job = printQueue.enqueue(receipt as Receipt);
+    const job = printQueue.enqueue(receipt as Receipt, authorization.jobPermit());
     return { success: true, jobId: job.id };
   });
 
@@ -161,7 +198,7 @@ export function registerIpcHandlers(
   handle(IPC_CHANNELS.RETRY_PRINT_JOB, async (_event, ...args) => {
     const jobId = parseJobIdArgs(args);
     console.log('[IPC] retry-job called for:', jobId);
-    return printQueue.retryJob(jobId);
+    return printQueue.retryJob(jobId, authorization.jobPermit());
   });
 
   handle(IPC_CHANNELS.CLEAR_PRINT_QUEUE, async () => {
@@ -227,9 +264,7 @@ export function registerIpcHandlers(
   // privileged filesystem/database access, so there is nothing safe to expose
   // here. Calling these channels now rejects with a clear error.
   handle(IPC_CHANNELS.CREATE_BACKUP, async () => {
-    throw new Error(
-      'Backup must be created from the server (Settings → Full Database Backup).',
-    );
+    throw new Error('Backup must be created from the server (Settings → Full Database Backup).');
   });
 
   handle(IPC_CHANNELS.RESTORE_BACKUP, async () => {
@@ -312,7 +347,8 @@ export function registerIpcHandlers(
 
     const existingIndex = sales.findIndex((entry) => entry['id'] === sale.id);
     if (existingIndex >= 0) {
-      sales[existingIndex] = sale;
+      if (JSON.stringify(sales[existingIndex]) !== JSON.stringify(sale))
+        throw new Error('Queued offline sales are immutable.');
     } else {
       sales.push(sale);
     }

@@ -46,6 +46,7 @@ export class EscPosFormatter {
    * Transforms pre-rendered string lines into full binary ESC/POS printer instructions.
    */
   public static format(lines: string[], kickDrawer: boolean = false): Uint8Array {
+    lines = lines.map((line) => line.replace(/[\x00-\x1f\x7f]/g, '')); // Never execute commands embedded in receipt text.
     const buffers: Uint8Array[] = [];
 
     // 1. Initialize printer

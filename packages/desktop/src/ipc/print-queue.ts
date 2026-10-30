@@ -1,3 +1,4 @@
+import { parsePrinterConfigArgs } from './validation';
 import type { Receipt, PrinterConfig, PrintJob, PrinterStatus } from './printing-types';
 import { ReceiptRenderer } from './receipt-renderer';
 import { EscPosFormatter } from './escpos-formatter';
@@ -20,10 +21,16 @@ export const DEFAULT_PRINTER_CONFIG: PrinterConfig = {
 export class PrintQueue {
   private queue: PrintJob[] = [];
   private isProcessing = false;
+  private permits = new Map<
+    string,
+    (() => Promise<void>) & { complete?: (result: string) => void }
+  >();
   private config: PrinterConfig;
 
   constructor() {
-    this.config = (store.get('printerConfig') as PrinterConfig) || { ...DEFAULT_PRINTER_CONFIG };
+    this.config = parsePrinterConfigArgs([
+      store.get('printerConfig') || { ...DEFAULT_PRINTER_CONFIG },
+    ]);
     this.queue = ((store.get('printJobs') as PrintJob[] | undefined) || []).map((job) =>
       ['pending', 'processing', 'retrying'].includes(job.status)
         ? {
@@ -57,6 +64,7 @@ export class PrintQueue {
 
   public clearQueue(): void {
     this.queue = [];
+    this.permits.clear();
     store.set('printJobs', this.queue);
     console.log('[PrintQueue] Queue cleared by administrative request');
   }
@@ -64,7 +72,7 @@ export class PrintQueue {
   /**
    * Enqueues a new receipt for asynchronous print queue processing.
    */
-  public enqueue(receipt: Receipt): PrintJob {
+  public enqueue(receipt: Receipt, permit?: () => Promise<void>): PrintJob {
     const job: PrintJob = {
       id: Math.random().toString(36).substring(2, 11),
       receipt,
@@ -74,6 +82,7 @@ export class PrintQueue {
       error: null,
     };
 
+    if (permit) this.permits.set(job.id, permit);
     this.queue.push(job);
     console.log(`[PrintQueue] Enqueued job: ${job.id} for receipt: ${receipt.receiptNumber}`);
 
@@ -85,11 +94,12 @@ export class PrintQueue {
   /**
    * Retries a specific failed job inside the queue.
    */
-  public retryJob(jobId: string): boolean {
+  public retryJob(jobId: string, permit?: () => Promise<void>): boolean {
     const job = this.queue.find((j) => j.id === jobId);
     if (!job) return false;
 
     if (job.status === 'failed') {
+      if (permit) this.permits.set(job.id, permit);
       job.status = 'pending';
       job.attempts = 0;
       job.error = null;
@@ -214,13 +224,18 @@ export class PrintQueue {
     store.set('printJobs', this.queue);
     console.log(`[PrintQueue] Processing job: ${nextJob.id} (Attempt ${nextJob.attempts + 1})`);
 
+    const permit = this.permits.get(nextJob.id);
     try {
+      if (permit) await permit();
+      else if (app.isPackaged) throw new Error('JOB_AUTHORIZATION_REQUIRED');
       if (app.isPackaged && this.config.type === 'mock') {
         throw new Error('PRINTER_NOT_CONFIGURED: Select a real printer before printing.');
       }
       if (this.config.type === 'system') {
         await this.printWithSystemPrinter(nextJob.receipt, this.config);
+        permit?.complete?.('completed');
         nextJob.status = 'completed';
+        this.permits.delete(nextJob.id);
         nextJob.error = null;
         console.log(`[PrintQueue] Printed successfully via system printer: Job ${nextJob.id}`);
         this.isProcessing = false;
@@ -236,14 +251,17 @@ export class PrintQueue {
       }
 
       const lines = ReceiptRenderer.render(nextJob.receipt, this.config.paperWidth);
-      const kickDrawer = nextJob.receipt.paymentMethod.toLowerCase() === 'cash';
+      // Receipt content is renderer input, not authority to open a cash drawer.
+      const kickDrawer = false;
       const bytes = EscPosFormatter.format(lines, kickDrawer);
 
       await adapter.connect();
       await adapter.write(bytes);
       await adapter.disconnect();
 
+      permit?.complete?.('completed');
       nextJob.status = 'completed';
+      this.permits.delete(nextJob.id);
       nextJob.error = null;
       console.log(`[PrintQueue] Printed successfully: Job ${nextJob.id}`);
 
@@ -258,6 +276,7 @@ export class PrintQueue {
       this.isProcessing = false;
       this.triggerProcessing();
     } catch (err: any) {
+      permit?.complete?.('failed');
       nextJob.attempts += 1;
       const errorMsg = err.message || 'Unknown printer hardware error';
       nextJob.error = errorMsg;
@@ -292,6 +311,7 @@ export class PrintQueue {
         this.triggerProcessing();
       } else {
         nextJob.status = 'failed';
+        this.permits.delete(nextJob.id);
         console.error(
           `[PrintQueue] Job ${nextJob.id} reached maximum attempts (${maxRetries}). Print job failed.`,
         );

@@ -5,6 +5,7 @@ const path = require('node:path');
 const calls = [];
 let api;
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../packages/desktop/dist/preload.js'), 'utf8'), {
+  window: { localStorage: { getItem: () => null } }, crypto: require('node:crypto').webcrypto,
   require(name) {
     if (name !== 'electron') throw new Error(`Sandbox cannot load ${name}`);
     return { contextBridge: { exposeInMainWorld: (name, bridge) => { if(name !== 'electronAPI') throw new Error(name); api = bridge; } },
