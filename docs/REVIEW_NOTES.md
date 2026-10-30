@@ -39,7 +39,8 @@ now run before commit, allowing failure to roll back the inserted data.
 
 ### Release blockers and remaining acceptance checks
 
-1. **Dependencies:** `npm audit --omit=dev` reports 13 affected dependency entries:
+1. **Dependencies (initial review, superseded by the dependency pass below):**
+   `npm audit --omit=dev` originally reported 13 affected dependency entries:
    1 critical, 8 high, 4 moderate. This is an advisory inventory, not a finding
    that every issue is exploitable through this application. Includes critical
    `proxy-addr` ([advisory](https://github.com/advisories/GHSA-jqcg-44mw-7w3h)),
@@ -139,3 +140,43 @@ automatically.
 Operational docs: `docs/ACCOUNTING_RULES.md` (money rules) and
 `docs/UPGRADE_AND_RECOVERY.md` (credential rotation, backup/restore, staging
 checklist).
+
+## Dependency cleanup — October 30, 2026
+
+Local rollback checkpoint: `7127791`. Compatible dependency patches: `e55e7d5`.
+Zod 4 migration and additional Express patch: `f8d59b7`.
+
+The production dependency audit (`npm audit --omit=dev`) now reports **zero**
+advisories. Notable resolved versions are Axios 1.21.0, Express 4.22.3,
+compression 1.8.2, proxy-addr 2.0.8, Zod 4.6.7 and React Router DOM 7.18.5.
+No forced audit fix, lifecycle scripts, or package overrides were used.
+
+The Zod migration updates error customization and `.issues` access while keeping
+the API's outward `errors` response key. Optional supplier status keeps its
+previous omission behavior. Reference: [official Zod migration guide](https://zod.dev/v4/changelog).
+The Router migration removes obsolete v6 future flags and explicitly marks
+navigation return values as ignored where handlers do not await navigation.
+Four new route-guard tests cover login destination preservation, forced password
+rotation, cashier denial and administrator access.
+
+Validation after upgrades: lint, all-workspace type checks, server/client builds,
+304 server unit tests, 43 PostgreSQL integration tests, 35 client tests and 18
+desktop tests pass (**400 tests total**). The PostgreSQL tests used disposable
+review databases and the isolated database server was stopped afterward. The
+client build retains its existing large-chunk and dynamic-import warnings.
+
+### Still required before release
+
+- The **full** audit (without `--omit=dev`) reports **36 affected dependency
+  entries: 3 critical, 22 high, 4 moderate, 7 low**. These are toolchain and
+  Electron/build dependencies; zero production-only findings does not certify
+  the distributed desktop application. The desktop's `extraResources` copies
+  the entire root `node_modules`, so dev dependencies may enter the installer.
+  Review the Electron/toolchain upgrades and stage only required runtime
+  dependencies before producing and accepting an installer.
+- The full browser checkout test still uses blocked default credentials and
+  needs new fixture provisioning plus a real browser run.
+- Installer, printer/drawer hardware, upgrade and remaining operational
+  acceptance checks above are still outstanding.
+
+No commits were pushed and nothing was deployed in this pass.
