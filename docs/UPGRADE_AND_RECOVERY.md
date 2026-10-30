@@ -1,3 +1,12 @@
+> Current release decision: **NOT READY**. See [INSTALLATION_GUIDE](INSTALLATION_GUIDE.md)
+> for owner/technician procedures and legacy PostgreSQL authentication upgrade.
+> Credential recovery now writes **separate `recovery-<id>-<uuid>.txt` files before
+> modifying accounts**, clears the old PIN unless replaced, and never overwrites
+> another employee's output. Historical descriptions of one shared reset file
+> below are superseded. Migration 036 adds nullable refund retry keys and a unique
+> constraint; the refund API now requires a key. Apply it with the same build mode
+> as the installation, after taking a backup.
+
 # Upgrade, credential rotation and recovery runbook
 
 _For the administrator installing an update or recovering a compromised

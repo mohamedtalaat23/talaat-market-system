@@ -47,20 +47,20 @@ Before compiling the Windows installer (`.exe`), you must bundle the PostgreSQL 
 
 ---
 
-## 4. Antivirus & Windows Defender Exclusions
+## 4. Security and installation warnings
 
-Because the application bundles and executes utility binaries (`postgres.exe`, `pg_ctl.exe`, and Knex child processes) from the user profile folder, local antivirus engines (specifically **Windows Defender** or **SmartScreen**) may flags these actions as suspicious heuristics (e.g., Trojan/Unsigned binary alerts).
+Do not disable Defender or add blanket application/profile exclusions. Stop if
+security software blocks the package and have the technician verify the signed
+release, PostgreSQL provenance and exact detection. Code signing identifies the
+publisher; it does not guarantee that a package is safe or eliminate all alerts.
 
-### How to Add Defender Exclusions:
-1. Open **Windows Start Menu** and search for **Windows Security**.
-2. Go to **Virus & threat protection** > **Virus & threat protection settings** > **Manage settings**.
-3. Scroll down to **Exclusions** and click **Add or remove exclusions**.
-4. Select **Add an exclusion** > **Folder** and add:
-   * `%APPDATA%\Talaat Market`
-5. Select **Add an exclusion** > **Process** and input:
-   * `Talaat Market.exe`
-
-*Note: For production releases, code signing the Electron executable and nested binaries (`.exe` and `.dll`) using a valid certificate (EV Code Signing) resolves these antivirus alerts permanently.*
+This release remains **NOT READY** for a paying customer. See
+[commercial assessment](COMMERCIAL_READINESS.md),
+[installation guide](INSTALLATION_GUIDE.md) and
+[release checklist](RELEASE_CHECKLIST.md) for the current acceptance gates.
+The managed database now requires password authentication. Older trust-based
+clusters are refused without modifying their data; migration requires the
+technician procedure in the installation guide.
 
 ---
 

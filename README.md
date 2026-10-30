@@ -1,3 +1,8 @@
+> **Commercial release status: NOT READY.** This is an engineering candidate,
+> not an accepted Windows retail release. Read [COMMERCIAL_READINESS](docs/COMMERCIAL_READINESS.md),
+> [RELEASE_BLOCKERS](docs/RELEASE_BLOCKERS.md) and [INSTALLATION_GUIDE](docs/INSTALLATION_GUIDE.md)
+> before preparing an installation. Do not run demo seeds against business data.
+
 # 🏪 Talaat Market System
 
 > نظام إدارة السوبر ماركت — A production-grade supermarket management system designed for family-run retail stores in Egypt.

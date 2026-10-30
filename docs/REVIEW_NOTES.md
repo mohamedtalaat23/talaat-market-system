@@ -1,3 +1,39 @@
+# Latest commercial release assessment — October 30, 2026
+
+**Decision: NOT READY for a paying customer.** Current authoritative reports:
+[COMMERCIAL_READINESS](COMMERCIAL_READINESS.md), [RELEASE_BLOCKERS](RELEASE_BLOCKERS.md),
+[RELEASE_CHECKLIST](RELEASE_CHECKLIST.md), [INSTALLATION_GUIDE](INSTALLATION_GUIDE.md),
+and [QA_REPORT](QA_REPORT.md).
+
+The final commercial pass verified 424 tests: 308 server unit, 54 PostgreSQL,
+37 client, 24 desktop and one real browser checkout/interruption/retry. Lint,
+type checks, builds, staged-runtime isolation/auth smoke, prior-schema upgrade
+and restricted preload smoke pass. Production audit: zero; full audit: six low
+Jest-tooling entries, excluded from staging. Electron 45.1.0 is selected, but
+actual Windows Electron/hardware/installer acceptance has not been performed.
+
+New fixes: locked-manager PIN denial; private per-employee recovery output before
+rotation and old-PIN clearing; register-specific shifts; checkout ownership;
+concurrent repayment retries; atomic close; discounted/duplicate/idempotent
+refunds with current-shift payouts and prior-tender caps; acknowledged offline
+replays; transactional quarantine decisions plus bilingual manager review;
+persisted interrupted printing and production mock refusal; locked runtime
+staging; bundled sandboxed preload; SCRAM initialization and fail-closed legacy
+cluster handling; single-instance/awaited shutdown; compiled migration extension
+filtering. Migration **036_refund_idempotency** is additive and required before
+using the new refund API, which requires an idempotency key.
+
+P0 gates remain: missing verified PostgreSQL Windows distribution/installer,
+per-operation hardware IPC authorization, actual Windows/Electron/data ACL and
+legacy-auth upgrade acceptance, and fiscal applicability. Do not treat historical
+PASS labels below as certification of these gates. See the current reports for
+exact evidence and the environment fences. No business data or remote system was
+used; nothing was pushed, deployed or published.
+
+---
+
+## Historical review snapshots (superseded where noted above)
+
 # Security & release-readiness review notes
 
 _Last reviewed: October 2026 — branch `cursor/customers-page-ui-polish`._

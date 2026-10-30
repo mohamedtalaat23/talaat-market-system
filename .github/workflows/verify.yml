@@ -50,6 +50,9 @@ jobs:
       - run: npm run test:server:unit
       - run: npm run test:client
       - run: npm run test:desktop
+      - run: npm run compile --workspace=packages/desktop
+      - run: node scripts/check-preload.cjs
+      - run: npm run stage:runtime --workspace=packages/desktop
       - run: npm run build:server
       - run: npm run build:client
       - name: Prepare disposable databases
@@ -60,3 +63,7 @@ jobs:
           npm run db:migrate
           DB_NAME=talaat_restore_test npm run db:migrate
       - run: npm run test:server:integration
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run test:e2e
+        env:
+          TALAAT_E2E: '1'

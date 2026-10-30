@@ -19,7 +19,7 @@ ledgers drift. The rules below are the contract; the implementation lives in
   `NUMERIC`) into integer cents using half-to-even rounding. It throws on `NaN`,
   `Infinity` and non-numeric strings — never silently becomes `0`.
 * `fromCents()` converts back. It rejects fractional cents.
-* No monetary arithmetic is performed on decimals anywhere in the server.
+* Checkout, refund and payment safeguards use integer cents. Other existing reporting/purchasing calculations still require independent rounding review; this document is not proof of every server expression.
 
 ## 2. Sale totals
 
@@ -66,8 +66,9 @@ overpayment. Cash over-tender is legitimate and produces change.
   equal.
 * Each refund is split across the original tenders (`cash`, `card`, `debt`)
   proportionally with `allocateAcrossComponents`, which conserves every cent:
-  the three shares always sum to the refund amount, and refunding the whole sale
-  in several steps returns exactly the original `cash_paid` / `card_paid` /
+  the three shares always sum to the refund amount. The repository uses actual
+  prior refund tender sums to cap the remaining amount of each tender, so
+  refunding the whole sale in several steps returns exactly the original `cash_paid` / `card_paid` /
   `debt_paid`.
 * Refunded cash is deducted from the shift's expected cash; reversed debt is
   credited back to the customer ledger inside the same transaction.
@@ -122,3 +123,17 @@ The server is authoritative for prices, even for sales captured offline:
 Operational consequence: cashiers can always complete an offline sale at the
 catalogue price. Discounted offline sales need a manager to resolve them after
 the connection returns.
+
+## Commercial hardening additions
+
+- Cart discounts are distributed over all receipt lines before calculating a
+  partial refund. Duplicate line IDs in a refund are rejected.
+- Refund API requests require an idempotency key. Migration 036 adds a unique
+  `(sale_id, idempotency_key)` constraint; retries return the original refund.
+- A return from a closed sale is paid through the operator's current **open**
+  shift. Cash refunds reduce that drawer and do not rewrite the closed drawer's
+  counted/expected snapshot. Shift summaries attribute refunds by payout shift.
+- Shift close derives expected cash and records actual/expected/variance in the
+  same locked transaction as its audit event. Repeated close is safe.
+- Exact-balance customer payment retries check the existing ledger key **after**
+  locking the customer, before testing outstanding balance.
