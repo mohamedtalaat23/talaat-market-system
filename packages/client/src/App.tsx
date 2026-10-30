@@ -91,7 +91,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <ErrorBoundary>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <BrowserRouter>
             <Routes>
               {/* Public route */}
               <Route path="login" element={<LoginPage />} />

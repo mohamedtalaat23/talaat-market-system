@@ -28,7 +28,7 @@ export function CustomerDetailScreen() {
     if (confirm(t('customers.deleteConfirm').replace('{name}', customer.name))) {
       deleteCustomer.mutate(customer.id, {
         onSuccess: () => {
-          navigate('/customers');
+          void navigate('/customers');
         },
       });
     }

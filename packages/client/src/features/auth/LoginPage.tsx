@@ -87,7 +87,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(from, { replace: true });
+      void navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
 
@@ -122,12 +122,12 @@ export function LoginPage() {
         // Provisioned accounts must rotate their temporary password first.
         if (employee.must_change_password) {
           toast.success(`Welcome, ${employee.full_name}! Please choose a new password.`);
-          navigate('/change-password', { replace: true });
+          void navigate('/change-password', { replace: true });
           return;
         }
 
         toast.success(`Welcome back, ${employee.full_name}!`);
-        navigate(from, { replace: true });
+        void navigate(from, { replace: true });
       } else {
         setError(t('login.error'));
       }

@@ -62,7 +62,7 @@ export function POSPage() {
     openModal('pos_manager_override', {
       action: 'enter_pos',
       onCancel: () => {
-        navigate('/');
+        void navigate('/');
       },
     });
   }, [openModal, navigate]);

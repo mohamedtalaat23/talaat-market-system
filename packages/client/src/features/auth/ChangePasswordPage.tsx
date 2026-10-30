@@ -50,7 +50,7 @@ export function ChangePasswordPage() {
     try {
       await changePassword(currentPassword, newPassword);
       toast.success(t('changePassword.success'));
-      navigate('/', { replace: true });
+      void navigate('/', { replace: true });
     } catch (err: any) {
       setError(err?.message || t('changePassword.error'));
     } finally {
@@ -60,7 +60,7 @@ export function ChangePasswordPage() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login', { replace: true });
+    void navigate('/login', { replace: true });
   };
 
   const passwordInputType = showPasswords ? 'text' : 'password';

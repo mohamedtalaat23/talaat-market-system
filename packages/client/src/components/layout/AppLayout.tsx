@@ -85,7 +85,7 @@ export const AppLayout = React.memo(() => {
     } finally {
       logout();
       toast.success('Logged out successfully');
-      navigate('/login');
+      void navigate('/login');
     }
   };
 

@@ -41,7 +41,7 @@ export function SupplierDetailScreen() {
       deleteSupplier.mutate(supplier.id, {
         onSuccess: () => {
           setIsDeleteOpen(false);
-          navigate('/suppliers');
+          void navigate('/suppliers');
         },
       });
     }
