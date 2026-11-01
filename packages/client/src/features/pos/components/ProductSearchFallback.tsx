@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Search } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -7,12 +7,14 @@ import toast from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import type { Product } from '@/features/products/hooks/useProductQueries';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ProductSearchFallback() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_product_search);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const payload = useModalStore((state) => state.modalPayloads.pos_product_search);
-  const closeModal = () => closeModalAction('pos_product_search');
+  const closeModal = useCallback(() => closeModalAction('pos_product_search'), [closeModalAction]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -59,7 +61,7 @@ export function ProductSearchFallback() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   // Only show results when search term has at least 2 characters
   const showResults = debouncedSearch.trim().length >= 2;
@@ -80,7 +82,7 @@ export function ProductSearchFallback() {
     enabled: isOpen && showResults,
   });
 
-  const products = data?.data || [];
+  const products = useMemo(() => data?.data || [], [data]);
 
   // Reset selected index when products list changes
   useEffect(() => {
@@ -91,7 +93,7 @@ export function ProductSearchFallback() {
 
   const onSelectProduct = (product: Product) => {
     if (!product.is_active) {
-      toast.error(`Product "${product.name}" is inactive and cannot be sold`);
+      toast.error(t('pos.toasts.productInactive').replace('{name}', product.name));
       return;
     }
 
@@ -107,7 +109,7 @@ export function ProductSearchFallback() {
       inventory_quantity: product.inventory_quantity || 0,
     });
 
-    toast.success(`Added ${product.name} to cart`);
+    toast.success(t('pos.toasts.addedToCart').replace('{name}', product.name));
     setSearchTerm('');
     closeModal();
     // Return focus to scanner workflow
@@ -164,7 +166,7 @@ export function ProductSearchFallback() {
             className="text-lg font-bold text-foreground flex items-center space-x-2"
           >
             <Search size={18} className="text-secondary" />
-            <span>Product Search</span>
+            <span>{t('pos.productSearch')}</span>
           </h3>
           <button
             onClick={() => {
@@ -187,7 +189,7 @@ export function ProductSearchFallback() {
                 id="search-input"
                 autoFocus
                 type="text"
-                placeholder="Type name, SKU, or Arabic name... (Press Enter to add)"
+                placeholder={t('pos.searchFallbackPlaceholder')}
                 className="w-full bg-input-bg border border-input-border rounded p-3 text-input-text placeholder:text-input-placeholder focus:outline-none focus:border-input-focus focus:ring-primary/20"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -199,15 +201,15 @@ export function ProductSearchFallback() {
             <div className="h-64 overflow-y-auto border border-border rounded bg-background/50 p-2 space-y-1">
               {isLoading ? (
                 <div className="p-3 text-secondary text-sm text-center mt-16 font-mono">
-                  Loading matching products...
+                  {t('pos.loadingMatchingProducts')}
                 </div>
               ) : !showResults ? (
                 <div className="p-3 text-secondary text-sm text-center mt-16">
-                  Type at least 2 characters to search products by name, SKU, or barcode...
+                  {t('pos.typeAtLeast2Chars')}
                 </div>
               ) : products.length === 0 ? (
                 <div className="p-3 text-danger text-sm text-center mt-16 font-mono">
-                  No products found for "{debouncedSearch}"
+                  {t('pos.noProductsFoundFor').replace('{query}', debouncedSearch)}
                 </div>
               ) : (
                 products.map((product, index) => {
@@ -239,13 +241,17 @@ export function ProductSearchFallback() {
                           )}
                         </div>
                         <div className="flex items-center space-x-3 text-xs text-secondary mt-0.5">
-                          <span>SKU: {product.id}</span>
-                          <span>Barcode: {product.barcode || 'N/A'}</span>
                           <span>
-                            Stock:{' '}
+                            {t('pos.skuLabelShort')}: {product.id}
+                          </span>
+                          <span>
+                            {t('pos.barcodeLabelShort')}: {product.barcode || t('pos.naLabel')}
+                          </span>
+                          <span>
+                            {t('pos.stockLabelShort')}:{' '}
                             {product.inventory_quantity !== undefined
                               ? `${product.inventory_quantity} ${product.unit}`
-                              : 'N/A'}
+                              : t('pos.naLabel')}
                           </span>
                         </div>
                       </div>
@@ -254,18 +260,18 @@ export function ProductSearchFallback() {
                           <span
                             className={`text-sm font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
                           >
-                            {product.selling_price.toFixed(2)} EGP
+                            {product.selling_price.toFixed(2)} {t('pos.currency')}
                           </span>
                         </div>
                         <div className="flex flex-col space-y-1">
                           {isInactive && (
                             <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-danger/15 text-danger border border-danger/20">
-                              INACTIVE
+                              {t('pos.inactiveBadge')}
                             </span>
                           )}
                           {isOutOfStock && !isInactive && (
                             <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-warning/15 text-warning border border-warning/20">
-                              OUT OF STOCK
+                              {t('pos.outOfStockBadge')}
                             </span>
                           )}
                         </div>

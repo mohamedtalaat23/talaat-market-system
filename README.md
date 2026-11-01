@@ -1,3 +1,8 @@
+> **Commercial release status: NOT READY.** This is an engineering candidate,
+> not an accepted Windows retail release. Read [COMMERCIAL_READINESS](docs/COMMERCIAL_READINESS.md),
+> [RELEASE_BLOCKERS](docs/RELEASE_BLOCKERS.md) and [INSTALLATION_GUIDE](docs/INSTALLATION_GUIDE.md)
+> before preparing an installation. Do not run demo seeds against business data.
+
 # 🏪 Talaat Market System
 
 > نظام إدارة السوبر ماركت — A production-grade supermarket management system designed for family-run retail stores in Egypt.
@@ -142,10 +147,24 @@ Before building the Windows installer, place the PostgreSQL Windows x64 runtime 
 
 On first launch, the app creates `%APPDATA%/Talaat Market/postgres-data`.
 
-Default first-run admin account:
-- **Username**: `admin`
-- **Password**: `admin123`
-- **PIN**: `1111`
+First launch provisions a single administrator account with a randomly generated
+password (never a published default):
+
+- **Username**: `admin` (override with `INITIAL_ADMIN_USERNAME`)
+- **Password**: generated per installation and shown once in a first-run dialog.
+  It is also written to `initial-admin-credentials.txt` (mode `0600`) next to the
+  generated `config.env`, and that file is deleted after the dialog is dismissed.
+- **PIN**: not set by default. Supply `INITIAL_ADMIN_PIN` for quick-login access.
+
+The account is flagged `must_change_password`, so a new password must be chosen
+immediately after the first sign-in before any other screen can be used.
+
+To provision a known password instead, set `INITIAL_ADMIN_PASSWORD` (minimum 12
+characters, known defaults are rejected) before the first launch:
+
+```bash
+INITIAL_ADMIN_PASSWORD="$(openssl rand -base64 24)" npm run bootstrap
+```
 
 ---
 

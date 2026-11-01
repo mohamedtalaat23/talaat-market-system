@@ -10,6 +10,7 @@ import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { PreferencesProvider } from '@/contexts/preferencesContext';
 import { LoginPage } from '@/features/auth/LoginPage';
+import { ChangePasswordPage } from '@/features/auth/ChangePasswordPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProductsPage } from '@/features/products/ProductsPage';
 import { InventoryPage } from '@/features/inventory/InventoryPage';
@@ -72,7 +73,7 @@ export function App() {
   const { initializeAuth, isLoading } = useAuthStore();
 
   useEffect(() => {
-    initializeAuth();
+    void initializeAuth();
   }, [initializeAuth]);
 
   if (isLoading) {
@@ -94,6 +95,16 @@ export function App() {
             <Routes>
               {/* Public route */}
               <Route path="login" element={<LoginPage />} />
+
+              {/* Forced password rotation (provisioned/temporary credentials) */}
+              <Route
+                path="change-password"
+                element={
+                  <ProtectedRoute>
+                    <ChangePasswordPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Point of Sale (POS) - Cashier, Manager, Admin allowed - Full screen shell */}
               <Route
@@ -182,7 +193,7 @@ export function App() {
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="customers/:id" element={<CustomerDetailScreen />} />
                 <Route
-                  path="reports/*"
+                  path="reports"
                   element={
                     <ProtectedRoute allowedRoles={['admin', 'manager']}>
                       <ReportsLayout />
@@ -196,7 +207,7 @@ export function App() {
                   <Route path="overrides" element={<OverrideAuditScreen />} />
                 </Route>
                 <Route
-                  path="settings/*"
+                  path="settings"
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <SettingsLayout />

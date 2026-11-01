@@ -12,7 +12,8 @@ import {
   Trash2,
   UserCircle,
 } from 'lucide-react';
-import { useCustomers, useDeleteCustomer, Customer } from './hooks/useCustomerQueries';
+import type { Customer } from './hooks/useCustomerQueries';
+import { useCustomers, useDeleteCustomer } from './hooks/useCustomerQueries';
 import { CustomerFormModal } from './components/CustomerFormModal';
 import { RecordPaymentModal } from './components/RecordPaymentModal';
 import { useAuthStore } from '@/stores/authStore';
@@ -212,7 +213,10 @@ export function CustomersPage() {
             <p className="text-sm text-secondary mt-1 max-w-sm mx-auto">
               {t('customers.noCustomersDesc')}
             </p>
-            <Button onClick={handleCreate} className="mt-4 bg-success hover:bg-success/90 text-white">
+            <Button
+              onClick={handleCreate}
+              className="mt-4 bg-success hover:bg-success/90 text-white"
+            >
               <Plus size={16} className="me-1.5" />
               {t('customers.registerCustomer')}
             </Button>

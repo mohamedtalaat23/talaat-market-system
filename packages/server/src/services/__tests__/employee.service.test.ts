@@ -1,5 +1,6 @@
 import { employeeService } from '../employee.service';
 import { employeeRepository } from '../../repositories/employee.repository';
+import { auditService } from '../audit.service';
 import { NotFoundError, ConflictError } from '../../middleware/errorHandler';
 import bcrypt from 'bcryptjs';
 
@@ -13,10 +14,21 @@ jest.mock('../../middleware/logger', () => ({
     error: jest.fn(),
   },
 }));
+// `updateEmployee` wraps the write in `db.transaction` and records an audit event,
+// so both must be stubbed — otherwise the unit test would need a live PostgreSQL.
+jest.mock('../../config/database', () => ({
+  db: {
+    transaction: jest.fn(async (callback: (trx: unknown) => unknown) => callback(jest.fn())),
+  },
+}));
+jest.mock('../audit.service', () => ({
+  auditService: { logEvent: jest.fn().mockResolvedValue(undefined) },
+}));
 
 describe('EmployeeService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (employeeRepository.findAllWithPinHashes as jest.Mock).mockResolvedValue([]);
   });
 
   describe('getEmployees', () => {
@@ -67,8 +79,8 @@ describe('EmployeeService', () => {
     it('should successfully create employee and hash password/pin', async () => {
       (employeeRepository.findByUsername as jest.Mock).mockResolvedValue(null);
       (bcrypt.hash as jest.Mock)
-        .mockResolvedValueOnce('hashed_pass')
-        .mockResolvedValueOnce('hashed_pin');
+        .mockResolvedValueOnce('hashed_pin')
+        .mockResolvedValueOnce('hashed_pass');
       const mockCreated = { id: 1, username: 'newuser' };
       (employeeRepository.create as jest.Mock).mockResolvedValue(mockCreated);
 
@@ -80,8 +92,8 @@ describe('EmployeeService', () => {
         role: 'cashier',
       });
 
-      expect(bcrypt.hash).toHaveBeenNthCalledWith(1, 'password', 12);
-      expect(bcrypt.hash).toHaveBeenNthCalledWith(2, '1234', 12);
+      expect(bcrypt.hash).toHaveBeenNthCalledWith(1, '1234', 12);
+      expect(bcrypt.hash).toHaveBeenNthCalledWith(2, 'password', 12);
       expect(employeeRepository.create).toHaveBeenCalledWith({
         full_name: 'New User',
         username: 'newuser',
@@ -130,11 +142,65 @@ describe('EmployeeService', () => {
 
       expect(bcrypt.hash).toHaveBeenNthCalledWith(1, 'newpassword', 12);
       expect(bcrypt.hash).toHaveBeenNthCalledWith(2, '4321', 12);
-      expect(employeeRepository.update).toHaveBeenCalledWith(1, {
-        password_hash: 'hashed_pass',
-        pin_hash: 'hashed_pin',
-      });
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        1,
+        {
+          password_hash: 'hashed_pass',
+          pin_hash: 'hashed_pin',
+        },
+        expect.any(Function),
+      );
       expect(result).toEqual(mockUpdated);
+    });
+
+    it('records an audit event when the role changes', async () => {
+      (employeeRepository.findById as jest.Mock).mockResolvedValue({
+        id: 1,
+        username: 'user1',
+        role: 'cashier',
+        is_active: true,
+      });
+      (employeeRepository.update as jest.Mock).mockResolvedValue({
+        id: 1,
+        username: 'user1',
+        role: 'manager',
+      });
+
+      await employeeService.updateEmployee(
+        1,
+        { role: 'manager' },
+        'admin',
+        42,
+        '127.0.0.1',
+        'promotion',
+      );
+
+      expect(auditService.logEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'employee',
+          entityId: 1,
+          action: 'permissions_change',
+          oldValue: { role: 'cashier' },
+          newValue: { role: 'manager' },
+          userId: 42,
+          ipAddress: '127.0.0.1',
+          reason: 'promotion',
+        }),
+      );
+    });
+
+    it('does not write an audit event when no audited field changes', async () => {
+      (employeeRepository.findById as jest.Mock).mockResolvedValue({
+        id: 1,
+        username: 'user1',
+        role: 'cashier',
+        is_active: true,
+      });
+      (employeeRepository.update as jest.Mock).mockResolvedValue({ id: 1, username: 'user1' });
+
+      await employeeService.updateEmployee(1, { full_name: 'Renamed' }, 'admin', 42);
+
+      expect(auditService.logEvent).not.toHaveBeenCalled();
     });
   });
 

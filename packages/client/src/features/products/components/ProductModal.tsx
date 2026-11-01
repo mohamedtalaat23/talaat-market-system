@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { ProductForm } from './ProductForm';
@@ -18,7 +18,7 @@ export function ProductModal() {
   const isOpen = useModalStore((state) => state.activeModals.product_form);
   const payload = useModalStore((state) => state.modalPayloads.product_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('product_form');
+  const closeModal = useCallback(() => closeModalAction('product_form'), [closeModalAction]);
 
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
@@ -82,7 +82,10 @@ export function ProductModal() {
         aria-labelledby="product-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
-          <h3 id="product-modal-title" className="text-2xl font-black text-foreground tracking-tight">
+          <h3
+            id="product-modal-title"
+            className="text-2xl font-black text-foreground tracking-tight"
+          >
             {mode === 'create' ? t('products.addProduct') : `${t('common.edit')}: ${product?.name}`}
           </h3>
           <button
@@ -104,7 +107,7 @@ export function ProductModal() {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default ProductModal;

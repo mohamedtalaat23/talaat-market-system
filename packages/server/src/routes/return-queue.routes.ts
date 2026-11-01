@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as controller from '../controllers/return-queue.controller';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRoles } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 
 const returnQueueRouter = Router();
@@ -22,8 +22,8 @@ returnQueueRouter.post('/:id/scan', controller.scanItem);
 
 // Workflow
 returnQueueRouter.post('/:id/submit', controller.submitQueue);
-returnQueueRouter.post('/:id/approve', controller.approveQueue);
-returnQueueRouter.post('/:id/commit', controller.commitQueue);
+returnQueueRouter.post('/:id/approve', requireRoles('admin', 'manager'), controller.approveQueue);
+returnQueueRouter.post('/:id/commit', requireRoles('admin', 'manager'), controller.commitQueue);
 returnQueueRouter.post('/:id/cancel', controller.cancelQueue);
 
 export { returnQueueRouter };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useCreateSupplier, useUpdateSupplier, Supplier } from '../hooks/useSupplierQueries';
+import type { Supplier } from '../hooks/useSupplierQueries';
+import { useCreateSupplier, useUpdateSupplier } from '../hooks/useSupplierQueries';
 import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -65,7 +66,7 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormMod
 
     if (supplier) {
       // Omit supplier_code on update since it is not modifiable
-      const { supplier_code, ...updatePayload } = payload;
+      const { supplier_code: _supplierCode, ...updatePayload } = payload;
       updateSupplier.mutate(updatePayload, {
         onSuccess: () => {
           onClose();

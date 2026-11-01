@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useModalStore } from '@/stores/modalStore';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePOSStore } from '../usePOSStore';
 import { Receipt, X, AlertTriangle, QrCode } from 'lucide-react';
 import { useScannerDetection } from '../hooks/useScannerDetection';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ScannedItem {
   sku_id: string;
@@ -19,11 +20,13 @@ interface ScannedItem {
 }
 
 export function QuickReturnWorkspace() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_quick_return);
   const closeModal = useModalStore((state) => state.closeModal);
   const user = useAuthStore((state) => state.user);
-  const registerId = usePOSStore((state) => state.registerId) || '00000000-0000-0000-0000-000000000000';
-  
+  const registerId =
+    usePOSStore((state) => state.registerId) || '00000000-0000-0000-0000-000000000000';
+
   const [queueId, setQueueId] = useState<string | null>(null);
   const queueInitPromiseRef = useRef<Promise<string> | null>(null); // HUI-1 Fix
 
@@ -59,12 +62,12 @@ export function QuickReturnWorkspace() {
   const ensureQueue = async (type: 'RECEIPT' | 'UNRECEIPTED') => {
     if (queueId) return queueId;
     if (queueInitPromiseRef.current) return queueInitPromiseRef.current;
-    
+
     queueInitPromiseRef.current = (async () => {
       try {
         const res = await apiClient.post<{ success: boolean; data: any }>('/return-queues', {
           register_id: registerId,
-          queue_type: type
+          queue_type: type,
         });
         setQueueId(res.data.data.queue_id);
         return res.data.data.queue_id;
@@ -84,7 +87,7 @@ export function QuickReturnWorkspace() {
       disposition: item.disposition,
       non_restock_reason: item.non_restock_reason,
       original_sale_line_id: item.original_sale_line_id,
-      original_sale_id: item.original_sale_id
+      original_sale_id: item.original_sale_id,
     });
   };
 
@@ -92,39 +95,46 @@ export function QuickReturnWorkspace() {
   const handleScanItem = async (barcode: string) => {
     if (!isOpen || receiptMode) return;
     try {
-      const res = await apiClient.get<{ success: boolean; data: any }>(`/products/barcode/${barcode}`);
+      const res = await apiClient.get<{ success: boolean; data: any }>(
+        `/products/barcode/${barcode}`,
+      );
       const product = res.data.data;
       if (!product) throw new Error('Product not found');
 
       const qId = await ensureQueue('UNRECEIPTED');
-      
+
       const payload = {
         sku_id: product.id,
         quantity: 1,
         disposition: 'RESTOCK',
         non_restock_reason: null,
       };
-      
+
       // Immediate sync
       await syncItem(qId, payload, 1);
 
-      setItems(prev => {
-        const existing = prev.findIndex(i => i.sku_id === product.id && i.disposition === 'RESTOCK');
+      setItems((prev) => {
+        const existing = prev.findIndex(
+          (i) => i.sku_id === product.id && i.disposition === 'RESTOCK',
+        );
         if (existing >= 0) {
           const newItems = [...prev];
           newItems[existing]!.quantity += 1;
           return newItems;
         }
-        return [...prev, {
-          ...payload,
-          name: product.name,
-          original_sale_line_id: null,
-          original_sale_id: null,
-          unit_price: Number(product.selling_price)
-        } as ScannedItem];
+        return [
+          ...prev,
+          {
+            ...payload,
+            name: product.name,
+            original_sale_line_id: null,
+            original_sale_id: null,
+            unit_price: Number(product.selling_price),
+          } as ScannedItem,
+        ];
       });
     } catch (e: any) {
-      toast.error(e.message || 'Error scanning item');
+      toast.error(e.message || t('pos.toasts.itemScannedError'));
     }
   };
 
@@ -136,12 +146,14 @@ export function QuickReturnWorkspace() {
     if (!receiptId) return;
 
     try {
-      const res = await apiClient.get<{ success: boolean; data: any }>(`/pos/receipts/${receiptId}`);
+      const res = await apiClient.get<{ success: boolean; data: any }>(
+        `/pos/receipts/${receiptId}`,
+      );
       if (!res.data.data) throw new Error('Receipt not found');
-      
+
       const sale = res.data.data;
       const qId = await ensureQueue('RECEIPT');
-      
+
       // Load transaction lines into grid directly and auto-sync them as draft returns
       const newItems: ScannedItem[] = sale.lines.map((l: any) => ({
         sku_id: l.product_id,
@@ -151,66 +163,68 @@ export function QuickReturnWorkspace() {
         non_restock_reason: null,
         original_sale_line_id: l.id,
         original_sale_id: sale.id,
-        unit_price: Number(l.unit_price)
+        unit_price: Number(l.unit_price),
       }));
-      
+
       for (const item of newItems) {
-         await syncItem(qId, item, item.quantity);
+        await syncItem(qId, item, item.quantity);
       }
 
       setItems(newItems);
-      toast.success('Transaction loaded');
+      toast.success(t('pos.transactionLoaded'));
     } catch (e: any) {
-      toast.error(e.message || 'Error loading receipt');
+      toast.error(e.message || t('pos.failedLoadReceiptShort'));
     }
   };
 
   const updateDisposition = async (idx: number, disposition: any, reason: string | null) => {
-     if (!queueId) return;
-     const newItems = [...items];
-     newItems[idx]!.disposition = disposition;
-     newItems[idx]!.non_restock_reason = reason;
-     setItems(newItems);
+    if (!queueId) return;
+    const newItems = [...items];
+    newItems[idx]!.disposition = disposition;
+    newItems[idx]!.non_restock_reason = reason;
+    setItems(newItems);
 
-     // Sync to backend instantly with 0 quantity adjustment but updated disposition
-     try {
-       await syncItem(queueId, newItems[idx], 0);
-     } catch (e: any) {
-       toast.error('Failed to sync disposition');
-     }
+    // Sync to backend instantly with 0 quantity adjustment but updated disposition
+    try {
+      await syncItem(queueId, newItems[idx], 0);
+    } catch {
+      toast.error(t('pos.toasts.syncDispositionFailed'));
+    }
   };
 
   // HUI-2: O(1) Submit
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!queueId) {
-      toast.error('Queue is empty');
+      toast.error(t('pos.toasts.queueEmpty'));
       return;
     }
-    
-    const missing = items.find(i => !i.disposition || (i.disposition === 'NON_RESTOCKABLE' && !i.non_restock_reason));
+
+    const missing = items.find(
+      (i) => !i.disposition || (i.disposition === 'NON_RESTOCKABLE' && !i.non_restock_reason),
+    );
     if (missing) {
-      toast.error('Missing disposition or reason on some items');
+      toast.error(t('pos.toasts.missingDisposition'));
       return;
     }
 
     setIsSubmitting(true);
     try {
       await apiClient.post(`/return-queues/${queueId}/submit`);
-      toast.success('Return Queue Submitted to Manager');
+      toast.success(t('pos.toasts.returnQueueSubmitted'));
       closeModal('pos_quick_return');
     } catch (e: any) {
-      toast.error(e.response?.data?.error?.message || 'Failed to submit queue');
+      toast.error(e.response?.data?.error?.message || t('pos.failedSubmitQueue'));
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [queueId, items, closeModal, t]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!isOpen) return;
       if (e.key === 'Escape') {
         if (queueId && items.length > 0) {
-           apiClient.post(`/return-queues/${queueId}/cancel`).catch(() => {});
+          apiClient.post(`/return-queues/${queueId}/cancel`).catch(() => {});
         }
         closeModal('pos_quick_return');
       }
@@ -220,50 +234,52 @@ export function QuickReturnWorkspace() {
       }
       if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault();
-        handleSubmit();
+        void handleSubmit();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isOpen, queueId, items]);
+  }, [isOpen, queueId, items, handleSubmit, closeModal]);
 
   if (!isOpen) return null;
 
-  const totalRefund = items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0);
+  const totalRefund = items.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="flex w-full h-[90vh] max-w-7xl overflow-hidden rounded-2xl bg-slate-900 shadow-2xl ring-1 ring-slate-800">
-        
         {/* Left Panel (65%) */}
         <div className="flex flex-col w-[65%] border-r border-slate-800 bg-slate-900/50">
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Receipt className="w-6 h-6 text-indigo-400" />
-              Quick Return Workspace
+              {t('pos.quickReturnWorkspace')}
             </h2>
             <div className="flex items-center gap-4">
-              <button onClick={() => setReceiptMode(true)} className={`px-4 py-2 rounded-lg text-sm font-semibold ${receiptMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-300'}`}>
-                Receipt Mode [F8]
+              <button
+                onClick={() => setReceiptMode(true)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold ${receiptMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-300'}`}
+              >
+                {t('pos.receiptModeKey')}
               </button>
             </div>
           </div>
 
           <div className="p-4 border-b border-slate-800 bg-slate-950/30">
             {receiptMode ? (
-               <input
-                 ref={inputRef}
-                 type="text"
-                 onKeyDown={handleLookupReceipt}
-                 placeholder="Scan Receipt Barcode and press Enter..."
-                 className="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg shadow-inner"
-                 autoFocus
-               />
+              <input
+                ref={inputRef}
+                type="text"
+                onKeyDown={handleLookupReceipt}
+                placeholder={t('pos.scanReceiptBarcode')}
+                className="w-full bg-slate-900 border border-slate-700 text-white px-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg shadow-inner"
+                autoFocus
+              />
             ) : (
-               <div className="w-full bg-slate-900 border border-slate-700 text-slate-400 px-4 py-4 rounded-xl text-lg shadow-inner flex items-center gap-3">
-                 <QrCode className="w-6 h-6" />
-                 Scanner active... Please scan items.
-               </div>
+              <div className="w-full bg-slate-900 border border-slate-700 text-slate-400 px-4 py-4 rounded-xl text-lg shadow-inner flex items-center gap-3">
+                <QrCode className="w-6 h-6" />
+                {t('pos.scannerActivePrompt')}
+              </div>
             )}
           </div>
 
@@ -271,50 +287,67 @@ export function QuickReturnWorkspace() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500">
                 <QrCode className="w-16 h-16 mb-4 opacity-20" />
-                <p className="text-lg font-medium">No items scanned</p>
-                <p className="text-sm">Scan items or press F8 for receipt lookup</p>
+                <p className="text-lg font-medium">{t('pos.noItemsScanned')}</p>
+                <p className="text-sm">{t('pos.scanItemsOrLookup')}</p>
               </div>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 text-sm">
-                    <th className="pb-3 px-2 font-medium">Item</th>
-                    <th className="pb-3 px-2 font-medium text-center">Qty</th>
-                    <th className="pb-3 px-2 font-medium">Disposition</th>
-                    <th className="pb-3 px-2 font-medium">Reason</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.productLabel')}</th>
+                    <th className="pb-3 px-2 font-medium text-center">{t('pos.quantity')}</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.disposition')}</th>
+                    <th className="pb-3 px-2 font-medium">{t('pos.reason')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
                   {items.map((item, idx) => (
-                    <tr key={idx} className={`group hover:bg-slate-800/30 transition-colors ${!item.disposition || (item.disposition === 'NON_RESTOCKABLE' && !item.non_restock_reason) ? 'bg-red-500/10' : ''}`}>
+                    <tr
+                      key={idx}
+                      className={`group hover:bg-slate-800/30 transition-colors ${!item.disposition || (item.disposition === 'NON_RESTOCKABLE' && !item.non_restock_reason) ? 'bg-red-500/10' : ''}`}
+                    >
                       <td className="py-4 px-2 text-slate-200 font-medium">{item.name}</td>
                       <td className="py-4 px-2 text-center text-slate-300">{item.quantity}</td>
                       <td className="py-4 px-2">
-                        <select 
+                        <select
                           className="bg-slate-800 border-none rounded text-sm text-slate-200 p-2 focus:ring-1 focus:ring-indigo-500 w-full"
                           value={item.disposition}
-                          onChange={(e) => updateDisposition(idx, e.target.value, e.target.value === 'RESTOCK' ? null : item.non_restock_reason)}
+                          onChange={(e) =>
+                            updateDisposition(
+                              idx,
+                              e.target.value,
+                              e.target.value === 'RESTOCK' ? null : item.non_restock_reason,
+                            )
+                          }
                         >
-                          <option value="" disabled>Select...</option>
-                          <option value="RESTOCK">RESTOCK</option>
-                          <option value="NON_RESTOCKABLE">WRITE-OFF</option>
+                          <option value="" disabled>
+                            {t('pos.selectPlaceholder')}
+                          </option>
+                          <option value="RESTOCK">{t('pos.restock')}</option>
+                          <option value="NON_RESTOCKABLE">{t('pos.writeoff')}</option>
                         </select>
                       </td>
                       <td className="py-4 px-2">
                         {item.disposition === 'NON_RESTOCKABLE' && (
-                          <select 
+                          <select
                             className="bg-slate-800 border-none rounded text-sm text-slate-200 p-2 focus:ring-1 focus:ring-red-500 w-full ring-1 ring-red-500/30"
                             value={item.non_restock_reason || ''}
-                            onChange={(e) => updateDisposition(idx, item.disposition, e.target.value)}
+                            onChange={(e) =>
+                              updateDisposition(idx, item.disposition, e.target.value)
+                            }
                           >
-                            <option value="" disabled>Required...</option>
-                            <option value="DAMAGED">DAMAGED</option>
-                            <option value="EXPIRED">EXPIRED</option>
-                            <option value="OPENED">OPENED</option>
-                            <option value="CONTAMINATED">CONTAMINATED</option>
-                            <option value="SUPPLIER_RECALL">RECALL</option>
-                            <option value="CUSTOMER_DISSATISFACTION">DISSATISFACTION</option>
-                            <option value="OTHER">OTHER</option>
+                            <option value="" disabled>
+                              {t('pos.requiredPlaceholder')}
+                            </option>
+                            <option value="DAMAGED">{t('pos.reasons.damaged')}</option>
+                            <option value="EXPIRED">{t('pos.reasons.expired')}</option>
+                            <option value="OPENED">{t('pos.reasons.opened')}</option>
+                            <option value="CONTAMINATED">{t('pos.reasons.contaminated')}</option>
+                            <option value="SUPPLIER_RECALL">{t('pos.reasons.recall')}</option>
+                            <option value="CUSTOMER_DISSATISFACTION">
+                              {t('pos.reasons.dissatisfaction')}
+                            </option>
+                            <option value="OTHER">{t('pos.reasons.other')}</option>
                           </select>
                         )}
                       </td>
@@ -330,67 +363,86 @@ export function QuickReturnWorkspace() {
         <div className="flex flex-col w-[35%] bg-slate-950 p-6">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h3 className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Queue Status</h3>
+              <h3 className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">
+                {t('pos.queueStatus')}
+              </h3>
               <div className="flex items-center gap-2">
                 <span className="flex h-3 w-3 rounded-full bg-emerald-500"></span>
-                <span className="text-white font-semibold">OPEN (DRAFT)</span>
+                <span className="text-white font-semibold">{t('pos.openDraft')}</span>
               </div>
             </div>
-            <button onClick={() => closeModal('pos_quick_return')} className="p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <button
+              onClick={() => closeModal('pos_quick_return')}
+              className="p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="space-y-6 flex-1">
             <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
-              <p className="text-slate-400 text-sm font-medium mb-1">Total Refund Value</p>
-              <p className="text-4xl font-bold text-white tracking-tight">EGP {totalRefund.toFixed(2)}</p>
-            </div>
-            
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm space-y-4">
-               <div className="flex justify-between">
-                 <span className="text-slate-400">Total Items</span>
-                 <span className="text-white font-semibold">{items.reduce((acc, i) => acc + i.quantity, 0)}</span>
-               </div>
-               <div className="flex justify-between">
-                 <span className="text-slate-400">Queue Type</span>
-                 <span className="text-white font-semibold">{receiptMode ? 'RECEIPTED' : 'UNRECEIPTED'}</span>
-               </div>
-               <div className="flex justify-between">
-                 <span className="text-slate-400">Owner</span>
-                 <span className="text-white font-semibold">{(user as any)?.first_name || (user as any)?.name || 'Cashier'}</span>
-               </div>
+              <p className="text-slate-400 text-sm font-medium mb-1">{t('pos.totalRefundValue')}</p>
+              <p className="text-4xl font-bold text-white tracking-tight">
+                {t('pos.currency')} {totalRefund.toFixed(2)}
+              </p>
             </div>
 
-            {items.some(i => !i.disposition || (i.disposition === 'NON_RESTOCKABLE' && !i.non_restock_reason)) && (
+            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm space-y-4">
+              <div className="flex justify-between">
+                <span className="text-slate-400">{t('pos.totalItems')}</span>
+                <span className="text-white font-semibold">
+                  {items.reduce((acc, i) => acc + i.quantity, 0)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">{t('pos.queueType')}</span>
+                <span className="text-white font-semibold">
+                  {receiptMode ? t('pos.receipted') : t('pos.unreceipted')}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">{t('pos.owner')}</span>
+                <span className="text-white font-semibold">
+                  {(user as any)?.first_name || (user as any)?.name || t('pos.cashier')}
+                </span>
+              </div>
+            </div>
+
+            {items.some(
+              (i) =>
+                !i.disposition || (i.disposition === 'NON_RESTOCKABLE' && !i.non_restock_reason),
+            ) && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
-                 <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5" />
-                 <div>
-                   <p className="text-red-400 font-medium text-sm">Action Required</p>
-                   <p className="text-red-400/80 text-xs mt-1">Some items are missing disposition or reason codes.</p>
-                 </div>
+                <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5" />
+                <div>
+                  <p className="text-red-400 font-medium text-sm">{t('pos.actionRequired')}</p>
+                  <p className="text-red-400/80 text-xs mt-1">
+                    {t('pos.missingDispositionReasonDesc')}
+                  </p>
+                </div>
               </div>
             )}
           </div>
 
           <div className="space-y-3 mt-6">
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={isSubmitting || items.length === 0}
               className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex justify-center items-center gap-2 text-lg"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit to Manager'}
-              <span className="text-emerald-200 text-sm ml-2 font-normal hidden sm:inline">(Ctrl+Enter)</span>
+              {isSubmitting ? t('pos.submitting') : t('pos.submitToManager')}
+              <span className="text-emerald-200 text-sm ml-2 font-normal hidden sm:inline">
+                (Ctrl+Enter)
+              </span>
             </button>
-            <button 
+            <button
               onClick={() => closeModal('pos_quick_return')}
               className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-4 rounded-xl transition-colors"
             >
-              Cancel Return (Esc)
+              {t('pos.cancelReturnEsc')}
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );

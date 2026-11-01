@@ -13,9 +13,11 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { ArrowLeft, CheckCircle2, XCircle, FileWarning } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, FileWarning, Download } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
 import { useTranslation } from '@/hooks/useTranslation';
+import { apiClient } from '@/services/api-client';
+import toast from 'react-hot-toast';
 
 export function ShiftDetailScreen() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +28,24 @@ export function ShiftDetailScreen() {
   const [txPage, setTxPage] = useState(1);
 
   const { data, isLoading, isError } = useShiftDetail(shiftId, txPage);
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await apiClient.get(`/reports/shifts/${shiftId}/export`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Shift_${shiftId}_Report.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Shift CSV report downloaded');
+    } catch {
+      toast.error('Failed to export shift report');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -73,13 +93,19 @@ export function ShiftDetailScreen() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/reports/shifts')}>
-          <ArrowLeft size={20} />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/reports/shifts')}>
+            <ArrowLeft size={20} />
+          </Button>
+          <h2 className="text-xl font-semibold">
+            {t('reports.shiftDetailTitle').replace('{id}', String(shift.id))}
+          </h2>
+        </div>
+        <Button onClick={handleExportCSV} className="flex items-center gap-2">
+          <Download size={16} />
+          <span>Export CSV</span>
         </Button>
-        <h2 className="text-xl font-semibold">
-          {t('reports.shiftDetailTitle').replace('{id}', String(shift.id))}
-        </h2>
       </div>
 
       {/* Shift Summary Card */}

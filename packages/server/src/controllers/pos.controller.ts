@@ -1,9 +1,16 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { posRepository } from '../repositories/pos.repository';
 import { z } from 'zod';
 import { db } from '../config/database';
 import { pinService } from '../services/pin.service';
-import { checkoutSchema, reprintSchema, refundSaleSchema, voidSaleSchema } from '../validators/pos.validator';
+import {
+  checkoutSchema,
+  quarantineDecisionSchema,
+  reprintSchema,
+  refundSaleSchema,
+  syncOfflineSchema,
+  voidSaleSchema,
+} from '../validators/pos.validator';
 
 export class POSController {
   checkout = async (req: Request, res: Response) => {
@@ -12,37 +19,45 @@ export class POSController {
       const cashierId = (req as any).user.id;
 
       let bypassInventoryCheck = false;
+      let discountAuthorized = false;
 
       // If a manager PIN is supplied, authenticate it securely with lockout protection
       if (payload.manager_pin) {
         if (!payload.manager_id) {
-          return res
-            .status(400)
-            .json({
-              success: false,
-              message: 'Manager ID is required for PIN authorization override.',
-            });
+          return res.status(400).json({
+            success: false,
+            message: 'Manager ID is required for PIN authorization override.',
+          });
         }
 
         const verification = await pinService.verifyPin(
           Number(payload.manager_id),
           String(payload.manager_pin),
           cashierId,
-          req.ip
+          req.ip,
         );
         if (!verification.success) {
           return res.status(403).json({ success: false, message: verification.message });
         }
         bypassInventoryCheck = true;
+        // A *verified* PIN is what authorises large discounts. A bare manager_id
+        // in the payload must never be enough (it is client-controlled).
+        discountAuthorized = true;
       }
 
-      const sale = await posRepository.checkout(payload, cashierId, bypassInventoryCheck);
+      const sale = await posRepository.checkout(
+        payload,
+        cashierId,
+        bypassInventoryCheck,
+        false,
+        discountAuthorized,
+      );
       return res.status(200).json({ success: true, data: sale });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
 
       // Bubble up the specific inventory underflow error code to trigger the frontend Modal
@@ -67,7 +82,9 @@ export class POSController {
 
       const existing = await posRepository.getCurrentShift(registerId);
       if (existing) {
-        return res.status(400).json({ success: false, message: 'This register already has an open shift.' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'This register already has an open shift.' });
       }
 
       const shift = await posRepository.openShift(cashierId, startingCash, registerId);
@@ -84,13 +101,21 @@ export class POSController {
       const userRole = (req as any).user.role;
 
       const summary = await posRepository.getShiftSummary(shift_id);
-      
+
       // Authorization Check
       if (summary.employee_id !== userId && !['manager', 'admin'].includes(userRole)) {
-        return res.status(403).json({ success: false, message: 'You are not authorized to close this shift.' });
+        return res
+          .status(403)
+          .json({ success: false, message: 'You are not authorized to close this shift.' });
       }
 
-      const shift = await posRepository.closeShift(shift_id, ending_cash, summary.expected_cash, notes, userId);
+      const shift = await posRepository.closeShift(
+        shift_id,
+        ending_cash,
+        summary.expected_cash,
+        notes,
+        userId,
+      );
       return res.status(200).json({ success: true, data: shift });
     } catch (error: any) {
       return res.status(400).json({ success: false, message: error.message });
@@ -118,14 +143,13 @@ export class POSController {
         return res.status(404).json({ success: false, message: 'Shift not found.' });
       }
 
-      // Cashiers can only view their own shift summaries, UNLESS they are sharing a register.
-      // Wait, in a shared register, any cashier can close the shift, but audit requires manager?
-      // Actually, if we allow Fast PIN switching, a cashier should be able to view the shift summary
-      // for the register they are currently operating.
-      // Let's relax this to just require the user to be active.
-      // The frontend restricts closing to managers or the shift owner in UI.
+      // Cashiers may only view their own shift summaries.
+      // Managers and admins may view any shift.
       if (user.role === 'cashier' && shift.employee_id !== user.id) {
-        // We'll allow it for Fast PIN switching (Drawer Sharing).
+        return res.status(403).json({
+          success: false,
+          message: 'You are not authorized to view this shift.',
+        });
       }
 
       const summary = await posRepository.getShiftSummary(shiftId);
@@ -138,10 +162,23 @@ export class POSController {
   createDrawerAdjustment = async (req: Request, res: Response) => {
     try {
       const shiftId = Number(req.params.id);
-      const payload = req.body;
+      const { manager_id, manager_pin, ...rest } = req.body;
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(manager_id),
+        String(manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
+
       const adjustment = await posRepository.createDrawerAdjustment({
         shift_id: shiftId,
-        ...payload
+        manager_id,
+        ...rest,
       });
       return res.status(201).json({ success: true, data: adjustment });
     } catch (error: any) {
@@ -162,16 +199,17 @@ export class POSController {
   reprintReceipt = async (req: Request, res: Response) => {
     try {
       const saleId = String(req.params.id);
-      const managerId = (req as any).user.id;
+      const callerId = req.user!.id;
       const managerRole = (req as any).user.role;
 
-      const { manager_pin } = reprintSchema.parse(req.body);
+      const { manager_pin, manager_id } = reprintSchema.parse(req.body);
+      const managerId = manager_id ?? callerId;
 
-      if (!['manager', 'admin'].includes(managerRole)) {
+      if (!manager_id && !['manager', 'admin'].includes(managerRole)) {
         return res.status(403).json({ success: false, message: 'Manager authorization required' });
       }
 
-      const verification = await pinService.verifyPin(managerId, manager_pin, managerId, req.ip);
+      const verification = await pinService.verifyPin(managerId, manager_pin, callerId, req.ip);
       if (!verification.success) {
         return res.status(403).json({ success: false, message: verification.message });
       }
@@ -182,7 +220,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -213,23 +251,94 @@ export class POSController {
 
   syncOffline = async (req: Request, res: Response) => {
     try {
-      const syncSchema = z.object({
-        transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
-      });
-      const { transactions } = syncSchema.parse(req.body);
+      const { transactions, manager_id, manager_pin } = syncOfflineSchema.parse(req.body);
       const cashierId = (req as any).user.id;
 
-      const result = await posRepository.syncOffline(transactions, cashierId);
+      // Offline price/discount overrides are only honoured when a manager PIN is
+      // verified server-side (same lockout-protected path as online checkout).
+      let managerAuthorized = false;
+      if (manager_pin !== undefined) {
+        const verification = await pinService.verifyPin(
+          Number(manager_id),
+          String(manager_pin),
+          cashierId,
+          req.ip,
+        );
+        if (!verification.success) {
+          return res.status(403).json({ success: false, message: verification.message });
+        }
+        managerAuthorized = true;
+      }
+
+      const result = await posRepository.syncOffline(transactions, cashierId, managerAuthorized);
       return res.status(200).json({ success: true, ...result });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid sync payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid sync payload', errors: error.issues });
       }
       return res
         .status(400)
         .json({ success: false, message: error.message || 'Offline sync failed' });
+    }
+  };
+
+  /**
+   * GET /pos/sync/quarantine
+   *
+   * Offline sales that could not be replayed without a manager decision.
+   */
+  listQuarantinedSales = async (_req: Request, res: Response) => {
+    try {
+      const rows = await posRepository.listQuarantinedSales('pending');
+      return res.status(200).json({ success: true, data: rows });
+    } catch (error: any) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Failed to list quarantined sales.' });
+    }
+  };
+
+  /**
+   * POST /pos/sync/quarantine/:id/resolve
+   *
+   * Manager decision on a quarantined offline sale. Approving re-runs the
+   * original checkout with the discount/price override authorized; rejecting
+   * records the decision and never posts the sale.
+   */
+  resolveQuarantinedSale = async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const { decision, manager_id, manager_pin, notes } = quarantineDecisionSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(manager_id),
+        String(manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
+
+      const result = await posRepository.resolveQuarantinedSale(
+        id,
+        decision,
+        Number(manager_id),
+        notes ?? undefined,
+      );
+      return res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
+      }
+      return res
+        .status(400)
+        .json({ success: false, message: error.message || 'Failed to resolve quarantined sale.' });
     }
   };
 
@@ -261,12 +370,27 @@ export class POSController {
     try {
       const saleId = String(req.params.id);
       const payload = refundSaleSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
 
+      const verification = await pinService.verifyPin(
+        Number(payload.manager_id),
+        String(payload.manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
+
+      const payoutShift = await posRepository.getOpenShiftByEmployee(cashierId);
+      if (!payoutShift) throw new Error('Open your register shift before processing a refund.');
       const result = await posRepository.processRefund({
+        payout_shift_id: payoutShift.id,
         sale_id: saleId,
         manager_id: payload.manager_id,
         reason: payload.reason,
         items: payload.items,
+        idempotency_key: payload.idempotency_key,
         refund_type: 'partial',
       });
 
@@ -275,7 +399,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message || 'Refund failed.' });
     }
@@ -285,6 +409,17 @@ export class POSController {
     try {
       const saleId = String(req.params.id);
       const payload = voidSaleSchema.parse(req.body);
+      const cashierId = (req as any).user.id;
+
+      const verification = await pinService.verifyPin(
+        Number(payload.manager_id),
+        String(payload.manager_pin),
+        cashierId,
+        req.ip,
+      );
+      if (!verification.success) {
+        return res.status(403).json({ success: false, message: verification.message });
+      }
 
       const sale = await posRepository.getReceiptById(saleId);
       if (!sale) throw new Error('Sale not found');
@@ -303,7 +438,10 @@ export class POSController {
           .json({ success: false, message: 'Sale is already fully refunded or voided.' });
       }
 
+      const payoutShift = await posRepository.getOpenShiftByEmployee(cashierId);
+      if (!payoutShift) throw new Error('Open your register shift before processing a refund.');
       const result = await posRepository.processRefund({
+        payout_shift_id: payoutShift.id,
         sale_id: saleId,
         manager_id: payload.manager_id,
         reason: payload.reason,
@@ -316,7 +454,7 @@ export class POSController {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ success: false, message: 'Invalid payload', errors: error.errors });
+          .json({ success: false, message: 'Invalid payload', errors: error.issues });
       }
       return res.status(400).json({ success: false, message: error.message || 'Void failed.' });
     }

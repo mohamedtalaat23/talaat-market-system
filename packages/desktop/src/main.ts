@@ -1,8 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { ServerManager } from './server-manager';
 import { PostgresManager } from './postgres-manager';
 import { registerIpcHandlers } from './ipc/handlers';
+import { createSenderGuard } from './ipc/validation';
 
 // ── Logger (simple console wrapper for main process with sensitive data redaction) ──
 function redactSensitiveData(args: unknown[]): unknown[] {
@@ -46,7 +48,10 @@ function redactSensitiveData(args: unknown[]): unknown[] {
       let clean = arg;
       for (const word of ['password', 'pin', 'secret', 'token', 'key']) {
         if (clean.toLowerCase().includes(word)) {
-          clean = clean.replace(new RegExp(`${word}\\s*[:=]\\s*[^&\\s\\"\\';]+`, 'gi'), `${word}=[REDACTED]`);
+          clean = clean.replace(
+            new RegExp(`${word}\\s*[:=]\\s*[^&\\s\\"\\';]+`, 'gi'),
+            `${word}=[REDACTED]`,
+          );
         }
       }
       return clean;
@@ -69,6 +74,9 @@ export const logger = {
 
 // ── Development detection ────────────────────────────────────────────────────
 const isDev = process.env['NODE_ENV'] === 'development';
+if (isDev) {
+  process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+}
 const VITE_DEV_SERVER_URL = 'http' + '://localhost:5173';
 const SERVER_PORT_DEV = 3001; // Dev server runs on fixed port
 
@@ -76,6 +84,13 @@ const SERVER_PORT_DEV = 3001; // Dev server runs on fixed port
 let mainWindow: BrowserWindow | null = null;
 const serverManager = new ServerManager();
 const postgresManager = new PostgresManager();
+
+// One owner per user profile: never race migrations or database startup.
+if (!app.requestSingleInstanceLock()) app.quit();
+app.on('second-instance', () => {
+  mainWindow?.show();
+  mainWindow?.focus();
+});
 
 // ── Force dark mode (supermarket staff prefer it) ────────────────────────────
 nativeTheme.themeSource = 'dark';
@@ -103,10 +118,12 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
       // Preload script runs before renderer, can access limited Node APIs
       preload: path.join(__dirname, 'preload.js'),
 
-      // SECURITY: These MUST remain false
+      // Renderer isolation is mandatory
       contextIsolation: true, // Renderer cannot access Node globals
       nodeIntegration: false, // Renderer has no Node.js APIs
-      sandbox: false, // Keep false for preload access; true for max security
+
+      // Local preload imports are bundled; only Electron remains external.
+      sandbox: true,
 
       // Allow Vite dev server WebSocket for HMR in development
       webSecurity: !isDev,
@@ -157,6 +174,39 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
     });
   });
 
+  // ── Navigation & window restrictions ─────────────────────────────────────
+  //
+  // The renderer only ever needs to be the app itself. Anything that tries to
+  // open a window, navigate away, or attach a <webview> is refused: those paths
+  // are how a phishing page or an injected script escapes into a privileged
+  // context.
+  const isAppUrl = (url: string): boolean =>
+    isDev ? url.startsWith(VITE_DEV_SERVER_URL) : url.startsWith('file://');
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    logger.warn('Blocked window.open from renderer', url);
+    return { action: 'deny' };
+  });
+
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!isAppUrl(url)) {
+      event.preventDefault();
+      logger.warn('Blocked navigation away from the application', url);
+    }
+  });
+
+  win.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+    logger.warn('Blocked <webview> attachment in renderer');
+  });
+
+  // Cascade the same protections to any window the app creates (e.g. hidden
+  // print windows).
+  app.on('web-contents-created', (_event, contents) => {
+    contents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    contents.on('will-attach-webview', (event) => event.preventDefault());
+  });
+
   // Show when the page finishes loading
   win.once('ready-to-show', () => {
     win.show();
@@ -196,6 +246,58 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 
+/**
+ * Surfaces the auto-generated first-run administrator password exactly once.
+ *
+ * The bootstrap step writes `initial-admin-credentials.txt` next to the managed
+ * config file. We display it, then delete it so it cannot be harvested later.
+ */
+async function showFirstRunAdminCredentials(
+  managedPostgres: { configPath: string } | null,
+): Promise<void> {
+  if (!managedPostgres?.configPath) return;
+
+  const credentialsPath = path.join(
+    path.dirname(managedPostgres.configPath),
+    'initial-admin-credentials.txt',
+  );
+
+  if (!fs.existsSync(credentialsPath)) return;
+
+  let username = 'admin';
+  let password = '';
+
+  try {
+    const content = fs.readFileSync(credentialsPath, 'utf8');
+    username = /^username=(.*)$/m.exec(content)?.[1]?.trim() || username;
+    password = /^password=(.*)$/m.exec(content)?.[1]?.trim() ?? '';
+  } catch (error) {
+    logger.warn('Could not read the first-run credentials file', error);
+    return;
+  }
+
+  if (!password) return;
+
+  await dialog.showMessageBox({
+    type: 'info',
+    title: 'Talaat Market — first-run credentials',
+    message: 'Administrator account created',
+    detail:
+      `Username: ${username}\n` +
+      `Password: ${password}\n\n` +
+      'You will be asked to choose a new password after signing in.\n' +
+      'Store this password somewhere safe — it will not be shown again.',
+    buttons: ['Continue'],
+    noLink: true,
+  });
+
+  try {
+    fs.unlinkSync(credentialsPath);
+  } catch (error) {
+    logger.warn('Could not delete the first-run credentials file', error);
+  }
+}
+
 app.on('ready', async () => {
   logger.info('Electron app ready');
   logger.info(`Platform: ${process.platform}, isDev: ${isDev}`);
@@ -208,13 +310,21 @@ app.on('ready', async () => {
     // In development: Express is already running separately
     if (!isDev) {
       await serverManager.runStartupTasks(childEnv);
+      await showFirstRunAdminCredentials(managedPostgres);
     }
 
     const serverPort = isDev ? SERVER_PORT_DEV : await serverManager.start(childEnv);
     logger.info(`Server port: ${serverPort}`);
 
-    // Register all IPC handlers
-    registerIpcHandlers(ipcMain, serverPort);
+    // Register all IPC handlers. Every channel verifies the sender frame and
+    // schema-validates its arguments before doing any work.
+    registerIpcHandlers(ipcMain, {
+      serverPort,
+      assertTrustedSender: createSenderGuard({
+        getWindow: () => mainWindow,
+        allowedUrlPrefixes: isDev ? [VITE_DEV_SERVER_URL] : ['file://'],
+      }),
+    });
 
     // Create the browser window
     mainWindow = await createWindow(serverPort);
@@ -246,10 +356,22 @@ app.on('window-all-closed', () => {
 });
 
 // Graceful shutdown — stop the forked server before quitting
-app.on('before-quit', async () => {
-  logger.info('App quitting — stopping server...');
-  await serverManager.stop();
-  await postgresManager.stop();
+let shutdownStarted = false;
+let shutdownComplete = false;
+app.on('before-quit', (event) => {
+  if (shutdownComplete) return;
+  event.preventDefault();
+  if (shutdownStarted) return;
+  shutdownStarted = true;
+  void (async () => {
+    try {
+      await serverManager.stop();
+      await postgresManager.stop();
+    } finally {
+      shutdownComplete = true;
+      app.quit();
+    }
+  })().catch((error: unknown) => logger.error('Shutdown failed', error));
 });
 
 // Handle uncaught errors in main process

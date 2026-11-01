@@ -11,7 +11,6 @@ export const POSCartList = React.memo(() => {
   const updateQuantity = usePOSStore((state) => state.updateQuantity);
   const removeItem = usePOSStore((state) => state.removeItem);
 
-
   const listRef = useRef<HTMLDivElement>(null);
   const [lastUpdatedCartId, setLastUpdatedCartId] = useState<string | null>(null);
   const [editingCartId, setEditingCartId] = useState<string | null>(null);
@@ -49,7 +48,10 @@ export const POSCartList = React.memo(() => {
         // Check if any quantity or discount changed
         for (const item of cart) {
           const prevItem = prev.find((p) => p.cart_id === item.cart_id);
-          if (prevItem && (prevItem.quantity !== item.quantity || prevItem.discount !== item.discount)) {
+          if (
+            prevItem &&
+            (prevItem.quantity !== item.quantity || prevItem.discount !== item.discount)
+          ) {
             changedCartId = item.cart_id;
             break;
           }
@@ -69,18 +71,16 @@ export const POSCartList = React.memo(() => {
       {cart.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-secondary bg-neutral-50/50 p-6 text-center select-none">
           <h3 className="text-sm font-bold text-neutral-400 mb-1">{t('pos.scanPrompt')}</h3>
-          <p className="text-xs text-neutral-400/70 max-w-[220px]">
-            {t('pos.searchPrompt')}
-          </p>
+          <p className="text-xs text-neutral-400/70 max-w-[220px]">{t('pos.searchPrompt')}</p>
         </div>
       ) : (
         <div className="flex-1 flex flex-col min-h-0">
           {/* Header Row */}
           <div className="grid grid-cols-[1fr_4.5rem_4.5rem_5.5rem] gap-2 px-3 py-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-b border-border/60 bg-neutral-100/50 shrink-0">
-            <span className="pl-6">Item</span>
-            <span className="text-center">Qty</span>
-            <span className="text-right">Price</span>
-            <span className="text-right pr-2">Total</span>
+            <span className="pl-6">{t('pos.productLabel')}</span>
+            <span className="text-center">{t('pos.quantity')}</span>
+            <span className="text-right">{t('pos.price')}</span>
+            <span className="text-right pr-2">{t('pos.total')}</span>
           </div>
 
           <div ref={listRef} className="flex-1 overflow-y-auto divide-y divide-border/40">
@@ -89,10 +89,16 @@ export const POSCartList = React.memo(() => {
               const isFlash = item.cart_id === lastUpdatedCartId;
               const itemTotal = item.quantity * item.unit_price - item.discount;
 
-              let badgeClass = "text-foreground font-black";
-              if (item.quantity >= 20) badgeClass = "bg-danger text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm";
-              else if (item.quantity >= 10) badgeClass = "bg-orange-500 text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm";
-              else if (item.quantity >= 5) badgeClass = "bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold text-[10px] shadow-sm";
+              let badgeClass = 'text-foreground font-black';
+              if (item.quantity >= 20)
+                badgeClass =
+                  'bg-danger text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm';
+              else if (item.quantity >= 10)
+                badgeClass =
+                  'bg-orange-500 text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm';
+              else if (item.quantity >= 5)
+                badgeClass =
+                  'bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold text-[10px] shadow-sm';
 
               return (
                 <div
@@ -111,9 +117,7 @@ export const POSCartList = React.memo(() => {
                     isActive
                       ? 'bg-primary/5 border-l-primary shadow-inner'
                       : 'bg-white hover:bg-neutral-50 border-l-transparent'
-                  } text-sm select-none relative ${
-                    isFlash ? 'animate-focus-row' : ''
-                  }`}
+                  } text-sm select-none relative ${isFlash ? 'animate-focus-row' : ''}`}
                 >
                   <div className="grid grid-cols-[1fr_4.5rem_4.5rem_5.5rem] gap-2 items-center w-full min-w-0">
                     {/* Column 1: Item Name */}
@@ -122,18 +126,27 @@ export const POSCartList = React.memo(() => {
                         {index + 1}
                       </span>
                       <div className="flex flex-col min-w-0">
-                        <span className={`font-bold truncate leading-tight ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                        <span
+                          className={`font-bold truncate leading-tight ${isActive ? 'text-primary' : 'text-foreground'}`}
+                        >
                           {item.name}
                         </span>
-                        {item.discount > 0 ? (
-                          <span className="text-[10px] text-danger font-mono font-medium leading-none mt-0.5 truncate">
-                            Disc: -{item.discount.toFixed(2)}
+                        {item.name_ar && (
+                          <span className="text-[11px] text-secondary font-medium leading-none mt-0.5 truncate">
+                            {item.name_ar}
                           </span>
-                        ) : item.barcode && isActive ? (
-                          <span className="text-[9px] text-neutral-400 font-mono leading-none mt-0.5 truncate">
+                        )}
+                        {item.discount > 0 && (
+                          <span className="text-[10px] text-danger font-mono font-medium leading-none mt-1.5 truncate">
+                            -{item.discount.toFixed(2)} {t('pos.currency')} ({t('pos.itemDiscount')}
+                            )
+                          </span>
+                        )}
+                        {item.barcode && isActive && (
+                          <span className="text-[9px] text-neutral-400 font-mono leading-none mt-1.5 truncate">
                             {item.barcode}
                           </span>
-                        ) : null}
+                        )}
                       </div>
                     </div>
 
@@ -154,7 +167,7 @@ export const POSCartList = React.memo(() => {
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <div 
+                        <div
                           className="flex justify-center items-center h-full w-full"
                           onClick={(e) => {
                             if (isActive) {
@@ -164,7 +177,9 @@ export const POSCartList = React.memo(() => {
                             }
                           }}
                         >
-                          <span className={`${badgeClass} transition-colors inline-block min-w-[1.5rem]`}>
+                          <span
+                            className={`${badgeClass} transition-colors inline-block min-w-[1.5rem]`}
+                          >
                             {item.quantity}
                           </span>
                         </div>
@@ -172,12 +187,16 @@ export const POSCartList = React.memo(() => {
                     </div>
 
                     {/* Column 3: Price */}
-                    <div className={`font-mono text-xs text-right shrink-0 ${isActive ? 'text-foreground font-semibold' : 'text-secondary'}`}>
+                    <div
+                      className={`font-mono text-xs text-right shrink-0 ${isActive ? 'text-foreground font-semibold' : 'text-secondary'}`}
+                    >
                       {item.unit_price.toFixed(2)}
                     </div>
 
                     {/* Column 4: Total */}
-                    <div className={`font-mono text-right pr-2 shrink-0 truncate ${isActive ? 'text-primary font-black text-[14px]' : 'text-foreground font-bold text-[13px]'}`}>
+                    <div
+                      className={`font-mono text-right pr-2 shrink-0 truncate ${isActive ? 'text-primary font-black text-[14px]' : 'text-foreground font-bold text-[13px]'}`}
+                    >
                       {itemTotal.toFixed(2)}
                     </div>
                   </div>

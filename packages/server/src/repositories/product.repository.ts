@@ -102,7 +102,11 @@ export class ProductRepository {
 
     // Search query (name, name_ar, barcode)
     if (filters.search) {
-      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedSearch = filters.search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
@@ -114,7 +118,7 @@ export class ProductRepository {
 
     // Sorting (with column whitelist to prevent SQL injection)
     let sortField = 'products.created_at';
-    
+
     switch (filters.sortBy) {
       case 'name':
         sortField = 'products.name';
@@ -164,7 +168,11 @@ export class ProductRepository {
     }
 
     if (filters.search) {
-      const escapedSearch = filters.search.trim().replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedSearch = filters.search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       const searchPattern = `%${escapedSearch}%`;
       query.where((builder) => {
         builder
@@ -233,7 +241,7 @@ export class ProductRepository {
         quantity_change: quantity,
         old_quantity: 0,
         new_quantity: quantity,
-        notes: 'Initial stock creation'
+        notes: 'Initial stock creation',
       });
     }
   }

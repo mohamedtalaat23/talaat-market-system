@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -18,7 +18,7 @@ export function DeleteConfirmDialog() {
   const isOpen = useModalStore((state) => state.activeModals.product_delete);
   const payload = useModalStore((state) => state.modalPayloads.product_delete);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('product_delete');
+  const closeModal = useCallback(() => closeModalAction('product_delete'), [closeModalAction]);
 
   const deleteMutation = useDeleteProduct();
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);

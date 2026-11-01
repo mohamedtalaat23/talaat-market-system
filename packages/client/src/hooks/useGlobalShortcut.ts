@@ -18,7 +18,7 @@ interface ShortcutOptions {
 export function useGlobalShortcut(
   keySpec: string | string[],
   callback: (event: KeyboardEvent) => void,
-  options: ShortcutOptions = {}
+  options: ShortcutOptions = {},
 ) {
   const { preventDefault = false, stopPropagation = false, enableOnInputs = false } = options;
   const callbackRef = useRef(callback);

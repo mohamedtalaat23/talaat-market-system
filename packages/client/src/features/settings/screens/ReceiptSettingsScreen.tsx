@@ -54,31 +54,41 @@ export function ReceiptSettingsScreen() {
   return (
     <div className="max-w-3xl select-text space-y-8 pb-10">
       <div className="flex items-center gap-4 border-b border-border/40 pb-5">
-        <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.receipts')}</h3>
+        <h3 className="text-2xl font-black tracking-tight text-foreground">
+          {t('settings.receipts')}
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-6">
           <div>
-            <label className="block text-sm font-bold mb-3 text-foreground">{t('settings.receiptHeader')}</label>
+            <label className="block text-sm font-bold mb-3 text-foreground">
+              {t('settings.receiptHeader')}
+            </label>
             <textarea
               className="w-full h-32 bg-card border border-border/60 rounded-xl px-5 py-4 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none font-mono text-sm text-foreground shadow-sm transition-all"
               value={form.receipt_header_text}
               onChange={(e) => setForm({ ...form, receipt_header_text: e.target.value })}
               placeholder={t('settings.placeholderHeader')}
             />
-            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed">{t('settings.receiptHeaderDesc')}</p>
+            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed">
+              {t('settings.receiptHeaderDesc')}
+            </p>
           </div>
 
           <div className="pt-4 border-t border-border/40">
-            <label className="block text-sm font-bold mb-3 text-foreground">{t('settings.receiptFooter')}</label>
+            <label className="block text-sm font-bold mb-3 text-foreground">
+              {t('settings.receiptFooter')}
+            </label>
             <textarea
               className="w-full h-32 bg-card border border-border/60 rounded-xl px-5 py-4 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none font-mono text-sm text-foreground shadow-sm transition-all"
               value={form.receipt_footer_text}
               onChange={(e) => setForm({ ...form, receipt_footer_text: e.target.value })}
               placeholder={t('settings.placeholderFooter')}
             />
-            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed">{t('settings.receiptFooterDesc')}</p>
+            <p className="text-sm text-secondary/80 font-medium mt-3 leading-relaxed">
+              {t('settings.receiptFooterDesc')}
+            </p>
           </div>
         </div>
 
@@ -88,7 +98,10 @@ export function ReceiptSettingsScreen() {
           </h4>
 
           <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, auto_print: !form.auto_print })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() => setForm({ ...form, auto_print: !form.auto_print })}
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"
@@ -113,7 +126,10 @@ export function ReceiptSettingsScreen() {
               </label>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, show_cashier_name: !form.show_cashier_name })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() => setForm({ ...form, show_cashier_name: !form.show_cashier_name })}
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"
@@ -138,7 +154,10 @@ export function ReceiptSettingsScreen() {
               </label>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, show_tax_breakdown: !form.show_tax_breakdown })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() => setForm({ ...form, show_tax_breakdown: !form.show_tax_breakdown })}
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"
@@ -163,7 +182,12 @@ export function ReceiptSettingsScreen() {
               </label>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer" onClick={() => setForm({ ...form, include_store_contact: !form.include_store_contact })}>
+            <div
+              className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
+              onClick={() =>
+                setForm({ ...form, include_store_contact: !form.include_store_contact })
+              }
+            >
               <div className="pt-0.5">
                 <input
                   type="checkbox"

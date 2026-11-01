@@ -1,0 +1,70 @@
+name: Verify application
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: talaat_test
+          POSTGRES_PASSWORD: disposable-ci-password
+          POSTGRES_DB: talaat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talaat_test -d talaat_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: talaat_test
+      DB_PASSWORD: disposable-ci-password
+      DB_NAME: talaat_test
+      JWT_SECRET: disposable-ci-jwt-secret-at-least-32-characters
+      SESSION_SECRET: disposable-ci-session-secret-at-least-32-characters
+      BACKUP_DIR: /tmp/talaat-ci-backups
+      LOG_DIR: /tmp/talaat-ci-logs
+      LOG_LEVEL: error
+      RESTORE_TEST_DATABASE: talaat_restore_test
+      CYPRESS_INSTALL_BINARY: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:server:unit
+      - run: npm run test:client
+      - run: npm run test:desktop
+      - run: npm run compile --workspace=packages/desktop
+      - run: node scripts/check-preload.cjs
+      - run: node scripts/test-hardware-runtime.cjs
+      - run: npm run stage:runtime --workspace=packages/desktop
+      - run: npm run build:server
+      - run: npm run build:client
+      - name: Prepare disposable databases
+        env:
+          PGPASSWORD: disposable-ci-password
+        run: |
+          createdb -h 127.0.0.1 -U talaat_test talaat_restore_test
+          npm run db:migrate
+          DB_NAME=talaat_restore_test npm run db:migrate
+      - run: npm run test:server:integration
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run test:e2e
+        env:
+          TALAAT_E2E: '1'

@@ -44,6 +44,38 @@ export class SettingsController {
       next(error);
     }
   }
+
+  async createBackup(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { backupService } = await import('../services/backup.service');
+      // Credential hashes are included by default so the snapshot can actually be
+      // restored. `include_credentials=false` produces a safer-to-share export that
+      // requires re-provisioning every employee after a restore.
+      const includeCredentials = req.body?.include_credentials !== false;
+      const backup = await backupService.createBackup({ includeCredentials });
+      res.json({
+        status: 'success',
+        data: backup,
+      });
+    } catch (error) {
+      logger.error('Error creating database backup:', error);
+      next(error);
+    }
+  }
+
+  async listBackups(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { backupService } = await import('../services/backup.service');
+      const backups = await backupService.listBackups();
+      res.json({
+        status: 'success',
+        data: backups,
+      });
+    } catch (error) {
+      logger.error('Error listing database backups:', error);
+      next(error);
+    }
+  }
 }
 
 export const settingsController = new SettingsController();

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/product.controller';
 import { validate } from '../middleware/validate';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireRoles } from '../middleware/auth';
 import { standardRateLimiter } from '../middleware/rateLimit';
 import {
   createProductSchema,
@@ -33,16 +33,27 @@ productsRouter.get(
 );
 
 // POST /products - Create product + initial inventory
-productsRouter.post('/', validate({ body: createProductSchema }), controller.createProduct);
+productsRouter.post(
+  '/',
+  requireRoles('admin', 'manager'),
+  validate({ body: createProductSchema }),
+  controller.createProduct,
+);
 
 // PUT /products/:id - Update product details
 productsRouter.put(
   '/:id',
+  requireRoles('admin', 'manager'),
   validate({ params: productIdParamSchema, body: updateProductSchema }),
   controller.updateProduct,
 );
 
 // DELETE /products/:id - Soft-delete product
-productsRouter.delete('/:id', validate({ params: productIdParamSchema }), controller.deleteProduct);
+productsRouter.delete(
+  '/:id',
+  requireRoles('admin', 'manager'),
+  validate({ params: productIdParamSchema }),
+  controller.deleteProduct,
+);
 
 export { productsRouter };

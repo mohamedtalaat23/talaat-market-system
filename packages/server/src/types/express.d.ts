@@ -7,7 +7,10 @@ declare global {
         id: number;
         username: string;
         role: Role;
+        /** True when the account must rotate its password before doing anything else. */
+        must_change_password: boolean;
       };
     }
   }
 }
+

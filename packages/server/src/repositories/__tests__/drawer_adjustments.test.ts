@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { db } from '../../config/database';
 import { posRepository } from '../pos.repository';
+import { customerRepository } from '../customer.repository';
 import { setupTestData } from './reversal_setup';
 
 describe('Cash Drawer Adjustments', () => {
@@ -9,55 +10,61 @@ describe('Cash Drawer Adjustments', () => {
   beforeAll(async () => {
     ctx = await setupTestData();
     // Ensure shift starting cash is $500 as requested
-    await db('cashier_shifts').where('id', ctx.shiftId).update({ starting_cash: 500, expected_cash: 500 });
+    await db('cashier_shifts')
+      .where('id', ctx.shiftId)
+      .update({ starting_cash: 500, expected_cash: 500 });
   });
 
   afterAll(async () => {
     // Reset back
-    await db('cashier_shifts').where('id', ctx.shiftId).update({ status: 'open', expected_cash: 500 });
+    await db('cashier_shifts')
+      .where('id', ctx.shiftId)
+      .update({ status: 'open', expected_cash: 500 });
   });
 
   const createSale = async (cash_paid: number) => {
     const total = cash_paid;
-    
-    const [sale] = await db('sales').insert({
-      id: db.raw('gen_random_uuid()'),
-      receipt_number: `TST-ADJ-${Date.now()}-${Math.random()}`,
-      cashier_id: ctx.cashierId,
-      shift_id: ctx.shiftId,
-      register_id: ctx.registerId,
-      payment_method: 'cash',
-      subtotal: total,
-      discount_amount: 0,
-      global_discount: 0,
-      tax_amount: 0,
-      total: total,
-      cash_paid: cash_paid,
-      card_paid: 0,
-      debt_paid: 0,
-      cash_amount: cash_paid,
-      change_given: 0,
-      status: 'completed',
-      print_status: 'printed',
-      print_count: 1,
-      idempotency_key: `idmp-adj-${Date.now()}-${Math.random()}`
-    }).returning('*');
 
+    const [sale] = await db('sales')
+      .insert({
+        id: db.raw('gen_random_uuid()'),
+        receipt_number: `TST-ADJ-${Date.now()}-${Math.random()}`,
+        cashier_id: ctx.cashierId,
+        shift_id: ctx.shiftId,
+        register_id: ctx.registerId,
+        payment_method: 'cash',
+        subtotal: total,
+        discount_amount: 0,
+        global_discount: 0,
+        tax_amount: 0,
+        total: total,
+        cash_paid: cash_paid,
+        card_paid: 0,
+        debt_paid: 0,
+        cash_amount: cash_paid,
+        change_given: 0,
+        status: 'completed',
+        print_status: 'printed',
+        print_count: 1,
+        idempotency_key: `idmp-adj-${Date.now()}-${Math.random()}`,
+      })
+      .returning('*');
 
-    const [saleItem] = await db('sale_items').insert({
-      sale_id: sale.id,
-      product_id: ctx.productId,
-      quantity: 1,
-      unit_price: total,
-      cost_at_sale: 5,
-      line_total: total,
-      discount: 0
-    }).returning('*');
+    const [saleItem] = await db('sale_items')
+      .insert({
+        sale_id: sale.id,
+        product_id: ctx.productId,
+        quantity: 1,
+        unit_price: total,
+        cost_at_sale: 5,
+        line_total: total,
+        discount: 0,
+      })
+      .returning('*');
 
     await db('cashier_shifts').where('id', ctx.shiftId).increment('expected_cash', cash_paid);
 
     return { sale, saleItem };
-
   };
 
   it('End-to-End Reconciliation Test', async () => {
@@ -68,8 +75,11 @@ describe('Cash Drawer Adjustments', () => {
 
     // 3. Cash Refunds -$100 (Partial refund of the $1000 sale)
     await posRepository.processRefund({
-      sale_id: sale.id, manager_id: ctx.managerId, reason: 'Test Refund', refund_type: 'partial',
-      items: [{ sale_item_id: saleItem.id, quantity: 0.1, restock_inventory: true }]
+      sale_id: sale.id,
+      manager_id: ctx.managerId,
+      reason: 'Test Refund',
+      refund_type: 'partial',
+      items: [{ sale_item_id: saleItem.id, quantity: 0.1, restock_inventory: true }],
     });
 
     // 4. Safe Drop -$700
@@ -79,7 +89,7 @@ describe('Cash Drawer Adjustments', () => {
       type: 'safe_drop',
       amount: 700,
       reason_code: 'SAFE_DROP',
-      reason_notes: 'Transfer to safe'
+      reason_notes: 'Transfer to safe',
     });
 
     // 5. Change Refill +$200
@@ -89,12 +99,12 @@ describe('Cash Drawer Adjustments', () => {
       type: 'change_replenishment',
       amount: 200,
       reason_code: 'CHANGE_REPLENISHMENT',
-      reason_notes: 'Need quarters'
+      reason_notes: 'Need quarters',
     });
 
     // Expected Cash = 500 + 1000 - 100 - 700 + 200 = $900
     const summary = await posRepository.getShiftSummary(ctx.shiftId);
-    
+
     expect(Number(summary.starting_cash)).toBe(500);
     expect(Number(summary.cash_sales)).toBe(400); // 1000 sale - 100 refund + 200 IN - 700 OUT = 400 net cash change? Wait!
     // Wait, the test specifies Expected Cash = $900.
@@ -111,11 +121,14 @@ describe('Cash Drawer Adjustments', () => {
     expect(Number(liveShift.expected_cash)).toBe(900);
   });
 
-
   it('Tests petty_cash', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
     const adj = await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'petty_cash', amount: 10, reason_code: 'PETTY_CASH'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'petty_cash',
+      amount: 10,
+      reason_code: 'PETTY_CASH',
     });
     expect(adj.adjustment_type).toBe('OUT');
     const shiftAfter = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -125,7 +138,11 @@ describe('Cash Drawer Adjustments', () => {
   it('Tests vendor_payment', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
     const adj = await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'vendor_payment', amount: 50, reason_code: 'VENDOR_PAYMENT'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'vendor_payment',
+      amount: 50,
+      reason_code: 'VENDOR_PAYMENT',
     });
     expect(adj.adjustment_type).toBe('OUT');
     const shiftAfter = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -135,7 +152,11 @@ describe('Cash Drawer Adjustments', () => {
   it('Tests owner_withdrawal', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
     const adj = await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'owner_withdrawal', amount: 100, reason_code: 'OWNER_WITHDRAWAL'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'owner_withdrawal',
+      amount: 100,
+      reason_code: 'OWNER_WITHDRAWAL',
     });
     expect(adj.adjustment_type).toBe('OUT');
     const shiftAfter = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -145,7 +166,11 @@ describe('Cash Drawer Adjustments', () => {
   it('Tests cash_correction_in', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
     const adj = await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'cash_correction_in', amount: 5, reason_code: 'CASH_CORRECTION_IN'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'cash_correction_in',
+      amount: 5,
+      reason_code: 'CASH_CORRECTION_IN',
     });
     expect(adj.adjustment_type).toBe('IN');
     const shiftAfter = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -155,13 +180,16 @@ describe('Cash Drawer Adjustments', () => {
   it('Tests cash_correction_out', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
     const adj = await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'cash_correction_out', amount: 5, reason_code: 'CASH_CORRECTION_OUT'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'cash_correction_out',
+      amount: 5,
+      reason_code: 'CASH_CORRECTION_OUT',
     });
     expect(adj.adjustment_type).toBe('OUT');
     const shiftAfter = await db('cashier_shifts').where('id', ctx.shiftId).first();
     expect(Number(shiftAfter.expected_cash)).toBe(Number(shiftBefore.expected_cash) - 5);
   });
-
 
   it('Enforces live vs summary expected_cash invariant across full lifecycle', async () => {
     const shiftBefore = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -173,25 +201,41 @@ describe('Cash Drawer Adjustments', () => {
       cash_received: 100,
       cash_amount: 100,
       idempotency_key: `idmp-${Date.now()}-${Math.random()}`,
-      items: [{ product_id: ctx.productId, quantity: 1, unit_price: 100, line_total: 100, discount: 0 }]
+      items: [
+        { product_id: ctx.productId, quantity: 1, unit_price: 100, line_total: 100, discount: 0 },
+      ],
     };
+    // Update the product's selling price in the DB to 100 to match the checkout unit_price
+    await db('products').where('id', ctx.productId).update({ selling_price: 100 });
+
     const sale = await posRepository.checkout(salePayload, ctx.cashierId);
     const item = await db('sale_items').where('sale_id', sale.id).first();
 
     // 2. Refund -20
     await posRepository.processRefund({
-      sale_id: sale.id, manager_id: ctx.managerId, reason: 'test', refund_type: 'partial',
-      items: [{ sale_item_id: item.id, quantity: 0.2, restock_inventory: false }]
+      sale_id: sale.id,
+      manager_id: ctx.managerId,
+      reason: 'test',
+      refund_type: 'partial',
+      items: [{ sale_item_id: item.id, quantity: 0.2, restock_inventory: false }],
     });
 
     // 3. Safe Drop -50
     await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'safe_drop', amount: 50, reason_code: 'SAFE_DROP'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'safe_drop',
+      amount: 50,
+      reason_code: 'SAFE_DROP',
     });
 
     // 4. Change Replenishment +10
     await posRepository.createDrawerAdjustment({
-      shift_id: ctx.shiftId, manager_id: ctx.managerId, type: 'change_replenishment', amount: 10, reason_code: 'CHANGE_REPLENISHMENT'
+      shift_id: ctx.shiftId,
+      manager_id: ctx.managerId,
+      type: 'change_replenishment',
+      amount: 10,
+      reason_code: 'CHANGE_REPLENISHMENT',
     });
 
     const liveShift = await db('cashier_shifts').where('id', ctx.shiftId).first();
@@ -211,8 +255,131 @@ describe('Cash Drawer Adjustments', () => {
         manager_id: ctx.managerId,
         type: 'safe_drop',
         amount: 50,
-        reason_code: 'SAFE_DROP'
-      })
+        reason_code: 'SAFE_DROP',
+      }),
     ).rejects.toThrow('Shift must be open');
+  });
+
+  it('TC1: Multiple Parallel Drawer Adjustments (Race Condition Prevention)', async () => {
+    const localCtx = await setupTestData();
+    await db('cashier_shifts')
+      .where('id', localCtx.shiftId)
+      .update({ starting_cash: 500, expected_cash: 500 });
+
+    const shiftBefore = await db('cashier_shifts').where('id', localCtx.shiftId).first();
+    expect(Number(shiftBefore.expected_cash)).toBe(500);
+
+    // Run parallel adjustments:
+    // Safe drop OUT 100, Petty cash OUT 20, Change replenishment IN 150
+    // Net: -100 -20 +150 = +30
+    await Promise.all([
+      posRepository.createDrawerAdjustment({
+        shift_id: localCtx.shiftId,
+        manager_id: localCtx.managerId,
+        type: 'safe_drop',
+        amount: 100,
+        reason_code: 'SAFE_DROP',
+      }),
+      posRepository.createDrawerAdjustment({
+        shift_id: localCtx.shiftId,
+        manager_id: localCtx.managerId,
+        type: 'petty_cash',
+        amount: 20,
+        reason_code: 'PETTY_CASH',
+      }),
+      posRepository.createDrawerAdjustment({
+        shift_id: localCtx.shiftId,
+        manager_id: localCtx.managerId,
+        type: 'change_replenishment',
+        amount: 150,
+        reason_code: 'CHANGE_REPLENISHMENT',
+      }),
+    ]);
+
+    const shiftAfter = await db('cashier_shifts').where('id', localCtx.shiftId).first();
+    expect(Number(shiftAfter.expected_cash)).toBe(530);
+
+    const summary = await posRepository.getShiftSummary(localCtx.shiftId);
+    expect(Number(summary.expected_cash)).toBe(530);
+  });
+
+  it('TC2: Customer Cash Payment Reconciliation', async () => {
+    const localCtx = await setupTestData();
+    await db('cashier_shifts')
+      .where('id', localCtx.shiftId)
+      .update({ starting_cash: 500, expected_cash: 500 });
+
+    const { customerId } = localCtx;
+    await db('customers').where('id', customerId).update({ balance: -100 });
+
+    // Record a cash payment of $40 from the customer
+    await customerRepository.recordTransaction(
+      customerId,
+      40,
+      'payment',
+      null,
+      'Manual Cash Payment Test',
+      localCtx.managerId,
+      localCtx.shiftId,
+      localCtx.registerId,
+      'cash',
+    );
+
+    const summary = await posRepository.getShiftSummary(localCtx.shiftId);
+    expect(Number(summary.expected_cash)).toBe(540);
+  });
+
+  it('TC3: Closed Shift Lockout for Checkout', async () => {
+    const localCtx = await setupTestData();
+    await db('cashier_shifts').where('id', localCtx.shiftId).update({ status: 'closed' });
+
+    const salePayload = {
+      shift_id: localCtx.shiftId,
+      register_id: localCtx.registerId,
+      payment_method: 'cash' as const,
+      cash_received: 100,
+      cash_amount: 100,
+      idempotency_key: `idmp-${Date.now()}-${Math.random()}`,
+      items: [
+        {
+          product_id: localCtx.productId,
+          quantity: 1,
+          unit_price: 10,
+          line_total: 10,
+          discount: 0,
+        },
+      ],
+    };
+
+    // Verify checkout throws shift open validation error
+    await expect(posRepository.checkout(salePayload, localCtx.cashierId)).rejects.toThrow(
+      'Shift must be open for checkout',
+    );
+  });
+
+  it('TC4: Final Discrepancy Calculation (Overage/Shortage)', async () => {
+    const localCtx = await setupTestData();
+    await db('cashier_shifts')
+      .where('id', localCtx.shiftId)
+      .update({ starting_cash: 500, expected_cash: 500 });
+
+    const summary = await posRepository.getShiftSummary(localCtx.shiftId);
+    expect(Number(summary.expected_cash)).toBe(500);
+
+    // Close shift with actual ending cash of $490 (a shortage of $10)
+    const closed = await posRepository.closeShift(
+      localCtx.shiftId,
+      490,
+      summary.expected_cash,
+      'Counted shortage of 10',
+      localCtx.cashierId,
+    );
+
+    expect(closed.status).toBe('closed');
+    expect(Number(closed.ending_cash)).toBe(490);
+    expect(Number(closed.expected_cash)).toBe(500);
+
+    // Variance is tracked in UI as ending_cash - expected_cash = 490 - 500 = -10
+    expect(Number(closed.ending_cash) - Number(closed.expected_cash)).toBe(-10);
   });
 });

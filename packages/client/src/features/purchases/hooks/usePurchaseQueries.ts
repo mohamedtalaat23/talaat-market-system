@@ -187,7 +187,7 @@ export function useCreatePurchaseOrder() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases'] });
       toast.success('Draft purchase order created successfully');
     },
     onError: (error: any) => {
@@ -210,8 +210,8 @@ export function useUpdatePurchaseOrder(id: number) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      queryClient.invalidateQueries({ queryKey: ['purchases', id] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
       toast.success('Draft purchase order updated successfully');
     },
     onError: (error: any) => {
@@ -233,8 +233,8 @@ export function usePlacePurchaseOrder() {
       return response.data;
     },
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      queryClient.invalidateQueries({ queryKey: ['purchases', id] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
       toast.success('Purchase order placed successfully');
     },
     onError: (error: any) => {
@@ -256,8 +256,8 @@ export function useCancelPurchaseOrder() {
       return response.data;
     },
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      queryClient.invalidateQueries({ queryKey: ['purchases', id] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
       toast.success('Purchase order cancelled');
     },
     onError: (error: any) => {
@@ -280,10 +280,10 @@ export function useReceivePurchaseOrder() {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      queryClient.invalidateQueries({ queryKey: ['purchases', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      void queryClient.invalidateQueries({ queryKey: ['purchases', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      void queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Goods received successfully, inventory and costs updated');
     },
     onError: (error: any) => {

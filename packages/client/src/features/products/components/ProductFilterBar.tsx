@@ -73,7 +73,12 @@ export function ProductFilterBar({
               onChange={handleInputChange}
             />
           </div>
-          <Button type="submit" variant="secondary" size="sm" className="font-semibold shrink-0 h-10 rounded-xl px-5">
+          <Button
+            type="submit"
+            variant="secondary"
+            size="sm"
+            className="font-semibold shrink-0 h-10 rounded-xl px-5"
+          >
             {t('common.search')}
           </Button>
         </form>
@@ -92,7 +97,11 @@ export function ProductFilterBar({
       </div>
 
       {/* Category filter pills */}
-      <div className="flex flex-wrap items-center gap-2 select-none bg-card/50 p-1.5 rounded-xl border border-border/40" role="group" aria-label="Category Filters">
+      <div
+        className="flex flex-wrap items-center gap-2 select-none bg-card/50 p-1.5 rounded-xl border border-border/40"
+        role="group"
+        aria-label="Category Filters"
+      >
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider mx-2">
           <SlidersHorizontal size={13} />
           <span>{t('products.category')}</span>
@@ -109,7 +118,9 @@ export function ProductFilterBar({
         </button>
 
         {isLoadingCategories ? (
-          <span className="text-xs text-secondary/50 italic animate-pulse">{t('products.loadingTags')}</span>
+          <span className="text-xs text-secondary/50 italic animate-pulse">
+            {t('products.loadingTags')}
+          </span>
         ) : (
           categories.map((cat) => (
             <button

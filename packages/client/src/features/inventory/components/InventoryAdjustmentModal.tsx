@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { InventoryAdjustmentForm } from './InventoryAdjustmentForm';
@@ -18,7 +18,7 @@ export function InventoryAdjustmentModal() {
   const isOpen = useModalStore((state) => state.activeModals.inventory_adjust);
   const payload = useModalStore((state) => state.modalPayloads.inventory_adjust);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('inventory_adjust');
+  const closeModal = useCallback(() => closeModalAction('inventory_adjust'), [closeModalAction]);
 
   const adjustMutation = useAdjustStock();
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
@@ -103,7 +103,7 @@ export function InventoryAdjustmentModal() {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default InventoryAdjustmentModal;

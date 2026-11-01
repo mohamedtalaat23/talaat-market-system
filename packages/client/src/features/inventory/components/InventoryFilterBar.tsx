@@ -65,7 +65,11 @@ export function InventoryFilterBar({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button type="submit" variant="secondary" className="h-12 rounded-xl font-bold px-6 shrink-0 shadow-sm border border-border/60 hover:border-border transition-all hover:-translate-y-0.5">
+        <Button
+          type="submit"
+          variant="secondary"
+          className="h-12 rounded-xl font-bold px-6 shrink-0 shadow-sm border border-border/60 hover:border-border transition-all hover:-translate-y-0.5"
+        >
           {t('common.search')}
         </Button>
       </form>

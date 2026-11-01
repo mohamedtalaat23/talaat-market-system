@@ -1,35 +1,118 @@
-import { type IpcMain, dialog, app, BrowserWindow } from 'electron';
+import path from 'path';
+import { createHardwareAuthorization } from './authorization';
+import { type IpcMain, type IpcMainInvokeEvent, dialog, app, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { printQueue } from './print-queue';
 import { MockPrinterAdapter, UsbPrinterAdapter } from './printer-adapters';
-import type { Receipt, PrinterConfig } from './printing-types';
+import type { Receipt } from './printing-types';
+import {
+  IpcValidationError,
+  parseFileFiltersArgs,
+  parseJobIdArgs,
+  parseOfflineSaleArgs,
+  parseOfflineSaleIdArgs,
+  parsePrintReceiptArgs,
+  parsePrinterConfigArgs,
+  parseReceiptArgs,
+  type OfflineSaleRecord,
+} from './validation';
 import Store from 'electron-store';
 
 /**
  * IPC handler registration.
  *
- * All ipcMain.handle() calls are registered here, then called once from main.ts.
- * Keeping handlers separate from main.ts prevents it from becoming a monolith.
- *
- * Pattern: ipcMain.handle(channel, async (event, ...args) => result)
- *   - The result is returned to the renderer as a resolved promise value
- *   - Throw an Error to reject the promise on the renderer side
+ * Security model:
+ *   - Every handler runs `assertTrustedSender` first: only the main window's
+ *     top-level frame on an application URL may invoke privileged operations.
+ *   - Every payload is parsed by an explicit validator (`./validation`) and a
+ *     malformed argument becomes a rejected promise, never a partially applied
+ *     side effect.
+ *   - Handlers that cannot be implemented safely (backup/restore) are *not*
+ *     registered at all. Previously they returned `{ success: true }` while doing
+ *     nothing, which made the UI lie about having taken a backup.
  */
-export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void {
+
+export type SenderGuard = (event: IpcMainInvokeEvent) => void;
+
+/** Upper bound for the durable offline-sale queue (disk safety). */
+const MAX_OFFLINE_QUEUE = 5_000;
+
+export interface RegisterIpcOptions {
+  serverPort: number;
+  /** Throws when the sender is not the trusted application frame. */
+  assertTrustedSender: SenderGuard;
+}
+
+export function registerIpcHandlers(
+  ipcMain: IpcMain,
+  { serverPort, assertTrustedSender }: RegisterIpcOptions,
+): void {
+  const claims = new Store({ name: 'hardware-print-claims' }) as unknown as {
+    get(key: string, fallback: string[]): string[];
+    set(key: string, value: string[]): void;
+  };
+  const authorization = createHardwareAuthorization(
+    serverPort,
+    path.join(app.getPath('userData'), 'hardware-audit.ndjson'),
+  );
+  /** Wraps a handler with sender verification. */
+  const handle = (
+    channel: string,
+    handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => unknown,
+  ): void => {
+    ipcMain.handle(channel, async (event, ...args) => {
+      try {
+        assertTrustedSender(event);
+        const envelope = args.pop();
+        const receipt = channel === IPC_CHANNELS.ENQUEUE_PRINT_JOB ? parseReceiptArgs(args) : null;
+        const operation = () =>
+          receipt && claims.get('receipts', []).includes(receipt.receiptNumber)
+            ? IPC_CHANNELS.PRINT_RECEIPT
+            : channel;
+        return await authorization.execute(
+          operation,
+          envelope,
+          () => {
+            if (receipt)
+              claims.set('receipts', [
+                ...new Set([...claims.get('receipts', []), receipt.receiptNumber]),
+              ]);
+            return handler(event, ...args);
+          },
+          channel === IPC_CHANNELS.OPEN_CASH_DRAWER
+            ? args[0]
+            : channel === IPC_CHANNELS.REMOVE_OFFLINE_SALE
+              ? {
+                  idempotency_key: (
+                    offlineStore.get('offlineSales', []) as OfflineSaleRecord[]
+                  ).find((entry) => entry.id === args[0])?.payload['idempotency_key'],
+                }
+              : channel === IPC_CHANNELS.ENQUEUE_PRINT_JOB
+                ? args[1]
+                : undefined,
+        );
+      } catch (error) {
+        authorization.rejected(channel);
+        if (error instanceof IpcValidationError) {
+          console.warn(`[IPC] Rejected ${channel}: ${error.message}`);
+        }
+        throw error;
+      }
+    });
+  };
+
   // ── System ───────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.GET_SERVER_PORT, () => {
-    return serverPort;
-  });
+  handle(IPC_CHANNELS.GET_SERVER_PORT, () => serverPort);
 
-  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
-    return app.getVersion();
-  });
+  handle(IPC_CHANNELS.GET_APP_VERSION, () => app.getVersion());
 
   // ── Printing (Phase 6: Hardware) ─────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.PRINT_RECEIPT, async (_event, data: { html: string }) => {
+  handle(IPC_CHANNELS.PRINT_RECEIPT, async (_event, ...args) => {
+    const { html } = parsePrintReceiptArgs(args);
     console.log('[IPC] print-receipt called with pre-rendered html');
+
     return new Promise((resolve, reject) => {
       // Create a hidden window for printing
       const printWindow = new BrowserWindow({
@@ -37,6 +120,8 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
+          sandbox: true,
+          javascript: false,
         },
       });
 
@@ -49,14 +134,14 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
           console.error('[IPC] Printing timed out after 15 seconds. Destroying window.');
           try {
             printWindow.destroy();
-          } catch (e) {
+          } catch {
             // Ignore if window was already destroyed
           }
           reject(new Error('Printing timed out. Hidden window destroyed to prevent leaks.'));
         }
       }, 15000);
 
-      printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(data.html)}`);
+      void printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 
       printWindow.webContents.on('did-finish-load', () => {
         printWindow.webContents.print(
@@ -67,7 +152,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
             clearTimeout(timeoutId);
             try {
               printWindow.destroy();
-            } catch (e) {
+            } catch {
               // Ignore if window was already destroyed
             }
             if (success) {
@@ -86,7 +171,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
         clearTimeout(timeoutId);
         try {
           printWindow.destroy();
-        } catch (e) {
+        } catch {
           // Ignore if window was already destroyed
         }
         reject(new Error('Failed to load printing window context.'));
@@ -94,32 +179,34 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     });
   });
 
-  ipcMain.handle(IPC_CHANNELS.OPEN_CASH_DRAWER, async () => {
+  handle(IPC_CHANNELS.OPEN_CASH_DRAWER, async () => {
     console.log('[IPC] open-cash-drawer called');
     return printQueue.kickDrawer();
   });
 
-  ipcMain.handle(IPC_CHANNELS.ENQUEUE_PRINT_JOB, async (_event, receipt: Receipt) => {
+  handle(IPC_CHANNELS.ENQUEUE_PRINT_JOB, async (_event, ...args) => {
+    const receipt = parseReceiptArgs(args);
     console.log('[IPC] enqueue-job called for receipt:', receipt.receiptNumber);
-    const job = printQueue.enqueue(receipt);
+    const job = printQueue.enqueue(receipt as Receipt, authorization.jobPermit());
     return { success: true, jobId: job.id };
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_PRINT_JOBS, async () => {
+  handle(IPC_CHANNELS.GET_PRINT_JOBS, async () => {
     return printQueue.getJobs();
   });
 
-  ipcMain.handle(IPC_CHANNELS.RETRY_PRINT_JOB, async (_event, jobId: string) => {
+  handle(IPC_CHANNELS.RETRY_PRINT_JOB, async (_event, ...args) => {
+    const jobId = parseJobIdArgs(args);
     console.log('[IPC] retry-job called for:', jobId);
-    return printQueue.retryJob(jobId);
+    return printQueue.retryJob(jobId, authorization.jobPermit());
   });
 
-  ipcMain.handle(IPC_CHANNELS.CLEAR_PRINT_QUEUE, async () => {
+  handle(IPC_CHANNELS.CLEAR_PRINT_QUEUE, async () => {
     printQueue.clearQueue();
     return { success: true };
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_PRINTER_STATUS, async () => {
+  handle(IPC_CHANNELS.GET_PRINTER_STATUS, async () => {
     const config = printQueue.getConfig();
     if (config.type === 'system') {
       return {
@@ -139,16 +226,16 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     return adapter.getStatus();
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_PRINTER_CONFIG, async () => {
+  handle(IPC_CHANNELS.GET_PRINTER_CONFIG, async () => {
     return printQueue.getConfig();
   });
 
-  ipcMain.handle(IPC_CHANNELS.UPDATE_PRINTER_CONFIG, async (_event, config: PrinterConfig) => {
-    printQueue.updateConfig(config);
+  handle(IPC_CHANNELS.UPDATE_PRINTER_CONFIG, async (_event, ...args) => {
+    printQueue.updateConfig(parsePrinterConfigArgs(args));
     return true;
   });
 
-  ipcMain.handle(IPC_CHANNELS.DISCOVER_PRINTERS, async () => {
+  handle(IPC_CHANNELS.DISCOVER_PRINTERS, async () => {
     if (process.platform === 'win32') {
       const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
       const printers = await win?.webContents.getPrintersAsync();
@@ -158,28 +245,41 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     return UsbPrinterAdapter.discover();
   });
 
-  ipcMain.handle(IPC_CHANNELS.TEST_PRINTER, async (_event, config: PrinterConfig) => {
-    console.log('[IPC] test-printer called with config:', config);
+  handle(IPC_CHANNELS.TEST_PRINTER, async (_event, ...args) => {
+    const config = parsePrinterConfigArgs(args);
+    console.log('[IPC] test-printer called for type:', config.type);
     return printQueue.testPrinter(config);
   });
 
-  // ── Backup (Phase 5) ──────────────────────────────────────────────────────
-
-  ipcMain.handle(IPC_CHANNELS.CREATE_BACKUP, async (_event, backupPath: unknown) => {
-    // Phase 5 implementation note: Run pg_dump via child_process
-    console.log('[IPC] create-backup called:', backupPath);
-    return { success: true, message: 'Backup not yet implemented (Phase 5)' };
+  // ── Backup ───────────────────────────────────────────────────────────────
+  //
+  // No backup/restore IPC handlers are registered on purpose. The previous
+  // implementations returned `{ success: true }` without touching the database,
+  // so a "successful" backup could not be restored — the worst possible failure
+  // mode for a disaster-recovery feature.
+  //
+  // Backups are created server-side (Settings → Full Database Backup, or
+  // `POST /settings/backups`) and restored offline with
+  // `npm run db:restore -- --target <separate database>`. The renderer has no
+  // privileged filesystem/database access, so there is nothing safe to expose
+  // here. Calling these channels now rejects with a clear error.
+  handle(IPC_CHANNELS.CREATE_BACKUP, async () => {
+    throw new Error('Backup must be created from the server (Settings → Full Database Backup).');
   });
 
-  ipcMain.handle(IPC_CHANNELS.RESTORE_BACKUP, async (_event, backupPath: unknown) => {
-    // Phase 5 implementation note: Run pg_restore via child_process
-    console.log('[IPC] restore-backup called:', backupPath);
-    return { success: true, message: 'Restore not yet implemented (Phase 5)' };
+  handle(IPC_CHANNELS.RESTORE_BACKUP, async () => {
+    throw new Error(
+      'Restore runs offline on the server host: npm run db:restore -- --file <backup> --target <database>.',
+    );
+  });
+
+  handle(IPC_CHANNELS.LIST_BACKUPS, async () => {
+    throw new Error('List backups from Settings → Full Database Backup (server endpoint).');
   });
 
   // ── File Dialogs ──────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.SELECT_DIRECTORY, async (event) => {
+  handle(IPC_CHANNELS.SELECT_DIRECTORY, async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     const result = await dialog.showOpenDialog(
       win ?? BrowserWindow.getFocusedWindow() ?? undefined!,
@@ -191,13 +291,14 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     return result.canceled ? null : (result.filePaths[0] ?? null);
   });
 
-  ipcMain.handle(IPC_CHANNELS.SELECT_FILE, async (event, filters: Electron.FileFilter[]) => {
+  handle(IPC_CHANNELS.SELECT_FILE, async (event, ...args) => {
+    const filters = parseFileFiltersArgs(args);
     const win = BrowserWindow.fromWebContents(event.sender);
     const result = await dialog.showOpenDialog(
       win ?? BrowserWindow.getFocusedWindow() ?? undefined!,
       {
         properties: ['openFile'],
-        filters: filters ?? [],
+        filters,
         title: 'Select File',
       },
     );
@@ -206,11 +307,11 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
 
   // ── Window Management ─────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.MINIMIZE_WINDOW, (event) => {
+  handle(IPC_CHANNELS.MINIMIZE_WINDOW, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();
   });
 
-  ipcMain.handle(IPC_CHANNELS.MAXIMIZE_WINDOW, (event) => {
+  handle(IPC_CHANNELS.MAXIMIZE_WINDOW, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win?.isMaximized()) {
       win.unmaximize();
@@ -219,7 +320,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     }
   });
 
-  ipcMain.handle(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
+  handle(IPC_CHANNELS.CLOSE_WINDOW, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
   });
 
@@ -232,12 +333,22 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     },
   }) as any;
 
-  ipcMain.handle(IPC_CHANNELS.PERSIST_OFFLINE_SALE, (_event, sale: any) => {
+  handle(IPC_CHANNELS.PERSIST_OFFLINE_SALE, (_event, ...args) => {
+    const sale = parseOfflineSaleArgs(args);
     console.log('[IPC] persist-offline-sale called for ID:', sale.id);
-    const sales = offlineStore.get('offlineSales', []);
-    const existingIndex = sales.findIndex((s: any) => s.id === sale.id);
+    const sales: OfflineSaleRecord[] = offlineStore.get('offlineSales', []);
+
+    // Bound the durable queue so a broken renderer cannot exhaust disk space.
+    if (sales.length >= MAX_OFFLINE_QUEUE && !sales.some((entry) => entry['id'] === sale.id)) {
+      throw new Error(
+        `Offline queue is full (${MAX_OFFLINE_QUEUE} sales). Sync the pending sales before continuing.`,
+      );
+    }
+
+    const existingIndex = sales.findIndex((entry) => entry['id'] === sale.id);
     if (existingIndex >= 0) {
-      sales[existingIndex] = sale;
+      if (JSON.stringify(sales[existingIndex]) !== JSON.stringify(sale))
+        throw new Error('Queued offline sales are immutable.');
     } else {
       sales.push(sale);
     }
@@ -245,15 +356,16 @@ export function registerIpcHandlers(ipcMain: IpcMain, serverPort: number): void 
     return { success: true };
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_OFFLINE_SALES, () => {
+  handle(IPC_CHANNELS.GET_OFFLINE_SALES, () => {
     console.log('[IPC] get-offline-sales called');
     return offlineStore.get('offlineSales', []);
   });
 
-  ipcMain.handle(IPC_CHANNELS.REMOVE_OFFLINE_SALE, (_event, id: string) => {
+  handle(IPC_CHANNELS.REMOVE_OFFLINE_SALE, (_event, ...args) => {
+    const id = parseOfflineSaleIdArgs(args);
     console.log('[IPC] remove-offline-sale called for ID:', id);
-    let sales = offlineStore.get('offlineSales', []);
-    sales = sales.filter((s: any) => s.id !== id);
+    let sales: OfflineSaleRecord[] = offlineStore.get('offlineSales', []);
+    sales = sales.filter((entry) => entry['id'] !== id);
     offlineStore.set('offlineSales', sales);
     return { success: true };
   });

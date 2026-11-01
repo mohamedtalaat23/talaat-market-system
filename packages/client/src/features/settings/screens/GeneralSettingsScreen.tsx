@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useSettings, useUpdateSettings } from '../hooks/useSettingsQueries';
 import { Spinner } from '@/components/ui/Spinner';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -21,7 +21,7 @@ export function GeneralSettingsScreen() {
   });
 
   // Load initial settings
-  const loadInitialSettings = () => {
+  const loadInitialSettings = useCallback(() => {
     if (settings) {
       setForm({
         store_name: settings.store_name || '',
@@ -34,11 +34,11 @@ export function GeneralSettingsScreen() {
         date_format: settings.date_format || 'DD/MM/YYYY',
       });
     }
-  };
+  }, [settings]);
 
   useEffect(() => {
     loadInitialSettings();
-  }, [settings]);
+  }, [loadInitialSettings]);
 
   // Compute dirty state (has anything changed?)
   const isDirty = useMemo(() => {
@@ -57,18 +57,18 @@ export function GeneralSettingsScreen() {
 
   const handleDiscard = () => {
     loadInitialSettings();
-    toast.success('Changes discarded');
+    toast.success(t('settings.toasts.changesDiscarded'));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(form, {
       onSuccess: () => {
-        toast.success('Settings saved successfully');
+        toast.success(t('settings.toasts.saveSuccess'));
       },
       onError: () => {
-        toast.error('Failed to save settings');
-      }
+        toast.error(t('settings.toasts.saveFailed'));
+      },
     });
   };
 
@@ -143,7 +143,7 @@ export function GeneralSettingsScreen() {
         </div>
 
         {/* Financial & Localization */}
-        <div className="space-y-6 pb-6">
+        <div className="space-y-6 pb-6 border-b border-border/40">
           <h4 className="text-[11px] font-black text-primary uppercase tracking-widest select-none bg-primary/10 w-max px-3 py-1.5 rounded-md">
             {t('settings.financialL10n')}
           </h4>
@@ -178,7 +178,13 @@ export function GeneralSettingsScreen() {
               </label>
               <select
                 className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-semibold appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right 1rem center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  paddingRight: `2.5rem`,
+                }}
                 value={form.timezone}
                 onChange={(e) => setForm({ ...form, timezone: e.target.value })}
               >
@@ -195,7 +201,13 @@ export function GeneralSettingsScreen() {
               </label>
               <select
                 className="w-full bg-background border border-border/60 rounded-xl h-12 px-4 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all font-mono font-bold appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 1rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right 1rem center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  paddingRight: `2.5rem`,
+                }}
                 value={form.date_format}
                 onChange={(e) => setForm({ ...form, date_format: e.target.value })}
               >
@@ -207,11 +219,68 @@ export function GeneralSettingsScreen() {
           </div>
         </div>
 
+        {/* Full Backup Section */}
+        <div className="space-y-6 pt-2 pb-6">
+          <h4 className="text-[11px] font-black text-emerald-500 uppercase tracking-widest select-none bg-emerald-500/10 w-max px-3 py-1.5 rounded-md">
+            Full Database Backup
+          </h4>
+          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h5 className="font-bold text-foreground mb-1">Create a Full Backup</h5>
+                <p className="text-xs text-muted-foreground max-w-md">
+                  Exports every record the system needs to be rebuilt: sales and sale items, shifts,
+                  customers and their ledger, employees, purchases and receipts, refunds, inventory,
+                  batches, cycle counts, settings and audit logs. The file is written to the server&apos;s
+                  backup directory with owner-only permissions and contains financial and personal
+                  data — treat it as confidential.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const { apiClient } = await import('@/services/api-client');
+                    const res = await apiClient.post('/settings/backups', {});
+                    const filename = res.data?.data?.filename;
+                    const tables = res.data?.data?.tables;
+                    toast.success(
+                      tables ? `Full backup created: ${filename} (${tables} tables)` : `Backup created: ${filename}`,
+                    );
+                  } catch {
+                    toast.error('Failed to generate backup');
+                  }
+                }}
+                className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0"
+              >
+                Create Full Backup
+              </button>
+            </div>
+
+            <div className="border-t border-border/50 pt-4">
+              <h6 className="text-[11px] font-black text-foreground/70 uppercase tracking-widest mb-2">
+                Restoring a Backup
+              </h6>
+              <p className="text-xs text-muted-foreground max-w-2xl">
+                Restoring is deliberately <span className="font-bold text-foreground">not available from this screen</span>:
+                it must never overwrite a live database. Run it from the server console instead, into a
+                separate, freshly created database, verify the data, and only then promote that database:
+              </p>
+              <pre className="mt-3 text-[11px] leading-relaxed bg-background/80 border border-border/60 rounded-xl p-4 overflow-x-auto font-mono text-foreground/80">
+{`createdb talaat_market_restore
+DB_NAME=talaat_market_restore npm run db:migrate
+npm run db:restore -- --file <backup>.json --target talaat_market_restore          # validate only
+npm run db:restore -- --file <backup>.json --target talaat_market_restore --apply  # write`}
+              </pre>
+            </div>
+          </div>
+        </div>
+
         {/* ── Sticky Unsaved Changes Action Bar ── */}
         {isDirty && (
           <div className="sticky bottom-6 left-0 right-0 bg-white/95 dark:bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom-8 duration-300 z-20 select-none gap-4">
             <span className="text-sm font-bold text-foreground">
-              You have unsaved changes to your general settings
+              {t('settings.unsavedChanges')}
             </span>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
@@ -219,14 +288,14 @@ export function GeneralSettingsScreen() {
                 onClick={handleDiscard}
                 className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-card hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-border/60 text-secondary hover:text-foreground text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-sm focus:outline-none"
               >
-                Discard
+                {t('settings.discard')}
               </button>
               <button
                 type="submit"
                 disabled={isPending}
                 className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all focus:outline-none disabled:opacity-50 shadow-[0_4px_14px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.4)] hover:-translate-y-0.5 active:scale-95"
               >
-                {isPending ? 'Saving...' : 'Save Changes'}
+                {isPending ? t('settings.saving') : t('settings.saveChanges')}
               </button>
             </div>
           </div>

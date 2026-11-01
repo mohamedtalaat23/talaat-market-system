@@ -5,6 +5,7 @@ import fs from 'fs';
 import net from 'net';
 import path from 'path';
 import { logger } from './main';
+import { assertPasswordAuthentication } from './postgres-security';
 
 interface PostgresRuntime {
   initdb: string;
@@ -54,7 +55,14 @@ function writeEnvFile(filePath: string, values: Record<string, string>): void {
     }),
     '',
   ];
-  fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+  // 0600: this file holds the database password plus the JWT/session secrets,
+  // so it must not be readable by other OS users.
+  fs.writeFileSync(filePath, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
+  try {
+    fs.chmodSync(filePath, 0o600);
+  } catch {
+    // Windows does not implement POSIX permissions; the user profile ACL applies.
+  }
 }
 
 function runCommand(
@@ -64,7 +72,6 @@ function runCommand(
   timeoutMs = 60_000,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    let output = '';
     const child = spawn(command, args, {
       env,
       windowsHide: true,
@@ -72,15 +79,11 @@ function runCommand(
 
     const timer = setTimeout(() => {
       child.kill();
-      reject(new Error(`Command timed out: ${path.basename(command)} ${args.join(' ')}`));
+      reject(new Error(`Command timed out: ${path.basename(command)}`));
     }, timeoutMs);
 
-    child.stdout?.on('data', (chunk) => {
-      output += chunk.toString();
-    });
-    child.stderr?.on('data', (chunk) => {
-      output += chunk.toString();
-    });
+    child.stdout?.resume();
+    child.stderr?.resume();
     child.on('error', (error) => {
       clearTimeout(timer);
       reject(error);
@@ -90,7 +93,11 @@ function runCommand(
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`${path.basename(command)} exited with code ${code}: ${output.trim()}`));
+        reject(
+          new Error(
+            `${path.basename(command)} exited with code ${code}. See the local PostgreSQL log for diagnostics.`,
+          ),
+        );
       }
     });
   });
@@ -152,40 +159,57 @@ export class PostgresManager {
       throw new Error(`Bundled database exists, but ${this.configPath} is missing DB_PASSWORD.`);
     }
 
+    if (!firstRun && !existingConfig['PG_SUPERUSER_PASSWORD']) {
+      throw new Error(
+        'This database was created by an older installer without secured administrator credentials. Startup was stopped without changing data. Follow the technician upgrade procedure.',
+      );
+    }
+    const superuserPassword =
+      existingConfig['PG_SUPERUSER_PASSWORD'] || crypto.randomBytes(32).toString('hex');
     if (firstRun) {
-      logger.info('[PostgresManager] Initializing bundled PostgreSQL data directory');
-      fs.mkdirSync(this.dataDir, { recursive: true });
-      await runCommand(
-        runtime.initdb,
-        ['-D', this.dataDir, '-U', SUPERUSER, '--encoding=UTF8', '--locale=C', '--auth=trust'],
-        this.runtimeEnv(runtime),
-        120_000,
-      );
+      // Persist recovery credentials before creating a cluster so a failed first
+      // run never loses its database administrator password.
+      existingConfig['PG_SUPERUSER_PASSWORD'] = superuserPassword;
+      existingConfig['DB_PASSWORD'] ||= crypto.randomBytes(32).toString('hex');
+      writeEnvFile(this.configPath, existingConfig);
+      const passwordFile = path.join(userData, 'initdb-password.tmp');
+      fs.writeFileSync(passwordFile, superuserPassword, { mode: 0o600 });
+      try {
+        await runCommand(
+          runtime.initdb,
+          [
+            '-D',
+            this.dataDir,
+            '-U',
+            SUPERUSER,
+            '--encoding=UTF8',
+            '--locale=C',
+            '--auth-host=scram-sha-256',
+            '--auth-local=scram-sha-256',
+            `--pwfile=${passwordFile}`,
+          ],
+          this.runtimeEnv(runtime),
+          120_000,
+        );
+      } finally {
+        fs.rmSync(passwordFile, { force: true });
+      }
     }
-
-    // Stop any orphaned PostgreSQL process that might be locking the data directory
-    try {
-      logger.info('[PostgresManager] Stopping any orphaned PostgreSQL server instance...');
-      await runCommand(
-        runtime.pgCtl,
-        ['stop', '-D', this.dataDir, '-m', 'immediate', '-w'],
-        this.runtimeEnv(runtime),
-        15_000,
-      );
-    } catch {
-      // Ignore if no instance was running or if it failed to stop
-    }
-
+    assertPasswordAuthentication(path.join(this.dataDir, 'pg_hba.conf'));
+    // Never forcibly crash an existing cluster on startup. pg_ctl start reports
+    // an already-running cluster; a technician can stop an orphan gracefully.
     await this.startServer(runtime, port);
 
     const dbPassword = existingConfig['DB_PASSWORD'] || crypto.randomBytes(24).toString('hex');
     const sessionSecret =
       existingConfig['SESSION_SECRET'] || crypto.randomBytes(48).toString('hex');
     const jwtSecret = existingConfig['JWT_SECRET'] || crypto.randomBytes(48).toString('hex');
+    // First-run administrator password. Generated once per installation instead
+    // of shipping a published default; the operator is shown it a single time.
+    const initialAdminPassword =
+      existingConfig['INITIAL_ADMIN_PASSWORD'] || crypto.randomBytes(18).toString('base64url');
 
-    if (firstRun) {
-      await this.createApplicationDatabase(runtime, port, dbPassword);
-    }
+    await this.createApplicationDatabase(runtime, port, dbPassword);
 
     const preservedConfig = Object.fromEntries(
       Object.entries(existingConfig).filter(([key]) => !['DB_PORT', 'SERVER_PORT'].includes(key)),
@@ -206,6 +230,8 @@ export class PostgresManager {
       SESSION_SECRET: sessionSecret,
       JWT_SECRET: jwtSecret,
       JWT_EXPIRES_IN: '12h',
+      INITIAL_ADMIN_USERNAME: 'admin',
+      INITIAL_ADMIN_PASSWORD: initialAdminPassword,
       LOG_LEVEL: 'info',
       LOG_DIR: path.join(userData, 'logs'),
       BACKUP_DIR: path.join(userData, 'backups'),
@@ -265,6 +291,7 @@ export class PostgresManager {
       ...process.env,
       PATH: `${path.dirname(runtime.postgres)}${path.delimiter}${process.env['PATH'] ?? ''}`,
       PGUSER: SUPERUSER,
+      PGPASSWORD: readEnvFile(this.configPath)['PG_SUPERUSER_PASSWORD'],
     };
   }
 
@@ -295,12 +322,32 @@ export class PostgresManager {
         '-v',
         'ON_ERROR_STOP=1',
         '-c',
-        `CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${quoteSql(dbPassword)}';`,
+        `DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${DB_USER}') THEN CREATE ROLE ${DB_USER} LOGIN PASSWORD '${quoteSql(dbPassword)}'; END IF; END $$;`,
       ],
       env,
     );
 
-    await runCommand(runtime.createdb, [...connectionArgs, '-O', DB_USER, DB_NAME], env);
+    // CREATE DATABASE cannot run inside a transaction. A small idempotent psql
+    // script uses \gexec to create it only if absent after an interrupted setup.
+    const creationScript = path.join(path.dirname(this.configPath), 'create-db.tmp.sql');
+    fs.writeFileSync(
+      creationScript,
+      [
+        `SELECT 'CREATE DATABASE ${DB_NAME} OWNER ${DB_USER}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}');`,
+        String.raw`\gexec`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    try {
+      await runCommand(
+        runtime.psql,
+        [...connectionArgs, '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-f', creationScript],
+        env,
+      );
+    } finally {
+      fs.rmSync(creationScript, { force: true });
+    }
 
     await runCommand(
       runtime.psql,

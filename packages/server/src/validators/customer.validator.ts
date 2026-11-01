@@ -27,9 +27,18 @@ export const updateCustomerSchema = z.object({
 });
 
 export const recordPaymentSchema = z.object({
-  amount: z.coerce.number().positive('Payment amount must be greater than zero'),
-  notes: z.string().trim().nullable().optional(),
+  amount: z.coerce
+    .number()
+    .finite('Payment amount must be a finite number')
+    .positive('Payment amount must be greater than zero')
+    .max(1_000_000, 'Payment amount is implausibly large'),
+  notes: z.string().trim().max(500).nullable().optional(),
   payment_method: z.enum(['cash', 'card']).optional().default('cash'),
+  /**
+   * Client-generated key. Supplying it makes the request idempotent: a retried
+   * submission returns the original payment instead of posting a second one.
+   */
+  idempotency_key: z.string().trim().min(8).max(100).nullable().optional(),
 });
 
 export const customerIdParamSchema = z.object({

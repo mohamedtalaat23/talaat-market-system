@@ -1,0 +1,207 @@
+{
+  "info": {
+    "name": "Return Queue API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Queue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/return-queues",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "return-queues"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"register_id\": 1, \"queue_type\": \"UNRECEIPTED\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"queue_id\", jsonData.data.queue_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scan Item",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/return-queues/{{queue_id}}/scan",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "return-queues",
+            "{{queue_id}}",
+            "scan"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"sku_id\": 1, \"quantity\": 1, \"disposition\": \"RESTOCK\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Submit Queue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/return-queues/{{queue_id}}/submit",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "return-queues",
+            "{{queue_id}}",
+            "submit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Approve Queue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{manager_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/return-queues/{{queue_id}}/approve",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "return-queues",
+            "{{queue_id}}",
+            "approve"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"return_condition_verified\": true}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Commit Queue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{manager_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/return-queues/{{queue_id}}/commit",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "return-queues",
+            "{{queue_id}}",
+            "commit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

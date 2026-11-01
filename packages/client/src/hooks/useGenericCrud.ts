@@ -72,7 +72,7 @@ export function useGenericCreateMutation<TPayload, TEntity>(
       return data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      void queryClient.invalidateQueries({ queryKey: [queryKey] });
       toast.success(t(successMessage));
     },
     onError: (error: any) => {
@@ -102,7 +102,7 @@ export function useGenericUpdateMutation<TPayload, TEntity>(
       return data.data;
     },
     onSuccess: (updatedEntity, variables) => {
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      void queryClient.invalidateQueries({ queryKey: [queryKey] });
       queryClient.setQueryData([queryKey, variables.id], updatedEntity);
       toast.success(t(successMessage));
     },
@@ -134,7 +134,7 @@ export function useGenericDeleteMutation(
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      void queryClient.invalidateQueries({ queryKey: [queryKey] });
       toast.success(t(successMessage));
     },
     onError: (error: any) => {

@@ -105,8 +105,12 @@ describe('PurchaseRepository', () => {
       mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'draft' }); // not ordered
 
       await expect(
-        purchaseRepository.receiveGoods(1, [{ product_id: 101, received_quantity: 5 }], 2),
-      ).rejects.toThrow('Only ordered purchase orders can be received');
+        purchaseRepository.receiveGoods(
+          1,
+          [{ po_item_id: 1, product_id: 101, quantity_to_receive: 5 }],
+          2,
+        ),
+      ).rejects.toThrow('Only ordered or partially received purchase orders can be received');
     });
 
     it('should process goods receipt and update stock + AVCO price', async () => {
@@ -115,14 +119,20 @@ describe('PurchaseRepository', () => {
         po_number: 'PO-001',
         status: 'ordered',
       }); // PO header
-      mockQueryBuilder._resolvedValue = [{ product_id: 101, purchase_order_id: 1, unit_cost: 10 }]; // PO items lines
+      mockQueryBuilder._resolvedValue = [
+        { id: 1, product_id: 101, purchase_order_id: 1, unit_cost: 10, ordered_quantity: 10 },
+      ]; // PO items lines
 
       // For the loops:
       mockQueryBuilder.first
         .mockResolvedValueOnce({ product_id: 101, quantity: 20 }) // inventory stock
         .mockResolvedValueOnce({ id: 101, cost_price: 8 }); // product cost
 
-      await purchaseRepository.receiveGoods(1, [{ product_id: 101, received_quantity: 10 }], 2);
+      await purchaseRepository.receiveGoods(
+        1,
+        [{ po_item_id: 1, product_id: 101, quantity_to_receive: 10 }],
+        2,
+      );
 
       // currentStock = 20, currentCost = 8, addStock = 10, itemCost = 10
       // finalCostPrice = ((20 * 8) + (10 * 10)) / 30 = (160 + 100) / 30 = 260 / 30 = 8.67
@@ -130,8 +140,8 @@ describe('PurchaseRepository', () => {
         expect.objectContaining({ cost_price: 8.67, updated_at: expect.any(Date) }),
       );
 
-      // Verify physical stock incremented
-      expect(mockQueryBuilder.increment).toHaveBeenCalledWith('quantity', 10);
+      // Verify line items received quantity incremented
+      expect(mockQueryBuilder.increment).toHaveBeenCalledWith('received_quantity', 10);
 
       // Verify PO status finalized to received
       expect(mockQueryBuilder.update).toHaveBeenCalledWith(

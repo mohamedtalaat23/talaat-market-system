@@ -4,6 +4,7 @@ import { useCustomers, useCreateCustomer } from '@/features/customers/hooks/useC
 import { usePOSStore } from '../usePOSStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CustomerSelectModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CustomerSelectModalProps {
 }
 
 export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'search' | 'create'>('search');
   const [search, setSearch] = useState('');
   const [newName, setNewName] = useState('');
@@ -90,7 +92,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-input-border bg-input-bg px-6 py-4">
-          <h3 className="text-lg font-semibold tracking-wide">Select Cart Customer</h3>
+          <h3 className="text-lg font-semibold tracking-wide">{t('pos.selectCartCustomer')}</h3>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-input-text transition-colors"
@@ -117,7 +119,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 : 'border-transparent text-secondary hover:text-input-text'
             }`}
           >
-            Search Directory
+            {t('pos.searchDirectory')}
           </button>
           <button
             type="button"
@@ -128,7 +130,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 : 'border-transparent text-secondary hover:text-input-text'
             }`}
           >
-            Quick Register
+            {t('pos.quickRegister')}
           </button>
         </div>
 
@@ -152,7 +154,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or phone number..."
+                placeholder={t('pos.searchCustomerPlaceholder')}
                 className="w-full rounded-lg border border-input-border bg-input-bg py-2.5 pl-10 pr-4 text-sm text-input-text placeholder:text-input-placeholder focus:border-success focus:outline-none transition-colors"
               />
             </div>
@@ -181,12 +183,12 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                     />
                   </svg>
                   <span className="ml-2.5 text-xs text-neutral-500 font-mono">
-                    Searching directory...
+                    {t('pos.searchingDirectory')}
                   </span>
                 </div>
               ) : !customers || customers.length === 0 ? (
                 <div className="text-center py-8 text-xs text-neutral-500 font-sans">
-                  No matching customer profiles found.
+                  {t('pos.noMatchingCustomers')}
                 </div>
               ) : (
                 customers.map((cust) => (
@@ -216,10 +218,10 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                               : 'text-secondary'
                         }`}
                       >
-                        {Number(cust.balance).toFixed(2)} EGP
+                        {Number(cust.balance).toFixed(2)} {t('pos.currency')}
                       </div>
                       <div className="text-xs text-neutral-500 mt-0.5">
-                        {cust.balance < 0 ? 'Debt' : cust.balance > 0 ? 'Credit' : 'Settle'}
+                        {cust.balance < 0 ? t('customers.debt') : cust.balance > 0 ? t('customers.credit') : t('pos.settled')}
                       </div>
                     </div>
                   </button>
@@ -235,7 +237,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
             {/* Quick Name */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                Full Name *
+                {t('employees.fullName')}
               </label>
               <input
                 ref={nameInputRef}
@@ -243,7 +245,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 required
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Enter customer's name"
+                placeholder={t('pos.enterCustomerName')}
                 className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:border-success focus:outline-none transition-colors"
               />
             </div>
@@ -251,13 +253,13 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
             {/* Quick Phone */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                Phone Number
+                {t('suppliers.phoneNumber')}
               </label>
               <input
                 type="tel"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="e.g. 01012345678"
+                placeholder={t('pos.phonePlaceholder')}
                 className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-2.5 text-sm text-input-text placeholder:text-input-placeholder focus:border-success focus:outline-none transition-colors"
               />
             </div>
@@ -270,7 +272,7 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                 disabled={createCustomer.isPending}
                 className="rounded-lg bg-neutral-100 px-5 py-2.5 text-sm font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -298,10 +300,10 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Registering...
+                    {t('pos.registering')}
                   </>
                 ) : (
-                  'Register & Select'
+                  t('pos.registerSelect')
                 )}
               </button>
             </div>
@@ -309,6 +311,6 @@ export function CustomerSelectModal({ isOpen, onClose }: CustomerSelectModalProp
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

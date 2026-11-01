@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPlus, UserCog } from 'lucide-react';
 import { EmployeeForm } from './EmployeeForm';
@@ -18,7 +18,7 @@ export function EmployeeModal() {
   const isOpen = useModalStore((state) => state.activeModals.employee_form);
   const payload = useModalStore((state) => state.modalPayloads.employee_form);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const closeModal = () => closeModalAction('employee_form');
+  const closeModal = useCallback(() => closeModalAction('employee_form'), [closeModalAction]);
 
   const createMutation = useCreateEmployee();
   const updateMutation = useUpdateEmployee();
@@ -88,7 +88,10 @@ export function EmployeeModal() {
         aria-labelledby="employee-modal-title"
       >
         <div className="flex items-center justify-between border-b border-border/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-4 -mx-6 -mt-6 mb-6 rounded-t-xl select-none">
-          <h3 id="employee-modal-title" className="text-lg font-bold text-primary flex items-center gap-2">
+          <h3
+            id="employee-modal-title"
+            className="text-lg font-bold text-primary flex items-center gap-2"
+          >
             {mode === 'create' ? <UserPlus className="w-5 h-5" /> : <UserCog className="w-5 h-5" />}
             {mode === 'create'
               ? t('employees.registerTitle')
@@ -113,7 +116,7 @@ export function EmployeeModal() {
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 export default EmployeeModal;

@@ -72,7 +72,14 @@ export class PurchaseRepository {
   /**
    * Find purchase orders with pagination and filtering
    */
-  async getList(filters: { status?: string; supplier_id?: number; page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
+  async getList(filters: {
+    status?: string;
+    supplier_id?: number;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) {
     const page = filters.page || 1;
     const limit = filters.limit || 15;
     const offset = (page - 1) * limit;
@@ -116,7 +123,10 @@ export class PurchaseRepository {
       }
     }
 
-    const pos = await query.orderBy(sortField, filters.sortOrder || 'desc').limit(limit).offset(offset);
+    const pos = await query
+      .orderBy(sortField, filters.sortOrder || 'desc')
+      .limit(limit)
+      .offset(offset);
 
     const items = pos.map((po) => ({
       ...po,
@@ -318,7 +328,7 @@ export class PurchaseRepository {
     id: number,
     receivedItems: ReceiveItemInput[],
     receiverId: number,
-    notes?: string
+    notes?: string,
   ): Promise<void> {
     return await db.transaction(async (trx) => {
       // 1. Lock and verify the purchase order
@@ -347,7 +357,9 @@ export class PurchaseRepository {
         const newTotalResolution = alreadyReceived + qtyToReceive + alreadyShortage + shortageQty;
 
         if (newTotalResolution > orderedQty) {
-          throw new Error(`Total resolution (${newTotalResolution}) cannot exceed ordered quantity (${orderedQty}) for product ${item.product_id}`);
+          throw new Error(
+            `Total resolution (${newTotalResolution}) cannot exceed ordered quantity (${orderedQty}) for product ${item.product_id}`,
+          );
         }
       }
 
@@ -356,13 +368,15 @@ export class PurchaseRepository {
       const seq = String(rows[0].seq).padStart(5, '0');
       const receiptNumber = `REC-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${seq}`;
 
-      const [receipt] = await trx('purchase_order_receipts').insert({
-        purchase_order_id: id,
-        receipt_number: receiptNumber,
-        status: 'posted',
-        received_by: receiverId,
-        notes: notes || null,
-      }).returning('*');
+      const [receipt] = await trx('purchase_order_receipts')
+        .insert({
+          purchase_order_id: id,
+          receipt_number: receiptNumber,
+          status: 'posted',
+          received_by: receiverId,
+          notes: notes || null,
+        })
+        .returning('*');
 
       const sortedReceivedItems = [...receivedItems].sort((a, b) => a.product_id - b.product_id);
 
@@ -378,7 +392,7 @@ export class PurchaseRepository {
             .increment('received_quantity', qtyToReceive);
 
           if (shortageQty > 0) {
-             await trx('purchase_order_items')
+            await trx('purchase_order_items')
               .where({ id: item.po_item_id })
               .increment('shortage_quantity', shortageQty)
               .update({ shortage_reason: item.shortage_reason || null });
@@ -390,11 +404,14 @@ export class PurchaseRepository {
             po_item_id: item.po_item_id,
             product_id: item.product_id,
             quantity_received: qtyToReceive,
-            unit_cost: line.unit_cost
+            unit_cost: line.unit_cost,
           });
 
           // C. Query current physical warehouse stock and catalog costs
-          const inv = await trx('inventory').where('product_id', item.product_id).forUpdate().first();
+          const inv = await trx('inventory')
+            .where('product_id', item.product_id)
+            .forUpdate()
+            .first();
           const product = await trx('products')
             .where('id', item.product_id)
             .select('cost_price')
@@ -425,15 +442,19 @@ export class PurchaseRepository {
             } else {
               await trx('inventory')
                 .where('product_id', item.product_id)
-                .increment('quantity', addStock)
-                .update({ updated_at: trx.fn.now() });
+                .update({
+                  quantity: trx.raw('quantity + ?', [addStock]),
+                  updated_at: trx.fn.now(),
+                });
             }
           } catch (err: any) {
             if (err.code === '23505') {
               await trx('inventory')
                 .where('product_id', item.product_id)
-                .increment('quantity', addStock)
-                .update({ updated_at: trx.fn.now() });
+                .update({
+                  quantity: trx.raw('quantity + ?', [addStock]),
+                  updated_at: trx.fn.now(),
+                });
             } else {
               throw err;
             }
@@ -476,12 +497,14 @@ export class PurchaseRepository {
 
       const newStatus = allResolved ? 'received' : 'partially_received';
 
-      await trx('purchase_orders').where('id', id).update({
-        status: newStatus,
-        delivery_date: newStatus === 'received' ? trx.fn.now() : po.delivery_date,
-        received_by: newStatus === 'received' ? receiverId : po.received_by,
-        updated_at: trx.fn.now(),
-      });
+      await trx('purchase_orders')
+        .where('id', id)
+        .update({
+          status: newStatus,
+          delivery_date: newStatus === 'received' ? trx.fn.now() : po.delivery_date,
+          received_by: newStatus === 'received' ? receiverId : po.received_by,
+          updated_at: trx.fn.now(),
+        });
     });
   }
   /**
@@ -500,20 +523,17 @@ export class PurchaseRepository {
     const items = await db('purchase_order_receipt_items as pori')
       .join('products as p', 'p.id', 'pori.product_id')
       .whereIn('pori.receipt_id', receiptIds)
-      .select(
-        'pori.*',
-        'p.name as product_name',
-        'p.barcode as barcode',
-        'p.unit as unit'
-      );
+      .select('pori.*', 'p.name as product_name', 'p.barcode as barcode', 'p.unit as unit');
 
     return receipts.map((receipt) => ({
       ...receipt,
-      items: items.filter((i) => i.receipt_id === receipt.id).map(i => ({
-        ...i,
-        quantity_received: Number(i.quantity_received),
-        unit_cost: Number(i.unit_cost)
-      })),
+      items: items
+        .filter((i) => i.receipt_id === receipt.id)
+        .map((i) => ({
+          ...i,
+          quantity_received: Number(i.quantity_received),
+          unit_cost: Number(i.unit_cost),
+        })),
     }));
   }
 }

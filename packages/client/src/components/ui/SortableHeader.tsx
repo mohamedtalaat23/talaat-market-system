@@ -31,7 +31,7 @@ export function SortableHeader({
         align === 'start' && 'text-start',
         align === 'center' && 'text-center',
         align === 'end' && 'text-end',
-        className
+        className,
       )}
       onClick={() => onSort(field)}
       role="button"
@@ -41,12 +41,10 @@ export function SortableHeader({
         className={cn(
           'flex items-center gap-1.5',
           align === 'end' && 'justify-end',
-          align === 'center' && 'justify-center'
+          align === 'center' && 'justify-center',
         )}
       >
-        <span className={cn('truncate', isActive && 'text-primary font-semibold')}>
-          {label}
-        </span>
+        <span className={cn('truncate', isActive && 'text-primary font-semibold')}>{label}</span>
         <div className="flex items-center justify-center w-4 h-4 text-secondary">
           {isActive ? (
             isAsc ? (
@@ -55,10 +53,7 @@ export function SortableHeader({
               <ArrowDown size={14} className="text-primary" />
             )
           ) : (
-            <ArrowUp
-              size={14}
-              className="opacity-0 group-hover:opacity-40 transition-opacity"
-            />
+            <ArrowUp size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
           )}
         </div>
       </div>

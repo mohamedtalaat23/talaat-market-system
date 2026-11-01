@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface AppSettings {
   store_name?: string;
@@ -24,6 +25,7 @@ export function useSettings() {
 
 export function useUpdateSettings() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async (payload: Partial<AppSettings>) => {
@@ -35,10 +37,10 @@ export function useUpdateSettings() {
     },
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(['settings'], updatedSettings);
-      toast.success('Settings updated successfully');
+      toast.success(t('settings.toasts.saveSuccess'));
     },
     onError: () => {
-      toast.error('Failed to update settings');
+      toast.error(t('settings.toasts.saveFailed'));
     },
   });
 }

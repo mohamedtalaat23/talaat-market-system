@@ -24,7 +24,7 @@ export async function getDashboardStats(
       pendingPOsRes,
       unreconciledShiftsRes,
       failedPrintJobsRes,
-      negativeInventoryRes
+      negativeInventoryRes,
     ] = await Promise.all([
       db('products').whereNull('deleted_at').count({ count: 'id' }).first(),
       db('inventory')
@@ -38,17 +38,27 @@ export async function getDashboardStats(
       db('sales')
         .whereBetween('created_at', [todayStart, todayEnd])
         .select(
-          db.raw('COALESCE(SUM(CASE WHEN status != \'voided\' THEN total ELSE 0 END), 0) as net_sales'),
-          db.raw('COUNT(CASE WHEN status != \'voided\' THEN id ELSE NULL END) as transaction_count'),
-          db.raw('COUNT(CASE WHEN status = \'voided\' THEN id ELSE NULL END) as void_count')
+          db.raw(
+            "COALESCE(SUM(CASE WHEN status != 'voided' THEN total ELSE 0 END), 0) as net_sales",
+          ),
+          db.raw("COUNT(CASE WHEN status != 'voided' THEN id ELSE NULL END) as transaction_count"),
+          db.raw("COUNT(CASE WHEN status = 'voided' THEN id ELSE NULL END) as void_count"),
         )
         .first(),
-      db('refunds').whereBetween('created_at', [todayStart, todayEnd]).count({ count: 'id' }).first(),
-      db('cash_drawer_adjustments').whereBetween('created_at', [todayStart, todayEnd]).count({ count: 'id' }).first(),
+      db('refunds')
+        .whereBetween('created_at', [todayStart, todayEnd])
+        .count({ count: 'id' })
+        .first(),
+      db('cash_drawer_adjustments')
+        .whereBetween('created_at', [todayStart, todayEnd])
+        .count({ count: 'id' })
+        .first(),
       db('purchase_orders').whereIn('status', ['draft', 'ordered']).count({ count: 'id' }).first(),
       db('cashier_shifts')
         .where('status', 'closed')
-        .whereRaw('ABS(CAST(COALESCE(ending_cash, 0) AS NUMERIC) - CAST(COALESCE(expected_cash, 0) AS NUMERIC)) > 0')
+        .whereRaw(
+          'ABS(CAST(COALESCE(ending_cash, 0) AS NUMERIC) - CAST(COALESCE(expected_cash, 0) AS NUMERIC)) > 0',
+        )
         .count({ count: 'id' })
         .first(),
       db('sales').where('print_status', 'pending_print').count({ count: 'id' }).first(),

@@ -1,4 +1,5 @@
 import winston from 'winston';
+import type { NextFunction, Request, Response } from 'express';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import { env, isDev } from '../config/env';
@@ -74,11 +75,7 @@ export const logger = winston.createLogger({
  * Express request logger middleware.
  * Logs method, path, status, and response time for every request.
  */
-export function requestLogger(
-  req: import('express').Request,
-  res: import('express').Response,
-  next: import('express').NextFunction,
-): void {
+export function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();
 
   res.on('finish', () => {

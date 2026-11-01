@@ -92,11 +92,17 @@ export function InventoryTable({
                 >
                   <td className="py-1.5 px-3 select-text">
                     <div className="flex flex-col justify-center select-all">
-                      <span className="font-sans font-medium text-sm text-foreground leading-normal truncate max-w-[200px]" title={item.product_name}>
+                      <span
+                        className="font-sans font-medium text-sm text-foreground leading-normal truncate max-w-[200px]"
+                        title={item.product_name}
+                      >
                         {item.product_name}
                       </span>
                       {item.product_name_ar && (
-                        <span className="text-xs text-secondary font-arabic leading-tight select-all truncate max-w-[200px]" title={item.product_name_ar}>
+                        <span
+                          className="text-xs text-secondary font-arabic leading-tight select-all truncate max-w-[200px]"
+                          title={item.product_name_ar}
+                        >
                           {item.product_name_ar}
                         </span>
                       )}

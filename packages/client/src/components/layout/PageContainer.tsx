@@ -27,14 +27,8 @@ export function PageContainer({
       {/* Page Subheader — description + actions only. Title lives in topbar. */}
       {(description || actions) && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {description && (
-            <p className="text-sm text-secondary">{description}</p>
-          )}
-          {actions && (
-            <div className="flex items-center space-x-3 shrink-0">
-              {actions}
-            </div>
-          )}
+          {description && <p className="text-sm text-secondary">{description}</p>}
+          {actions && <div className="flex items-center space-x-3 shrink-0">{actions}</div>}
         </div>
       )}
 

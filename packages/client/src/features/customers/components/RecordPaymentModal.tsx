@@ -43,7 +43,7 @@ export function RecordPaymentModal({
 
     const paymentSchema = z.object({
       amount: z.coerce
-        .number({ invalid_type_error: t('customers.amountNumberError') })
+        .number({ error: t('customers.amountNumberError') })
         .positive(t('customers.amountPositiveError')),
       notes: z
         .string()
@@ -59,13 +59,24 @@ export function RecordPaymentModal({
     });
 
     if (!validationResult.success) {
-      const errMessage = validationResult.error.errors[0]?.message || 'Invalid payment details';
+      const errMessage = validationResult.error.issues[0]?.message || 'Invalid payment details';
       setError(errMessage);
       toast.error(errMessage);
       return;
     }
 
     const data = validationResult.data;
+
+    // Mirror the server's hard rule: a payment can never exceed the outstanding
+    // balance (the server enforces it with a 409; checking here avoids a round
+    // trip and a confusing error after the cash is already in hand).
+    const outstanding = Math.max(0, -(Number(currentBalance) || 0));
+    if (data.amount > outstanding + 1e-9) {
+      const message = t('customers.overpaymentError');
+      setError(message);
+      toast.error(message);
+      return;
+    }
 
     recordPayment.mutate(
       {
@@ -232,6 +243,6 @@ export function RecordPaymentModal({
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

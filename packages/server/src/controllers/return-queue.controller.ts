@@ -9,25 +9,31 @@ export async function createQueue(req: Request, res: Response, next: NextFunctio
     const { register_id, queue_type } = req.body;
     const queue = await returnQueueService.createQueue(userId, register_id, queue_type);
     res.status(HTTP_STATUS.CREATED).json({ success: true, data: queue });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function getQueues(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { state, register_id } = req.query;
-    const queues = await returnQueueService.getQueues({ 
-      state: state as string, 
-      register_id: register_id as string 
+    const queues = await returnQueueService.getQueues({
+      state: state as string,
+      register_id: register_id as string,
     });
     res.status(HTTP_STATUS.OK).json({ success: true, data: queues });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function getQueueById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const queue = await returnQueueService.getQueueById(req.params.id);
+    const queue = await returnQueueService.getQueueById(req.params.id as string);
     res.status(HTTP_STATUS.OK).json({ success: true, data: queue });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function updateQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -36,14 +42,16 @@ export async function updateQueue(req: Request, res: Response, next: NextFunctio
     const role = (req as any).user?.role;
     const isManagerOrAdmin = ['manager', 'admin'].includes(role);
 
-    const queue = await returnQueueService.getQueueById(req.params.id);
+    const queue = await returnQueueService.getQueueById(req.params.id as string);
     if (!isManagerOrAdmin && queue.owner_id !== userId && queue.created_by !== userId) {
-       throw new AuthorizationError('You are not authorized to edit this queue');
+      throw new AuthorizationError('You are not authorized to edit this queue');
     }
 
-    const updated = await returnQueueService.updateQueue(req.params.id, req.body);
+    const updated = await returnQueueService.updateQueue(req.params.id as string, req.body);
     res.status(HTTP_STATUS.OK).json({ success: true, data: updated });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function scanItem(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -52,23 +60,32 @@ export async function scanItem(req: Request, res: Response, next: NextFunction):
     const role = (req as any).user?.role;
     const isManagerOrAdmin = ['manager', 'admin'].includes(role);
 
-    const queue = await returnQueueService.getQueueById(req.params.id);
+    const queue = await returnQueueService.getQueueById(req.params.id as string);
     if (!isManagerOrAdmin && queue.owner_id !== userId && queue.created_by !== userId) {
-       throw new AuthorizationError('You are not authorized to scan into this queue');
+      throw new AuthorizationError('You are not authorized to scan into this queue');
     }
 
-    const { sku_id, quantity, original_sale_line_id, original_sale_id, disposition, non_restock_reason } = req.body;
+    const {
+      sku_id,
+      quantity,
+      original_sale_line_id,
+      original_sale_id,
+      disposition,
+      non_restock_reason,
+    } = req.body;
     const item = await returnQueueService.scanItem(
-      req.params.id, 
-      sku_id, 
-      quantity, 
-      original_sale_line_id || null, 
-      original_sale_id || null, 
-      disposition, 
-      non_restock_reason || null
+      req.params.id as string,
+      sku_id,
+      quantity,
+      original_sale_line_id || null,
+      original_sale_id || null,
+      disposition,
+      non_restock_reason || null,
     );
     res.status(HTTP_STATUS.OK).json({ success: true, data: item });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function submitQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -77,14 +94,16 @@ export async function submitQueue(req: Request, res: Response, next: NextFunctio
     const role = (req as any).user?.role;
     const isManagerOrAdmin = ['manager', 'admin'].includes(role);
 
-    const queue = await returnQueueService.getQueueById(req.params.id);
+    const queue = await returnQueueService.getQueueById(req.params.id as string);
     if (!isManagerOrAdmin && queue.owner_id !== userId && queue.created_by !== userId) {
-       throw new AuthorizationError('You are not authorized to submit this queue');
+      throw new AuthorizationError('You are not authorized to submit this queue');
     }
 
-    const submitted = await returnQueueService.submitQueue(req.params.id, userId);
+    const submitted = await returnQueueService.submitQueue(req.params.id as string, userId);
     res.status(HTTP_STATUS.OK).json({ success: true, data: submitted });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function approveQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -92,15 +111,21 @@ export async function approveQueue(req: Request, res: Response, next: NextFuncti
     const managerId = (req as any).user?.id;
     const role = (req as any).user?.role;
     const { return_condition_verified } = req.body;
-    
+
     // Auth Check: must be manager or admin
     if (!['manager', 'admin'].includes(role)) {
       throw new AuthorizationError('Only managers or admins can approve queues');
     }
 
-    const queue = await returnQueueService.approveQueue(req.params.id, managerId, return_condition_verified);
+    const queue = await returnQueueService.approveQueue(
+      req.params.id as string,
+      managerId,
+      return_condition_verified,
+    );
     res.status(HTTP_STATUS.OK).json({ success: true, data: queue });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function commitQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -113,9 +138,11 @@ export async function commitQueue(req: Request, res: Response, next: NextFunctio
       throw new AuthorizationError('Only managers or admins can commit queues');
     }
 
-    const result = await returnQueueService.commitQueue(req.params.id, managerId);
+    const result = await returnQueueService.commitQueue(req.params.id as string, managerId);
     res.status(HTTP_STATUS.OK).json({ success: true, data: result });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function cancelQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -124,12 +151,14 @@ export async function cancelQueue(req: Request, res: Response, next: NextFunctio
     const role = (req as any).user?.role;
     const isManagerOrAdmin = ['manager', 'admin'].includes(role);
 
-    const queue = await returnQueueService.getQueueById(req.params.id);
+    const queue = await returnQueueService.getQueueById(req.params.id as string);
     if (!isManagerOrAdmin && queue.owner_id !== userId && queue.created_by !== userId) {
-       throw new AuthorizationError('You are not authorized to cancel this queue');
+      throw new AuthorizationError('You are not authorized to cancel this queue');
     }
 
-    const cancelled = await returnQueueService.cancelQueue(req.params.id, userId);
+    const cancelled = await returnQueueService.cancelQueue(req.params.id as string, userId);
     res.status(HTTP_STATUS.OK).json({ success: true, data: cancelled });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }

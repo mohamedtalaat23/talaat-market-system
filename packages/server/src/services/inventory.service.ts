@@ -208,6 +208,28 @@ export class InventoryService {
       },
     };
   }
+
+  /**
+   * Fetch batches for product or FEFO expiration list.
+   */
+  async getBatches(filters?: { product_id?: number; days_to_expiry?: number }) {
+    logger.debug('Fetching product batches', { filters });
+    return inventoryRepository.findBatches(filters);
+  }
+
+  /**
+   * Create a new product batch.
+   */
+  async createBatch(data: {
+    product_id: number;
+    batch_number: string;
+    expiration_date: string;
+    quantity: number;
+    cost_price?: number;
+  }) {
+    logger.info('Creating product batch', { data });
+    return inventoryRepository.createBatch(data);
+  }
 }
 
 // Single instance export (minimalist/no DI)

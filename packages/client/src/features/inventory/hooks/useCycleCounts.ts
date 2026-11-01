@@ -67,7 +67,7 @@ export function useCreateCycleCount() {
       return res.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
+      void queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
     },
   });
 }
@@ -75,12 +75,18 @@ export function useCreateCycleCount() {
 export function useUpdateCycleCountItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { cycle_count_id: string; product_id: number; counted_qty: number; location?: string; notes?: string }) => {
+    mutationFn: async (data: {
+      cycle_count_id: string;
+      product_id: number;
+      counted_qty: number;
+      location?: string;
+      notes?: string;
+    }) => {
       const res = await apiClient.put(`/cycle-counts/${data.cycle_count_id}/items`, data);
       return res.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['cycle-counts', variables.cycle_count_id] });
+      void queryClient.invalidateQueries({ queryKey: ['cycle-counts', variables.cycle_count_id] });
     },
   });
 }
@@ -89,14 +95,16 @@ export function useScanCycleCountItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { cycle_count_id: string; barcode: string }) => {
-      const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/scan`, { barcode: data.barcode });
+      const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/scan`, {
+        barcode: data.barcode,
+      });
       return res.data;
     },
     onSuccess: (_, variables) => {
       // Optimistic update could go here, but since the scanner is fast and backend is atomic,
       // invalidating is safe. For immediate UI feedback, we can optimistically update the cache.
       // But invalidation ensures 100% sync.
-      queryClient.invalidateQueries({ queryKey: ['cycle-counts', variables.cycle_count_id] });
+      void queryClient.invalidateQueries({ queryKey: ['cycle-counts', variables.cycle_count_id] });
     },
   });
 }
@@ -104,13 +112,18 @@ export function useScanCycleCountItem() {
 export function usePostCycleCount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { cycle_count_id: string; idempotency_key: string; manager_id?: number; pin?: string }) => {
+    mutationFn: async (data: {
+      cycle_count_id: string;
+      idempotency_key: string;
+      manager_id?: number;
+      pin?: string;
+    }) => {
       const res = await apiClient.post(`/cycle-counts/${data.cycle_count_id}/post`, data);
       return res.data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    onSuccess: (_data, _variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
+      void queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
   });
 }
@@ -122,8 +135,8 @@ export function useCancelCycleCount() {
       const res = await apiClient.post(`/cycle-counts/${id}/cancel`);
       return res.data;
     },
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
+    onSuccess: (_data, _id) => {
+      void queryClient.invalidateQueries({ queryKey: ['cycle-counts'] });
     },
   });
 }

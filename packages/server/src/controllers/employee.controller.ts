@@ -81,8 +81,15 @@ export async function updateEmployee(
     const currentUserId = (req as any).user.id;
     const ipAddress = req.ip;
     const reason = req.body.reason;
-    
-    const employee = await employeeService.updateEmployee(id, req.body, currentUserRole, currentUserId, ipAddress, reason);
+
+    const employee = await employeeService.updateEmployee(
+      id,
+      req.body,
+      currentUserRole,
+      currentUserId,
+      ipAddress,
+      reason,
+    );
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: employee,
@@ -154,7 +161,12 @@ export async function verifyManagerPin(
       return;
     }
     const currentUserId = (req as any).user?.id;
-    const verification = await pinService.verifyPin(Number(manager_id), String(pin), currentUserId, req.ip);
+    const verification = await pinService.verifyPin(
+      Number(manager_id),
+      String(pin),
+      currentUserId,
+      req.ip,
+    );
 
     if (!verification.success) {
       res.status(HTTP_STATUS.FORBIDDEN).json({ success: false, message: verification.message });

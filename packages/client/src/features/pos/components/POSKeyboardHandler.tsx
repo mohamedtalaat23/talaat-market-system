@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/services/api-client';
 import { printerService } from '../services/printer.service';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function POSKeyboardHandler() {
   const addItem = usePOSStore((state) => state.addItem);
   const openModal = useModalStore((state) => state.openModal);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
   const canExit = user?.role === 'admin' || user?.role === 'manager';
 
   // Scanner detection logic
@@ -22,7 +24,9 @@ export function POSKeyboardHandler() {
       if (Object.values(activeModals).some((isOpen) => isOpen)) return; // Block scanner if modal is open (HUI-3 Fix)
       if (!usePOSStore.getState().activeShift) return; // Block scanner if no shift
 
-      const loadingToastId = toast.loading(`Looking up barcode: ${barcode}`);
+      const loadingToastId = toast.loading(
+        t('pos.toasts.lookingUpBarcode').replace('{barcode}', barcode),
+      );
 
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
@@ -36,7 +40,7 @@ export function POSKeyboardHandler() {
 
           // Handle inactive product
           if (!product.is_active) {
-            toast.error(`Product "${product.name}" is inactive and cannot be sold`);
+            toast.error(t('pos.toasts.productInactive').replace('{name}', product.name));
             return;
           }
 
@@ -52,23 +56,23 @@ export function POSKeyboardHandler() {
             inventory_quantity: product.inventory_quantity || 0,
           });
 
-          toast.success(`Added ${product.name} to cart`);
+          toast.success(t('pos.toasts.addedToCart').replace('{name}', product.name));
         } else {
-          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          toast.error(t('pos.toasts.barcodeNotFound').replace('{barcode}', barcode));
           openModal('pos_product_search', { initialSearch: barcode });
         }
       } catch (error: any) {
         toast.dismiss(loadingToastId);
         if (error.status === 404) {
-          toast.error(`Barcode "${barcode}" not found. Opening search...`);
+          toast.error(t('pos.toasts.barcodeNotFound').replace('{barcode}', barcode));
           openModal('pos_product_search', { initialSearch: barcode });
         } else {
           console.error('Failed to lookup product barcode:', error);
-          toast.error(error.message || 'Error looking up barcode');
+          toast.error(error.message || t('pos.toasts.errorLookupBarcode'));
         }
       }
     },
-    [addItem, openModal],
+    [addItem, openModal, t],
   );
 
   // Hook up scanner detection with <30ms threshold
@@ -102,14 +106,14 @@ export function POSKeyboardHandler() {
               .get(`/pos/receipts/${lastSaleId}`)
               .then((res) => {
                 if (res.data?.success) {
-                  printerService.printReceipt(res.data.data).then(() => {
-                    apiClient.post(`/pos/receipts/${lastSaleId}/print`);
+                  void printerService.printReceipt(res.data.data).then(() => {
+                    void apiClient.post(`/pos/receipts/${lastSaleId}/print`);
                   });
                 }
               })
-              .catch(() => toast.error('Failed to load last receipt for printing'));
+              .catch(() => toast.error(t('pos.toasts.failedLoadReceipt')));
           } else {
-            toast.error('No recent receipt to print');
+            toast.error(t('pos.toasts.noRecentReceipt'));
           }
           return;
         }
@@ -120,20 +124,20 @@ export function POSKeyboardHandler() {
           if (lastSaleId) {
             openModal('pos_manager_override', {
               action: 'reprint_receipt',
-              onSuccess: async () => {
+              onSuccess: async (manager_id: number, pin: string) => {
                 try {
-                  await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`);
+                  await apiClient.post(`/pos/receipts/${lastSaleId}/reprint`, { manager_id, manager_pin: pin });
                   const res = await apiClient.get(`/pos/receipts/${lastSaleId}`);
                   if (res.data?.success) {
-                    printerService.printReceipt(res.data.data, true);
+                    void printerService.printReceipt(res.data.data, true, { manager_id, pin });
                   }
-                } catch (error) {
-                  toast.error('Reprint failed');
+                } catch {
+                  toast.error(t('pos.toasts.reprintFailed'));
                 }
               },
             });
           } else {
-            toast.error('No recent receipt to reprint');
+            toast.error(t('pos.toasts.noRecentReceiptReprint'));
           }
           return;
         }
@@ -190,9 +194,16 @@ export function POSKeyboardHandler() {
         case 'F5':
           openModal('pos_product_search');
           break;
-        case 'F6':
-          openModal('pos_suspended_carts');
+        case 'F6': {
+          e.preventDefault();
+          if (state.cart.length > 0) {
+            state.holdCurrentCart(user?.id || 1);
+            toast.success(t('pos.cartSuspended'));
+          } else {
+            openModal('pos_suspended_carts');
+          }
           break;
+        }
         case 'F7':
           openModal('pos_customer_select');
           break;
@@ -207,7 +218,7 @@ export function POSKeyboardHandler() {
             e.preventDefault();
             const modals = useModalStore.getState().activeModals;
             if (!modals.pos_quick_return) {
-               openModal('pos_quick_return'); // HUI-7 Idempotent Modal Spam Fix
+              openModal('pos_quick_return'); // HUI-7 Idempotent Modal Spam Fix
             }
           }
           break;
@@ -251,7 +262,7 @@ export function POSKeyboardHandler() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canExit, navigate, openModal]);
+  }, [canExit, navigate, openModal, t, user?.id]);
 
   // This is a logic-only component that manages focus and shortcuts globally
   return null;

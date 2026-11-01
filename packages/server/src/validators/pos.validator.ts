@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const reprintSchema = z.object({
+  manager_id: z.number().int().positive().optional(),
   manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
 });
 
@@ -34,8 +35,30 @@ export const checkoutSchema = z.object({
     .min(1, 'At least one item is required in the cart'),
 });
 
-export const syncOfflineSchema = z.object({
-  transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
+export const syncOfflineSchema = z
+  .object({
+    transactions: z.array(checkoutSchema).min(1, 'Transactions array must not be empty'),
+    /**
+     * Optional batch-level manager authorization for replaying offline sales that
+     * were priced below the catalogue price (or heavily discounted). The PIN is
+     * verified server-side before the replay is accepted.
+     */
+    manager_id: z.number().int().positive('Manager ID must be positive').optional(),
+    manager_pin: z
+      .string()
+      .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+      .optional(),
+  })
+  .refine((data) => (data.manager_id === undefined) === (data.manager_pin === undefined), {
+    message: 'manager_id and manager_pin must be supplied together',
+    path: ['manager_pin'],
+  });
+
+export const quarantineDecisionSchema = z.object({
+  decision: z.enum(['approve', 'reject']),
+  manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+  notes: z.string().trim().max(500).nullable().optional(),
 });
 
 export const posIdParamSchema = z.object({
@@ -62,9 +85,26 @@ export const posProductSearchQuerySchema = z.object({
 
 export const drawerAdjustmentSchema = z.object({
   manager_id: z.number().int().positive('Manager ID is required'),
-  type: z.enum(['safe_drop', 'change_replenishment', 'petty_cash', 'vendor_payment', 'owner_withdrawal', 'cash_correction_in', 'cash_correction_out']),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+  type: z.enum([
+    'safe_drop',
+    'change_replenishment',
+    'petty_cash',
+    'vendor_payment',
+    'owner_withdrawal',
+    'cash_correction_in',
+    'cash_correction_out',
+  ]),
   amount: z.coerce.number().positive('Amount must be positive'),
-  reason_code: z.enum(['SAFE_DROP', 'CHANGE_REPLENISHMENT', 'PETTY_CASH', 'VENDOR_PAYMENT', 'OWNER_WITHDRAWAL', 'CASH_CORRECTION_IN', 'CASH_CORRECTION_OUT']),
+  reason_code: z.enum([
+    'SAFE_DROP',
+    'CHANGE_REPLENISHMENT',
+    'PETTY_CASH',
+    'VENDOR_PAYMENT',
+    'OWNER_WITHDRAWAL',
+    'CASH_CORRECTION_IN',
+    'CASH_CORRECTION_OUT',
+  ]),
   reason_notes: z.string().trim().nullable().optional(),
 });
 
@@ -81,17 +121,22 @@ export const closeShiftSchema = z.object({
 
 export const voidSaleSchema = z.object({
   manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
   reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
 });
 
 export const refundSaleSchema = z.object({
+  idempotency_key: z.string().trim().min(1).max(100),
   manager_id: z.number().int().positive('Manager ID is required'),
+  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
   reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
-  items: z.array(
-    z.object({
-      sale_item_id: z.string().uuid('Invalid sale item UUID'),
-      quantity: z.coerce.number().positive('Quantity must be positive'),
-      restock_inventory: z.boolean().default(true),
-    })
-  ).min(1, 'At least one item is required for refund'),
+  items: z
+    .array(
+      z.object({
+        sale_item_id: z.string().uuid('Invalid sale item UUID'),
+        quantity: z.coerce.number().positive('Quantity must be positive'),
+        restock_inventory: z.boolean().default(true),
+      }),
+    )
+    .min(1, 'At least one item is required for refund'),
 });

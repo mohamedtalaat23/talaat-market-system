@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import {
+  MIN_PASSWORD_LENGTH,
+  isKnownDefaultPassword,
+  isWeakPin,
+  isWeakSecret,
+} from '../config/security';
 
 /**
  * Zod validation schemas for authentication and employee management requests.
@@ -23,6 +29,22 @@ export const fastPinLoginSchema = z.object({
   pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
 });
 
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, 'Current password is required').max(100),
+    new_password: z
+      .string()
+      .min(
+        MIN_PASSWORD_LENGTH,
+        `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      )
+      .max(100),
+  })
+  .refine((data) => data.current_password !== data.new_password, {
+    message: 'New password must be different from the current password',
+    path: ['new_password'],
+  });
+
 export const createEmployeeSchema = z.object({
   full_name: z.string().trim().min(1, 'Full name is required').max(150),
   username: z
@@ -31,14 +53,23 @@ export const createEmployeeSchema = z.object({
     .min(3, 'Username must be at least 3 characters')
     .max(50)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain alphanumeric characters and underscores'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+    .max(100)
+    .refine((value) => !isWeakSecret(value) && !isKnownDefaultPassword(value), {
+      message: 'Password is a known default or too easy to guess',
+    }),
   pin: z
     .string()
     .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+    .refine((value) => !isWeakPin(value), {
+      message: 'PIN is trivially guessable (repeated or sequential digits)',
+    })
     .nullable()
     .optional(),
   role: z.enum(['admin', 'manager', 'cashier'], {
-    errorMap: () => ({ message: 'Invalid role type' }),
+    error: 'Invalid role type',
   }),
   is_active: z.boolean().default(true),
 });
@@ -52,15 +83,25 @@ export const updateEmployeeSchema = z.object({
     .max(50)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain alphanumeric characters and underscores')
     .optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100).optional(),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+    .max(100)
+    .refine((value) => !isWeakSecret(value) && !isKnownDefaultPassword(value), {
+      message: 'Password is a known default or too easy to guess',
+    })
+    .optional(),
   pin: z
     .string()
     .regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits')
+    .refine((value) => !isWeakPin(value), {
+      message: 'PIN is trivially guessable (repeated or sequential digits)',
+    })
     .nullable()
     .optional(),
   role: z
     .enum(['admin', 'manager', 'cashier'], {
-      errorMap: () => ({ message: 'Invalid role type' }),
+      error: 'Invalid role type',
     })
     .optional(),
   is_active: z.boolean().optional(),

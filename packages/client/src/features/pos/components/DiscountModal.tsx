@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Tag } from 'lucide-react';
 import { useModalStore } from '@/stores/modalStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { usePOSStore } from '../usePOSStore';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function DiscountModal() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_discount);
   const closeModalAction = useModalStore((state) => state.closeModal);
   const openModalAction = useModalStore((state) => state.openModal);
-  const closeModal = () => closeModalAction('pos_discount');
+  const closeModal = useCallback(() => closeModalAction('pos_discount'), [closeModalAction]);
 
   const cart = usePOSStore((state) => state.cart);
   const activeItemIndex = usePOSStore((state) => state.activeItemIndex);
@@ -37,7 +39,7 @@ export function DiscountModal() {
     };
     if (isOpen) window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, closeModal]);
 
   if (!isOpen) return null;
 
@@ -50,7 +52,7 @@ export function DiscountModal() {
     const activeItem = cart[activeItemIndex];
 
     if (target === 'item') {
-      if (!activeItem) return toast.error('No item selected');
+      if (!activeItem) return toast.error(t('pos.toasts.noItemSelected'));
       const lineTotalBeforeDiscount = activeItem.quantity * activeItem.unit_price;
 
       if (discountType === 'percentage') {
@@ -58,7 +60,7 @@ export function DiscountModal() {
       }
 
       if (discountValue > lineTotalBeforeDiscount) {
-        return toast.error('Discount cannot exceed line total');
+        return toast.error(t('pos.toasts.discountExceedsLine'));
       }
 
       // Manager override required if discount > 20%
@@ -74,7 +76,7 @@ export function DiscountModal() {
       }
 
       updateItemDiscount(activeItem.cart_id, discountValue);
-      toast.success('Item discount applied');
+      toast.success(t('pos.toasts.itemDiscount'));
       closeModal();
     } else {
       const cartSubtotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
@@ -84,7 +86,7 @@ export function DiscountModal() {
       }
 
       if (discountValue > cartSubtotal) {
-        return toast.error('Discount cannot exceed cart subtotal');
+        return toast.error(t('pos.toasts.discountExceedsCart'));
       }
 
       if (discountValue > cartSubtotal * 0.2) {
@@ -98,7 +100,7 @@ export function DiscountModal() {
       }
 
       setGlobalDiscount(discountValue);
-      toast.success('Cart discount applied');
+      toast.success(t('pos.toasts.cartDiscount'));
       closeModal();
     }
   };
@@ -186,6 +188,6 @@ export function DiscountModal() {
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

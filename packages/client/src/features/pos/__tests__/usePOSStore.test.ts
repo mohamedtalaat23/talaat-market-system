@@ -69,7 +69,7 @@ describe('usePOSStore', () => {
 
     expect(toast.error).toHaveBeenCalledWith(
       expect.stringContaining('exceeds recorded inventory'),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -83,7 +83,7 @@ describe('usePOSStore', () => {
     expect(state.cart[0].quantity).toBe(12);
     expect(toast.error).toHaveBeenCalledWith(
       expect.stringContaining('exceeds recorded inventory'),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 

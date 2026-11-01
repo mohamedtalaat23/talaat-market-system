@@ -33,6 +33,7 @@ describe('POSRepository', () => {
       insert: jest.fn().mockReturnThis(),
       returning: jest.fn().mockReturnThis(),
       decrement: jest.fn().mockResolvedValue(1),
+      increment: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
       _resolvedValue: [],
     };
@@ -72,7 +73,7 @@ describe('POSRepository', () => {
 
     it('should return existing transaction if idempotency key matches', async () => {
       mockQueryBuilder.first.mockResolvedValueOnce({
-        id: 'existing-id',
+        id: 'existing-id', cashier_id: 1,
         idempotency_key: 'unique-key',
       });
       mockQueryBuilder._resolvedValue = [{ sale_id: 'existing-id', product_id: 2 }]; // for sale_items lookup
@@ -87,11 +88,11 @@ describe('POSRepository', () => {
       // discounts = 5
       // total = 90 - 5 = 85
       // cash received = 100, change given = 15
-      mockQueryBuilder.first.mockResolvedValueOnce(null); // idempotency check
-      mockQueryBuilder.first.mockResolvedValueOnce(null); // product info or whatever
-      mockQueryBuilder._resolvedValue = [
-        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111' },
-        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222' },
+      mockQueryBuilder.first.mockResolvedValueOnce(null);
+      mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'open', employee_id: 1, register_id: 1 }); // idempotency check
+            mockQueryBuilder._resolvedValue = [
+        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111', selling_price: 50 },
+        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222', selling_price: 20 },
       ]; // product lookup
 
       // The returning() call resolves to a mock sale object
@@ -116,9 +117,10 @@ describe('POSRepository', () => {
 
     it('should throw error if cash received is less than total', async () => {
       mockQueryBuilder.first.mockResolvedValueOnce(null);
+      mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'open', employee_id: 1, register_id: 1 });
       mockQueryBuilder._resolvedValue = [
-        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111' },
-        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222' },
+        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111', selling_price: 50 },
+        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222', selling_price: 20 },
       ];
 
       const payload = { ...defaultPayload, cash_received: 50 }; // total is 85
@@ -130,9 +132,10 @@ describe('POSRepository', () => {
 
     it('should throw error if split payment amount is less than total', async () => {
       mockQueryBuilder.first.mockResolvedValueOnce(null);
+      mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'open', employee_id: 1, register_id: 1 });
       mockQueryBuilder._resolvedValue = [
-        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111' },
-        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222' },
+        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111', selling_price: 50 },
+        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222', selling_price: 20 },
       ];
 
       const payload = {
@@ -149,9 +152,10 @@ describe('POSRepository', () => {
 
     it('should sort items by product_id ASC to prevent deadlock', async () => {
       mockQueryBuilder.first.mockResolvedValueOnce(null);
+      mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'open', employee_id: 1, register_id: 1 });
       mockQueryBuilder._resolvedValue = [
-        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111' },
-        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222' },
+        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111', selling_price: 50 },
+        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222', selling_price: 20 },
       ];
       mockQueryBuilder.returning.mockResolvedValueOnce([
         { id: 'mock-uuid', receipt_number: 'receipt-123' },
@@ -165,9 +169,10 @@ describe('POSRepository', () => {
 
     it('should throw InventoryUnderflowError if decrement returns 0 affected rows', async () => {
       mockQueryBuilder.first.mockResolvedValueOnce(null);
+      mockQueryBuilder.first.mockResolvedValueOnce({ id: 1, status: 'open', employee_id: 1, register_id: 1 });
       mockQueryBuilder._resolvedValue = [
-        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111' },
-        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222' },
+        { id: 1, cost_price: 10, name: 'Prod 1', barcode: '111', selling_price: 50 },
+        { id: 2, cost_price: 15, name: 'Prod 2', barcode: '222', selling_price: 20 },
       ];
       // Decrement fails (returns 0 rows affected)
       mockQueryBuilder.decrement.mockResolvedValueOnce(0);

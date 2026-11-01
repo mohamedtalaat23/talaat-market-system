@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import {
-  purchaseRepository,
+import type {
   CreatePOInput,
-  UpdatePOInput,
+  UpdatePOInput} from '../repositories/purchase.repository';
+import {
+  purchaseRepository
 } from '../repositories/purchase.repository';
 import { createPOSchema, updatePOSchema, receivePOSchema } from '../validators/purchase.validator';
 import { logger } from '../middleware/logger';
@@ -24,7 +25,14 @@ export class PurchaseController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsedFilters = queryFilterSchema.parse(req.query);
-      const filters: { status?: string; supplier_id?: number; page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {
+      const filters: {
+        status?: string;
+        supplier_id?: number;
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+      } = {
         page: parsedFilters.page,
         limit: parsedFilters.limit,
       };
@@ -46,7 +54,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid query filters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid query filters', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller list:', error);
@@ -70,7 +78,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller detail:', error);
@@ -108,7 +116,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid input payload', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller create:', error);
@@ -142,7 +150,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid input payload', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid input payload', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller update:', error);
@@ -162,7 +170,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller order:', error);
@@ -182,7 +190,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller cancel:', error);
@@ -202,9 +210,9 @@ export class PurchaseController {
         res.status(401).json({ status: 'error', message: 'Unauthorized' });
         return;
       }
-      const items = payload.items.map(item => ({
+      const items = payload.items.map((item) => ({
         ...item,
-        shortage_reason: item.shortage_reason ?? null
+        shortage_reason: item.shortage_reason ?? null,
       }));
       await purchaseRepository.receiveGoods(id, items, receiverId, payload.notes || undefined);
       res.json({
@@ -213,13 +221,11 @@ export class PurchaseController {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            status: 'error',
-            message: 'Invalid goods receipt payload',
-            errors: error.errors,
-          });
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid goods receipt payload',
+          errors: error.issues,
+        });
         return;
       }
       logger.error('Error in purchase controller receive:', error);
@@ -239,7 +245,7 @@ export class PurchaseController {
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ status: 'error', message: 'Invalid parameters', errors: error.errors });
+          .json({ status: 'error', message: 'Invalid parameters', errors: error.issues });
         return;
       }
       logger.error('Error in purchase controller getReceipts:', error);

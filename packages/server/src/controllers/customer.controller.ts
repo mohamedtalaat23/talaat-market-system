@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { customerRepository } from '../repositories/customer.repository';
+import { customerRepository, CustomerPaymentError } from '../repositories/customer.repository';
 import { posRepository } from '../repositories/pos.repository';
 import { logger } from '../middleware/logger';
 import { HTTP_STATUS } from '../config/constants';
@@ -17,7 +17,13 @@ export class CustomerController {
       const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
       const offset = (page - 1) * limit;
 
-      const { data: customers, total } = await customerRepository.findAll(search, limit, offset, sortBy, sortOrder);
+      const { data: customers, total } = await customerRepository.findAll(
+        search,
+        limit,
+        offset,
+        sortBy,
+        sortOrder,
+      );
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
@@ -149,44 +155,62 @@ export class CustomerController {
   }
 
   /**
-   * Record a debt payment installment or balance deposit.
+   * Record a debt payment installment against a customer's outstanding balance.
+   *
+   * Overpayments, payments with no outstanding balance and duplicated requests are
+   * rejected (409) instead of being posted to the ledger.
    */
   async recordPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      const { amount, notes, payment_method } = req.body;
+      const { amount, notes, payment_method, idempotency_key } = req.body;
       const userId = (req as any).user?.id || null;
 
-      // Query the active cashier shift to link repayment cash to the drawer
-      const activeShift = userId ? await posRepository.getCurrentShift(userId) : null;
+      // Query the active cashier shift by employee ID to link repayment cash to the drawer
+      const activeShift = userId ? await posRepository.getOpenShiftByEmployee(userId) : null;
 
       if (!activeShift) {
         res.status(HTTP_STATUS.BAD_REQUEST).json({
           status: 'error',
+          code: 'SHIFT_NOT_OPEN',
           message: 'An active shift is required to record customer payments.',
         });
         return;
       }
 
-      // When recording a payment, the customer is paying the store, so they add credit/reduce debt.
-      // This means we increment their balance (amount is positive).
-      const updatedCustomer = await customerRepository.recordTransaction(
-        id,
+      const result = await customerRepository.recordPayment({
+        customerId: id,
         amount,
-        'payment',
-        null,
-        notes || 'Manual customer account payment',
+        paymentMethod: payment_method ?? 'cash',
+        notes: notes ?? null,
         userId,
-        activeShift?.id || null,
-        activeShift?.register_id || null,
-        payment_method,
-      );
+        shiftId: activeShift.id,
+        registerId: activeShift.register_id ?? null,
+        idempotencyKey: idempotency_key ?? null,
+      });
 
       res.status(HTTP_STATUS.OK).json({
         status: 'success',
-        data: updatedCustomer,
+        data: result.customer,
+        meta: {
+          duplicate: result.duplicate,
+          applied_amount: result.appliedAmount,
+          outstanding_before: result.outstandingBefore,
+          outstanding_after: result.outstandingAfter,
+          payment_method: payment_method ?? 'cash',
+        },
       });
     } catch (error) {
+      if (error instanceof CustomerPaymentError) {
+        const status =
+          error.code === 'PAYMENT_EXCEEDS_BALANCE' || error.code === 'NO_OUTSTANDING_BALANCE'
+            ? HTTP_STATUS.CONFLICT
+            : HTTP_STATUS.BAD_REQUEST;
+
+        res.status(status).json({ status: 'error', code: error.code, message: error.message });
+        return;
+      }
+
       logger.error('Error recording customer payment:', error);
       next(error);
     }

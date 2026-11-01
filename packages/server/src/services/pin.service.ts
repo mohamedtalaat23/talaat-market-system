@@ -15,11 +15,21 @@ export class PinService {
     managerId: number,
     pin: string,
     requestingUserId?: number,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<{ success: boolean; message: string }> {
     // I should get the employee by ID directly.
     const row = await db('employees')
-      .select('id', 'pin_hash', 'role', 'is_active', 'deleted_at', 'failed_pin_attempts', 'pin_locked_until')
+      .select(
+        'id',
+        'pin_hash',
+        'role',
+        'is_active',
+        'deleted_at',
+        'failed_pin_attempts',
+        'pin_locked_until',
+        'credential_rotation_required',
+        'must_change_password',
+      )
       .where('id', managerId)
       .whereIn('role', ['manager', 'admin'])
       .where('is_active', true)
@@ -30,6 +40,14 @@ export class PinService {
       return {
         success: false,
         message: 'Manager account not found or PIN quick-login is not configured',
+      };
+    }
+
+    if (row.credential_rotation_required || row.must_change_password) {
+      return {
+        success: false,
+        message:
+          'Manager must complete credential recovery and password rotation before approving actions.',
       };
     }
 
@@ -67,7 +85,8 @@ export class PinService {
 
         return {
           success: false,
-          message: 'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
+          message:
+            'Invalid PIN. Maximum failed attempts reached. You are locked out for 5 minutes.',
         };
       } else {
         await employeeRepository.incrementFailedPinAttempts(managerId);

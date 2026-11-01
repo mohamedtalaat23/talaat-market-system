@@ -101,7 +101,7 @@ export async function updateProduct(
     const userId = (req as any).user?.id;
     const ipAddress = req.ip;
     const reason = req.body.reason;
-    
+
     const product = await productService.updateProduct(id, req.body, userId, ipAddress, reason);
     res.status(HTTP_STATUS.OK).json({
       success: true,

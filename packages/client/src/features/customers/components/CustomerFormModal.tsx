@@ -1,11 +1,23 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useCreateCustomer, useUpdateCustomer, Customer } from '../hooks/useCustomerQueries';
+import type { Customer } from '../hooks/useCustomerQueries';
+import { useCreateCustomer, useUpdateCustomer } from '../hooks/useCustomerQueries';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/Button';
-import { User, Phone, Mail, MapPin, Wallet, Gift, AlignLeft, UserPlus, UserCog, X } from 'lucide-react';
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Wallet,
+  Gift,
+  AlignLeft,
+  UserPlus,
+  UserCog,
+  X,
+} from 'lucide-react';
 
 interface CustomerFormModalProps {
   isOpen: boolean;
@@ -102,7 +114,7 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
 
     if (!validationResult.success) {
       const fieldErrors: Record<string, string> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         if (err.path[0]) {
           fieldErrors[err.path[0] as string] = err.message;
         }
@@ -146,7 +158,10 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
       <div className="w-full max-w-2xl rounded-xl border-none bg-card shadow-2xl overflow-hidden font-sans text-foreground animate-fade-in relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-4 select-none">
-          <h3 id="customer-modal-title" className="text-lg font-bold text-primary flex items-center gap-2">
+          <h3
+            id="customer-modal-title"
+            className="text-lg font-bold text-primary flex items-center gap-2"
+          >
             {customer ? <UserCog className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             {customer
               ? t('common.edit') + ' ' + t('customers.title')
@@ -360,6 +375,6 @@ export function CustomerFormModal({ isOpen, onClose, customer }: CustomerFormMod
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

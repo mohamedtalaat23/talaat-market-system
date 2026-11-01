@@ -26,17 +26,17 @@ export function PrinterSettingsScreen() {
       setIsElectron(true);
 
       // Load active config
-      window.electronAPI.getPrinterConfig().then((cfg) => {
+      void window.electronAPI.getPrinterConfig().then((cfg) => {
         if (cfg) setConfig(cfg);
       });
 
       // Scan available USB port endpoints
-      window.electronAPI.discoverPrinters().then((ports) => {
+      void window.electronAPI.discoverPrinters().then((ports) => {
         setDiscoveredPorts(ports);
       });
 
       // Retrieve device online status
-      checkPrinterStatus();
+      void checkPrinterStatus();
     }
   }, []);
 
@@ -85,7 +85,7 @@ export function PrinterSettingsScreen() {
       toast.success(t('settings.configSaved'));
 
       // Re-scan ports & status
-      checkPrinterStatus();
+      void checkPrinterStatus();
       const ports = await window.electronAPI.discoverPrinters();
       setDiscoveredPorts(ports);
     } catch (err: any) {
@@ -115,8 +115,12 @@ export function PrinterSettingsScreen() {
             <Printer className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.printerSetup')}</h3>
-            <p className="text-sm text-secondary font-medium mt-1">{t('settings.printerSetupDesc')}</p>
+            <h3 className="text-2xl font-black tracking-tight text-foreground">
+              {t('settings.printerSetup')}
+            </h3>
+            <p className="text-sm text-secondary font-medium mt-1">
+              {t('settings.printerSetupDesc')}
+            </p>
           </div>
         </div>
         <button
@@ -133,18 +137,26 @@ export function PrinterSettingsScreen() {
       {printerStatus && (
         <div
           className={`flex items-start gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
-            printerStatus.online 
-              ? 'border-success/30 bg-gradient-to-br from-success/5 to-success/10 text-success' 
+            printerStatus.online
+              ? 'border-success/30 bg-gradient-to-br from-success/5 to-success/10 text-success'
               : 'border-danger/30 bg-gradient-to-br from-danger/5 to-danger/10 text-danger'
           }`}
         >
-          <div className={`p-2.5 rounded-xl ${printerStatus.online ? 'bg-success/20' : 'bg-danger/20'}`}>
+          <div
+            className={`p-2.5 rounded-xl ${printerStatus.online ? 'bg-success/20' : 'bg-danger/20'}`}
+          >
             {printerStatus.online ? <CheckCircle2 size={24} /> : <ShieldAlert size={24} />}
           </div>
           <div className="space-y-1 mt-0.5">
             <span className="text-sm font-bold uppercase tracking-widest block">
               {t('settings.printerStatus')}:{' '}
-              <span className={printerStatus.online ? 'text-success drop-shadow-sm' : 'text-danger drop-shadow-sm'}>
+              <span
+                className={
+                  printerStatus.online
+                    ? 'text-success drop-shadow-sm'
+                    : 'text-danger drop-shadow-sm'
+                }
+              >
                 {printerStatus.online ? t('settings.online') : t('settings.offline')}
               </span>
             </span>
@@ -160,7 +172,9 @@ export function PrinterSettingsScreen() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Printer Mode Selection */}
           <div className="space-y-2.5">
-            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.printerModel')}</label>
+            <label className="block text-sm font-bold text-foreground tracking-wide">
+              {t('settings.printerModel')}
+            </label>
             <select
               value={config.type}
               onChange={(e) => setConfig({ ...config, type: e.target.value as any })}
@@ -176,7 +190,9 @@ export function PrinterSettingsScreen() {
 
           {/* Paper Width Selection */}
           <div className="space-y-2.5">
-            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.paperWidth')}</label>
+            <label className="block text-sm font-bold text-foreground tracking-wide">
+              {t('settings.paperWidth')}
+            </label>
             <select
               value={config.paperWidth}
               onChange={(e) => setConfig({ ...config, paperWidth: Number(e.target.value) as any })}
@@ -239,7 +255,9 @@ export function PrinterSettingsScreen() {
             ) : (
               <p className="text-xs text-success font-bold flex items-center gap-1.5 bg-success/10 p-2.5 rounded-lg border border-success/20 w-fit">
                 <CheckCircle2 size={14} />
-                <span>{t('settings.printersFound').replace('{count}', String(discoveredPorts.length))}</span>
+                <span>
+                  {t('settings.printersFound').replace('{count}', String(discoveredPorts.length))}
+                </span>
               </p>
             )}
           </div>
@@ -258,7 +276,10 @@ export function PrinterSettingsScreen() {
               />
             </div>
             <div className="space-y-1">
-              <label htmlFor="autoPrint" className="text-sm font-bold text-foreground cursor-pointer tracking-wide">
+              <label
+                htmlFor="autoPrint"
+                className="text-sm font-bold text-foreground cursor-pointer tracking-wide"
+              >
                 {t('settings.autoPrint')}
               </label>
               <p className="text-xs text-secondary font-medium leading-relaxed max-w-[240px]">
@@ -269,7 +290,9 @@ export function PrinterSettingsScreen() {
 
           {/* Retry Threshold */}
           <div className="space-y-3">
-            <label className="block text-sm font-bold text-foreground tracking-wide">{t('settings.retryPolicy')}</label>
+            <label className="block text-sm font-bold text-foreground tracking-wide">
+              {t('settings.retryPolicy')}
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="number"
@@ -281,7 +304,9 @@ export function PrinterSettingsScreen() {
                 }
                 className="w-24 bg-card border border-border/60 rounded-xl px-4 py-2.5 text-base font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-center text-foreground shadow-sm"
               />
-              <span className="text-xs font-bold text-secondary uppercase tracking-widest">{t('settings.attempts')}</span>
+              <span className="text-xs font-bold text-secondary uppercase tracking-widest">
+                {t('settings.attempts')}
+              </span>
             </div>
             <p className="text-xs text-secondary font-medium leading-relaxed max-w-[240px]">
               {t('settings.retryPolicyDesc')}

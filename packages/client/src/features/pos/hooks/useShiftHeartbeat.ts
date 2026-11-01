@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 export function useShiftHeartbeat() {
   const activeShift = usePOSStore((state) => state.activeShift);
+  const registerId = usePOSStore((state) => state.registerId);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
   const status = useLANStore((state) => state.status);
 
@@ -16,7 +17,7 @@ export function useShiftHeartbeat() {
     const checkShiftStatus = async () => {
       try {
         const response = await apiClient.get<{ success: boolean; data: any }>(
-          '/pos/shifts/current',
+          `/pos/shifts/current?register_id=${registerId}`,
         );
 
         if (response.data?.success) {
@@ -42,10 +43,10 @@ export function useShiftHeartbeat() {
     };
 
     // Initial validation check
-    checkShiftStatus();
+    void checkShiftStatus();
 
     // Re-check every 3 minutes (180000ms)
     const interval = setInterval(checkShiftStatus, 180000);
     return () => clearInterval(interval);
-  }, [activeShift, setActiveShift, status]);
+  }, [activeShift, setActiveShift, status, registerId]);
 }
