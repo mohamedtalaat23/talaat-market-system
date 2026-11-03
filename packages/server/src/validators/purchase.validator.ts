@@ -23,6 +23,7 @@ export const createPOSchema = z.object({
 export const updatePOSchema = createPOSchema;
 
 export const receivePOSchema = z.object({
+  idempotency_key: z.string().trim().min(1).max(100).optional(),
   items: z
     .array(
       z.object({

@@ -136,7 +136,7 @@ export function WeeklyReportScreen() {
       `}</style>
 
       {/* Date range toolbar */}
-      <Card className="no-print border border-border/60 shadow-sm rounded-2xl">
+      <Card className="no-print border border-border/60 shadow-sm rounded-lg">
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row lg:items-end gap-4">
             <div className="flex items-center gap-2 text-secondary mb-1 lg:mb-0 lg:me-2">
@@ -194,14 +194,14 @@ export function WeeklyReportScreen() {
         </h2>
 
         {isLoading ? (
-          <Card className="rounded-2xl">
+          <Card className="rounded-lg">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Spinner size="lg" />
               <span className="mt-3 text-sm text-secondary">{t('common.loading')}</span>
             </CardContent>
           </Card>
         ) : isError || !reportData ? (
-          <Card className="rounded-2xl border-destructive/20">
+          <Card className="rounded-lg border-destructive/20">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <AlertCircle className="h-10 w-10 text-destructive mb-3" />
               <p className="text-destructive font-medium">
@@ -213,9 +213,9 @@ export function WeeklyReportScreen() {
           <>
             {/* Week KPI summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 no-print">
-              <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+                  <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
                     {t('reports.netRevenue')}
                   </CardTitle>
                   <div className="h-8 w-8 rounded-xl bg-success/10 flex items-center justify-center">
@@ -229,9 +229,9 @@ export function WeeklyReportScreen() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+                  <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
                     {t('reports.transactions')}
                   </CardTitle>
                   <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -245,9 +245,9 @@ export function WeeklyReportScreen() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+                  <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
                     {t('reports.discounts')}
                   </CardTitle>
                   <div className="h-8 w-8 rounded-xl bg-warning/10 flex items-center justify-center">
@@ -263,9 +263,9 @@ export function WeeklyReportScreen() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+                  <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
                     {t('reports.avgDailyRevenue')}
                   </CardTitle>
                   <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -281,7 +281,7 @@ export function WeeklyReportScreen() {
             </div>
 
             {/* Revenue trend chart */}
-            <Card className="no-print border border-border/60 shadow-sm rounded-2xl overflow-hidden">
+            <Card className="no-print border border-border/60 shadow-sm rounded-lg overflow-hidden">
               <CardHeader className="border-b border-border/60 bg-card/50">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <TrendingUp className="h-5 w-5 text-success" />
@@ -361,7 +361,7 @@ export function WeeklyReportScreen() {
             </Card>
 
             {/* Daily summary table */}
-            <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
+            <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden">
               <CardHeader className="border-b border-border/60 bg-card/50">
                 <CardTitle className="text-base">{t('reports.dailySummary')}</CardTitle>
               </CardHeader>
@@ -436,7 +436,7 @@ export function WeeklyReportScreen() {
             </Card>
 
             {/* Top products */}
-            <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
+            <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden">
               <CardHeader className="border-b border-border/60 bg-card/50">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Trophy className="h-5 w-5 text-amber-500" />
@@ -451,7 +451,7 @@ export function WeeklyReportScreen() {
                   </div>
                 ) : (
                   <div className="grid lg:grid-cols-2 gap-8">
-                    <div className="rounded-2xl border border-border/60 overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.02)] bg-card flex flex-col h-full">
+                    <div className="rounded-lg border border-border/60 overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.02)] bg-card flex flex-col h-full">
                       <Table>
                         <TableHeader className="table-header-sticky bg-muted/40 backdrop-blur-md">
                           <TableRow className="bg-transparent hover:bg-transparent border-b-border/60">
@@ -469,7 +469,7 @@ export function WeeklyReportScreen() {
                             >
                               <TableCell className="text-center">
                                 <span
-                                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-[13px] font-black ${getRankBadgeClass(index + 1)}`}
+                                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-[13px] font-semibold ${getRankBadgeClass(index + 1)}`}
                                 >
                                   {index + 1}
                                 </span>
@@ -487,9 +487,9 @@ export function WeeklyReportScreen() {
                       </Table>
                     </div>
 
-                    <div className="relative h-[400px] lg:h-auto min-h-[400px] no-print rounded-2xl border border-border/80 bg-gradient-to-br from-card to-primary/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 group">
-                      <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[bottom_1px_center] pointer-events-none rounded-2xl"></div>
-                      <div className="absolute top-4 right-6 text-xs font-bold text-primary/40 uppercase tracking-widest">
+                    <div className="relative h-[400px] lg:h-auto min-h-[400px] no-print rounded-lg border border-border/80 bg-gradient-to-br from-card to-primary/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 group">
+                      <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[bottom_1px_center] pointer-events-none rounded-lg"></div>
+                      <div className="absolute top-4 right-6 text-xs font-bold text-primary/40 uppercase tracking-wide">
                         {t('reports.unitsSold')}
                       </div>
                       <ResponsiveContainer width="100%" height="100%">

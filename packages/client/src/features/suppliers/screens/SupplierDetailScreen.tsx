@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSupplierDetail, useDeleteSupplier } from '../hooks/useSupplierQueries';
 import { SupplierFormModal } from '../components/SupplierFormModal';
 import { useAuthStore } from '@/stores/authStore';
@@ -83,6 +83,9 @@ export function SupplierDetailScreen() {
 
   return (
     <div className="space-y-6 font-sans text-input-text p-6 max-w-7xl mx-auto">
+      <Link to={`/purchases?supplier_id=${id}`} className="text-primary underline text-sm">
+        {t('nav.purchases')}
+      </Link>
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-input-border pb-5">
         <div className="flex items-center space-x-3">

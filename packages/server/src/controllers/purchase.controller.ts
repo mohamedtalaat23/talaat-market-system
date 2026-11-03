@@ -1,11 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import type {
-  CreatePOInput,
-  UpdatePOInput} from '../repositories/purchase.repository';
-import {
-  purchaseRepository
-} from '../repositories/purchase.repository';
+import type { CreatePOInput, UpdatePOInput } from '../repositories/purchase.repository';
+import { purchaseRepository } from '../repositories/purchase.repository';
 import { createPOSchema, updatePOSchema, receivePOSchema } from '../validators/purchase.validator';
 import { logger } from '../middleware/logger';
 
@@ -214,7 +210,13 @@ export class PurchaseController {
         ...item,
         shortage_reason: item.shortage_reason ?? null,
       }));
-      await purchaseRepository.receiveGoods(id, items, receiverId, payload.notes || undefined);
+      await purchaseRepository.receiveGoods(
+        id,
+        items,
+        receiverId,
+        payload.notes || undefined,
+        payload.idempotency_key,
+      );
       res.json({
         status: 'success',
         message: 'Goods receipt processed successfully, inventory updated',

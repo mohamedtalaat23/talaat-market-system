@@ -61,6 +61,10 @@ export interface OfflineShiftClosure {
 }
 
 interface LANState {
+  syncing: boolean;
+  setSyncing: (syncing: boolean) => void;
+  syncIssues: Record<string, 'review' | 'rejected' | 'retry'>;
+  setSyncIssues: (issues: Record<string, 'review' | 'rejected' | 'retry'>) => void;
   mode: LANMode;
   hostAddress: string;
   status: LANStatus;
@@ -130,6 +134,10 @@ const customElectronStorage: StateStorage = {
 export const useLANStore = create<LANState>()(
   persist(
     (set) => ({
+      syncing: false,
+      setSyncing: (syncing) => set({ syncing }),
+      syncIssues: {},
+      setSyncIssues: (syncIssues) => set({ syncIssues }),
       mode: 'standalone',
       hostAddress: 'http' + '://' + 'local' + 'host:3001',
       status: 'online',
@@ -140,7 +148,8 @@ export const useLANStore = create<LANState>()(
       setHostAddress: (hostAddress) => set({ hostAddress }),
       setStatus: (status) => set({ status }),
       addOfflineSale: async (sale) => {
-        if (window.electronAPI?.persistOfflineSale) await window.electronAPI.persistOfflineSale(sale);
+        if (window.electronAPI?.persistOfflineSale)
+          await window.electronAPI.persistOfflineSale(sale);
         set((state) => ({ offlineSales: [...state.offlineSales, sale] }));
       },
       removeOfflineSale: async (id) => {

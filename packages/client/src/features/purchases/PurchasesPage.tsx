@@ -1,5 +1,6 @@
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Pagination } from '@/components/ui/Pagination';
 import { Badge } from '@/components/ui/Badge';
@@ -17,9 +18,12 @@ import { SortableHeader } from '@/components/ui/SortableHeader';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { t, language } = useTranslation();
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [supplierFilter, setSupplierFilter] = useState<number | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string>(params.get('status') || '');
+  const [supplierFilter, setSupplierFilter] = useState<number | undefined>(
+    Number(params.get('supplier_id')) || undefined,
+  );
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<string>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -45,6 +49,11 @@ export function PurchasesPage() {
   const { data: suppliersData } = useSuppliers('', 1, 100);
   const suppliers = suppliersData?.items || [];
 
+  const [confirmation, setConfirmation] = useState<{
+    id: number;
+    action: 'place' | 'cancel';
+  } | null>(null);
+  const [confirmationError, setConfirmationError] = useState('');
   const placeOrder = usePlacePurchaseOrder();
   const cancelOrder = useCancelPurchaseOrder();
   const currentUserRole = useAuthStore((state) => state.user?.role);
@@ -58,9 +67,8 @@ export function PurchasesPage() {
   };
 
   const handlePlaceOrder = (id: number) => {
-    if (window.confirm(t('purchases.confirmPlace'))) {
-      placeOrder.mutate(id);
-    }
+    setConfirmationError('');
+    setConfirmation({ id, action: 'place' });
   };
 
   const handleSort = (field: string) => {
@@ -73,9 +81,8 @@ export function PurchasesPage() {
   };
 
   const handleCancelOrder = (id: number) => {
-    if (window.confirm(t('purchases.confirmCancel'))) {
-      cancelOrder.mutate(id);
-    }
+    setConfirmationError('');
+    setConfirmation({ id, action: 'cancel' });
   };
 
   const getStatusBadge = (status: string) => {
@@ -153,7 +160,7 @@ export function PurchasesPage() {
         isManagerOrAdmin ? (
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-5 py-2.5 h-11 rounded-xl bg-gradient-to-r from-success to-emerald-500 hover:from-success/90 hover:to-emerald-400 text-white font-black text-sm uppercase tracking-wider transition-all shadow-[0_4px_14px_rgba(var(--color-success-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-success-500),0.4)] hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success/20"
+            className="flex items-center gap-2 px-5 py-2.5 h-11 rounded-xl bg-gradient-to-r from-success to-emerald-500 hover:from-success/90 hover:to-emerald-400 text-white font-semibold text-sm uppercase tracking-wider transition-all shadow-[0_4px_14px_rgba(var(--color-success-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-success-500),0.4)] hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success/20"
           >
             <Plus size={18} strokeWidth={2.5} />
             <span>{t('purchases.createPO')}</span>
@@ -163,12 +170,12 @@ export function PurchasesPage() {
     >
       {/* KPI Stats Summaries */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
-        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3">
+        <div className="rounded-lg border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all  space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.totalPOs')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-4xl font-black tracking-tighter text-foreground">
+            <span className="text-4xl font-semibold tracking-tighter text-foreground">
               {meta.total}
             </span>
             <div className="p-2 bg-primary/10 rounded-xl">
@@ -177,43 +184,43 @@ export function PurchasesPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3">
+        <div className="rounded-lg border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all  space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.draftPOs')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-4xl font-black tracking-tighter text-foreground">
+            <span className="text-4xl font-semibold tracking-tighter text-foreground">
               {items.filter((po) => po.status === 'draft').length}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary/10 px-2 py-1 rounded-md">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-secondary bg-secondary/10 px-2 py-1 rounded-md">
               {t('purchases.awaitingReview')}
             </span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3 group">
+        <div className="rounded-lg border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all  space-y-3 group">
           <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.pendingDeliveries')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-4xl font-black tracking-tighter text-warning group-hover:scale-105 transition-transform origin-left">
+            <span className="text-4xl font-semibold tracking-tighter text-warning group-hover:scale-105 transition-transform origin-left">
               {items.filter((po) => po.status === 'ordered').length}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-warning bg-warning/10 px-2 py-1 rounded-md">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-warning bg-warning/10 px-2 py-1 rounded-md">
               {t('purchases.inTransit')}
             </span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 space-y-3 group">
+        <div className="rounded-lg border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md p-6 shadow-sm hover:shadow-md transition-all  space-y-3 group">
           <span className="text-xs font-bold uppercase tracking-wider text-secondary">
             {t('purchases.receivedAudited')}
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-4xl font-black tracking-tighter text-success group-hover:scale-105 transition-transform origin-left">
+            <span className="text-4xl font-semibold tracking-tighter text-success group-hover:scale-105 transition-transform origin-left">
               {items.filter((po) => po.status === 'received').length}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-success bg-success/10 px-2 py-1 rounded-md">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-success bg-success/10 px-2 py-1 rounded-md">
               {t('purchases.stockSettled')}
             </span>
           </div>
@@ -221,7 +228,7 @@ export function PurchasesPage() {
       </div>
 
       {/* Filters Area */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-5 mb-6 rounded-2xl border border-border/40 bg-white/40 dark:bg-card/40 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-5 mb-6 rounded-lg border border-border/40 bg-white/40 dark:bg-card/40 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {/* Supplier Filter */}
           <div className="flex flex-col space-y-1.5 w-full sm:w-64">
@@ -283,7 +290,7 @@ export function PurchasesPage() {
       </div>
 
       {/* Main Grid/Table */}
-      <div className="rounded-2xl border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="rounded-lg border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="table-container">
           <table className="w-full text-start border-collapse text-sm">
             <thead>
@@ -345,14 +352,14 @@ export function PurchasesPage() {
                     key={po.id}
                     className="table-row-hover hover:bg-primary/5 text-foreground group h-14"
                   >
-                    <td className="py-2 px-3 font-mono tabular-nums font-black text-primary text-[13px]">
+                    <td className="py-2 px-3 font-mono tabular-nums font-semibold text-primary text-[13px]">
                       {po.po_number}
                     </td>
                     <td className="py-2 px-3">
                       <div className="font-bold truncate max-w-[200px]" title={po.supplier_name}>
                         {po.supplier_name}
                       </div>
-                      <div className="text-[11px] text-secondary font-mono tracking-widest">
+                      <div className="text-[11px] text-secondary font-mono tracking-wide">
                         {po.supplier_code}
                       </div>
                     </td>
@@ -360,14 +367,14 @@ export function PurchasesPage() {
                       {formatDate(po.order_date)}
                     </td>
                     <td className="py-2 px-3">{getStatusBadge(po.status)}</td>
-                    <td className="py-2 px-3 text-end font-mono tabular-nums font-black text-foreground text-[13px]">
+                    <td className="py-2 px-3 text-end font-mono tabular-nums font-semibold text-foreground text-[13px]">
                       {formatCurrency(po.total)}
                     </td>
                     <td className="py-2 px-3">
                       <div className="flex items-center justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => navigate(`/purchases/${po.id}`)}
-                          className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/10 text-secondary hover:text-primary text-[10px] font-black uppercase tracking-widest border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                          className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/10 text-secondary hover:text-primary text-[10px] font-semibold uppercase tracking-wide border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                         >
                           <Eye size={12} />
                           <span>{t('purchases.view')}</span>
@@ -375,7 +382,7 @@ export function PurchasesPage() {
                         {isManagerOrAdmin && po.status === 'draft' && (
                           <button
                             onClick={() => handlePlaceOrder(po.id)}
-                            className="h-8 px-3 bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 text-white text-[10px] font-black uppercase tracking-widest border border-transparent rounded-lg transition-all duration-300 flex items-center focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md shadow-warning/20"
+                            className="h-8 px-3 bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 text-white text-[10px] font-semibold uppercase tracking-wide border border-transparent rounded-lg transition-all duration-300 flex items-center focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md shadow-warning/20"
                           >
                             {t('purchases.placeOrder')}
                           </button>
@@ -409,6 +416,25 @@ export function PurchasesPage() {
 
       {isFormOpen && (
         <PurchaseOrderFormModal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+      )}
+      {confirmation && (
+        <ConfirmDialog
+          title={t(
+            confirmation.action === 'place' ? 'purchases.placeOrder' : 'purchases.cancelOrder',
+          )}
+          description={`${t(confirmation.action === 'place' ? 'purchases.confirmPlace' : 'purchases.confirmCancel')} #${confirmation.id}`}
+          busy={placeOrder.isPending || cancelOrder.isPending}
+          error={confirmationError}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            setConfirmationError('');
+            const mutation = confirmation.action === 'place' ? placeOrder : cancelOrder;
+            mutation.mutate(confirmation.id, {
+              onSuccess: () => setConfirmation(null),
+              onError: (failure) => setConfirmationError(failure.message),
+            });
+          }}
+        />
       )}
     </PageContainer>
   );

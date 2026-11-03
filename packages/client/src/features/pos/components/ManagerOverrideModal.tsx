@@ -123,7 +123,7 @@ export function ManagerOverrideModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-sm rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden"
+        className="w-full max-w-sm rounded-lg border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="override-modal-title"
@@ -133,12 +133,12 @@ export function ManagerOverrideModal() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-16 bg-danger/10 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="flex flex-col items-center justify-center pb-5 mb-5 border-b border-border/40 relative z-10">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10 text-danger mb-4 shadow-inner border border-danger/20">
-            <ShieldAlert size={36} className="drop-shadow-sm" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-danger/10 text-danger mb-4 shadow-inner border border-danger/20">
+            <ShieldAlert size={36} className="" />
           </div>
           <h3
             id="override-modal-title"
-            className="text-2xl font-black text-slate-900 text-center tracking-tight"
+            className="text-2xl font-semibold text-slate-900 text-center tracking-tight"
           >
             {t('pos.managerAuthTitle')}
           </h3>
@@ -163,7 +163,7 @@ export function ManagerOverrideModal() {
                 {payload.displayMetadata.amount !== undefined && (
                   <div className="flex justify-between items-center">
                     <span className="text-secondary font-medium">{t('pos.amountLabelShort')}</span>
-                    <span className="font-mono text-foreground font-black text-base">
+                    <span className="font-mono text-foreground font-semibold text-base">
                       {t('pos.currency')} {Number(payload.displayMetadata.amount).toFixed(2)}
                     </span>
                   </div>
@@ -182,7 +182,7 @@ export function ManagerOverrideModal() {
                       {t('pos.directionLabelShort')}
                     </span>
                     <span
-                      className={`font-black tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}
+                      className={`font-semibold tracking-wider ${payload.displayMetadata.direction === 'OUT' ? 'text-danger' : 'text-success'}`}
                     >
                       {payload.displayMetadata.direction}
                     </span>
@@ -194,7 +194,7 @@ export function ManagerOverrideModal() {
                       {t('pos.inventoryLabelShort')}
                     </span>
                     <span
-                      className={`font-black tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}
+                      className={`font-semibold tracking-wider ${payload.displayMetadata.inventoryEffect === 'RESTOCK' ? 'text-success' : 'text-warning'}`}
                     >
                       {payload.displayMetadata.inventoryEffect}
                     </span>
@@ -270,7 +270,7 @@ export function ManagerOverrideModal() {
           <button
             type="submit"
             disabled={isSubmitting || pin.length < 4}
-            className="w-full h-12 mt-2 bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 disabled:from-neutral-300 disabled:to-neutral-300 dark:disabled:from-neutral-700 dark:disabled:to-neutral-700 disabled:text-neutral-500 rounded-xl font-black uppercase tracking-wider text-white transition-all shadow-[0_4px_14px_rgba(239,68,68,0.3)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.5)] disabled:shadow-none hover:-translate-y-0.5 active:scale-95 flex items-center justify-center"
+            className="w-full h-12 mt-2 bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 disabled:from-neutral-300 disabled:to-neutral-300 dark:disabled:from-neutral-700 dark:disabled:to-neutral-700 disabled:text-neutral-500 rounded-xl font-semibold uppercase tracking-wider text-white transition-all shadow-[0_4px_14px_rgba(239,68,68,0.3)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.5)] disabled:shadow-none hover:-translate-y-0.5 active:scale-95 flex items-center justify-center"
           >
             {isSubmitting ? (
               <div className="flex items-center space-x-2">

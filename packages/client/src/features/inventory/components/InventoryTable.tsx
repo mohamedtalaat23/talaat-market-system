@@ -30,7 +30,7 @@ export function InventoryTable({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-16 border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-sm">
+      <div className="flex flex-col items-center justify-center text-center p-16 border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-md rounded-lg shadow-sm">
         <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
           <ShieldAlert className="h-8 w-8 text-neutral-400" />
         </div>
@@ -43,7 +43,7 @@ export function InventoryTable({
   }
 
   return (
-    <div className="overflow-hidden border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl">
+    <div className="overflow-hidden border border-border/40 bg-white/60 dark:bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-lg">
       <div className="table-container">
         <table className="w-full text-start text-xs text-foreground border-collapse">
           <thead className="bg-neutral-50/80 dark:bg-neutral-900/80 text-secondary font-bold uppercase tracking-wider text-[11px] select-none shadow-sm z-10">
@@ -154,7 +154,7 @@ export function InventoryTable({
                     <div className="flex items-center justify-center">
                       <button
                         onClick={() => onAdjust(item)}
-                        className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/5 text-secondary hover:text-primary text-[10px] font-black uppercase tracking-widest border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md opacity-70 group-hover:opacity-100"
+                        className="h-8 px-3 bg-white dark:bg-card hover:bg-primary/5 text-secondary hover:text-primary text-[10px] font-semibold uppercase tracking-wide border border-border/60 hover:border-primary/40 rounded-lg transition-all duration-300 flex items-center gap-1.5 focus:outline-none hover:-translate-y-0.5 shadow-sm hover:shadow-md opacity-70 group-hover:opacity-100"
                       >
                         <ArrowUpDown size={12} />
                         <span>{t('inventory.adjustStock')}</span>

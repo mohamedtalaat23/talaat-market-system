@@ -64,7 +64,10 @@ const TransactionSearchModal = () => {
       action: 'reprint_receipt',
       onSuccess: async (manager_id: number, pin: string) => {
         try {
-          await apiClient.post(`/pos/receipts/${sale.id}/reprint`, { manager_id, manager_pin: pin });
+          await apiClient.post(`/pos/receipts/${sale.id}/reprint`, {
+            manager_id,
+            manager_pin: pin,
+          });
           // Note: we might want to close transaction search, but let's keep it open
           // Open receipt preview so they can print it
           openModal('pos_receipt_preview', { sale, approval: { manager_id, pin } });
@@ -111,7 +114,7 @@ const TransactionSearchModal = () => {
             <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary shadow-sm">
               <Search className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black tracking-tight text-foreground">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
               {t('pos.transactionSearchTitle')}
             </h2>
           </div>
@@ -141,7 +144,7 @@ const TransactionSearchModal = () => {
           {showSpinner ? (
             <div className="flex flex-col items-center justify-center py-20 opacity-50">
               <RefreshCw className="w-10 h-10 text-primary animate-spin mb-4" />
-              <p className="text-sm font-bold text-secondary uppercase tracking-widest">
+              <p className="text-sm font-bold text-secondary uppercase tracking-wide">
                 {t('pos.searching')}
               </p>
             </div>
@@ -153,10 +156,10 @@ const TransactionSearchModal = () => {
               <p className="text-sm font-bold tracking-wide">{t('pos.noTransactionsFound')}</p>
             </div>
           ) : (
-            <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-muted/40 sticky top-0 z-10 backdrop-blur-md">
-                  <tr className="border-b border-border/60 text-[11px] font-black text-secondary uppercase tracking-widest">
+                  <tr className="border-b border-border/60 text-[11px] font-semibold text-secondary uppercase tracking-wide">
                     <th className="py-4 px-5">{t('pos.receiptNo').replace(':', '')}</th>
                     <th className="py-4 px-5">{t('reports.date')}</th>
                     <th className="py-4 px-5">{t('pos.cashier')}</th>
@@ -177,7 +180,7 @@ const TransactionSearchModal = () => {
                       <td className="py-4 px-5 text-secondary font-medium text-xs">
                         {sale.cashier_name}
                       </td>
-                      <td className="py-4 px-5 text-right font-black text-foreground tabular-nums">
+                      <td className="py-4 px-5 text-right font-semibold text-foreground tabular-nums">
                         {Number(sale.total).toFixed(2)}{' '}
                         <span className="text-[10px] text-secondary ml-0.5">
                           {t('pos.currency')}
@@ -185,11 +188,11 @@ const TransactionSearchModal = () => {
                       </td>
                       <td className="py-4 px-5 text-right">
                         {sale.print_status === 'pending_print' ? (
-                          <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black bg-warning/10 text-warning border border-warning/20 uppercase tracking-widest">
+                          <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-semibold bg-warning/10 text-warning border border-warning/20 uppercase tracking-wide">
                             {t('pos.pendingPrint')}
                           </span>
                         ) : (
-                          <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-widest">
+                          <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-semibold bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-wide">
                             {t('pos.printedCount').replace('{count}', String(sale.print_count))}
                           </span>
                         )}
@@ -198,7 +201,10 @@ const TransactionSearchModal = () => {
                         <div className="flex justify-center space-x-2.5">
                           {['completed', 'partially_refunded'].includes(sale.status) && (
                             <button
-                              onClick={() => openModal('pos_refund', { sale })}
+                              onClick={() => {
+                                closeModal('pos_transaction_search');
+                                openModal('pos_refund', { sale });
+                              }}
                               className="inline-flex items-center space-x-1.5 px-3 py-2 bg-warning/10 hover:bg-warning/20 text-warning border border-warning/30 rounded-lg transition-all text-xs font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5"
                             >
                               <RefreshCcw className="w-3.5 h-3.5" />

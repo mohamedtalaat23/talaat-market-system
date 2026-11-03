@@ -1,3 +1,5 @@
+import toast from 'react-hot-toast';
+import { apiClient } from '@/services/api-client';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
@@ -87,6 +89,7 @@ export function DrawerAdjustmentModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) return;
@@ -100,9 +103,6 @@ export function DrawerAdjustmentModal() {
 
     setIsSubmitting(true);
     try {
-      const { apiClient } = await import('@/services/api-client');
-      const toast = (await import('react-hot-toast')).default;
-
       // Inline PIN verification
       const verifyRes = await apiClient.post('/employees/verify-pin', {
         manager_id: managerId,
@@ -118,6 +118,7 @@ export function DrawerAdjustmentModal() {
 
       const payload = {
         manager_id: managerId,
+        manager_pin: pin,
         type: type,
         amount: numericAmount,
         reason_code: type.toUpperCase(),
@@ -129,7 +130,9 @@ export function DrawerAdjustmentModal() {
         toast.success(t('pos.toasts.drawerAdjustmentRecorded'));
 
         // Re-fetch shift to update expected cash
-        const shiftRes = await apiClient.get('/pos/shifts/current');
+        const shiftRes = await apiClient.get(
+          `/pos/shifts/current?register_id=${activeShift.register_id}`,
+        );
         if (shiftRes.data?.success) {
           setActiveShift(shiftRes.data.data);
         }
@@ -137,7 +140,6 @@ export function DrawerAdjustmentModal() {
         closeModal('pos_drawer_adjustment');
       }
     } catch (error: any) {
-      const toast = (await import('react-hot-toast')).default;
       toast.error(error.response?.data?.message || t('pos.failedRecordAdjustment'));
     } finally {
       setIsSubmitting(false);
@@ -150,14 +152,17 @@ export function DrawerAdjustmentModal() {
       <div className="absolute inset-0" onClick={() => closeModal('pos_drawer_adjustment')} />
       <div
         ref={focusTrapRef}
-        className="w-full max-w-lg bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('pos.drawerAdjustment')}
+        className="w-full max-w-lg bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-border/40">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-primary/10 rounded-xl">
               <Vault className="w-6 h-6 text-primary" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-foreground">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               {t('pos.drawerAdjustment')}
             </h2>
           </div>
@@ -222,7 +227,7 @@ export function DrawerAdjustmentModal() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
-                className={`w-full bg-background border ${isOut ? 'border-danger/40 focus:border-danger focus:ring-danger/20' : 'border-success/40 focus:border-success focus:ring-success/20'} rounded-xl h-14 pl-14 pr-12 text-foreground text-2xl font-black tabular-nums tracking-tight focus:outline-none focus:ring-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all`}
+                className={`w-full bg-background border ${isOut ? 'border-danger/40 focus:border-danger focus:ring-danger/20' : 'border-success/40 focus:border-success focus:ring-success/20'} rounded-xl h-14 pl-14 pr-12 text-foreground text-2xl font-semibold tabular-nums tracking-tight focus:outline-none focus:ring-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-all`}
                 placeholder="0.00"
               />
               <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -272,11 +277,11 @@ export function DrawerAdjustmentModal() {
               isSubmitting={isSubmitting}
               contextMetadata={
                 <div className="flex flex-col">
-                  <div className="font-black text-xl tracking-tight text-foreground">
+                  <div className="font-semibold text-xl tracking-tight text-foreground">
                     {selectedTypeObj && t('pos.adjustmentTypes.' + selectedTypeObj.value)}
                   </div>
                   <div
-                    className={`font-mono font-bold tracking-widest text-sm mt-1 ${isOut ? 'text-danger' : 'text-success'}`}
+                    className={`font-mono font-bold tracking-wide text-sm mt-1 ${isOut ? 'text-danger' : 'text-success'}`}
                   >
                     {isOut ? t('pos.outLabel') : t('pos.inLabel')}: {t('pos.currency')}{' '}
                     {amount ? parseFloat(amount).toFixed(2) : '0.00'}
@@ -290,7 +295,7 @@ export function DrawerAdjustmentModal() {
             <button
               type="submit"
               disabled={!amount || parseFloat(amount) <= 0 || isSubmitting}
-              className={`w-full py-4 rounded-xl font-black text-white text-sm tracking-widest uppercase transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`w-full py-4 rounded-xl font-semibold text-white text-sm tracking-wide uppercase transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
                 isOut
                   ? 'bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 shadow-[0_4px_14px_rgba(var(--color-danger-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-danger-500),0.4)] hover:-translate-y-0.5 active:scale-95'
                   : 'bg-gradient-to-r from-success to-emerald-500 hover:from-success/90 hover:to-emerald-400 shadow-[0_4px_14px_rgba(var(--color-success-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-success-500),0.4)] hover:-translate-y-0.5 active:scale-95'

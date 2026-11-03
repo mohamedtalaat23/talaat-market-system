@@ -8,7 +8,7 @@ export function RegistersScreen() {
   return (
     <div className="max-w-5xl select-text space-y-8 pb-10">
       <div className="flex items-center justify-between border-b border-border/40 pb-5">
-        <h3 className="text-2xl font-black tracking-tight text-foreground">
+        <h3 className="text-2xl font-semibold tracking-tight text-foreground">
           {t('settings.registers')}
         </h3>
         <button
@@ -19,17 +19,17 @@ export function RegistersScreen() {
         </button>
       </div>
 
-      <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm shadow-black/5">
+      <div className="bg-card border border-border/80 rounded-lg overflow-hidden shadow-sm shadow-black/5">
         <table className="w-full text-sm text-start">
           <thead className="bg-muted/40 backdrop-blur-md border-b border-border/60 text-secondary">
             <tr>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wide text-start">
                 {t('settings.registerName')}
               </th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-start">
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wide text-start">
                 {t('common.status')}
               </th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wide text-center">
                 {t('common.actions')}
               </th>
             </tr>
@@ -44,15 +44,13 @@ export function RegistersScreen() {
                 <span>{t('settings.mainRegister')}</span>
               </td>
               <td className="px-6 py-5">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black bg-success/10 text-success border border-success/20 uppercase tracking-widest">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-semibold bg-success/10 text-success border border-success/20 uppercase tracking-wide">
                   {t('products.active')}
                 </span>
               </td>
               <td className="px-6 py-5 text-center">
                 <button
-                  onClick={() =>
-                    toast(t('settings.registersEditingComing'), { icon: '🏗️' })
-                  }
+                  onClick={() => toast(t('settings.registersEditingComing'), { icon: '🏗️' })}
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >
                   {t('common.edit')}
@@ -67,15 +65,13 @@ export function RegistersScreen() {
                 <span>{t('settings.backupRegister')}</span>
               </td>
               <td className="px-6 py-5">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black bg-success/10 text-success border border-success/20 uppercase tracking-widest">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-semibold bg-success/10 text-success border border-success/20 uppercase tracking-wide">
                   {t('products.active')}
                 </span>
               </td>
               <td className="px-6 py-5 text-center">
                 <button
-                  onClick={() =>
-                    toast(t('settings.registersEditingComing'), { icon: '🏗️' })
-                  }
+                  onClick={() => toast(t('settings.registersEditingComing'), { icon: '🏗️' })}
                   className="bg-card hover:bg-primary/5 text-secondary hover:text-primary border border-border/60 hover:border-primary/30 rounded-lg transition-all text-xs font-bold px-4 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
                 >
                   {t('common.edit')}

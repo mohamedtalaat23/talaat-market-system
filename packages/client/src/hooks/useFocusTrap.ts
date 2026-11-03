@@ -63,7 +63,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
     });
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab' || document.querySelector('dialog[open]')) return;
 
       const activeFocusable = getFocusableElements();
       if (activeFocusable.length === 0) return;

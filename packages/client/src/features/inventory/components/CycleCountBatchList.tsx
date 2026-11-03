@@ -31,7 +31,11 @@ export function CycleCountBatchList() {
 
   const tabs = [
     { id: 'draft', label: t('inventory.cycleCounts.tabs.draft'), icon: FileText },
-    { id: 'pending_approval', label: t('inventory.cycleCounts.tabs.pending_approval'), icon: Clock },
+    {
+      id: 'pending_approval',
+      label: t('inventory.cycleCounts.tabs.pending_approval'),
+      icon: Clock,
+    },
     { id: 'posted', label: t('inventory.cycleCounts.tabs.posted'), icon: CheckCircle },
     { id: 'cancelled', label: t('inventory.cycleCounts.tabs.cancelled'), icon: XCircle },
     { id: 'all', label: t('inventory.cycleCounts.tabs.all'), icon: FileText },
@@ -71,12 +75,24 @@ export function CycleCountBatchList() {
         <table className="w-full text-left">
           <thead className="bg-card-hover border-b border-input-border">
             <tr>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.batchId')}</th>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.type')}</th>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.location')}</th>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.status')}</th>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.date')}</th>
-              <th className="p-4 text-sm font-medium text-secondary">{t('inventory.cycleCounts.varianceValue')}</th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.batchId')}
+              </th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.type')}
+              </th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.location')}
+              </th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.status')}
+              </th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.date')}
+              </th>
+              <th className="p-4 text-sm font-medium text-secondary">
+                {t('inventory.cycleCounts.varianceValue')}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -104,7 +120,9 @@ export function CycleCountBatchList() {
                   <td className="p-4">{batch.location || '-'}</td>
                   <td className="p-4 uppercase text-xs font-bold text-secondary">{batch.status}</td>
                   <td className="p-4 text-secondary">
-                    {new Date(batch.created_at).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-EG')}
+                    {new Date(batch.created_at).toLocaleDateString(
+                      language === 'ar' ? 'ar-EG' : 'en-EG',
+                    )}
                   </td>
                   <td className="p-4 font-medium">
                     {Number(batch.total_variance_value).toFixed(2)} {t('pos.currency')}
@@ -118,7 +136,7 @@ export function CycleCountBatchList() {
 
       {showNewModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-input-border overflow-hidden">
+          <div className="bg-card w-full max-w-md rounded-lg shadow-xl border border-input-border overflow-hidden">
             <div className="p-6 border-b border-input-border flex justify-between items-center">
               <h2 className="text-xl font-bold">{t('inventory.cycleCounts.modalTitle')}</h2>
               <button
@@ -130,7 +148,9 @@ export function CycleCountBatchList() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-secondary mb-2">{t('inventory.cycleCounts.countType')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  {t('inventory.cycleCounts.countType')}
+                </label>
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
@@ -166,7 +186,9 @@ export function CycleCountBatchList() {
                 disabled={createBatch.isPending}
                 className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                {createBatch.isPending ? t('inventory.cycleCounts.starting') : t('inventory.cycleCounts.startCounting')}
+                {createBatch.isPending
+                  ? t('inventory.cycleCounts.starting')
+                  : t('inventory.cycleCounts.startCounting')}
               </button>
             </div>
           </div>

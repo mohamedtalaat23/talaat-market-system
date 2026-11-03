@@ -6,8 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export const FILTER_BUTTON_BASE =
   'px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0 cursor-pointer';
-export const FILTER_BUTTON_ACTIVE =
-  'bg-primary text-white border-transparent shadow-[0_4px_10px_rgba(16,185,129,0.3)] hover:opacity-90';
+export const FILTER_BUTTON_ACTIVE = 'bg-primary text-white border-transparent hover:opacity-90';
 export const FILTER_BUTTON_INACTIVE =
   'bg-transparent text-secondary border-transparent hover:text-primary hover:bg-primary/5';
 
@@ -58,7 +57,7 @@ export function ProductFilterBar({
   };
 
   return (
-    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between mb-8 select-text">
+    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between mb-4 select-text">
       {/* Search row */}
       <div className="flex items-center gap-3 w-full xl:w-auto">
         <form onSubmit={handleSearchSubmit} className="flex flex-1 xl:w-96 items-center gap-2">
@@ -79,7 +78,7 @@ export function ProductFilterBar({
             size="sm"
             className="font-semibold shrink-0 h-10 rounded-xl px-5"
           >
-            {t('common.search')}
+            {language === 'ar' ? 'بحث' : 'Search'}
           </Button>
         </form>
 
@@ -100,7 +99,7 @@ export function ProductFilterBar({
       <div
         className="flex flex-wrap items-center gap-2 select-none bg-card/50 p-1.5 rounded-xl border border-border/40"
         role="group"
-        aria-label="Category Filters"
+        aria-label={t('products.category')}
       >
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider mx-2">
           <SlidersHorizontal size={13} />

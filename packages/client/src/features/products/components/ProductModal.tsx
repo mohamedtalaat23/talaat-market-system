@@ -76,7 +76,7 @@ export function ProductModal() {
       {/* Modal Box */}
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl rounded-2xl border border-border/50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]"
+        className="w-full max-w-2xl rounded-lg border border-border/50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
@@ -84,7 +84,7 @@ export function ProductModal() {
         <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
           <h3
             id="product-modal-title"
-            className="text-2xl font-black text-foreground tracking-tight"
+            className="text-2xl font-semibold text-foreground tracking-tight"
           >
             {mode === 'create' ? t('products.addProduct') : `${t('common.edit')}: ${product?.name}`}
           </h3>

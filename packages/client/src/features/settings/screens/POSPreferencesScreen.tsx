@@ -47,16 +47,18 @@ export function POSPreferencesScreen() {
   return (
     <div className="max-w-3xl select-text space-y-8 pb-10">
       <div className="flex items-center gap-4 border-b border-border/40 pb-5">
-        <h3 className="text-2xl font-black tracking-tight text-foreground">{t('settings.pos')}</h3>
+        <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+          {t('settings.pos')}
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-5">
-          <h4 className="text-xs font-black text-secondary uppercase tracking-widest pl-1">
+          <h4 className="text-xs font-semibold text-secondary uppercase tracking-wide pl-1">
             {t('settings.workflowSecurity')}
           </h4>
 
-          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
+          <div className="bg-card/40 border border-border/60 rounded-lg p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
             <div
               className="flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-colors border border-transparent hover:border-border/40 group cursor-pointer"
               onClick={() =>
@@ -122,11 +124,11 @@ export function POSPreferencesScreen() {
         </div>
 
         <div className="space-y-5">
-          <h4 className="text-xs font-black text-secondary uppercase tracking-widest pl-1">
+          <h4 className="text-xs font-semibold text-secondary uppercase tracking-wide pl-1">
             {t('settings.alertsNotifications')}
           </h4>
 
-          <div className="bg-card/40 border border-border/60 rounded-2xl p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+          <div className="bg-card/40 border border-border/60 rounded-lg p-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
             <label className="block text-sm font-bold mb-3 text-foreground">
               {t('settings.defaultLowStockThreshold')}
             </label>
