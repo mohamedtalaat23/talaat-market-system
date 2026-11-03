@@ -1,3 +1,4 @@
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
@@ -13,6 +14,7 @@ export function CloseShiftModal() {
   const { t } = useTranslation();
   const { activeModals, closeModal, openModal, modalPayloads } = useModalStore();
   const isOpen = activeModals.pos_close_shift;
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen && !activeModals.pos_manager_override);
   const activeShift = usePOSStore((state) => state.activeShift);
   const setActiveShift = usePOSStore((state) => state.setActiveShift);
   const heldCarts = usePOSStore((state) => state.heldCarts);
@@ -182,7 +184,13 @@ export function CloseShiftModal() {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] text-foreground select-none p-4">
-      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('pos.closeShiftReport')}
+        className="max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg flex flex-col relative z-10 animate-in zoom-in-95 duration-200"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border/40">
           <div className="flex items-center space-x-3">

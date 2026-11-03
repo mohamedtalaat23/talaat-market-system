@@ -84,7 +84,10 @@ export async function pay(page: Page, f: Fixture, method: 'cash' | 'debt' = 'cas
 export async function capture(page: Page, f: Fixture, name: string) {
   for (const width of [1366, 1920]) {
     await page.setViewportSize({ width, height: width === 1366 ? 768 : 1080 });
-    await page.screenshot({ path: `../../docs/qa/daily/${f.language}-${name}-${width}.png` });
+    await page.screenshot({
+      animations: 'disabled',
+      path: `../../docs/qa/daily/${f.language}-${name}-${width}.png`,
+    });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

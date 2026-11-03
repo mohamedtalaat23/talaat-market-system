@@ -226,4 +226,28 @@ describe('Inventory & Costing (AVCO Costing) Integration', () => {
     const failed = results.filter((r) => r.status === 'rejected');
     expect(failed).toHaveLength(0); // Both transactions should succeed.
   });
+  it('posts a partial receipt once across response loss and concurrent retries', async () => {
+    const context = await setupTestData();
+    const po = await setupPO(context.productId, 4, 5, context.managerId);
+    const line = await db('purchase_order_items').where({ purchase_order_id: po.id }).first();
+    const items = [{ po_item_id: line.id, product_id: context.productId, quantity_to_receive: 2 }];
+    const key = `receipt-retry-${crypto.randomUUID()}`;
+    await Promise.all([
+      purchaseRepository.receiveGoods(po.id!, items, context.managerId, 'Verified delivery', key),
+      purchaseRepository.receiveGoods(po.id!, items, context.managerId, 'Verified delivery', key),
+    ]);
+    expect(
+      Number((await db('inventory').where({ product_id: context.productId }).first()).quantity),
+    ).toBe(102);
+    expect(await db('purchase_order_receipts').where({ purchase_order_id: po.id })).toHaveLength(1);
+    await expect(
+      purchaseRepository.receiveGoods(
+        po.id!,
+        [{ ...items[0]!, quantity_to_receive: 1 }],
+        context.managerId,
+        'Changed',
+        key,
+      ),
+    ).rejects.toThrow('different');
+  });
 });

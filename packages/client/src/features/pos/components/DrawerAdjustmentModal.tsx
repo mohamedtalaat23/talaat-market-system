@@ -89,6 +89,7 @@ export function DrawerAdjustmentModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) return;
@@ -117,6 +118,7 @@ export function DrawerAdjustmentModal() {
 
       const payload = {
         manager_id: managerId,
+        manager_pin: pin,
         type: type,
         amount: numericAmount,
         reason_code: type.toUpperCase(),
@@ -128,7 +130,9 @@ export function DrawerAdjustmentModal() {
         toast.success(t('pos.toasts.drawerAdjustmentRecorded'));
 
         // Re-fetch shift to update expected cash
-        const shiftRes = await apiClient.get('/pos/shifts/current');
+        const shiftRes = await apiClient.get(
+          `/pos/shifts/current?register_id=${activeShift.register_id}`,
+        );
         if (shiftRes.data?.success) {
           setActiveShift(shiftRes.data.data);
         }
@@ -148,6 +152,9 @@ export function DrawerAdjustmentModal() {
       <div className="absolute inset-0" onClick={() => closeModal('pos_drawer_adjustment')} />
       <div
         ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('pos.drawerAdjustment')}
         className="w-full max-w-lg bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10 animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-border/40">

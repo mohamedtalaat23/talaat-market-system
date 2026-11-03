@@ -17,7 +17,8 @@ export const standardRateLimiter = rateLimit({
 // Stricter rate limiter for authentication endpoints (login, password checks)
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // limit each IP to 30 authentication requests per windowMs
+  max: 30, // limit failed authentication attempts per IP
+  skipSuccessfulRequests: true, // routine manager approvals must not lock out a busy store
   standardHeaders: true,
   legacyHeaders: false,
 });

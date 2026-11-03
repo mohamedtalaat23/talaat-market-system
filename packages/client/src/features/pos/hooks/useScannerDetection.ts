@@ -25,6 +25,11 @@ export function useScannerDetection({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Dialog inputs own their keyboard events (PIN, amounts and product search).
+      if (e.target instanceof Element && e.target.closest('[role="dialog"], dialog[open]')) {
+        bufferRef.current = '';
+        return;
+      }
       // Prevent standard functional keyboard shortcuts from entering scanner buffer
       if (e.ctrlKey || e.metaKey || e.altKey) {
         return;

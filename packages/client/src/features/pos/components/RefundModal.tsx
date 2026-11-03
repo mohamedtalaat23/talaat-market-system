@@ -34,7 +34,7 @@ export function RefundModal() {
 
   const items = useMemo(() => sale?.items || [], [sale]);
 
-  const refundTotal = useMemo(() => {
+  const refundBreakdown = useMemo(() => {
     const ordered = [...items].sort((a, b) => String(a.id).localeCompare(String(b.id)));
     const grossCents = ordered.reduce(
       (sum, item) => sum + Math.round(Number(item.line_total) * 100),
@@ -44,6 +44,7 @@ export function RefundModal() {
     let cumulative = 0;
     let allocated = 0;
     let refundCents = 0;
+    const lines: Record<string, number> = {};
     for (const item of ordered) {
       cumulative += Math.round(Number(item.line_total) * 100);
       const next = grossCents ? bankersRound((paidCents * cumulative) / grossCents, 0) : 0;
@@ -51,12 +52,16 @@ export function RefundModal() {
       allocated = next;
       const previous = Number(item.refunded_quantity || 0);
       const quantity = quantitiesToRefund[item.id] || 0;
-      refundCents +=
+      const lineCents =
         bankersRound((netLineCents * (previous + quantity)) / Number(item.quantity), 0) -
         bankersRound((netLineCents * previous) / Number(item.quantity), 0);
+      lines[item.id] = lineCents / 100;
+      refundCents += lineCents;
     }
-    return refundCents / 100;
+    return { total: refundCents / 100, lines };
   }, [items, quantitiesToRefund, sale?.total]);
+
+  const refundTotal = refundBreakdown.total;
 
   const handleQtyChange = (itemId: number, maxQty: number, val: string) => {
     let num = Number(val);
@@ -86,7 +91,7 @@ export function RefundModal() {
   );
 
   const handleProcessRefund = useCallback(async () => {
-    if (itemsToRefund.length === 0 || !sale) return;
+    if (isSubmitting || itemsToRefund.length === 0 || !sale) return;
     if (!pin || managerId === '') {
       void import('react-hot-toast').then(({ default: toast }) =>
         toast.error(t('pos.toasts.managerPinRequired')),
@@ -109,6 +114,7 @@ export function RefundModal() {
 
       const payload = {
         manager_id: managerId,
+        manager_pin: pin,
         reason: reason || 'Customer Return',
         refund_type: 'partial',
         idempotency_key: refundKey.current,
@@ -132,10 +138,11 @@ export function RefundModal() {
             items: itemsToRefund.map((reqItem: any) => {
               const origItem = items.find((i: any) => i.id === reqItem.sale_item_id);
               return {
-                product_name: origItem ? origItem.product_name : 'Refunded Item',
+                id: reqItem.sale_item_id,
+                product_name: origItem ? origItem.product_name : t('pos.refund'),
                 quantity: reqItem.quantity,
-                unit_price: origItem ? origItem.unit_price : 0,
-                line_total: origItem ? reqItem.quantity * origItem.unit_price : 0,
+                unit_price: -(refundBreakdown.lines[reqItem.sale_item_id] || 0) / reqItem.quantity,
+                line_total: -(refundBreakdown.lines[reqItem.sale_item_id] || 0),
                 discount: 0,
               };
             }),
@@ -149,10 +156,10 @@ export function RefundModal() {
       setIsSubmitting(false);
       setPin('');
     }
-  }, [itemsToRefund, sale, pin, managerId, reason, items, closeModal, openModal, t]);
+  }, [itemsToRefund, sale, pin, managerId, reason, items, closeModal, openModal, t, isSubmitting]);
 
   const handleVoidSale = async () => {
-    if (!sale) return;
+    if (isSubmitting || !sale) return;
     if (!pin || managerId === '') {
       void import('react-hot-toast').then(({ default: toast }) =>
         toast.error(t('pos.toasts.managerPinRequired')),
@@ -175,6 +182,7 @@ export function RefundModal() {
 
       const response = await apiClient.post(`/pos/sales/${sale.id}/void`, {
         manager_id: managerId,
+        manager_pin: pin,
         reason: reason || 'Void Sale',
       });
 
@@ -300,6 +308,9 @@ export function RefundModal() {
       <div className="absolute inset-0" onClick={() => closeModal('pos_refund')} />
       <div
         ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="refund-title"
         className="w-full max-w-4xl bg-card border border-border/40 rounded-3xl shadow-2xl shadow-black/20 relative z-10 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-border/40 bg-muted/20">
@@ -307,7 +318,7 @@ export function RefundModal() {
             <div className="p-2 bg-warning/10 rounded-xl border border-warning/20 text-warning shadow-sm">
               <RefreshCcw className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            <h2 id="refund-title" className="text-xl font-semibold tracking-tight text-foreground">
               {t('pos.refundVoidSaleHeader').replace('{receipt}', sale.receipt_number)}
             </h2>
           </div>
@@ -333,6 +344,7 @@ export function RefundModal() {
             {isEligibleForVoid && (
               <button
                 onClick={handleVoidSale}
+                disabled={isSubmitting}
                 className="px-5 py-2.5 bg-danger hover:bg-danger/90 text-white rounded-xl font-bold flex items-center space-x-2 transition-all shadow-md shadow-danger/20 hover:shadow-danger/30 hover:-translate-y-0.5"
               >
                 <AlertTriangle className="w-4 h-4" />

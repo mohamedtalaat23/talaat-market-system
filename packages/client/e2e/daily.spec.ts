@@ -44,6 +44,27 @@ for (const language of ['en', 'ar'] as const) {
       Number((await (await db())('inventory').where({ product_id: f.productId }).first()).quantity),
     ).toBe(97);
     await capture(page, f, 'approved-discount');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('F4');
+    await page.getByPlaceholder(t.pos.searchReceiptNo).fill(sale.receipt_number);
+    await page
+      .getByRole('row')
+      .filter({ hasText: sale.receipt_number })
+      .getByRole('button', { name: t.pos.refundVoid, exact: true })
+      .click();
+    await page.getByRole('dialog').locator('input[type=number]').fill('1');
+    await page.getByPlaceholder(t.pos.placeholderRefundReason).fill('Discounted partial return');
+    await page.selectOption('#inline-manager-select', String(f.manager.id));
+    await page.fill('#inline-pin-input', f.pin);
+    const refunded = page.waitForResponse(
+      (r) => r.url().endsWith(`/sales/${sale.id}/refund`) && r.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: t.pos.processRefund, exact: true }).click();
+    const result = await refunded;
+    expect(result.ok()).toBe(true);
+    expect(Number((await result.json()).data.total_refunded)).toBe(6.67);
+    await expect(page.getByRole('dialog').getByText(new RegExp('-6\\.67')).first()).toBeVisible();
+    await capture(page, f, 'discounted-refund');
   });
   test(`${language}: approved partial returns preserve restock and damage outcomes`, async ({
     page,
@@ -202,7 +223,7 @@ for (const language of ['en', 'ar'] as const) {
     );
     await page.getByRole('button', { name: t.customers.payment, exact: true }).click();
     await page.locator('input[type=number]').fill('5');
-    await page.locator('button[type=submit]').click();
+    await page.locator('input[type=number]').press('Enter');
     await expect
       .poll(async () =>
         Number((await database('customers').where({ id: f.customerId }).first()).balance),

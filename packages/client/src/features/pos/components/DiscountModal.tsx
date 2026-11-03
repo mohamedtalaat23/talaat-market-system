@@ -8,10 +8,10 @@ import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function DiscountModal() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const ar = language === 'ar';
   const isOpen = useModalStore((state) => state.activeModals.pos_discount);
   const closeModalAction = useModalStore((state) => state.closeModal);
-  const openModalAction = useModalStore((state) => state.openModal);
   const closeModal = useCallback(() => closeModalAction('pos_discount'), [closeModalAction]);
 
   const cart = usePOSStore((state) => state.cart);
@@ -63,17 +63,7 @@ export function DiscountModal() {
         return toast.error(t('pos.toasts.discountExceedsLine'));
       }
 
-      // Manager override required if discount > 20%
-      if (discountValue > lineTotalBeforeDiscount * 0.2) {
-        closeModal();
-        openModalAction('pos_manager_override', {
-          action: 'large_discount',
-          target: 'item',
-          cartId: activeItem.cart_id,
-          discountValue,
-        });
-        return;
-      }
+      // The final discount is authorized server-side at payment.
 
       updateItemDiscount(activeItem.cart_id, discountValue);
       toast.success(t('pos.toasts.itemDiscount'));
@@ -87,16 +77,6 @@ export function DiscountModal() {
 
       if (discountValue > cartSubtotal) {
         return toast.error(t('pos.toasts.discountExceedsCart'));
-      }
-
-      if (discountValue > cartSubtotal * 0.2) {
-        closeModal();
-        openModalAction('pos_manager_override', {
-          action: 'large_discount',
-          target: 'cart',
-          discountValue,
-        });
-        return;
       }
 
       setGlobalDiscount(discountValue);
@@ -117,7 +97,7 @@ export function DiscountModal() {
         <div className="flex items-center justify-between border-b border-border pb-3 mb-6">
           <h3 className="text-xl font-bold text-foreground flex items-center space-x-2">
             <Tag size={24} className="text-success" />
-            <span>Apply Discount</span>
+            <span>{ar ? 'تطبيق الخصم' : 'Apply discount'}</span>
           </h3>
           <button
             onClick={closeModal}
@@ -135,14 +115,14 @@ export function DiscountModal() {
               disabled={cart.length === 0}
               className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'item' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'} disabled:opacity-50`}
             >
-              Selected Item
+              {ar ? 'الصنف المحدد' : 'Selected item'}
             </button>
             <button
               type="button"
               onClick={() => setTarget('cart')}
               className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${target === 'cart' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
-              Entire Cart
+              {ar ? 'الفاتورة بالكامل' : 'Entire cart'}
             </button>
           </div>
 
@@ -152,20 +132,21 @@ export function DiscountModal() {
               onClick={() => setDiscountType('fixed')}
               className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'fixed' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
-              Fixed Amount (EGP)
+              {ar ? 'مبلغ ثابت' : 'Fixed amount'}
             </button>
             <button
               type="button"
               onClick={() => setDiscountType('percentage')}
               className={`flex-1 py-2 text-sm font-bold rounded transition-colors ${discountType === 'percentage' ? 'bg-card-hover text-foreground shadow-sm' : 'text-secondary hover:text-foreground'}`}
             >
-              Percentage (%)
+              {ar ? 'نسبة مئوية (%)' : 'Percentage (%)'}
             </button>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-secondary mb-1">
-              Discount Amount {discountType === 'percentage' ? '(%)' : '(EGP)'}
+              {ar ? 'قيمة الخصم' : 'Discount amount'}{' '}
+              {discountType === 'percentage' ? '(%)' : t('pos.currency')}
             </label>
             <input
               autoFocus
@@ -183,7 +164,7 @@ export function DiscountModal() {
             disabled={!amountStr || isNaN(Number(amountStr))}
             className="w-full py-4 bg-success hover:bg-success/90 disabled:bg-card-hover disabled:text-muted rounded font-bold text-white transition-colors text-lg"
           >
-            Apply Discount
+            {ar ? 'تطبيق الخصم' : 'Apply discount'}
           </button>
         </form>
       </div>

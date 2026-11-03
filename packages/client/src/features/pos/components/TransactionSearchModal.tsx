@@ -201,7 +201,10 @@ const TransactionSearchModal = () => {
                         <div className="flex justify-center space-x-2.5">
                           {['completed', 'partially_refunded'].includes(sale.status) && (
                             <button
-                              onClick={() => openModal('pos_refund', { sale })}
+                              onClick={() => {
+                                closeModal('pos_transaction_search');
+                                openModal('pos_refund', { sale });
+                              }}
                               className="inline-flex items-center space-x-1.5 px-3 py-2 bg-warning/10 hover:bg-warning/20 text-warning border border-warning/30 rounded-lg transition-all text-xs font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5"
                             >
                               <RefreshCcw className="w-3.5 h-3.5" />

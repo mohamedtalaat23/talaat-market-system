@@ -1,3 +1,4 @@
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCreatePurchaseOrder } from '../hooks/usePurchaseQueries';
@@ -25,6 +26,7 @@ interface SelectedItem {
 }
 
 export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
   const { t, language } = useTranslation();
   const createPO = useCreatePurchaseOrder();
 
@@ -103,6 +105,7 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (createPO.isPending) return;
 
     if (!supplierId) {
       toast.error(t('purchases.toasts.selectSupplierError'));
@@ -149,13 +152,24 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-4xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('purchases.draftNewPO')}
+        className="flex flex-col w-full max-w-4xl max-h-[90vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-input-border bg-white">
           <h2 className="text-lg font-bold text-input-text flex items-center space-x-2">
             <span>{t('purchases.draftNewPO')}</span>
           </h2>
-          <button onClick={onClose} className="text-secondary hover:text-input-text">
+          <button
+            onClick={() => {
+              if (!createPO.isPending) onClose();
+            }}
+            className="text-secondary hover:text-input-text"
+          >
             <X size={18} />
           </button>
         </div>
@@ -165,7 +179,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           {/* Supplier & Header Config */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">{t('purchases.supplierRequired')}</label>
+              <label className="text-xs font-semibold text-secondary">
+                {t('purchases.supplierRequired')}
+              </label>
               <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : '')}
@@ -182,7 +198,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             </div>
 
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">{t('purchases.discountAmountEgp')}</label>
+              <label className="text-xs font-semibold text-secondary">
+                {t('purchases.discountAmountEgp')}
+              </label>
               <Input
                 type="number"
                 min="0"
@@ -195,7 +213,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
             </div>
 
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-semibold text-secondary">{t('purchases.taxAmountEgp')}</label>
+              <label className="text-xs font-semibold text-secondary">
+                {t('purchases.taxAmountEgp')}
+              </label>
               <Input
                 type="number"
                 min="0"
@@ -210,7 +230,9 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
 
           {/* Product Search & Influx Add */}
           <div className="relative space-y-1.5">
-            <label className="text-xs font-semibold text-secondary">{t('purchases.searchProductsAdd')}</label>
+            <label className="text-xs font-semibold text-secondary">
+              {t('purchases.searchProductsAdd')}
+            </label>
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
               <Input
@@ -239,12 +261,20 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                       <div>
                         <div className="font-semibold">{prod.name}</div>
                         <div className="text-xs text-neutral-500 font-mono">
-                          {t('products.barcode')}: {prod.barcode || t('common.na')} | {t('purchases.unit')}: {prod.unit}
+                          {t('products.barcode')}: {prod.barcode || t('common.na')} |{' '}
+                          {t('purchases.unit')}: {prod.unit}
                         </div>
                       </div>
                       <div className="flex items-center space-x-4 text-xs font-mono">
-                        <span className="text-secondary">{t('purchases.stockWithCount').replace('{count}', String(prod.inventory_quantity))}</span>
-                        <span className="text-success font-bold">{formatCurrency(Number(prod.selling_price))}</span>
+                        <span className="text-secondary">
+                          {t('purchases.stockWithCount').replace(
+                            '{count}',
+                            String(prod.inventory_quantity),
+                          )}
+                        </span>
+                        <span className="text-success font-bold">
+                          {formatCurrency(Number(prod.selling_price))}
+                        </span>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -268,8 +298,12 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
                   <th className="py-2.5 px-3">{t('purchases.product')}</th>
                   <th className="py-2.5 px-3 text-center">{t('products.barcode')}</th>
                   <th className="py-2.5 px-3 text-center">{t('purchases.currentStock')}</th>
-                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.costPriceRequired')}</th>
-                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.orderQtyRequired')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">
+                    {t('purchases.costPriceRequired')}
+                  </th>
+                  <th className="py-2.5 px-3 text-center w-28">
+                    {t('purchases.orderQtyRequired')}
+                  </th>
                   <th className="py-2.5 px-3 text-right">{t('purchases.lineSubtotal')}</th>
                   <th className="py-2.5 px-3 text-center w-10"></th>
                 </tr>
@@ -360,19 +394,21 @@ export function PurchaseOrderFormModal({ isOpen, onClose }: PurchaseOrderFormMod
           <div className="flex items-center space-x-6 text-sm font-mono">
             <div className="text-secondary font-mono">
               {t('pos.subtotal')}:{' '}
-              <span className="font-semibold text-input-text">
-                {formatCurrency(subtotal)}
-              </span>
+              <span className="font-semibold text-input-text">{formatCurrency(subtotal)}</span>
             </div>
             <div className="text-input-text font-bold text-base font-mono">
               {t('purchases.grandTotal')}:{' '}
-              <span className="text-success">
-                {formatCurrency(total)}
-              </span>
+              <span className="text-success">{formatCurrency(total)}</span>
             </div>
           </div>
           <div className="flex space-x-3">
-            <Button variant="ghost" type="button" onClick={onClose}>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => {
+                if (!createPO.isPending) onClose();
+              }}
+            >
               {t('common.cancel')}
             </Button>
             <Button

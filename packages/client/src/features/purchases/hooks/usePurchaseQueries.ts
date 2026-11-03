@@ -86,6 +86,7 @@ export interface UpdatePOPayload {
 }
 
 export interface ReceivePOPayload {
+  idempotency_key?: string;
   items: Array<{
     po_item_id: number;
     product_id: number;

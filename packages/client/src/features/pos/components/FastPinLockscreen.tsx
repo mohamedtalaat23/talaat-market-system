@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePOSStore } from '@/features/pos/usePOSStore';
 import { apiClient } from '@/services/api-client';
-import { useEmployees } from '@/features/employees/hooks/useEmployeeQueries';
+import { useQuery } from '@tanstack/react-query';
+import type { Employee } from '@/features/employees/hooks/useEmployeeQueries';
 import toast from 'react-hot-toast';
 import { User, AlertTriangle, Users } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -21,9 +22,21 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
 
   const { user, login } = useAuthStore();
   const { cart, holdCurrentCart, clearCart } = usePOSStore();
-  const { data: employeesData } = useEmployees({ page: 1, limit: 100, is_active: true });
+  const { data: employeesData } = useQuery({
+    queryKey: ['lockscreen-employees'],
+    enabled: isOpen && user?.role !== 'cashier',
+    queryFn: async () =>
+      (
+        await apiClient.get<{ data: Employee[] }>('/employees', {
+          params: { page: 1, limit: 100, is_active: true },
+        })
+      ).data,
+  });
 
-  const activeEmployees = employeesData?.data || [];
+  const activeEmployees =
+    user?.role === 'cashier'
+      ? [{ ...user, full_name: user.full_name || user.username }]
+      : employeesData?.data || [];
 
   useEffect(() => {
     if (isOpen) {

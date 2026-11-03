@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { PurchaseOrder } from '../hooks/usePurchaseQueries';
 import { useReceivePurchaseOrder } from '../hooks/usePurchaseQueries';
@@ -30,7 +31,12 @@ interface ReceiptItem {
 }
 
 export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsReceiptModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
   const { t } = useTranslation();
+  const submission = useRef<{ signature: string; key: string } | null>(null);
+  useEffect(() => {
+    if (isOpen) submission.current = null;
+  }, [isOpen]);
   const receivePO = useReceivePurchaseOrder();
   const [items, setItems] = useState<ReceiptItem[]>([]);
   const [notes, setNotes] = useState<string>('');
@@ -91,6 +97,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (receivePO.isPending) return;
 
     if (items.length === 0) {
       toast.error(t('purchases.toasts.specifyQtyOrShortage'));
@@ -111,7 +118,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
         toast.error(
           t('purchases.toasts.resolutionExceedsRemaining')
             .replace('{name}', item.name)
-            .replace('{remaining}', String(item.remaining_quantity))
+            .replace('{remaining}', String(item.remaining_quantity)),
         );
         return;
       }
@@ -120,6 +127,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
     const payload: {
       items: any[];
       notes?: string;
+      idempotency_key?: string;
     } = {
       items: items
         .map((item) => ({
@@ -141,6 +149,10 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
       return;
     }
 
+    const signature = JSON.stringify([purchaseOrder.id, payload]);
+    if (submission.current?.signature !== signature)
+      submission.current = { signature, key: crypto.randomUUID() };
+    payload.idempotency_key = submission.current.key;
     receivePO.mutate(
       { id: purchaseOrder.id, payload },
       {
@@ -155,7 +167,13 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('purchases.verifyGoodsReceipt')}
+        className="flex flex-col w-full max-w-3xl max-h-[90vh] bg-input-bg border border-input-border rounded-xl overflow-hidden shadow-2xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-input-border bg-white">
           <div>
@@ -167,7 +185,12 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
               {t('purchases.poLabel').replace('{po}', purchaseOrder.po_number)}
             </p>
           </div>
-          <button onClick={onClose} className="text-secondary hover:text-input-text">
+          <button
+            onClick={() => {
+              if (!receivePO.isPending) onClose();
+            }}
+            className="text-secondary hover:text-input-text"
+          >
             <X size={18} />
           </button>
         </div>
@@ -179,9 +202,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
             <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1">
               <span className="font-bold">{t('purchases.criticalWorkflow')}</span>
-              <p>
-                {t('purchases.criticalWorkflowDesc')}
-              </p>
+              <p>{t('purchases.criticalWorkflowDesc')}</p>
             </div>
           </div>
 
@@ -208,8 +229,12 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                 <tr className="border-b border-input-border bg-white text-secondary font-semibold">
                   <th className="py-2.5 px-3">{t('purchases.product')}</th>
                   <th className="py-2.5 px-3 text-center">{t('purchases.remainingHeader')}</th>
-                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.receiveQtyHeader')}</th>
-                  <th className="py-2.5 px-3 text-center w-28">{t('purchases.shortageQtyHeader')}</th>
+                  <th className="py-2.5 px-3 text-center w-28">
+                    {t('purchases.receiveQtyHeader')}
+                  </th>
+                  <th className="py-2.5 px-3 text-center w-28">
+                    {t('purchases.shortageQtyHeader')}
+                  </th>
                   <th className="py-2.5 px-3 w-36">{t('purchases.reasonHeader')}</th>
                 </tr>
               </thead>
@@ -265,8 +290,12 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
                         >
                           <option value="">{t('purchases.selectReason')}</option>
                           <option value="backordered">{t('purchases.reasons.backordered')}</option>
-                          <option value="supplier_cancelled">{t('purchases.reasons.supplier_cancelled')}</option>
-                          <option value="damaged_in_transit">{t('purchases.reasons.damaged_in_transit')}</option>
+                          <option value="supplier_cancelled">
+                            {t('purchases.reasons.supplier_cancelled')}
+                          </option>
+                          <option value="damaged_in_transit">
+                            {t('purchases.reasons.damaged_in_transit')}
+                          </option>
                           <option value="substituted">{t('purchases.reasons.substituted')}</option>
                         </select>
                       </td>
@@ -294,7 +323,13 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
 
         {/* Footer */}
         <div className="flex items-center justify-end p-4 border-t border-input-border bg-white space-x-3">
-          <Button variant="ghost" type="button" onClick={onClose}>
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => {
+              if (!receivePO.isPending) onClose();
+            }}
+          >
             {t('common.cancel')}
           </Button>
           <Button

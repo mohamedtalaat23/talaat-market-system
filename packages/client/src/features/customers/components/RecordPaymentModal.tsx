@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useRecordPayment } from '../hooks/useCustomerQueries';
 import { z } from 'zod';
@@ -20,7 +21,9 @@ export function RecordPaymentModal({
   customerName,
   currentBalance,
 }: RecordPaymentModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
   const { t } = useTranslation();
+  const submission = useRef<{ signature: string; key: string } | null>(null);
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export function RecordPaymentModal({
 
   useEffect(() => {
     if (isOpen) {
+      submission.current = null;
       setAmount('');
       setNotes('');
       setError(null);
@@ -39,6 +43,7 @@ export function RecordPaymentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (recordPayment.isPending) return;
     setError(null);
 
     const paymentSchema = z.object({
@@ -78,9 +83,13 @@ export function RecordPaymentModal({
       return;
     }
 
+    const signature = JSON.stringify([customerId, data.amount, data.notes || '']);
+    if (submission.current?.signature !== signature)
+      submission.current = { signature, key: crypto.randomUUID() };
     recordPayment.mutate(
       {
         amount: data.amount,
+        idempotency_key: submission.current.key,
         notes: data.notes || 'Manual customer account payment',
       },
       {
@@ -97,12 +106,20 @@ export function RecordPaymentModal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl border border-input-border bg-modal shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('customers.paymentTitle')}
+        className="w-full max-w-md rounded-xl border border-input-border bg-modal shadow-2xl overflow-hidden font-sans text-input-text animate-in fade-in zoom-in duration-200"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-input-border bg-card px-6 py-4">
           <h3 className="text-lg font-semibold tracking-wide">{t('customers.paymentTitle')}</h3>
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (!recordPayment.isPending) onClose();
+            }}
             className="rounded-lg p-1 text-secondary hover:bg-card-hover hover:text-input-text transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,10 +161,14 @@ export function RecordPaymentModal({
 
           {/* Amount input */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-secondary">
+            <label
+              htmlFor="customer-payment-amount"
+              className="text-xs font-semibold uppercase tracking-wider text-secondary"
+            >
               {t('customers.paymentAmount')}
             </label>
             <input
+              id="customer-payment-amount"
               type="number"
               step="0.01"
               min="0.01"
@@ -201,7 +222,9 @@ export function RecordPaymentModal({
           <div className="flex items-center justify-end gap-3 border-t border-input-border pt-4 mt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                if (!recordPayment.isPending) onClose();
+              }}
               disabled={recordPayment.isPending}
               className="rounded-lg bg-card border border-input-border text-input-text hover:bg-card-hover px-5 py-2.5 text-sm font-semibold disabled:opacity-50 transition-colors"
             >
