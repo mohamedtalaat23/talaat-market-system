@@ -1,5 +1,7 @@
 # Product improvement implementation — November 2, 2026
 
+For the November 4 real-service daily-workflow review, receiving retry migration and bundled offline fonts, see [DAILY_WORKFLOW_REVIEW](DAILY_WORKFLOW_REVIEW.md).
+
 This delivery improves the existing single-store Windows/LAN product. It is **not commercial release acceptance**. Existing Windows, physical-device, fiscal and soak-test gates remain in force.
 
 ## Delivered behavior
