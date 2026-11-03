@@ -35,7 +35,7 @@ for (const language of ['en', 'ar'] as const) {
     await expect(page.getByRole('button', { name: t.closeShift, exact: true })).toBeVisible();
     for (const width of [1366, 1920]) {
       await page.setViewportSize({ width, height: width === 1366 ? 768 : 1080 });
-      await page.screenshot({ path: `../../docs/qa/roadmap/after-pos-${language}-${width}.png` });
+      await page.screenshot({ path: `../../docs/qa/daily/checkout-${language}-${width}.png` });
     }
     await page.setViewportSize({ width: 1366, height: 768 });
     // Use the cashier keyboard workflow; no application stores are exposed to tests.
@@ -48,8 +48,15 @@ for (const language of ['en', 'ar'] as const) {
     await page.getByRole('button', { name: t.payAction }).last().click();
     await page.locator('#cash-input').fill('20');
     // Interrupt the first checkout request: the cart must survive for a safe retry.
-    await page.route('**/pos/checkout', (route) => route.abort('failed'));
+    const checkoutFailed = page.waitForEvent('requestfailed', {
+      predicate: (request) => request.url().endsWith('/pos/checkout'),
+    });
+    await page.route('**/pos/checkout', async (route) => {
+      await route.fetch();
+      await route.abort('failed');
+    });
     await page.getByRole('button', { name: t.completeSale }).click();
+    await checkoutFailed;
     await expect(page.getByRole('button', { name: t.completeSale })).toBeEnabled();
     await expect(page.locator('#cash-input')).toHaveValue('20');
     await page.unroute('**/pos/checkout');

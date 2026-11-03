@@ -113,7 +113,7 @@ for (const language of ['en', 'ar'] as const) {
         );
         await expect(page.locator('text=synthetic-ui-fixture')).toHaveCount(0);
         await page.screenshot({
-          path: `../../docs/qa/roadmap/after-${path.replace('/', '-') || 'dashboard'}-${language}-${width}.png`,
+          path: `../../docs/qa/daily/layout-${path.replace('/', '-') || 'dashboard'}-${language}-${width}.png`,
         });
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
           true,
