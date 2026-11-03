@@ -6,6 +6,7 @@ import { App } from './App';
 // 1. variables.css — defines CSS custom properties
 // 2. reset.css — normalizes browser defaults
 // 3. globals.css — applies base styles using the variables
+import './styles/fonts.css';
 import './styles/variables.css';
 import './styles/reset.css';
 import './styles/globals.css';

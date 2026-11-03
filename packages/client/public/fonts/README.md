@@ -1,0 +1,1 @@
+Fonts downloaded from Google Fonts, November 4, 2026. Cairo, Inter and JetBrains Mono are distributed under the accompanying SIL Open Font License files. Local CSS preserves the existing families and weights. No runtime font service is required.
