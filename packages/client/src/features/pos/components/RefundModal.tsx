@@ -156,7 +156,19 @@ export function RefundModal() {
       setIsSubmitting(false);
       setPin('');
     }
-  }, [itemsToRefund, sale, pin, managerId, reason, items, closeModal, openModal, t, isSubmitting]);
+  }, [
+    itemsToRefund,
+    sale,
+    pin,
+    managerId,
+    reason,
+    items,
+    closeModal,
+    openModal,
+    t,
+    isSubmitting,
+    refundBreakdown.lines,
+  ]);
 
   const handleVoidSale = async () => {
     if (isSubmitting || !sale) return;

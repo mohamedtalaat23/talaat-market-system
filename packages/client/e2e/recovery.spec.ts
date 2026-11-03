@@ -1,11 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './daily-test';
 import { randomUUID } from 'node:crypto';
 import { fixture } from './fixtures';
 import { login, api, db, enterPOS, capture } from './daily-helpers';
 import { translations } from '../src/utils/translations';
-test.afterAll(async () => {
-  await (await db()).destroy();
-});
 for (const language of ['en', 'ar'] as const) {
   const t = translations[language];
   test(`${language}: drawer adjustment and independent cashier handover`, async ({

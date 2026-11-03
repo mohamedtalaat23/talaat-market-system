@@ -43,8 +43,14 @@ for (const language of ['en', 'ar'] as const) {
       if (path === '/products')
         data = Array.from({ length: 8 }, (_, i) => ({
           id: i + 1,
-          name: ['Fresh milk', 'Egyptian rice', 'Sunflower oil', 'White cheese'][i % 4],
-          name_ar: ['حليب طازج', 'أرز مصري', 'زيت عباد الشمس', 'جبنة بيضاء'][i % 4],
+          name:
+            i === 0
+              ? 'Fresh milk — family pack with a deliberately long product description for narrow registers'
+              : ['Fresh milk', 'Egyptian rice', 'Sunflower oil', 'White cheese'][i % 4],
+          name_ar:
+            i === 0
+              ? 'حليب طازج عبوة عائلية باسم طويل لاختبار وضوح العرض في شاشات الكاشير الصغيرة'
+              : ['حليب طازج', 'أرز مصري', 'زيت عباد الشمس', 'جبنة بيضاء'][i % 4],
           barcode: `62210000000${i}`,
           unit: 'piece',
           selling_price: 35 + i * 5,

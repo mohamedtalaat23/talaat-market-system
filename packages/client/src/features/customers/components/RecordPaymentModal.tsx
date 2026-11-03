@@ -1,5 +1,5 @@
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useRecordPayment } from '../hooks/useCustomerQueries';
 import { z } from 'zod';
@@ -30,7 +30,7 @@ export function RecordPaymentModal({
 
   const recordPayment = useRecordPayment(customerId);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen) {
       submission.current = null;
       setAmount('');
@@ -94,6 +94,7 @@ export function RecordPaymentModal({
       },
       {
         onSuccess: () => {
+          submission.current = null;
           onClose();
         },
       },

@@ -1,10 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './daily-test';
 import { fixture } from './fixtures';
 import { login, api, db, enterPOS, addProduct, pay, capture } from './daily-helpers';
 import { translations } from '../src/utils/translations';
-test.afterAll(async () => {
-  await (await db()).destroy();
-});
 for (const language of ['en', 'ar'] as const) {
   const t = translations[language];
   test(`${language}: quantity approved discount and suspended cart checkout`, async ({ page }) => {
@@ -21,6 +19,7 @@ for (const language of ['en', 'ar'] as const) {
     await page.keyboard.press('F3');
     await page.locator('input[type=number]').fill('10');
     await page.locator('button[type=submit]').click();
+    await capture(page, f, 'populated-cart');
     await page.getByRole('button', { name: t.pos.payAction }).click();
     await page.fill('#cash-input', '100');
     await page.selectOption('#inline-manager-select', String(f.manager.id));

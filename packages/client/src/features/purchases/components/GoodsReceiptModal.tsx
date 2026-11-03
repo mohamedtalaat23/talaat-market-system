@@ -157,6 +157,7 @@ export function GoodsReceiptModal({ isOpen, onClose, purchaseOrder }: GoodsRecei
       { id: purchaseOrder.id, payload },
       {
         onSuccess: () => {
+          submission.current = null;
           onClose();
         },
       },
