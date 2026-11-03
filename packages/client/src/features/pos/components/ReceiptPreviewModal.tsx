@@ -77,9 +77,7 @@ export function ReceiptPreviewModal() {
 
         <div className="text-center mb-6">
           <CheckCircle size={48} className="mx-auto text-success mb-2" />
-          <h2 className="text-2xl font-bold uppercase tracking-widest">
-            {t('login.talaatMarket')}
-          </h2>
+          <h2 className="text-2xl font-bold uppercase tracking-wide">{t('login.talaatMarket')}</h2>
           <p className="text-secondary mt-1">123 Supermarket St, Cairo</p>
           <p className="text-secondary">Tel: +20 123 456 7890</p>
         </div>

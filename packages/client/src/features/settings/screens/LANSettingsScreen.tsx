@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import type { OfflineSale } from '@/features/pos/stores/useLANStore';
 import { useLANStore } from '@/features/pos/stores/useLANStore';
@@ -19,16 +20,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function LANSettingsScreen() {
   const { t } = useTranslation();
-  const {
-    mode,
-    hostAddress,
-    status,
-    offlineSales,
-    setMode,
-    setHostAddress,
-    clearOfflineSales,
-    removeOfflineSale,
-  } = useLANStore();
+  const { mode, hostAddress, status, offlineSales, setMode, setHostAddress, removeOfflineSale } =
+    useLANStore();
   const [addressInput, setAddressInput] = useState(hostAddress);
   const [testingConnection, setTestingConnection] = useState(false);
   const [pingResult, setPingResult] = useState<{
@@ -95,21 +88,14 @@ export function LANSettingsScreen() {
     }
   };
 
-  const handleClearBuffer = () => {
-    if (window.confirm(t('settings.clearBufferConfirm'))) {
-      clearOfflineSales();
-      toast.success(t('settings.bufferClearedSuccess'));
-    }
-  };
-
   return (
     <div className="space-y-8 max-w-4xl text-foreground select-text">
       <div className="flex items-center gap-4 border-b border-border/40 pb-5">
-        <div className="p-3 bg-success/10 rounded-2xl border border-success/20 text-success">
+        <div className="p-3 bg-success/10 rounded-lg border border-success/20 text-success">
           <Wifi className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-2xl font-black tracking-tight text-foreground">
+          <h3 className="text-2xl font-semibold tracking-tight text-foreground">
             {t('settings.lanTitle')}
           </h3>
           <p className="text-sm text-secondary font-medium mt-1">{t('settings.lanDesc')}</p>
@@ -120,7 +106,7 @@ export function LANSettingsScreen() {
         {/* Standalone Selector */}
         <div
           onClick={() => setMode('standalone')}
-          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
+          className={`flex flex-col p-6 rounded-lg border cursor-pointer transition-all shadow-sm group ${
             mode === 'standalone'
               ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
@@ -142,7 +128,7 @@ export function LANSettingsScreen() {
         {/* Master Selector */}
         <div
           onClick={() => setMode('master')}
-          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
+          className={`flex flex-col p-6 rounded-lg border cursor-pointer transition-all shadow-sm group ${
             mode === 'master'
               ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
@@ -164,7 +150,7 @@ export function LANSettingsScreen() {
         {/* Client Selector */}
         <div
           onClick={() => setMode('client')}
-          className={`flex flex-col p-6 rounded-2xl border cursor-pointer transition-all shadow-sm group ${
+          className={`flex flex-col p-6 rounded-lg border cursor-pointer transition-all shadow-sm group ${
             mode === 'client'
               ? 'bg-gradient-to-br from-success/5 to-success/10 border-success shadow-success/10 scale-[1.02]'
               : 'bg-card border-border/60 hover:border-success/40 hover:shadow-md'
@@ -185,8 +171,8 @@ export function LANSettingsScreen() {
       </div>
 
       {mode === 'client' && (
-        <div className="bg-card/40 rounded-2xl border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
-          <h4 className="font-black text-foreground text-xl tracking-tight flex items-center gap-3">
+        <div className="bg-card/40 rounded-lg border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
+          <h4 className="font-semibold text-foreground text-xl tracking-tight flex items-center gap-3">
             <div className="p-2 rounded-lg bg-success/10 text-success border border-success/20">
               <Activity size={20} />
             </div>
@@ -196,7 +182,7 @@ export function LANSettingsScreen() {
           <form onSubmit={handleSaveConfig} className="space-y-4">
             <div className="flex flex-col lg:flex-row gap-4 items-end">
               <div className="flex-1 space-y-2.5 w-full">
-                <label className="block text-xs font-bold text-foreground uppercase tracking-widest">
+                <label className="block text-xs font-bold text-foreground uppercase tracking-wide">
                   {t('settings.hostApiAddress')}
                 </label>
                 <input
@@ -236,7 +222,7 @@ export function LANSettingsScreen() {
 
           {pingResult && (
             <div
-              className={`p-5 rounded-2xl border flex items-start gap-4 shadow-sm transition-all ${
+              className={`p-5 rounded-lg border flex items-start gap-4 shadow-sm transition-all ${
                 pingResult.success
                   ? 'bg-gradient-to-br from-success/5 to-success/10 border-success/30 text-success'
                   : 'bg-gradient-to-br from-danger/5 to-danger/10 border-danger/30 text-danger'
@@ -248,7 +234,7 @@ export function LANSettingsScreen() {
                 {pingResult.success ? <Wifi size={24} /> : <WifiOff size={24} />}
               </div>
               <div className="mt-0.5">
-                <p className="font-bold text-sm uppercase tracking-widest drop-shadow-sm">
+                <p className="font-bold text-sm uppercase tracking-wide ">
                   {pingResult.success ? t('settings.hostReachable') : t('settings.hostUnreachable')}
                 </p>
                 <p className="text-xs font-semibold opacity-90 mt-1 leading-relaxed">
@@ -264,7 +250,7 @@ export function LANSettingsScreen() {
           )}
 
           {/* Active Status Badge */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-card/60 rounded-2xl border border-border/60 shadow-sm gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-card/60 rounded-lg border border-border/60 shadow-sm gap-4">
             <span className="text-sm font-bold text-foreground">
               {t('settings.connectionStatusLabel')}
             </span>
@@ -273,7 +259,7 @@ export function LANSettingsScreen() {
                 className={`h-3 w-3 rounded-full shadow-sm ${status === 'online' ? 'bg-success animate-pulse shadow-success/40' : 'bg-danger shadow-danger/40'}`}
               />
               <span
-                className={`text-sm font-black uppercase tracking-widest pr-1 ${status === 'online' ? 'text-success' : 'text-danger'}`}
+                className={`text-sm font-semibold uppercase tracking-wide pr-1 ${status === 'online' ? 'text-success' : 'text-danger'}`}
               >
                 {status === 'online' ? t('settings.onlineSynced') : t('settings.offlineOutage')}
               </span>
@@ -283,10 +269,10 @@ export function LANSettingsScreen() {
       )}
 
       {/* Outage Sync Buffer Panel */}
-      <div className="bg-card/40 rounded-2xl border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
+      <div className="bg-card/40 rounded-lg border border-border/60 p-8 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-8">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
-            <h4 className="font-black text-foreground text-xl tracking-tight flex items-center gap-3">
+            <h4 className="font-semibold text-foreground text-xl tracking-tight flex items-center gap-3">
               <div className="p-2 rounded-lg bg-success/10 text-success border border-success/20">
                 <Database size={20} />
               </div>
@@ -296,18 +282,17 @@ export function LANSettingsScreen() {
           </div>
 
           {offlineSales.length > 0 && (
-            <button
-              onClick={handleClearBuffer}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20 hover:shadow-sm transition-all mt-1"
+            <Link
+              to="/"
+              className="inline-flex px-4 py-2 rounded border border-border text-primary"
             >
-              <Trash2 size={14} />
-              {t('settings.clearQueue')}
-            </button>
+              {t('offlineApproval.title')}
+            </Link>
           )}
         </div>
 
         {offlineSales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-border/60 rounded-2xl bg-card/30">
+          <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-border/60 rounded-lg bg-card/30">
             <div className="p-4 rounded-full bg-secondary/5 mb-3">
               <AlertCircle size={36} className="text-secondary/50" />
             </div>
@@ -316,9 +301,9 @@ export function LANSettingsScreen() {
             </span>
           </div>
         ) : (
-          <div className="overflow-hidden border border-border/60 rounded-2xl shadow-sm bg-card">
+          <div className="overflow-hidden border border-border/60 rounded-lg shadow-sm bg-card">
             <table className="w-full text-start text-secondary border-collapse">
-              <thead className="bg-muted/40 text-[11px] font-black text-secondary uppercase tracking-widest border-b border-border/60">
+              <thead className="bg-muted/40 text-[11px] font-semibold text-secondary uppercase tracking-wide border-b border-border/60">
                 <tr>
                   <th className="px-5 py-4 text-start">{t('settings.receiptNum')}</th>
                   <th className="px-5 py-4 text-start">{t('settings.dateTime')}</th>
@@ -337,11 +322,11 @@ export function LANSettingsScreen() {
                       {new Date(sale.timestamp).toLocaleString()}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-widest">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-secondary/10 text-secondary border border-secondary/20 uppercase tracking-wide">
                         {sale.saleData.payment_method}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-end font-black text-foreground text-sm tabular-nums">
+                    <td className="px-5 py-4 text-end font-semibold text-foreground text-sm tabular-nums">
                       {Number(sale.saleData.total).toFixed(2)}{' '}
                       <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </td>
@@ -374,10 +359,10 @@ export function LANSettingsScreen() {
       {/* Sale Details Modal */}
       {selectedSale && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 select-text">
-          <div className="w-full max-w-lg rounded-2xl border border-border/80 bg-card p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-lg rounded-lg border border-border/80 bg-card p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-start border-b border-border/40 pb-4">
               <div>
-                <h4 className="font-black text-foreground text-xl tracking-tight">
+                <h4 className="font-semibold text-foreground text-xl tracking-tight">
                   {t('settings.bufferedReceipt')}
                 </h4>
                 <p className="text-xs text-secondary font-mono font-bold mt-1 bg-secondary/10 w-fit px-2 py-0.5 rounded-md border border-secondary/20">
@@ -406,7 +391,7 @@ export function LANSettingsScreen() {
                     </p>
                   </div>
                   <div className="text-end">
-                    <p className="font-black text-foreground text-sm tabular-nums">
+                    <p className="font-semibold text-foreground text-sm tabular-nums">
                       {Number(item.line_total).toFixed(2)}{' '}
                       <span className="text-[10px] text-secondary ml-0.5">EGP</span>
                     </p>
@@ -443,7 +428,7 @@ export function LANSettingsScreen() {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between text-base font-black text-foreground pt-3 border-t border-border/40 mt-2">
+              <div className="flex justify-between text-base font-semibold text-foreground pt-3 border-t border-border/40 mt-2">
                 <span>{t('settings.totalAmount')}</span>
                 <span className="tabular-nums text-success">
                   {Number(selectedSale.saleData.total).toFixed(2)}{' '}

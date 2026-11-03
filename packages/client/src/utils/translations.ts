@@ -1511,7 +1511,7 @@ export const translations = {
       selectCustomer: 'اختيار عميل (F7)',
       changeCustomer: 'تغيير العميل (F7)',
       disconnectCustomer: 'إلغاء الربط',
-      payAction: 'دفع (Space)',
+      payAction: 'دفع (مسافة)',
       voidAction: 'إلغاء (F8)',
       itemDiscounts: 'خصومات الأصناف',
       globalDiscount: 'خصم إجمالي',

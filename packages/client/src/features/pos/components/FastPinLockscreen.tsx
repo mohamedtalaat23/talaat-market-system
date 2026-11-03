@@ -116,7 +116,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
+      <div className="w-full max-w-sm rounded-lg bg-white p-8 shadow-2xl">
         {pendingLogin ? (
           <div className="flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-200">
             <div className="rounded-full bg-amber-100 p-4">
@@ -166,7 +166,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
                 <button
                   key={emp.id}
                   onClick={() => setSelectedUsername(emp.username)}
-                  className="flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 group"
+                  className="flex flex-col items-center justify-center p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 group"
                 >
                   <div className="h-12 w-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg font-bold mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                     {emp.full_name.charAt(0).toUpperCase()}
@@ -238,7 +238,7 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
                   key={digit}
                   onClick={() => handleKeypadPress(digit.toString())}
                   disabled={isLoading}
-                  className="flex h-16 items-center justify-center rounded-2xl bg-slate-50 text-2xl font-semibold text-slate-900 hover:bg-slate-100 active:bg-slate-200 disabled:opacity-50 transition-colors"
+                  className="flex h-16 items-center justify-center rounded-lg bg-slate-50 text-2xl font-semibold text-slate-900 hover:bg-slate-100 active:bg-slate-200 disabled:opacity-50 transition-colors"
                 >
                   {digit}
                 </button>
@@ -247,14 +247,14 @@ export function FastPinLockscreen({ isOpen, onSuccess }: FastPinLockscreenProps)
               <button
                 onClick={() => handleKeypadPress('0')}
                 disabled={isLoading}
-                className="flex h-16 items-center justify-center rounded-2xl bg-slate-50 text-2xl font-semibold text-slate-900 hover:bg-slate-100 active:bg-slate-200 disabled:opacity-50 transition-colors"
+                className="flex h-16 items-center justify-center rounded-lg bg-slate-50 text-2xl font-semibold text-slate-900 hover:bg-slate-100 active:bg-slate-200 disabled:opacity-50 transition-colors"
               >
                 0
               </button>
               <button
                 onClick={handleBackspace}
                 disabled={isLoading || pin.length === 0}
-                className="flex h-16 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 transition-colors"
+                className="flex h-16 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

@@ -425,7 +425,7 @@ export function ProductForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-black text-sm uppercase tracking-wider transition-all shadow-[0_4px_14px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.4)] disabled:shadow-none disabled:from-neutral-400 disabled:to-neutral-400 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-semibold text-sm uppercase tracking-wider transition-all shadow-[0_4px_14px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.4)] disabled:shadow-none disabled:from-neutral-400 disabled:to-neutral-400 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
         >
           {isLoading ? (
             <>

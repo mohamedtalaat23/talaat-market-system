@@ -12,15 +12,23 @@ const TABS = [
 ] as const;
 
 export function SettingsLayout() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   return (
     <div className="flex h-full gap-6">
-      <div className="w-64 shrink-0 flex flex-col gap-3">
-        <h2 className="text-2xl font-black tracking-tight mb-2 text-foreground px-2">
+      <div className="w-52 shrink-0 flex flex-col gap-3">
+        <h2 className="text-2xl font-semibold tracking-tight mb-2 text-foreground px-2">
           {t('settings.title')}
         </h2>
         <nav className="flex flex-col gap-1.5">
+          <NavLink
+            to="operations"
+            className={({ isActive }) =>
+              `px-4 py-3 rounded-md text-sm ${isActive ? 'bg-primary-50 text-primary font-semibold' : 'text-secondary'}`
+            }
+          >
+            {language === 'ar' ? 'الإعداد والاستعادة' : 'Setup & recovery'}
+          </NavLink>
           {TABS.map(({ path, key, icon: Icon }) => (
             <NavLink
               key={path}
@@ -40,8 +48,8 @@ export function SettingsLayout() {
         </nav>
       </div>
 
-      <div className="flex-1 bg-white/60 dark:bg-card/60 backdrop-blur-xl border border-border/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden flex flex-col relative">
-        <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 bg-white/60 dark:bg-card/60 backdrop-blur-xl border border-border/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-lg overflow-hidden flex flex-col relative">
+        <div className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </div>
       </div>

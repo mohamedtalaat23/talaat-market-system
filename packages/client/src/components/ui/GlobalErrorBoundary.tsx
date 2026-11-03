@@ -32,6 +32,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   };
 
   public render() {
+    const ar = document.documentElement.lang === 'ar';
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -42,23 +43,27 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           <div className="bg-danger/10 border border-danger/20 rounded-full p-4 mb-4">
             <AlertTriangle size={32} className="text-danger" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
+          <h2 className="text-xl font-bold text-foreground mb-2">
+            {ar ? 'حدث خطأ غير متوقع' : 'Something went wrong'}
+          </h2>
           <p className="text-secondary text-sm max-w-md mb-6">
-            An unexpected error occurred in this section of the application. The issue has been
-            logged. You can try reloading this view.
+            {ar
+              ? 'تعذر عرض هذا القسم. يمكنك إعادة المحاولة أو العودة للصفحة الرئيسية.'
+              : 'This section could not be displayed. Try again or return to the dashboard.'}
           </p>
-          <div className="p-4 bg-background/40 rounded-lg text-left overflow-auto max-w-2xl w-full mb-6 border border-border">
+          <details className="p-4 bg-background/40 rounded-lg text-left overflow-auto max-w-2xl w-full mb-6 border border-border">
+            <summary>{ar ? 'تفاصيل للدعم' : 'Details for support'}</summary>
             <pre className="text-danger text-xs font-mono whitespace-pre-wrap">
               {this.state.error?.message || 'Unknown render error'}
             </pre>
-          </div>
+          </details>
           <div className="flex items-center space-x-4">
             <button
               onClick={this.handleReset}
               className="flex items-center space-x-2 px-5 py-2.5 bg-card-hover hover:bg-border text-foreground rounded-lg transition-colors text-sm font-medium border border-border"
             >
               <RefreshCw size={16} />
-              <span>Try Again</span>
+              <span>{ar ? 'إعادة المحاولة' : 'Try again'}</span>
             </button>
             <Link
               to="/"
@@ -66,7 +71,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               className="flex items-center space-x-2 px-5 py-2.5 bg-success hover:bg-success/90 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-success/10"
             >
               <Home size={16} />
-              <span>Go Home</span>
+              <span>{ar ? 'الصفحة الرئيسية' : 'Dashboard'}</span>
             </Link>
           </div>
         </div>

@@ -53,11 +53,17 @@ export function DashboardPage() {
   const { user } = useAuthStore();
   const { t } = useTranslation();
 
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
+  const {
+    data: stats,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
       const res = await apiClient.get('/dashboard/stats');
-      return {
+      if (!res.data?.data) throw new Error(t('offlineApproval.failed'));
+      const stats = {
         productsCount: res.data?.data?.productsCount ?? 0,
         lowStockCount: res.data?.data?.lowStockCount ?? 0,
         employeesCount: res.data?.data?.employeesCount ?? 0,
@@ -71,27 +77,53 @@ export function DashboardPage() {
         failedPrintJobsCount: res.data?.data?.failedPrintJobsCount ?? 0,
         negativeInventoryCount: res.data?.data?.negativeInventoryCount ?? 0,
       };
+      if (
+        Object.keys(stats).some(
+          (key) => typeof res.data.data[key] !== 'number' || !Number.isFinite(res.data.data[key]),
+        )
+      ) {
+        throw new Error(t('offlineApproval.failed'));
+      }
+      return stats;
     },
     refetchOnWindowFocus: false,
     staleTime: 60_000, // Refresh at most every 60 seconds
   });
 
+  if (error)
+    return (
+      <PageContainer title={t('dashboard.title')} error={error} refetch={() => void refetch()}>
+        {null}
+      </PageContainer>
+    );
+
   return (
     <PageContainer
       title={t('dashboard.title')}
+      error={error}
+      refetch={() => void refetch()}
       description={`${t('dashboard.welcome')
         .replace('{username}', user?.full_name || user?.username || '')
-        .replace('{role}', user?.role || '')}`}
+        .replace(
+          '{role}',
+          t(
+            user?.role === 'admin'
+              ? 'dashboard.roleAdmin'
+              : user?.role === 'manager'
+                ? 'dashboard.roleManager'
+                : 'dashboard.roleCashier',
+          ),
+        )}`}
     >
       {/* ── 4-Card KPI Grid ── */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Today Net Sales */}
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md  transition-all duration-300 group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary group-hover:text-primary transition-colors">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary group-hover:text-primary transition-colors">
               {t('dashboard.netSalesToday') || 'Net Sales — Today'}
             </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0  transition-transform">
               <Landmark className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
@@ -100,7 +132,7 @@ export function DashboardPage() {
               <KpiSkeleton />
             ) : (
               <>
-                <div className="text-3xl font-black font-mono tracking-tight text-foreground drop-shadow-sm group-hover:text-primary transition-colors">
+                <div className="text-3xl font-semibold font-mono tracking-tight text-foreground  group-hover:text-primary transition-colors">
                   EGP{' '}
                   {stats!.todayNetSales.toLocaleString('en-EG', {
                     minimumFractionDigits: 2,
@@ -121,12 +153,12 @@ export function DashboardPage() {
         </Card>
 
         {/* Today Transactions */}
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md  transition-all duration-300 group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary group-hover:text-success transition-colors">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary group-hover:text-success transition-colors">
               {t('dashboard.transactionsToday') || 'Transactions — Today'}
             </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-success/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <div className="h-8 w-8 rounded-xl bg-success/10 flex items-center justify-center shrink-0  transition-transform">
               <TrendingUp className="h-4 w-4 text-success" />
             </div>
           </CardHeader>
@@ -135,7 +167,7 @@ export function DashboardPage() {
               <KpiSkeleton />
             ) : (
               <>
-                <div className="text-3xl font-black font-mono tracking-tight text-foreground drop-shadow-sm group-hover:text-success transition-colors">
+                <div className="text-3xl font-semibold font-mono tracking-tight text-foreground  group-hover:text-success transition-colors">
                   {stats!.todayTransactionCount.toLocaleString()}
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-[11px] text-secondary font-bold uppercase tracking-wide">
@@ -147,12 +179,12 @@ export function DashboardPage() {
         </Card>
 
         {/* Active Shifts */}
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md  transition-all duration-300 group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary group-hover:text-blue-500 transition-colors">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary group-hover:text-blue-500 transition-colors">
               {t('dashboard.activeShifts') || 'Active Shifts'}
             </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <div className="h-8 w-8 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0  transition-transform">
               <Users className="h-4 w-4 text-blue-500" />
             </div>
           </CardHeader>
@@ -161,7 +193,7 @@ export function DashboardPage() {
               <KpiSkeleton />
             ) : (
               <>
-                <div className="text-3xl font-black font-mono tracking-tight text-foreground drop-shadow-sm group-hover:text-blue-500 transition-colors">
+                <div className="text-3xl font-semibold font-mono tracking-tight text-foreground  group-hover:text-blue-500 transition-colors">
                   {stats!.employeesCount.toLocaleString()}
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-[11px] text-secondary font-bold uppercase tracking-wide">
@@ -174,14 +206,14 @@ export function DashboardPage() {
 
         {/* Stock Alerts */}
         <Card
-          className={`border shadow-sm rounded-2xl overflow-hidden transition-all duration-300 group hover:-translate-y-1 hover:shadow-md ${stats?.lowStockCount ? 'border-danger/30 bg-danger/5 hover:border-danger/60' : 'border-border/60 bg-card hover:border-border'}`}
+          className={`border shadow-sm rounded-lg overflow-hidden transition-all duration-300 group  hover:shadow-md ${stats?.lowStockCount ? 'border-danger/30 bg-danger/5 hover:border-danger/60' : 'border-border/60 bg-card hover:border-border'}`}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary group-hover:text-danger transition-colors">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary group-hover:text-danger transition-colors">
               {t('dashboard.stockAlerts') || 'Stock Alerts'}
             </CardTitle>
             <div
-              className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform ${stats?.lowStockCount ? 'bg-danger/10 animate-pulse' : 'bg-warning/10'}`}
+              className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0  transition-transform ${stats?.lowStockCount ? 'bg-danger/10 animate-pulse' : 'bg-warning/10'}`}
             >
               <BarChart3
                 className={`h-4 w-4 ${stats?.lowStockCount ? 'text-danger' : 'text-warning'}`}
@@ -194,7 +226,7 @@ export function DashboardPage() {
             ) : (
               <>
                 <div
-                  className={`text-3xl font-black font-mono tracking-tight drop-shadow-sm transition-colors ${stats!.lowStockCount > 0 ? 'text-danger group-hover:text-danger' : 'text-foreground group-hover:text-warning'}`}
+                  className={`text-3xl font-semibold font-mono tracking-tight  transition-colors ${stats!.lowStockCount > 0 ? 'text-danger group-hover:text-danger' : 'text-foreground group-hover:text-warning'}`}
                 >
                   {stats!.lowStockCount.toLocaleString()}
                 </div>
@@ -225,13 +257,13 @@ export function DashboardPage() {
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4 mb-2">
         {/* Today's Activity */}
         {/* Today's Activity */}
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card transition-all duration-300 hover:shadow-md">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card transition-all duration-300 hover:shadow-md">
           <CardHeader className="pb-4 border-b border-border/40 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-xl">
                 <Activity className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle className="text-xl font-black tracking-tight text-foreground drop-shadow-sm">
+              <CardTitle className="text-xl font-semibold tracking-tight text-foreground ">
                 {t('dashboard.activity.title')}
               </CardTitle>
             </div>
@@ -244,11 +276,11 @@ export function DashboardPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-primary transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-primary transition-colors">
                     {t('dashboard.activity.salesToday')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-primary drop-shadow-sm">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-primary ">
                     EGP{' '}
                     {stats!.todayNetSales.toLocaleString('en-EG', {
                       minimumFractionDigits: 2,
@@ -256,43 +288,43 @@ export function DashboardPage() {
                     })}
                   </div>
                 </div>
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-success transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-success transition-colors">
                     {t('dashboard.activity.transactions')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-success">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-success">
                     {stats!.todayTransactionCount.toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-blue-500 transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-blue-500 transition-colors">
                     {t('dashboard.activity.activeCashiers')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-blue-500">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-blue-500">
                     {stats!.employeesCount.toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-danger transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-danger transition-colors">
                     {t('dashboard.activity.refunds')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-danger">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-danger">
                     {stats!.todayRefundsCount.toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-warning transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-warning transition-colors">
                     {t('dashboard.activity.voids')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-warning">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-warning">
                     {stats!.todayVoidsCount.toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1 hover:shadow-md duration-300 group">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 group-hover:text-purple-500 transition-colors">
+                <div className="bg-background border border-border/60 rounded-xl p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] transition-transform  hover:shadow-md duration-300 group">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-secondary mb-2 group-hover:text-purple-500 transition-colors">
                     {t('dashboard.activity.drawerAdjs')}
                   </div>
-                  <div className="text-2xl font-black font-mono tabular-nums tracking-tight text-purple-500">
+                  <div className="text-2xl font-semibold font-mono tabular-nums tracking-tight text-purple-500">
                     {stats!.todayDrawerAdjustmentsCount.toLocaleString()}
                   </div>
                 </div>
@@ -309,13 +341,13 @@ export function DashboardPage() {
         </Card>
 
         {/* Alerts & Exceptions */}
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card flex flex-col transition-all duration-300 hover:shadow-md">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card flex flex-col transition-all duration-300 hover:shadow-md">
           <CardHeader className="pb-4 border-b border-border/40 bg-gradient-to-r from-warning/5 via-transparent to-transparent">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-warning/10 rounded-xl">
                 <AlertOctagon className="h-6 w-6 text-warning" />
               </div>
-              <CardTitle className="text-xl font-black tracking-tight text-foreground drop-shadow-sm">
+              <CardTitle className="text-xl font-semibold tracking-tight text-foreground ">
                 {t('dashboard.alerts.title')}
               </CardTitle>
             </div>
@@ -333,11 +365,11 @@ export function DashboardPage() {
                 stats!.lowStockCount === 0 &&
                 stats!.pendingPurchaseOrdersCount === 0 &&
                 stats!.failedPrintJobsCount === 0 ? (
-                  <div className="flex flex-col items-center justify-center flex-1 py-12 px-4 text-center bg-success/5 m-6 rounded-2xl border border-success/20">
+                  <div className="flex flex-col items-center justify-center flex-1 py-12 px-4 text-center bg-success/5 m-6 rounded-lg border border-success/20">
                     <div className="p-3 bg-success/10 rounded-full mb-4">
                       <CheckCircle2 className="h-10 w-10 text-success" />
                     </div>
-                    <h3 className="text-success font-black tracking-tight text-lg drop-shadow-sm">
+                    <h3 className="text-success font-semibold tracking-tight text-lg ">
                       {t('dashboard.alerts.allNominal')}
                     </h3>
                     <p className="text-success/80 text-sm mt-1 font-semibold">
@@ -353,15 +385,18 @@ export function DashboardPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/40 hover:border-danger/30 hover:bg-danger/5 hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-danger/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="h-10 w-10 rounded-xl bg-danger/10 flex items-center justify-center shrink-0  transition-transform">
                             <AlertOctagon className="h-5 w-5 text-danger" />
                           </div>
                           <div>
-                            <div className="text-sm font-black tracking-tight text-foreground group-hover:text-danger transition-colors">
+                            <div className="text-sm font-semibold tracking-tight text-foreground group-hover:text-danger transition-colors">
                               {t('dashboard.alerts.negativeInventoryTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {t('dashboard.alerts.negativeInventoryDesc').replace('{count}', String(stats!.negativeInventoryCount))}
+                              {t('dashboard.alerts.negativeInventoryDesc').replace(
+                                '{count}',
+                                String(stats!.negativeInventoryCount),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -374,15 +409,18 @@ export function DashboardPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/40 hover:border-danger/30 hover:bg-danger/5 hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-danger/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="h-10 w-10 rounded-xl bg-danger/10 flex items-center justify-center shrink-0  transition-transform">
                             <Users className="h-5 w-5 text-danger" />
                           </div>
                           <div>
-                            <div className="text-sm font-black tracking-tight text-foreground group-hover:text-danger transition-colors">
+                            <div className="text-sm font-semibold tracking-tight text-foreground group-hover:text-danger transition-colors">
                               {t('dashboard.alerts.unreconciledShiftsTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {t('dashboard.alerts.unreconciledShiftsDesc').replace('{count}', String(stats!.unreconciledShiftsCount))}
+                              {t('dashboard.alerts.unreconciledShiftsDesc').replace(
+                                '{count}',
+                                String(stats!.unreconciledShiftsCount),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -397,15 +435,18 @@ export function DashboardPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/40 hover:border-warning/30 hover:bg-warning/5 hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0  transition-transform">
                             <Package className="h-5 w-5 text-warning" />
                           </div>
                           <div>
-                            <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
+                            <div className="text-sm font-semibold tracking-tight text-foreground group-hover:text-warning transition-colors">
                               {t('dashboard.alerts.lowStockTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {t('dashboard.alerts.lowStockDesc').replace('{count}', String(stats!.lowStockCount))}
+                              {t('dashboard.alerts.lowStockDesc').replace(
+                                '{count}',
+                                String(stats!.lowStockCount),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -418,15 +459,18 @@ export function DashboardPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/40 hover:border-warning/30 hover:bg-warning/5 hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0  transition-transform">
                             <Clock className="h-5 w-5 text-warning" />
                           </div>
                           <div>
-                            <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
+                            <div className="text-sm font-semibold tracking-tight text-foreground group-hover:text-warning transition-colors">
                               {t('dashboard.alerts.pendingOrdersTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {t('dashboard.alerts.pendingOrdersDesc').replace('{count}', String(stats!.pendingPurchaseOrdersCount))}
+                              {t('dashboard.alerts.pendingOrdersDesc').replace(
+                                '{count}',
+                                String(stats!.pendingPurchaseOrdersCount),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -439,15 +483,18 @@ export function DashboardPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-background border border-border/40 hover:border-warning/30 hover:bg-warning/5 hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0  transition-transform">
                             <Printer className="h-5 w-5 text-warning" />
                           </div>
                           <div>
-                            <div className="text-sm font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
+                            <div className="text-sm font-semibold tracking-tight text-foreground group-hover:text-warning transition-colors">
                               {t('dashboard.alerts.pendingPrintTitle')}
                             </div>
                             <div className="text-xs font-semibold text-secondary mt-0.5">
-                              {t('dashboard.alerts.pendingPrintDesc').replace('{count}', String(stats!.failedPrintJobsCount))}
+                              {t('dashboard.alerts.pendingPrintDesc').replace(
+                                '{count}',
+                                String(stats!.failedPrintJobsCount),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -466,13 +513,13 @@ export function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
         <Link
           to="/pos"
-          className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-primary/50 transition-all duration-300 group"
+          className="flex items-center gap-4 p-5 rounded-lg bg-card border border-border/60 shadow-sm hover:shadow-md  hover:border-primary/50 transition-all duration-300 group"
         >
-          <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-primary/10 border border-primary/20 text-primary shrink-0 group-hover:bg-primary group-hover:text-white transition-colors group-hover:scale-110">
+          <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-primary/10 border border-primary/20 text-primary shrink-0 group-hover:bg-primary group-hover:text-white transition-colors ">
             <ShoppingCart size={20} strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-base font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+            <div className="text-base font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
               {t('nav.pos') || 'Point of Sale'}
             </div>
             <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
@@ -481,56 +528,60 @@ export function DashboardPage() {
           </div>
         </Link>
 
-        <Link
-          to="/reports"
-          className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-success/50 transition-all duration-300 group"
-        >
-          <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-success/10 border border-success/20 text-success shrink-0 group-hover:bg-success group-hover:text-white transition-colors group-hover:scale-110">
-            <FileText size={20} strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-base font-black tracking-tight text-foreground group-hover:text-success transition-colors">
-              {t('nav.reports') || 'Reports'}
-            </div>
-            <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              {t('dashboard.actions.shiftReconciliation')}
-            </div>
-          </div>
-        </Link>
+        {user?.role !== 'cashier' && (
+          <>
+            <Link
+              to="/reports"
+              className="flex items-center gap-4 p-5 rounded-lg bg-card border border-border/60 shadow-sm hover:shadow-md  hover:border-success/50 transition-all duration-300 group"
+            >
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-success/10 border border-success/20 text-success shrink-0 group-hover:bg-success group-hover:text-white transition-colors ">
+                <FileText size={20} strokeWidth={2.5} />
+              </div>
+              <div>
+                <div className="text-base font-semibold tracking-tight text-foreground group-hover:text-success transition-colors">
+                  {t('nav.reports') || 'Reports'}
+                </div>
+                <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
+                  {t('dashboard.actions.shiftReconciliation')}
+                </div>
+              </div>
+            </Link>
 
-        <Link
-          to="/inventory"
-          className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-warning/50 transition-all duration-300 group"
-        >
-          <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-warning/10 border border-warning/20 text-warning shrink-0 group-hover:bg-warning group-hover:text-white transition-colors group-hover:scale-110">
-            <Package size={20} strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-base font-black tracking-tight text-foreground group-hover:text-warning transition-colors">
-              {t('nav.inventory') || 'Inventory'}
-            </div>
-            <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              {t('dashboard.actions.stockAdjustments')}
-            </div>
-          </div>
-        </Link>
+            <Link
+              to="/inventory"
+              className="flex items-center gap-4 p-5 rounded-lg bg-card border border-border/60 shadow-sm hover:shadow-md  hover:border-warning/50 transition-all duration-300 group"
+            >
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-warning/10 border border-warning/20 text-warning shrink-0 group-hover:bg-warning group-hover:text-white transition-colors ">
+                <Package size={20} strokeWidth={2.5} />
+              </div>
+              <div>
+                <div className="text-base font-semibold tracking-tight text-foreground group-hover:text-warning transition-colors">
+                  {t('nav.inventory') || 'Inventory'}
+                </div>
+                <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
+                  {t('dashboard.actions.stockAdjustments')}
+                </div>
+              </div>
+            </Link>
 
-        <Link
-          to="/products"
-          className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-neutral-500/50 transition-all duration-300 group"
-        >
-          <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-secondary/10 border border-secondary/20 text-secondary shrink-0 group-hover:bg-neutral-800 group-hover:text-white transition-colors group-hover:scale-110">
-            <BarChart3 size={20} strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-base font-black tracking-tight text-foreground group-hover:text-neutral-800 transition-colors">
-              {t('nav.products') || 'Products'}
-            </div>
-            <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
-              {t('dashboard.actions.catalogPricing')}
-            </div>
-          </div>
-        </Link>
+            <Link
+              to="/products"
+              className="flex items-center gap-4 p-5 rounded-lg bg-card border border-border/60 shadow-sm hover:shadow-md  hover:border-neutral-500/50 transition-all duration-300 group"
+            >
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-secondary/10 border border-secondary/20 text-secondary shrink-0 group-hover:bg-neutral-800 group-hover:text-white transition-colors ">
+                <BarChart3 size={20} strokeWidth={2.5} />
+              </div>
+              <div>
+                <div className="text-base font-semibold tracking-tight text-foreground group-hover:text-neutral-800 transition-colors">
+                  {t('nav.products') || 'Products'}
+                </div>
+                <div className="text-xs font-semibold text-secondary mt-0.5 uppercase tracking-wider">
+                  {t('dashboard.actions.catalogPricing')}
+                </div>
+              </div>
+            </Link>
+          </>
+        )}
       </div>
     </PageContainer>
   );

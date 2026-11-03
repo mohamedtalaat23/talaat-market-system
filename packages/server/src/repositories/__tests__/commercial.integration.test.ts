@@ -253,3 +253,75 @@ describe('commercial financial invariants on PostgreSQL', () => {
     ).toBe(105);
   });
 });
+
+it('retains rejected offline evidence, blocks posting after price changes, and acknowledges audited reconciliation', async () => {
+  const c = await setupTestData();
+  const payload = checkout(c);
+  payload.items[0]!.unit_price = 8;
+  const first = await posRepository.syncOffline([payload], c.cashierId);
+  expect(first.failed[0]?.quarantined).toBe(true);
+  const row = await db('offline_sync_quarantine')
+    .where({ idempotency_key: payload.idempotency_key })
+    .first();
+  await posRepository.resolveQuarantinedSale(
+    row.id,
+    'reject',
+    c.managerId,
+    'Incorrect offline discount',
+  );
+  await db('products').where({ id: c.productId }).update({ selling_price: 8 });
+  const retry = await posRepository.syncOffline([payload], c.cashierId);
+  expect(retry.failed[0]?.code).toBe('OFFLINE_REJECTED');
+  expect(
+    await db('sales').where({ idempotency_key: payload.idempotency_key }).first(),
+  ).toBeUndefined();
+  await expect(
+    posRepository.resolveQuarantinedSale(row.id, 'reconcile', c.managerId, 'short'),
+  ).rejects.toThrow('notes');
+  await Promise.all([
+    posRepository.resolveQuarantinedSale(
+      row.id,
+      'reconcile',
+      c.managerId,
+      'Customer refunded and goods returned; adjustment recorded separately.',
+    ),
+    posRepository.resolveQuarantinedSale(
+      row.id,
+      'reconcile',
+      c.managerId,
+      'Customer refunded and goods returned; adjustment recorded separately.',
+    ),
+  ]);
+  const acknowledged = await posRepository.syncOffline([payload], c.cashierId);
+  expect(acknowledged).toMatchObject({
+    synced: 0,
+    syncedIds: [],
+    reconciledIds: [payload.idempotency_key],
+  });
+  const retained = await db('offline_sync_quarantine').where({ id: row.id }).first();
+  expect(retained.payload).toEqual(row.payload);
+  expect(retained.resolution_notes).toBe('Incorrect offline discount');
+  expect(retained.reconciled_by).toBe(c.managerId);
+  const audit = await db('audit_logs').where({
+    entity_type: 'offline_sync_quarantine',
+    entity_id: String(row.id),
+    action: 'offline_sale_reconciled',
+  });
+  expect(audit).toHaveLength(1);
+  expect(Number((await db('inventory').where({ product_id: c.productId }).first()).quantity)).toBe(
+    100,
+  );
+});
+
+it('keeps pending offline decisions in review even when catalogue prices change', async () => {
+  const c = await setupTestData();
+  const payload = checkout(c);
+  payload.items[0]!.unit_price = 8;
+  await posRepository.syncOffline([payload], c.cashierId);
+  await db('products').where({ id: c.productId }).update({ selling_price: 8 });
+  const retry = await posRepository.syncOffline([payload], c.cashierId);
+  expect(retry.failed[0]).toMatchObject({ code: 'OFFLINE_REVIEW_REQUIRED', quarantined: true });
+  expect(
+    await db('sales').where({ idempotency_key: payload.idempotency_key }).first(),
+  ).toBeUndefined();
+});

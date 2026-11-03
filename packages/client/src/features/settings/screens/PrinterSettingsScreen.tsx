@@ -111,11 +111,11 @@ export function PrinterSettingsScreen() {
     <div className="max-w-3xl font-sans text-foreground space-y-8 select-text">
       <div className="flex items-center justify-between border-b border-border/40 pb-5">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20 text-primary">
+          <div className="p-3 bg-primary/10 rounded-lg border border-primary/20 text-primary">
             <Printer className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-foreground">
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground">
               {t('settings.printerSetup')}
             </h3>
             <p className="text-sm text-secondary font-medium mt-1">
@@ -136,7 +136,7 @@ export function PrinterSettingsScreen() {
       {/* Live status badge */}
       {printerStatus && (
         <div
-          className={`flex items-start gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+          className={`flex items-start gap-4 rounded-lg border p-5 shadow-sm transition-all ${
             printerStatus.online
               ? 'border-success/30 bg-gradient-to-br from-success/5 to-success/10 text-success'
               : 'border-danger/30 bg-gradient-to-br from-danger/5 to-danger/10 text-danger'
@@ -148,15 +148,9 @@ export function PrinterSettingsScreen() {
             {printerStatus.online ? <CheckCircle2 size={24} /> : <ShieldAlert size={24} />}
           </div>
           <div className="space-y-1 mt-0.5">
-            <span className="text-sm font-bold uppercase tracking-widest block">
+            <span className="text-sm font-bold uppercase tracking-wide block">
               {t('settings.printerStatus')}:{' '}
-              <span
-                className={
-                  printerStatus.online
-                    ? 'text-success drop-shadow-sm'
-                    : 'text-danger drop-shadow-sm'
-                }
-              >
+              <span className={printerStatus.online ? 'text-success ' : 'text-danger '}>
                 {printerStatus.online ? t('settings.online') : t('settings.offline')}
               </span>
             </span>
@@ -209,7 +203,7 @@ export function PrinterSettingsScreen() {
 
         {/* USB Path Selection (Only shown if USB mode selected) */}
         {config.type === 'usb' && (
-          <div className="space-y-4 bg-card/60 p-6 border border-border/60 rounded-2xl shadow-sm">
+          <div className="space-y-4 bg-card/60 p-6 border border-border/60 rounded-lg shadow-sm">
             <div className="space-y-3">
               <label className="block text-sm font-bold text-foreground flex items-center gap-2">
                 <HardDrive size={18} className="text-primary" />
@@ -263,7 +257,7 @@ export function PrinterSettingsScreen() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-card/40 p-6 border border-border/60 rounded-2xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-card/40 p-6 border border-border/60 rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
           {/* Auto Print Toggle */}
           <div className="flex items-start gap-4">
             <div className="flex items-center h-6 mt-1">
@@ -304,7 +298,7 @@ export function PrinterSettingsScreen() {
                 }
                 className="w-24 bg-card border border-border/60 rounded-xl px-4 py-2.5 text-base font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-center text-foreground shadow-sm"
               />
-              <span className="text-xs font-bold text-secondary uppercase tracking-widest">
+              <span className="text-xs font-bold text-secondary uppercase tracking-wide">
                 {t('settings.attempts')}
               </span>
             </div>

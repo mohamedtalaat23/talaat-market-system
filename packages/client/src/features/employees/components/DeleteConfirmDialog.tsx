@@ -78,7 +78,7 @@ export function DeleteConfirmDialog() {
 
         <h3
           id="emp-delete-confirm-title"
-          className="text-2xl font-black tracking-tight text-foreground mb-3 select-none"
+          className="text-2xl font-semibold tracking-tight text-foreground mb-3 select-none"
         >
           {t('employees.deleteTitle')}
         </h3>
@@ -102,7 +102,7 @@ export function DeleteConfirmDialog() {
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="flex-1 py-3.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-black uppercase tracking-widest text-[11px] rounded-xl shadow-md shadow-destructive/20 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold uppercase tracking-wide text-[11px] rounded-xl shadow-md shadow-destructive/20 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDeleting ? (
               <>

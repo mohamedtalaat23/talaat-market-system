@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/useTranslation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import toast from 'react-hot-toast';
@@ -177,6 +178,7 @@ export function usePurchaseOrder(id: number) {
  * Hook to create a draft PO
  */
 export function useCreatePurchaseOrder() {
+  const { language } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreatePOPayload) => {
@@ -188,10 +190,18 @@ export function useCreatePurchaseOrder() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      toast.success('Draft purchase order created successfully');
+      toast.success(
+        language === 'ar'
+          ? 'تم إنشاء مسودة أمر الشراء'
+          : 'Draft purchase order created successfully',
+      );
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create draft purchase order');
+      toast.error(
+        language === 'ar'
+          ? 'تعذر إنشاء أمر الشراء'
+          : error.message || 'Failed to create draft purchase order',
+      );
     },
   });
 }
@@ -200,6 +210,7 @@ export function useCreatePurchaseOrder() {
  * Hook to update a draft PO
  */
 export function useUpdatePurchaseOrder(id: number) {
+  const { language } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: UpdatePOPayload) => {
@@ -212,10 +223,18 @@ export function useUpdatePurchaseOrder(id: number) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['purchases'] });
       void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
-      toast.success('Draft purchase order updated successfully');
+      toast.success(
+        language === 'ar'
+          ? 'تم تحديث مسودة أمر الشراء'
+          : 'Draft purchase order updated successfully',
+      );
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update draft purchase order');
+      toast.error(
+        language === 'ar'
+          ? 'تعذر تحديث أمر الشراء'
+          : error.message || 'Failed to update draft purchase order',
+      );
     },
   });
 }
@@ -224,6 +243,7 @@ export function useUpdatePurchaseOrder(id: number) {
  * Hook to place a purchase order (transition from draft to ordered)
  */
 export function usePlacePurchaseOrder() {
+  const { language } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
@@ -235,10 +255,16 @@ export function usePlacePurchaseOrder() {
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: ['purchases'] });
       void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
-      toast.success('Purchase order placed successfully');
+      toast.success(
+        language === 'ar' ? 'تم اعتماد أمر الشراء' : 'Purchase order placed successfully',
+      );
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to place purchase order');
+      toast.error(
+        language === 'ar'
+          ? 'تعذر اعتماد أمر الشراء'
+          : error.message || 'Failed to place purchase order',
+      );
     },
   });
 }
@@ -247,6 +273,7 @@ export function usePlacePurchaseOrder() {
  * Hook to cancel a purchase order
  */
 export function useCancelPurchaseOrder() {
+  const { language } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
@@ -258,10 +285,14 @@ export function useCancelPurchaseOrder() {
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: ['purchases'] });
       void queryClient.invalidateQueries({ queryKey: ['purchases', id] });
-      toast.success('Purchase order cancelled');
+      toast.success(language === 'ar' ? 'تم إلغاء أمر الشراء' : 'Purchase order cancelled');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to cancel purchase order');
+      toast.error(
+        language === 'ar'
+          ? 'تعذر إلغاء أمر الشراء'
+          : error.message || 'Failed to cancel purchase order',
+      );
     },
   });
 }
@@ -270,6 +301,7 @@ export function useCancelPurchaseOrder() {
  * Hook to complete PO goods receipt
  */
 export function useReceivePurchaseOrder() {
+  const { language } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payload }: { id: number; payload: ReceivePOPayload }) => {
@@ -284,10 +316,18 @@ export function useReceivePurchaseOrder() {
       void queryClient.invalidateQueries({ queryKey: ['purchases', variables.id] });
       void queryClient.invalidateQueries({ queryKey: ['inventory'] });
       void queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Goods received successfully, inventory and costs updated');
+      toast.success(
+        language === 'ar'
+          ? 'تم استلام البضاعة وتحديث المخزون والتكلفة'
+          : 'Goods received successfully, inventory and costs updated',
+      );
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to process goods receipt');
+      toast.error(
+        language === 'ar'
+          ? 'تعذر تسجيل استلام البضاعة'
+          : error.message || 'Failed to process goods receipt',
+      );
     },
   });
 }

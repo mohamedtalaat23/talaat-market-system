@@ -289,9 +289,12 @@ export class POSController {
    *
    * Offline sales that could not be replayed without a manager decision.
    */
-  listQuarantinedSales = async (_req: Request, res: Response) => {
+  listQuarantinedSales = async (req: Request, res: Response) => {
     try {
-      const rows = await posRepository.listQuarantinedSales('pending');
+      const status = z
+        .enum(['pending', 'approved', 'rejected'])
+        .parse(req.query['status'] ?? 'pending');
+      const rows = await posRepository.listQuarantinedSales(status);
       return res.status(200).json({ success: true, data: rows });
     } catch (error: any) {
       return res

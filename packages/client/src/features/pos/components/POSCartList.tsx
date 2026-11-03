@@ -89,13 +89,13 @@ export const POSCartList = React.memo(() => {
               const isFlash = item.cart_id === lastUpdatedCartId;
               const itemTotal = item.quantity * item.unit_price - item.discount;
 
-              let badgeClass = 'text-foreground font-black';
+              let badgeClass = 'text-foreground font-semibold';
               if (item.quantity >= 20)
                 badgeClass =
-                  'bg-danger text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm';
+                  'bg-danger text-white px-1.5 py-0.5 rounded font-semibold text-[10px] shadow-sm';
               else if (item.quantity >= 10)
                 badgeClass =
-                  'bg-orange-500 text-white px-1.5 py-0.5 rounded font-black text-[10px] shadow-sm';
+                  'bg-orange-500 text-white px-1.5 py-0.5 rounded font-semibold text-[10px] shadow-sm';
               else if (item.quantity >= 5)
                 badgeClass =
                   'bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold text-[10px] shadow-sm';
@@ -195,7 +195,7 @@ export const POSCartList = React.memo(() => {
 
                     {/* Column 4: Total */}
                     <div
-                      className={`font-mono text-right pr-2 shrink-0 truncate ${isActive ? 'text-primary font-black text-[14px]' : 'text-foreground font-bold text-[13px]'}`}
+                      className={`font-mono text-right pr-2 shrink-0 truncate ${isActive ? 'text-primary font-semibold text-[14px]' : 'text-foreground font-bold text-[13px]'}`}
                     >
                       {itemTotal.toFixed(2)}
                     </div>

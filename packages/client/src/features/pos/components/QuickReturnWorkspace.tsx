@@ -247,7 +247,7 @@ export function QuickReturnWorkspace() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="flex w-full h-[90vh] max-w-7xl overflow-hidden rounded-2xl bg-slate-900 shadow-2xl ring-1 ring-slate-800">
+      <div className="flex w-full h-[90vh] max-w-7xl overflow-hidden rounded-lg bg-slate-900 shadow-2xl ring-1 ring-slate-800">
         {/* Left Panel (65%) */}
         <div className="flex flex-col w-[65%] border-r border-slate-800 bg-slate-900/50">
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
@@ -380,14 +380,14 @@ export function QuickReturnWorkspace() {
           </div>
 
           <div className="space-y-6 flex-1">
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 p-5 rounded-lg border border-slate-800 shadow-sm">
               <p className="text-slate-400 text-sm font-medium mb-1">{t('pos.totalRefundValue')}</p>
               <p className="text-4xl font-bold text-white tracking-tight">
                 {t('pos.currency')} {totalRefund.toFixed(2)}
               </p>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm space-y-4">
+            <div className="bg-slate-900 p-5 rounded-lg border border-slate-800 shadow-sm space-y-4">
               <div className="flex justify-between">
                 <span className="text-slate-400">{t('pos.totalItems')}</span>
                 <span className="text-white font-semibold">

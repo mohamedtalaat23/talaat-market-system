@@ -1,19 +1,15 @@
 import * as React from 'react';
 import { cn } from '@/utils/cn';
-import { motion } from 'framer-motion';
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <motion.div
-      ref={ref as any}
+    <div
+      ref={ref}
       className={cn(
-        'rounded-xl border border-neutral-200 bg-card text-foreground shadow-sm transition-all hover:shadow-md',
+        'rounded-xl border border-neutral-200 bg-card text-foreground shadow-sm',
         className,
       )}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      {...(props as any)}
+      {...props}
     />
   ),
 );

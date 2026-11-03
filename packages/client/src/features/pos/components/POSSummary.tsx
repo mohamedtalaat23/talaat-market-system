@@ -72,7 +72,7 @@ function ActionBtn({
       {!disabled && !destructive && (
         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       )}
-      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5 group-hover:scale-110 transition-transform">
+      <span className="shrink-0 text-current opacity-70 flex items-center justify-center w-5 h-5  transition-transform">
         {icon}
       </span>
       <span className="text-xs font-bold uppercase tracking-wider leading-none z-10">{label}</span>
@@ -82,7 +82,7 @@ function ActionBtn({
 }
 
 export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const openModal = useModalStore((state) => state.openModal);
   const selectedCustomer = usePOSStore((state) => state.selectedCustomer);
   const selectCustomer = usePOSStore((state) => state.selectCustomer);
@@ -116,7 +116,7 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
               <UserCog size={14} />
             </div>
-            <span className="text-sm font-black text-foreground tracking-tight">
+            <span className="text-sm font-semibold text-foreground tracking-tight">
               {selectedCustomer ? selectedCustomer.name : t('pos.walkIn')}
             </span>
             {selectedCustomer && (
@@ -236,9 +236,18 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
             icon={<Banknote size={16} />}
             onClick={() => {
               if (window.electronAPI) {
-                openModal('pos_manager_override', { action: 'drawer_adjustment', onSuccess: (manager_id: number, pin: string) => {
-                  void window.electronAPI?.openCashDrawer({ manager_id, pin }).catch((error: unknown) => toast.error(error instanceof Error ? error.message : 'Drawer authorization failed'));
-                } });
+                openModal('pos_manager_override', {
+                  action: 'drawer_adjustment',
+                  onSuccess: (manager_id: number, pin: string) => {
+                    void window.electronAPI
+                      ?.openCashDrawer({ manager_id, pin })
+                      .catch((error: unknown) =>
+                        toast.error(
+                          error instanceof Error ? error.message : 'Drawer authorization failed',
+                        ),
+                      );
+                  },
+                });
               }
               setTimeout(() => {
                 const searchInput = document.querySelector(
@@ -253,7 +262,7 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
 
       {/* ── 5. Financials & Pay (Bottom) ── */}
       <div className="shrink-0 flex flex-col justify-end space-y-3">
-        <div className="bg-[#f8fafc] border border-border/40 rounded-2xl p-4 space-y-2 select-none flex flex-col relative overflow-hidden shadow-sm">
+        <div className="bg-[#f8fafc] border border-border/40 rounded-lg p-4 space-y-2 select-none flex flex-col relative overflow-hidden shadow-sm">
           <div className="flex justify-between text-sm text-secondary font-mono font-medium">
             <span>{t('pos.subtotal')}</span>
             <span>
@@ -280,10 +289,10 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
           {/* Grand Total */}
           <div className="border-t border-border/60 pt-3 mt-1">
             <div className="flex items-end justify-between">
-              <span className="text-xs font-black text-secondary uppercase tracking-widest">
+              <span className="text-xs font-semibold text-secondary uppercase tracking-wide">
                 {t('pos.totalUpper')}
               </span>
-              <span className="text-5xl font-black font-mono tracking-tighter select-none leading-none text-foreground">
+              <span className="text-5xl font-semibold font-mono tracking-tighter select-none leading-none text-foreground">
                 <span className="text-lg text-secondary font-sans font-bold uppercase tracking-wider mr-1 align-top pt-1 inline-block">
                   {t('pos.currency')}
                 </span>
@@ -297,18 +306,14 @@ export const POSSummary = React.memo(({ cart }: POSSummaryProps) => {
         <div className="shrink-0 select-none pt-2">
           <button
             onClick={() => openModal('pos_payment')}
-            className="w-full h-20 bg-gradient-to-r from-success via-emerald-500 to-success hover:from-success/90 hover:via-emerald-400 hover:to-success/90 rounded-2xl text-white font-black uppercase text-3xl tracking-widest transition-all duration-300 focus:outline-none shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:shadow-[0_8px_40px_rgba(34,197,94,0.5)] hover:-translate-y-1 flex items-center justify-center gap-4 overflow-hidden relative group"
+            className="w-full h-16 bg-primary hover:bg-primary-600 rounded-lg text-white font-semibold text-2xl transition-colors focus:outline-none flex items-center justify-center gap-4"
           >
             {/* Shimmer effect */}
-            <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
 
-            <CreditCard
-              size={32}
-              className="drop-shadow-md group-hover:scale-110 transition-transform duration-300"
-            />
-            <span className="drop-shadow-md">{t('pos.payAction')}</span>
+            <CreditCard size={32} className="  transition-transform duration-300" />
+            <span className="">{t('pos.payAction')}</span>
             <kbd className="ms-4 text-base font-mono font-bold px-3 py-1.5 rounded-lg bg-black/20 border border-black/10 text-white leading-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] backdrop-blur-sm">
-              Space
+              {language === 'ar' ? 'مسافة' : 'Space'}
             </kbd>
           </button>
         </div>

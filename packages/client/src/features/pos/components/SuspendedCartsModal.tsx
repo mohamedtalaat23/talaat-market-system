@@ -1,3 +1,4 @@
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { useCallback, useEffect, useMemo, memo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Clock, User as UserIcon, AlertTriangle, Save, Trash2 } from 'lucide-react';
@@ -25,7 +26,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
   }, [cart]);
 
   return (
-    <div className="bg-[#f8fafc] rounded-2xl border border-border/70 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 hover:shadow-md hover:border-warning/30 border-l-4 border-l-warning/70 hover:border-l-warning group relative overflow-hidden text-left">
+    <div className="bg-[#f8fafc] rounded-lg border border-border/70 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 hover:shadow-md hover:border-warning/30 border-l-4 border-l-warning/70 hover:border-l-warning group relative overflow-hidden text-left">
       {/* Background glow effect on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-warning/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
@@ -48,7 +49,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-lg font-black text-foreground">
+          <span className="text-lg font-semibold text-foreground">
             {cart.cart.length}{' '}
             <span className="text-xs font-bold text-secondary uppercase tracking-wider">
               {cart.cart.length === 1 ? t('pos.item') : t('pos.items')}
@@ -57,7 +58,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
           <span className="text-neutral-200">|</span>
           <span className="text-sm text-secondary font-medium">
             {t('pos.total')}:{' '}
-            <span className="text-foreground font-black font-mono text-base">
+            <span className="text-foreground font-semibold font-mono text-base">
               {t('pos.currency')} {total.toFixed(2)}
             </span>
           </span>
@@ -83,6 +84,7 @@ const SuspendedCartItem = memo(({ cart, onDiscard, onResume }: SuspendedCartItem
 });
 
 export function SuspendedCartsModal() {
+  const { confirm, confirmationDialog } = useConfirmation();
   const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.activeModals.pos_suspended_carts);
   const closeModalAction = useModalStore((state) => state.closeModal);
@@ -179,12 +181,12 @@ export function SuspendedCartsModal() {
     }
   };
 
-  const handleDiscardClick = (holdId: string, cashierId: number) => {
+  const handleDiscardClick = async (holdId: string, cashierId: number) => {
     if (user?.id !== cashierId && user?.role !== 'admin' && user?.role !== 'manager') {
       toast.error(t('pos.toasts.onlyManagersCarts'));
       return;
     }
-    if (window.confirm(t('pos.confirmDiscardSuspended'))) {
+    if (await confirm(t('pos.confirmDiscardSuspended'))) {
       removeHeldCart(holdId);
       toast.success(t('pos.toasts.cartDiscarded'));
     }
@@ -200,19 +202,19 @@ export function SuspendedCartsModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-2xl bg-white border border-border/80 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-fade-in flex flex-col max-h-[80vh] overflow-hidden relative z-10 p-6"
+        className="w-full max-w-2xl bg-white border border-border/80 rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-fade-in flex flex-col max-h-[80vh] overflow-hidden relative z-10 p-6"
         role="dialog"
       >
         {!overwriteTarget ? (
           <>
             <div className="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
-              <h3 className="text-xl font-black text-foreground flex items-center gap-2.5">
+              <h3 className="text-xl font-semibold text-foreground flex items-center gap-2.5">
                 <div className="p-2 bg-warning/10 rounded-xl text-warning">
                   <Clock size={20} className="animate-pulse" />
                 </div>
                 <div className="flex flex-col text-left">
                   <span>{t('pos.suspended')}</span>
-                  <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mt-0.5">
+                  <span className="text-[10px] font-bold text-secondary uppercase tracking-wide mt-0.5">
                     {t('pos.heldSalesCount').replace('{count}', String(heldCarts.length))}
                   </span>
                 </div>
@@ -226,7 +228,7 @@ export function SuspendedCartsModal() {
             </div>
 
             {currentCartLength > 0 && (
-              <div className="mb-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20 flex flex-col sm:flex-row gap-3 sm:items-center justify-between animate-fade-in shrink-0 relative overflow-hidden border-l-4 border-l-primary">
+              <div className="mb-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-lg p-4 border border-primary/20 flex flex-col sm:flex-row gap-3 sm:items-center justify-between animate-fade-in shrink-0 relative overflow-hidden border-l-4 border-l-primary">
                 <div className="flex flex-col text-left">
                   <span className="text-sm font-bold text-foreground">
                     {t('pos.activeCartWarning').replace('{count}', String(currentCartLength))}
@@ -240,7 +242,7 @@ export function SuspendedCartsModal() {
                     holdCurrentCart(user?.id || 1);
                     toast.success(t('pos.cartSuspended'));
                   }}
-                  className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-xs rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-primary/20 shrink-0 self-start sm:self-auto"
+                  className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold uppercase text-xs rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-primary/20 shrink-0 self-start sm:self-auto"
                 >
                   {t('pos.suspendActiveCart')}
                 </button>
@@ -250,7 +252,7 @@ export function SuspendedCartsModal() {
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {heldCarts.length === 0 ? (
                 <div className="py-16 text-center flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-2xl flex items-center justify-center text-secondary mb-4 opacity-50">
+                  <div className="w-16 h-16 bg-neutral-100 rounded-lg flex items-center justify-center text-secondary mb-4 opacity-50">
                     <Clock size={32} />
                   </div>
                   <h4 className="text-base font-bold text-foreground mb-1">
@@ -274,10 +276,10 @@ export function SuspendedCartsModal() {
           </>
         ) : (
           <div className="py-8 px-4 flex flex-col items-center text-center animate-scale-in">
-            <div className="w-16 h-16 bg-warning/10 rounded-2xl flex items-center justify-center mb-5 text-warning">
+            <div className="w-16 h-16 bg-warning/10 rounded-lg flex items-center justify-center mb-5 text-warning">
               <AlertTriangle className="w-8 h-8" />
             </div>
-            <h3 className="text-2xl font-black text-foreground mb-2">
+            <h3 className="text-2xl font-semibold text-foreground mb-2">
               {t('pos.activeCartOverwrite')}
             </h3>
             <p className="text-secondary text-sm max-w-md mb-8 leading-relaxed">
@@ -287,7 +289,7 @@ export function SuspendedCartsModal() {
             <div className="flex flex-col w-full max-w-md space-y-3">
               <button
                 onClick={handleSuspendCurrentAndResume}
-                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-xs rounded-xl shadow-md shadow-primary/25 hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 focus:outline-none"
+                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold uppercase text-xs rounded-xl shadow-md shadow-primary/25 hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 focus:outline-none"
               >
                 <Save className="w-4 h-4" />
                 <span>{t('pos.suspendCurrentCart')}</span>
@@ -295,7 +297,7 @@ export function SuspendedCartsModal() {
 
               <button
                 onClick={handleDiscardCurrentAndResume}
-                className="flex items-center justify-center gap-2 w-full py-3.5 bg-danger/10 hover:bg-danger/20 text-danger border border-danger/25 font-black uppercase text-xs rounded-xl transition-all hover:-translate-y-0.5 active:scale-95 focus:outline-none"
+                className="flex items-center justify-center gap-2 w-full py-3.5 bg-danger/10 hover:bg-danger/20 text-danger border border-danger/25 font-semibold uppercase text-xs rounded-xl transition-all hover:-translate-y-0.5 active:scale-95 focus:outline-none"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>{t('pos.discardCurrentCart')}</span>
@@ -303,7 +305,7 @@ export function SuspendedCartsModal() {
 
               <button
                 onClick={() => setOverwriteTarget(null)}
-                className="w-full py-3 text-secondary hover:text-foreground font-black uppercase text-xs transition-colors mt-2"
+                className="w-full py-3 text-secondary hover:text-foreground font-semibold uppercase text-xs transition-colors mt-2"
               >
                 {t('common.cancel')}
               </button>
@@ -311,6 +313,7 @@ export function SuspendedCartsModal() {
           </div>
         )}
       </div>
+      {confirmationDialog}
     </div>,
     document.body,
   );

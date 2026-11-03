@@ -182,14 +182,14 @@ export function CloseShiftModal() {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] text-foreground select-none p-4">
-      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] w-full max-w-lg overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border/40">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-danger/10 rounded-xl">
               <Lock className="w-6 h-6 text-danger" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-foreground">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               {t('pos.closeShiftReport')}
             </h2>
           </div>
@@ -213,7 +213,7 @@ export function CloseShiftModal() {
                 <div className="bg-warning/10 border border-warning/30 rounded-xl p-5 flex items-start space-x-4 text-warning shadow-sm">
                   <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5 text-warning" />
                   <div className="text-sm space-y-1.5">
-                    <p className="font-black uppercase tracking-widest text-warning text-[11px]">
+                    <p className="font-semibold uppercase tracking-wide text-warning text-[11px]">
                       {t('pos.operationalWarnings')}
                     </p>
                     <div className="font-medium space-y-1">
@@ -248,7 +248,7 @@ export function CloseShiftModal() {
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
                     {t('pos.startingCash')}
                   </p>
-                  <p className="text-2xl font-black font-mono tracking-tight text-foreground">
+                  <p className="text-2xl font-semibold font-mono tracking-tight text-foreground">
                     {t('pos.currency')} {summary.starting_cash.toFixed(2)}
                   </p>
                 </div>
@@ -256,7 +256,7 @@ export function CloseShiftModal() {
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
                     {t('pos.cashSales')}
                   </p>
-                  <p className="text-2xl font-black text-success font-mono tracking-tight">
+                  <p className="text-2xl font-semibold text-success font-mono tracking-tight">
                     +{t('pos.currency')} {summary.cash_sales.toFixed(2)}
                   </p>
                 </div>
@@ -264,7 +264,7 @@ export function CloseShiftModal() {
                   <p className="text-[11px] font-bold uppercase tracking-wider text-secondary">
                     {t('pos.cardSales')}
                   </p>
-                  <p className="text-2xl font-black text-primary font-mono tracking-tight">
+                  <p className="text-2xl font-semibold text-primary font-mono tracking-tight">
                     {t('pos.currency')} {summary.card_sales.toFixed(2)}
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export function CloseShiftModal() {
                   <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">
                     {t('pos.expectedCash')}
                   </p>
-                  <p className="text-2xl font-black text-foreground font-mono tracking-tight">
+                  <p className="text-2xl font-semibold text-foreground font-mono tracking-tight">
                     {t('pos.currency')} {summary.expected_cash.toFixed(2)}
                   </p>
                 </div>
@@ -283,7 +283,7 @@ export function CloseShiftModal() {
                   <span>{t('pos.actualCashCounted')}</span>
                   {endingCash && (
                     <span
-                      className={`font-mono font-black text-sm tracking-widest ${discrepancy < 0 ? 'text-danger' : discrepancy > 0 ? 'text-success' : 'text-secondary'}`}
+                      className={`font-mono font-semibold text-sm tracking-wide ${discrepancy < 0 ? 'text-danger' : discrepancy > 0 ? 'text-success' : 'text-secondary'}`}
                     >
                       {t('pos.diff')} {discrepancy > 0 ? '+' : ''}
                       {discrepancy.toFixed(2)}
@@ -307,7 +307,7 @@ export function CloseShiftModal() {
                       }
                       if (e.key === 'Escape') closeModal('pos_close_shift');
                     }}
-                    className="w-full bg-background border border-border/60 rounded-xl h-16 pl-14 pr-6 text-3xl font-black tabular-nums tracking-tight text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 transition-all placeholder:text-neutral-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
+                    className="w-full bg-background border border-border/60 rounded-xl h-16 pl-14 pr-6 text-3xl font-semibold tabular-nums tracking-tight text-foreground focus:outline-none focus:border-danger/50 focus:ring-2 focus:ring-danger/20 transition-all placeholder:text-neutral-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
                     placeholder="0.00"
                   />
                 </div>
@@ -322,14 +322,14 @@ export function CloseShiftModal() {
         <div className="p-6 border-t border-border/40 flex flex-col sm:flex-row justify-end gap-3 select-none bg-neutral-50/50 dark:bg-neutral-900/50">
           <button
             onClick={() => closeModal('pos_close_shift')}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-secondary hover:text-foreground bg-white dark:bg-card border border-border/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all text-sm uppercase tracking-wider shadow-sm focus:outline-none"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-semibold text-secondary hover:text-foreground bg-white dark:bg-card border border-border/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all text-sm uppercase tracking-wider shadow-sm focus:outline-none"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleCloseShift}
             disabled={isSubmitting || isLoading || (!endingCash && !needsOverride)}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-black text-white text-sm uppercase tracking-wider transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
+            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-white text-sm uppercase tracking-wider transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
               needsOverride
                 ? 'bg-gradient-to-r from-warning to-yellow-500 hover:from-warning/90 hover:to-yellow-400 shadow-[0_4px_14px_rgba(var(--color-warning-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-warning-500),0.4)] hover:-translate-y-0.5 active:scale-95'
                 : 'bg-gradient-to-r from-danger to-red-600 hover:from-danger/90 hover:to-red-500 shadow-[0_4px_14px_rgba(var(--color-danger-500),0.3)] hover:shadow-[0_6px_20px_rgba(var(--color-danger-500),0.4)] hover:-translate-y-0.5 active:scale-95'

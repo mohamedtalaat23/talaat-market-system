@@ -1,5 +1,6 @@
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   usePurchaseOrder,
   usePlacePurchaseOrder,
@@ -35,6 +36,11 @@ export function PurchaseOrderDetailScreen() {
   const { data: receiptsResponse } = usePurchaseReceipts(id);
   const receipts = receiptsResponse?.data || [];
 
+  const [confirmation, setConfirmation] = useState<{
+    id: number;
+    action: 'place' | 'cancel';
+  } | null>(null);
+  const [confirmationError, setConfirmationError] = useState('');
   const placeOrder = usePlacePurchaseOrder();
   const cancelOrder = useCancelPurchaseOrder();
   const currentUserRole = useAuthStore((state) => state.user?.role);
@@ -43,15 +49,13 @@ export function PurchaseOrderDetailScreen() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const handlePlaceOrder = () => {
-    if (window.confirm(t('purchases.confirmPlace'))) {
-      placeOrder.mutate(id);
-    }
+    setConfirmationError('');
+    setConfirmation({ id, action: 'place' });
   };
 
   const handleCancelOrder = () => {
-    if (window.confirm(t('purchases.confirmCancel'))) {
-      cancelOrder.mutate(id);
-    }
+    setConfirmationError('');
+    setConfirmation({ id, action: 'cancel' });
   };
 
   const getStatusBadge = (status: string) => {
@@ -232,7 +236,9 @@ export function PurchaseOrderDetailScreen() {
                   className="bg-success hover:bg-success/90 text-white font-bold gap-1.5"
                 >
                   <CheckCircle2 size={14} />
-                  {po.status === 'ordered' ? t('purchases.receiveInflux') : t('purchases.continueReceiving')}
+                  {po.status === 'ordered'
+                    ? t('purchases.receiveInflux')
+                    : t('purchases.continueReceiving')}
                 </Button>
               </>
             )}
@@ -254,7 +260,12 @@ export function PurchaseOrderDetailScreen() {
                 <span className="text-xs text-secondary uppercase font-bold block mb-0.5">
                   {t('purchases.supplierName')}
                 </span>
-                <span className="font-semibold text-foreground">{po.supplier_name}</span>
+                <Link
+                  to={`/suppliers/${po.supplier_id}`}
+                  className="font-semibold text-primary underline"
+                >
+                  {po.supplier_name}
+                </Link>
               </div>
               <div>
                 <span className="text-xs text-secondary uppercase font-bold block mb-0.5">
@@ -357,7 +368,9 @@ export function PurchaseOrderDetailScreen() {
                     {po.status !== 'draft' && po.status !== 'ordered' && (
                       <>
                         <th className="py-3 px-4 text-center">{t('purchases.receivedQty')}</th>
-                        <th className="py-3 px-4 text-center text-warning">{t('purchases.shortage')}</th>
+                        <th className="py-3 px-4 text-center text-warning">
+                          {t('purchases.shortage')}
+                        </th>
                       </>
                     )}
                     <th className="py-3 px-4 text-center">{t('purchases.unit')}</th>
@@ -422,7 +435,9 @@ export function PurchaseOrderDetailScreen() {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border bg-input px-5 py-3 flex items-center gap-2">
                 <History size={16} className="text-secondary" />
-                <h3 className="text-sm font-semibold text-foreground">{t('purchases.receivingHistory')}</h3>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t('purchases.receivingHistory')}
+                </h3>
               </div>
               <div className="p-5 space-y-6">
                 {receipts.map((receipt) => (
@@ -436,7 +451,8 @@ export function PurchaseOrderDetailScreen() {
                           {receipt.receipt_number}
                         </div>
                         <div className="text-xs text-secondary mt-1">
-                          {formatDate(receipt.created_at)} • {t('purchases.receivedByLabel').replace('{name}', receipt.receiver_name)}
+                          {formatDate(receipt.created_at)} •{' '}
+                          {t('purchases.receivedByLabel').replace('{name}', receipt.receiver_name)}
                         </div>
                       </div>
                       <Badge variant="outline" className="uppercase font-mono text-xs">
@@ -481,6 +497,25 @@ export function PurchaseOrderDetailScreen() {
           isOpen={isReceiptOpen}
           onClose={() => setIsReceiptOpen(false)}
           purchaseOrder={po}
+        />
+      )}
+      {confirmation && (
+        <ConfirmDialog
+          title={t(
+            confirmation.action === 'place' ? 'purchases.placeOrder' : 'purchases.cancelOrder',
+          )}
+          description={`${t(confirmation.action === 'place' ? 'purchases.confirmPlace' : 'purchases.confirmCancel')} #${confirmation.id}`}
+          busy={placeOrder.isPending || cancelOrder.isPending}
+          error={confirmationError}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            setConfirmationError('');
+            const mutation = confirmation.action === 'place' ? placeOrder : cancelOrder;
+            mutation.mutate(confirmation.id, {
+              onSuccess: () => setConfirmation(null),
+              onError: (failure) => setConfirmationError(failure.message),
+            });
+          }}
         />
       )}
     </div>
