@@ -72,4 +72,22 @@ Local checks passed: lint/typecheck, 310 server tests, 44 client tests, 50 deskt
 
 ## Build result
 
-The final successful Actions run, downloadable artifact, installer checksum and draft PRs are recorded here after CI verification.
+Verified on November 4, 2026. The installer was downloaded from Actions and its SHA-256 independently recomputed; it matches both the manifest and checksum file.
+
+- **Build source:** `2f0032e92f31f1200fd815cbd4b000f10e342296`. Later documentation-only commits do not change this binary.
+- [Successful Windows Actions run](https://github.com/mohamedtalaat23/talaat-market-system/actions/runs/41747825957).
+- [Verified installer and evidence artifact](https://github.com/mohamedtalaat23/talaat-market-system/actions/runs/41747825957/artifacts/13285020690), named `windows-internal-2f0032e92f31f1200fd815cbd4b000f10e342296`, retained for 14 days (expires November 18, 2026, 00:40 UTC).
+- [Successful Linux PR verification](https://github.com/mohamedtalaat23/talaat-market-system/actions/runs/41747833143) and [push verification](https://github.com/mohamedtalaat23/talaat-market-system/actions/runs/41747825909) for the same build source.
+- Draft [workflow/product integration PR #5](https://github.com/mohamedtalaat23/talaat-market-system/pull/5) and dependent draft [Windows packaging PR #6](https://github.com/mohamedtalaat23/talaat-market-system/pull/6). Neither was merged.
+
+Installer: `Talaat Market-1.0.0-internal-x64-Setup.exe` (168,934,409 bytes).
+
+```text
+SHA-256: 42098fef6f467b810e51f778f6cfdb9365692642c75a5b3c991ef8f845fd3734
+```
+
+Build inventory records Node **24.22.1**, Electron **45.1.0**, PostgreSQL **16.15**, EDB revision **5**, and 206 staged production packages. PostgreSQL archive SHA-256: `43bb45f173a6f08cf1d29a97a6d8deb119e8e8093a24c00d2d1001a0ccaa8281`; [upstream checksum provenance](https://github.com/EnterpriseDB/edb-installers/issues/731).
+
+Windows CI passed lint/types, all unit suites, preload/runtime boundary checks, acquisition/preflight, installer assembly, packaged-resource audit, disposable SCRAM/extension/dump/restore checks, compiled migrations through 038, packaged API login/password rotation, and Arabic/English renderer smoke. Both final Linux runs passed, including real PostgreSQL integration/restore and all 18 browser journeys. Earlier failed/cancelled attempts are superseded by these complete successful runs; they are not counted as passes.
+
+The worksheet remains **NOT TESTED**: automated assembly and disposable smoke tests do not execute the installer, certify a normal Windows user session, validate an upgrade from a prior installation, or operate physical retail hardware. No business cluster, public release, signing identity or deployment was changed. The original root `.gitignore` and `package.json` edits remain uncommitted and preserved.
