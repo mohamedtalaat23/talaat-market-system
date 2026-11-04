@@ -1,23 +1,8 @@
 import { fork, type ChildProcess } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
-import * as net from 'net';
+import { DESKTOP_SERVICE_PORT, ensureDesktopPortAvailable } from './desktop-port';
 import { logger } from './main';
-
-function findAvailablePort(startPort: number): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.listen(startPort, () => {
-      const port = (server.address() as net.AddressInfo).port;
-      server.close(() => resolve(port));
-    });
-    server.on('error', () => {
-      findAvailablePort(startPort + 1)
-        .then(resolve)
-        .catch(reject);
-    });
-  });
-}
 
 /**
  * ServerManager — manages the lifecycle of the Express.js server
@@ -45,8 +30,8 @@ export class ServerManager {
    * Returns the port number once the server signals 'ready'.
    */
   async start(extraEnv: Record<string, string> = {}): Promise<number> {
-    // Find an available port (prefer 3001, fall back to others)
-    this.port = await findAvailablePort(3001);
+    // Keep the renderer origin stable so persisted offline evidence remains visible.
+    this.port = DESKTOP_SERVICE_PORT;
 
     // In development, assume the server is already running on 3001
     if (process.env['NODE_ENV'] === 'development') {
@@ -54,6 +39,7 @@ export class ServerManager {
       return this.port;
     }
 
+    await ensureDesktopPortAvailable(this.port);
     return this.startProductionServer(extraEnv);
   }
 
