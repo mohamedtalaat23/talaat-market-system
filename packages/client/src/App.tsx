@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
@@ -141,6 +141,8 @@ const OperationsScreen = lazy(() =>
   })),
 );
 
+const ApplicationRouter = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -189,7 +191,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <ErrorBoundary>
-          <BrowserRouter>
+          <ApplicationRouter>
             <Suspense
               fallback={
                 <div className="flex justify-center p-12">
@@ -334,7 +336,7 @@ export function App() {
                 </Route>
               </Routes>
             </Suspense>
-          </BrowserRouter>
+          </ApplicationRouter>
           <LANSyncManager />
         </ErrorBoundary>
       </PreferencesProvider>

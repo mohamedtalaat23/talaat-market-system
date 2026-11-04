@@ -16,11 +16,17 @@ export const apiClient = axios.create({
 
 // Request interceptor to dynamically inject the JWT token from the Zustand store
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Dynamically swap baseURL if operating as a LAN Client Terminal
     const { mode, hostAddress } = useLANStore.getState();
     if (mode === 'client' && hostAddress) {
       config.baseURL = `${hostAddress.replace(/\/$/, '')}/api/v1`;
+    } else if (window.location.protocol === 'file:') {
+      const port = await window.electronAPI?.getServerPort();
+      if (!Number.isInteger(port) || !port || port < 1024 || port > 65535) {
+        throw new Error('The desktop API bridge did not provide a valid local server port.');
+      }
+      config.baseURL = `http://127.0.0.1:${port}/api/v1`;
     } else {
       config.baseURL = '/api/v1';
     }

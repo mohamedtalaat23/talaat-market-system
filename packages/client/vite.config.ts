@@ -21,6 +21,7 @@ import { fileURLToPath } from 'node:url';
  * 4. Output to `dist/` — electron-builder expects the built client here.
  */
 export default defineConfig({
+  base: './',
   plugins: [react()],
 
   resolve: {
