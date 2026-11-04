@@ -51,6 +51,9 @@ for (const language of ['en', 'ar'] as const) {
       .filter({ hasText: sale.receipt_number })
       .getByRole('button', { name: t.pos.refundVoid, exact: true })
       .click();
+    await expect(
+      page.getByRole('dialog').getByRole('cell').filter({ hasText: /6\.67/ }),
+    ).toBeVisible();
     await page.getByRole('dialog').locator('input[type=number]').fill('1');
     await page.getByPlaceholder(t.pos.placeholderRefundReason).fill('Discounted partial return');
     await page.selectOption('#inline-manager-select', String(f.manager.id));

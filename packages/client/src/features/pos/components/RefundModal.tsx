@@ -395,7 +395,7 @@ export function RefundModal() {
                         </div>
                       </td>
                       <td className="py-4 px-5 text-center font-medium tabular-nums text-foreground">
-                        {(Number(item.unit_price) - Number(item.discount || 0)).toFixed(2)}{' '}
+                        {(Number(item.line_total) / Number(item.quantity)).toFixed(2)}{' '}
                         <span className="text-[10px] text-secondary ml-0.5">
                           {t('pos.currency')}
                         </span>
