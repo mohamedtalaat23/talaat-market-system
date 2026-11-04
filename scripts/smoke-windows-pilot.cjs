@@ -30,6 +30,9 @@ function run(exe, args, env, allowFailure = false) {
     encoding: 'utf8',
     timeout: 180000,
     windowsHide: true,
+    // A daemon can inherit pg_ctl's pipes on Windows and keep spawnSync open
+    // after pg_ctl exits. Its server output already goes to the disposable -l log.
+    stdio: path.basename(exe).toLowerCase() === 'pg_ctl.exe' ? 'ignore' : 'pipe',
   });
   if (!allowFailure && (result.error || result.status !== 0))
     throw new Error(
@@ -41,6 +44,7 @@ async function main() {
   if (process.platform !== 'win32')
     throw new Error('Bundled Windows runtime smoke test requires Windows.');
   validateRuntime(pg);
+  console.log('Packaged PostgreSQL tools validated.');
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'Talaat pilot smoke '));
   const data = path.join(temp, 'data');
   const pwfile = path.join(temp, 'init-password');
@@ -56,7 +60,7 @@ async function main() {
     PGPORT: String(dbPort),
   };
   const exe = (name) => path.join(pg, 'bin', `${name}.exe`);
-  let started = false;
+  let primaryError;
   let server;
   try {
     fs.writeFileSync(pwfile, password, { mode: 0o600 });
@@ -75,6 +79,7 @@ async function main() {
       env,
     );
     fs.rmSync(pwfile);
+    console.log('Disposable SCRAM cluster initialized.');
     run(
       exe('pg_ctl'),
       [
@@ -89,7 +94,7 @@ async function main() {
       ],
       env,
     );
-    started = true;
+    console.log('Disposable cluster started on loopback.');
     const hba = fs
       .readFileSync(path.join(data, 'pg_hba.conf'), 'utf8')
       .split(/\r?\n/)
@@ -125,6 +130,7 @@ async function main() {
     );
     if (query('pilot_restore_test', 'SELECT value FROM pilot_integrity') !== '38')
       throw new Error('Dump/restore integrity failed.');
+    console.log('SCRAM refusal, extensions and dump/restore passed.');
     const initialPassword = secret();
     const appEnv = {
       ...env,
@@ -147,8 +153,10 @@ async function main() {
         ? path.join(resources, 'client/dist')
         : path.join(root, 'packages/client/dist'),
     };
-    for (const file of ['database/migrate.js', 'database/bootstrap.js'])
+    for (const file of ['database/migrate.js', 'database/bootstrap.js']) {
       run(process.execPath, [path.join(serverDirectory, file)], appEnv);
+      console.log(`Packaged ${file} completed.`);
+    }
     query(
       'pilot_smoke_test',
       'SELECT idempotency_key, request_fingerprint FROM purchase_order_receipts LIMIT 0',
@@ -174,6 +182,7 @@ async function main() {
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
     if (!healthy) throw new Error('Packaged API readiness timed out.');
+    console.log('Packaged API is healthy.');
     const login = await fetch(`http://127.0.0.1:${apiPort}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -190,6 +199,7 @@ async function main() {
       body: JSON.stringify({ current_password: initialPassword, new_password: secret() }),
     });
     if (!rotate.ok) throw new Error('First-run password rotation failed.');
+    console.log('First-run login and password rotation passed; starting renderer checks.');
     run(
       process.execPath,
       [path.join(__dirname, 'smoke-built-renderer.cjs'), `http://127.0.0.1:${apiPort}/`],
@@ -220,6 +230,9 @@ async function main() {
     console.log(
       'Windows runtime, dump/restore and packaged API smoke passed; no credentials exported.',
     );
+  } catch (error) {
+    primaryError = error;
+    throw error;
   } finally {
     if (server && server.exitCode === null) {
       server.kill();
@@ -228,8 +241,15 @@ async function main() {
         setTimeout(resolve, 5000).unref();
       });
     }
-    if (started) run(exe('pg_ctl'), ['stop', '-D', data, '-m', 'fast', '-w'], env);
-    fs.rmSync(temp, { recursive: true, force: true });
+    try {
+      // Also stop a daemon that started before a control-command timeout.
+      if (fs.existsSync(path.join(data, 'postmaster.pid')))
+        run(exe('pg_ctl'), ['stop', '-D', data, '-m', 'fast', '-w'], env);
+      fs.rmSync(temp, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
+    } catch (cleanupError) {
+      if (!primaryError) throw cleanupError;
+      console.error('Disposable cluster cleanup also failed; original smoke failure follows.');
+    }
   }
 }
 main().catch((error) => {
