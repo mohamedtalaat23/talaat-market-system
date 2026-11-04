@@ -7,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 interface QuarantinedSale {
   id: number;
+  reconciled_at?: string | null;
+  reconciliation_notes?: string | null;
   cashier_id: number;
   reason: string;
   detail: string;
@@ -18,21 +20,27 @@ interface QuarantinedSale {
 }
 
 export function OfflineApprovalPanel() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const ar = language === 'ar';
+  const [view, setView] = useState<'pending' | 'rejected'>('pending');
   const user = useAuthStore((s) => s.user);
   const authorized = user?.role === 'admin' || user?.role === 'manager';
   const cache = useQueryClient();
   const [selected, setSelected] = useState<number | null>(null);
   const [pin, setPin] = useState('');
   const [notes, setNotes] = useState('');
-  const [decision, setDecision] = useState<'approve' | 'reject'>('approve');
+  const [decision, setDecision] = useState<'approve' | 'reject' | 'reconcile'>('approve');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const query = useQuery({
-    queryKey: ['offline-approvals'],
+    queryKey: ['offline-approvals', view],
     enabled: authorized,
     queryFn: async () =>
-      (await apiClient.get<{ data: QuarantinedSale[] }>('/pos/sync/quarantine')).data.data,
+      (
+        await apiClient.get<{ data: QuarantinedSale[] }>('/pos/sync/quarantine', {
+          params: { status: view },
+        })
+      ).data.data,
     refetchInterval: 30000,
   });
   if (!authorized) return null;
@@ -65,6 +73,27 @@ export function OfflineApprovalPanel() {
         <CardTitle>{t('offlineApproval.title')}</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="flex gap-2 mb-4" aria-label={ar ? 'حالة المراجعة' : 'Review status'}>
+          {(['pending', 'rejected'] as const).map((status) => (
+            <button
+              key={status}
+              aria-pressed={view === status}
+              className={`px-3 py-2 rounded border ${view === status ? 'bg-primary-50 border-primary' : 'border-border'}`}
+              onClick={() => {
+                setView(status);
+                setSelected(null);
+              }}
+            >
+              {status === 'pending'
+                ? ar
+                  ? 'بانتظار الموافقة'
+                  : 'Awaiting approval'
+                : ar
+                  ? 'مرفوضة / التسوية'
+                  : 'Rejected / reconciliation'}
+            </button>
+          ))}
+        </div>
         <p className="text-sm text-secondary mb-4">{t('offlineApproval.help')}</p>
         {query.isPending && <p role="status">{t('offlineApproval.loading')}</p>}
         {query.isError && (
@@ -92,16 +121,20 @@ export function OfflineApprovalPanel() {
                 </div>
                 <button
                   className="px-4 py-2 rounded border border-border hover:bg-card-hover"
-                  disabled={saving}
+                  disabled={saving || !!sale.reconciled_at}
                   onClick={() => {
                     setSelected(sale.id);
                     setPin('');
                     setNotes('');
                     setError('');
-                    setDecision('approve');
+                    setDecision(view === 'rejected' ? 'reconcile' : 'approve');
                   }}
                 >
-                  {t('offlineApproval.review')}
+                  {sale.reconciled_at
+                    ? ar
+                      ? 'تمت التسوية'
+                      : 'Reconciled'
+                    : t('offlineApproval.review')}
                 </button>
               </div>
               {selected === sale.id && (
@@ -122,16 +155,34 @@ export function OfflineApprovalPanel() {
                     <select
                       className="block bg-input-bg border border-border p-2 rounded"
                       value={decision}
-                      onChange={(e) => setDecision(e.target.value as 'approve' | 'reject')}
+                      onChange={(e) =>
+                        setDecision(e.target.value as 'approve' | 'reject' | 'reconcile')
+                      }
                       disabled={saving}
                     >
-                      <option value="approve">{t('offlineApproval.approve')}</option>
-                      <option value="reject">{t('offlineApproval.reject')}</option>
+                      {view === 'rejected' ? (
+                        <option value="reconcile">
+                          {ar
+                            ? 'تسجيل تسوية النقد والبضاعة'
+                            : 'Record cash and goods reconciliation'}
+                        </option>
+                      ) : (
+                        <>
+                          <option value="approve">{t('offlineApproval.approve')}</option>
+                          <option value="reject">{t('offlineApproval.reject')}</option>
+                        </>
+                      )}
                     </select>
                   </label>
                   <label className="block">
-                    {t('offlineApproval.notes')}
+                    {decision === 'reconcile'
+                      ? ar
+                        ? 'اشرح تسوية النقد والبضاعة. هذا الإجراء لا ينشئ بيعًا أو حركة مخزون.'
+                        : 'Explain how cash and goods were settled. This does not post a sale or adjust stock.'
+                      : t('offlineApproval.notes')}
                     <input
+                      required={decision === 'reconcile'}
+                      minLength={decision === 'reconcile' ? 10 : undefined}
                       className="block bg-input-bg border border-border p-2 rounded w-full"
                       maxLength={500}
                       value={notes}

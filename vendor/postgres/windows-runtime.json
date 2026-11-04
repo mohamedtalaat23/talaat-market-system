@@ -1,0 +1,10 @@
+{
+  "version": "16.15",
+  "revision": "5",
+  "architecture": "x64",
+  "archive": "postgresql-16.15-5-windows-x64-binaries.zip",
+  "url": "https://get.enterprisedb.com/postgresql/postgresql-16.15-5-windows-x64-binaries.zip",
+  "sha256": "43bb45f173a6f08cf1d29a97a6d8deb119e8e8093a24c00d2d1001a0ccaa8281",
+  "provenance": "https://github.com/EnterpriseDB/edb-installers/issues/731",
+  "archiveRoot": "pgsql"
+}

@@ -378,6 +378,26 @@ export class POSRepository {
           return { ...existing, items: existingItems };
         }
 
+        // A rejected replay must never become a sale after catalogue changes or retries.
+        const decision = await trx('offline_sync_quarantine')
+          .where({ idempotency_key: payload.idempotency_key })
+          .first();
+        if (decision?.status === 'pending' && !discountAuthorized) {
+          throw Object.assign(new Error('Offline sale requires manager review.'), {
+            code: 'OFFLINE_REVIEW_REQUIRED',
+          });
+        }
+        if (decision?.status === 'rejected') {
+          if (decision.cashier_id !== cashierId)
+            throw new Error('This checkout belongs to another employee.');
+          throw Object.assign(
+            new Error('Offline sale rejected; manager reconciliation required.'),
+            {
+              code: decision.reconciled_at ? 'OFFLINE_RECONCILED' : 'OFFLINE_REJECTED',
+            },
+          );
+        }
+
         // Bind the drawer to the authenticated cashier, not client-supplied IDs.
         const shift = await trx('cashier_shifts')
           .where({ id: payload.shift_id })
@@ -746,6 +766,7 @@ export class POSRepository {
     const syncedIds: string[] = [...acknowledgedIds];
     const failed: { id: string; error: string; code?: string; quarantined?: boolean }[] = [];
 
+    const reconciledIds: string[] = [];
     for (const payload of sortedSales) {
       const saleIdentifier = payload.id || payload.idempotency_key;
       try {
@@ -754,6 +775,24 @@ export class POSRepository {
         syncedIds.push(saleIdentifier);
       } catch (error: any) {
         console.error(`[SyncOffline] Failed to sync sale ${saleIdentifier}:`, error.message);
+
+        if (error.code === 'OFFLINE_RECONCILED') {
+          reconciledIds.push(saleIdentifier);
+          continue;
+        }
+        if (error.code === 'OFFLINE_REVIEW_REQUIRED') {
+          failed.push({
+            id: saleIdentifier,
+            error: error.message,
+            code: error.code,
+            quarantined: true,
+          });
+          continue;
+        }
+        if (error.code === 'OFFLINE_REJECTED') {
+          failed.push({ id: saleIdentifier, error: error.message, code: error.code });
+          continue;
+        }
 
         if (error instanceof OfflineApprovalRequiredError) {
           // A tampered/lower price or an unauthorised discount is never posted
@@ -775,7 +814,12 @@ export class POSRepository {
       }
     }
 
-    return { synced: syncedIds.length - acknowledgedIds.length, syncedIds, failed };
+    return {
+      synced: syncedIds.length - acknowledgedIds.length,
+      syncedIds,
+      failed,
+      ...(reconciledIds.length ? { reconciledIds } : {}),
+    };
   }
 
   /**
@@ -800,12 +844,15 @@ export class POSRepository {
         created_at: db.fn.now(),
       })
       .onConflict('idempotency_key')
-      .merge(['reason', 'detail', 'product_id', 'payload', 'cashier_id']);
+      .ignore(); // Keep the first submitted evidence immutable across retries.
   }
 
   /** Lists offline sales awaiting manager approval (oldest first). */
   async listQuarantinedSales(status: 'pending' | 'approved' | 'rejected' = 'pending') {
-    return db('offline_sync_quarantine').where({ status }).orderBy('created_at', 'asc').limit(100);
+    const query = db('offline_sync_quarantine').where({ status });
+    // Keep unresolved rejections visible even after a long history of reconciled entries.
+    if (status === 'rejected') query.orderBy('reconciled_at', 'asc', 'first');
+    return query.orderBy('created_at', 'asc').limit(100);
   }
 
   /**
@@ -817,13 +864,37 @@ export class POSRepository {
    */
   async resolveQuarantinedSale(
     id: number,
-    decision: 'approve' | 'reject',
+    decision: 'approve' | 'reject' | 'reconcile',
     managerId: number,
     notes?: string,
   ) {
     return db.transaction(async (trx) => {
+      const initial = await trx('offline_sync_quarantine').where({ id }).first();
+      if (!initial) throw new Error('Quarantined sale not found.');
+      // Match checkout lock order so approval and replay cannot race or deadlock.
+      await trx.raw('SELECT pg_advisory_xact_lock(hashtext(?))', [initial.idempotency_key]);
       const row = await trx('offline_sync_quarantine').where({ id }).forUpdate().first();
       if (!row) throw new Error('Quarantined sale not found.');
+      if (decision === 'reconcile') {
+        if (row.status !== 'rejected') throw new Error('Only rejected sales can be reconciled.');
+        if (!notes || notes.trim().length < 10)
+          throw new Error('Reconciliation notes are required.');
+        if (row.reconciled_at) return { status: 'reconciled', sale: null };
+        await trx('offline_sync_quarantine').where({ id }).update({
+          reconciled_at: trx.fn.now(),
+          reconciled_by: managerId,
+          reconciliation_notes: notes.trim(),
+        });
+        await trx('audit_logs').insert({
+          entity_type: 'offline_sync_quarantine',
+          entity_id: String(id),
+          action: 'offline_sale_reconciled',
+          user_id: managerId,
+          new_value: JSON.stringify({ status: 'reconciled', sale_id: null }),
+          reason: notes.trim(),
+        });
+        return { status: 'reconciled', sale: null };
+      }
       if (row.status !== 'pending') throw new Error(`Quarantined sale is already ${row.status}.`);
       const payload: CheckoutPayload =
         typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload;

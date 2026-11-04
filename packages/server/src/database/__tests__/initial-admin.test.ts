@@ -27,8 +27,18 @@ describe('first-run administrator credential handling', () => {
   });
 
   it('keeps each recovered employee credential in a separate private file', () => {
-    const a = writeInitialAdminCredentials('employee-a', 'synthetic-password-a', workDir, 'recovery-a.txt');
-    const b = writeInitialAdminCredentials('employee-b', 'synthetic-password-b', workDir, 'recovery-b.txt');
+    const a = writeInitialAdminCredentials(
+      'employee-a',
+      'synthetic-password-a',
+      workDir,
+      'recovery-a.txt',
+    );
+    const b = writeInitialAdminCredentials(
+      'employee-b',
+      'synthetic-password-b',
+      workDir,
+      'recovery-b.txt',
+    );
     expect(a.ok && b.ok).toBe(true);
     expect(fs.readFileSync(a.path!, 'utf8')).toContain('username=employee-a');
     expect(fs.readFileSync(b.path!, 'utf8')).toContain('username=employee-b');
@@ -47,7 +57,9 @@ describe('first-run administrator credential handling', () => {
   });
 
   describe('writeInitialAdminCredentials', () => {
-    it('writes a 0600 file the desktop shell can parse', () => {
+    it('requests owner-only permissions and writes credentials the desktop shell can parse', () => {
+      const write = jest.spyOn(fs, 'writeFileSync');
+      const chmod = jest.spyOn(fs, 'chmodSync');
       const result = writeInitialAdminCredentials('admin', 'S3cret-Value-For-Test', workDir);
 
       expect(result.ok).toBe(true);
@@ -60,8 +72,18 @@ describe('first-run administrator credential handling', () => {
       expect(/^username=(.*)$/m.exec(content)?.[1]).toBe('admin');
       expect(/^password=(.*)$/m.exec(content)?.[1]).toBe('S3cret-Value-For-Test');
 
-      const mode = fs.statSync(result.path as string).mode & 0o777;
-      expect(mode).toBe(0o600);
+      expect(write).toHaveBeenCalledWith(result.path, expect.any(String), {
+        encoding: 'utf8',
+        mode: 0o600,
+      });
+      expect(chmod).toHaveBeenCalledWith(result.path, 0o600);
+      // Windows reports writable files as 0666; privacy there depends on the
+      // per-user AppData ACL and remains part of restricted-user pilot acceptance.
+      if (process.platform !== 'win32') {
+        expect(fs.statSync(result.path as string).mode & 0o777).toBe(0o600);
+      }
+      write.mockRestore();
+      chmod.mockRestore();
     });
 
     it('creates the parent directory when it does not exist yet', () => {

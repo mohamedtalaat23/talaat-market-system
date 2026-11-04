@@ -65,44 +65,44 @@ export function ReceiptPreviewModal() {
 
       <div
         ref={focusTrapRef}
-        className="w-full max-w-sm bg-white text-black p-8 shadow-2xl relative z-10 animate-fade-in font-mono text-sm"
+        className="w-full max-w-sm bg-white text-black p-6 max-h-[90vh] overflow-y-auto shadow-2xl relative z-10 animate-fade-in font-mono text-sm"
         role="dialog"
       >
         <button
           onClick={closeModal}
-          className="absolute -top-12 right-0 text-white hover:text-success transition-colors"
+          aria-label={t('common.close')}
+          className="sticky top-0 ms-auto block text-black hover:text-success transition-colors"
         >
           <X size={32} />
         </button>
 
         <div className="text-center mb-6">
           <CheckCircle size={48} className="mx-auto text-success mb-2" />
-          <h2 className="text-2xl font-bold uppercase tracking-widest">
-            {t('login.talaatMarket')}
-          </h2>
-          <p className="text-secondary mt-1">123 Supermarket St, Cairo</p>
-          <p className="text-secondary">Tel: +20 123 456 7890</p>
+          <h2 className="text-2xl font-bold uppercase tracking-wide">{t('login.talaatMarket')}</h2>
         </div>
 
         <div className="border-b border-dashed border-border pb-2 mb-4 text-xs text-muted">
           <div className="flex justify-between">
             <span>{t('pos.receiptNo')}</span>
-            <span>{sale.receipt_number}</span>
+            <bdi>{sale.receipt_number}</bdi>
           </div>
           <div className="flex justify-between">
             <span>{t('pos.date')}</span>
             <span>{new Date(sale.created_at).toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
-            <span>{t('pos.cashierId')}</span>
+            <span>{t('pos.cashierId').replace('{id}', '')}</span>
             <span>{sale.cashier_id}</span>
           </div>
         </div>
 
         <div className="space-y-2 mb-4">
           {sale.items &&
-            sale.items.map((item: any) => (
-              <div key={item.id} className="text-xs">
+            sale.items.map((item: any, index: number) => (
+              <div
+                key={item.id || `${item.product_id || item.product_name}-${index}`}
+                className="text-xs"
+              >
                 <div className="font-bold">{item.product_name}</div>
                 <div className="flex justify-between text-muted">
                   <span>

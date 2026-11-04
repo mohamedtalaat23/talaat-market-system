@@ -156,7 +156,7 @@ export function ProductBatchList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/40 backdrop-blur-md p-4 rounded-2xl border border-border/60">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/40 backdrop-blur-md p-4 rounded-lg border border-border/60">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-primary/10 rounded-xl text-primary">
             <Calendar className="w-6 h-6" />
@@ -196,7 +196,7 @@ export function ProductBatchList() {
           Loading product batches...
         </div>
       ) : batches.length === 0 ? (
-        <div className="p-12 text-center border border-dashed border-border/60 rounded-2xl bg-card/20">
+        <div className="p-12 text-center border border-dashed border-border/60 rounded-lg bg-card/20">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
           <h4 className="font-bold text-foreground mb-1">No Product Batches Found</h4>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-4">
@@ -210,7 +210,7 @@ export function ProductBatchList() {
           </button>
         </div>
       ) : (
-        <div className="border border-border/60 rounded-2xl overflow-hidden bg-card/40 backdrop-blur-md">
+        <div className="border border-border/60 rounded-lg overflow-hidden bg-card/40 backdrop-blur-md">
           <table className="w-full text-left rtl:text-right text-sm">
             <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
               <tr>
@@ -264,7 +264,7 @@ export function ProductBatchList() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="batch-modal-title"
-              className="relative z-10 bg-background border border-border/80 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+              className="relative z-10 bg-background border border-border/80 rounded-lg p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-start justify-between gap-4 mb-1">
                 <h3 id="batch-modal-title" className="text-lg font-bold text-foreground">

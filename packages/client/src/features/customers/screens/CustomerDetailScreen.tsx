@@ -1,3 +1,4 @@
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCustomerDetail, useDeleteCustomer } from '../hooks/useCustomerQueries';
@@ -13,6 +14,7 @@ export function CustomerDetailScreen() {
   const navigate = useNavigate();
   const id = Number(idParam);
   const { t, language } = useTranslation();
+  const { confirm, confirmationDialog } = useConfirmation();
 
   const [ledgerPage, setLedgerPage] = useState(1);
 
@@ -23,9 +25,9 @@ export function CustomerDetailScreen() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!customer) return;
-    if (confirm(t('customers.deleteConfirm').replace('{name}', customer.name))) {
+    if (await confirm(t('customers.deleteConfirm').replace('{name}', customer.name))) {
       deleteCustomer.mutate(customer.id, {
         onSuccess: () => {
           void navigate('/customers');
@@ -60,13 +62,13 @@ export function CustomerDetailScreen() {
   }
 
   return (
-    <div className="space-y-6 font-sans text-neutral-100 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 font-sans text-foreground p-6 max-w-7xl mx-auto">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/customers')}
-            className="rounded-lg p-1.5 text-secondary hover:bg-card-hover hover:text-neutral-100 transition-colors rtl:rotate-180"
+            className="rounded-lg p-1.5 text-secondary hover:bg-card-hover hover:text-foreground transition-colors rtl:rotate-180"
             title={t('customers.backToDirectory')}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +81,7 @@ export function CustomerDetailScreen() {
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-100">{customer.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{customer.name}</h1>
             <p className="text-xs font-mono text-neutral-500">
               {t('customers.idLabel').replace('{id}', String(customer.id))}
             </p>
@@ -355,6 +357,7 @@ export function CustomerDetailScreen() {
         customerName={customer.name}
         currentBalance={customer.balance}
       />
+      {confirmationDialog}
     </div>
   );
 }

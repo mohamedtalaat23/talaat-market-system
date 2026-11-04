@@ -56,7 +56,7 @@ export function OverrideAuditScreen() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <Card className="border border-border/60 shadow-sm rounded-2xl">
+      <Card className="border border-border/60 shadow-sm rounded-lg">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="space-y-1">

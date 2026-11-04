@@ -54,12 +54,17 @@ export const syncOfflineSchema = z
     path: ['manager_pin'],
   });
 
-export const quarantineDecisionSchema = z.object({
-  decision: z.enum(['approve', 'reject']),
-  manager_id: z.number().int().positive('Manager ID is required'),
-  manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
-  notes: z.string().trim().max(500).nullable().optional(),
-});
+export const quarantineDecisionSchema = z
+  .object({
+    decision: z.enum(['approve', 'reject', 'reconcile']),
+    manager_id: z.number().int().positive('Manager ID is required'),
+    manager_pin: z.string().regex(/^\d{4,6}$/, 'PIN must be between 4 and 6 digits'),
+    notes: z.string().trim().max(500).nullable().optional(),
+  })
+  .refine((value) => value.decision !== 'reconcile' || (value.notes?.length ?? 0) >= 10, {
+    message: 'Describe how cash and goods were reconciled (at least 10 characters).',
+    path: ['notes'],
+  });
 
 export const posIdParamSchema = z.object({
   id: z.coerce.number().int().positive('Invalid identifier ID'),

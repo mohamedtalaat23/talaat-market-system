@@ -1,0 +1,99 @@
+name: Windows internal pilot
+
+on:
+  push:
+    branches: [codex/windows-pilot]
+    paths:
+      - '.github/workflows/windows-pilot.yml'
+      - 'scripts/**'
+      - 'packages/**'
+      - 'vendor/postgres/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: '55439'
+      DB_NAME: pilot_unit_test
+      DB_USER: pilot_unit
+      DB_PASSWORD: synthetic-unit-only-password
+      JWT_SECRET: synthetic-pilot-jwt-secret-at-least-32-characters
+      SESSION_SECRET: synthetic-pilot-session-secret-at-least-32-characters
+      LOG_LEVEL: error
+      CYPRESS_INSTALL_BINARY: '0'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      GH_TOKEN: ''
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Isolate generated evidence
+        run: |
+          "BACKUP_DIR=$env:RUNNER_TEMP\pilot-unit-backups" >> $env:GITHUB_ENV
+          "LOG_DIR=$env:RUNNER_TEMP\pilot-unit-logs" >> $env:GITHUB_ENV
+      - run: npm ci
+      - run: node --test scripts/tests/windows-runtime.test.cjs
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:server:unit
+      - run: npm run test:client
+      - run: npm run test:desktop
+      - run: npm run compile --workspace=packages/desktop
+      - run: node scripts/check-preload.cjs
+      - run: node scripts/test-hardware-runtime.cjs
+      - name: Acquire and verify pinned PostgreSQL
+        run: node scripts/prepare-windows-runtime.cjs
+      - name: Build unsigned internal installer
+        run: |
+          npm run build:server
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run build:client
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run build:pilot --workspace=packages/desktop
+      - name: Audit packaged resources and create checksums
+        run: node scripts/audit-windows-pilot.cjs
+      - name: Install renderer smoke browser
+        run: npx playwright install chromium --only-shell
+      - name: Exercise packaged database, API and renderer
+        run: node scripts/smoke-windows-pilot.cjs packages/desktop/release/win-unpacked/resources
+      - name: Write sanitized build summary
+        if: always()
+        run: |
+          $evidence = 'packages/desktop/release/pilot-evidence'
+          New-Item -ItemType Directory -Force $evidence | Out-Null
+          @{ commit = '${{ github.sha }}'; run = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'; result = '${{ job.status }}'; purpose = 'unsigned internal testing only'; installerExecution = 'not-tested'; hardware = 'not-tested'; fiscal = 'not-tested' } | ConvertTo-Json | Set-Content "$evidence/ci-summary.json"
+      - name: Upload verified internal candidate
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-internal-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            packages/desktop/release/*.exe
+            packages/desktop/release/pilot-evidence/
+      - name: Upload sanitized failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-pilot-failure-${{ github.sha }}
+          retention-days: 14
+          path: packages/desktop/release/pilot-evidence/

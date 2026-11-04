@@ -1,6 +1,6 @@
 # Release blockers — October 30, 2026
 
-**Release decision: NOT READY.** Evidence is in [QA_REPORT](QA_REPORT.md).
+**Release decision: NOT READY.** November 2 product changes and current evidence are recorded in [PRODUCT_IMPROVEMENTS](PRODUCT_IMPROVEMENTS.md). Evidence is in [QA_REPORT](QA_REPORT.md).
 Do not interpret a green test run or production-only npm audit as retail acceptance.
 
 | ID | Priority | Outstanding issue | Evidence / acceptance requirement |
@@ -11,11 +11,11 @@ Do not interpret a green test run or production-only npm audit as retail accepta
 | P0-4 | P0 | Legacy database authentication transition needs supervised acceptance | New clusters use SCRAM; old clusters without the administrator secret or with trust/peer/ident rules stop. Technician must back up, secure the existing cluster/config, prove password denial, preserve records and rehearse the upgrade. No automatic destructive conversion was attempted. |
 | P0-5 | P0 for customer launch | Fiscal and accounting applicability unresolved | Checkout tax is currently zero and EGP is assumed in UI. No claimed ETA/fiscal certification. Decide the launch jurisdiction and verify its requirements with qualified advisers and the relevant authority before financial use. |
 | P1-1 | P1 | Broader fault/soak acceptance | No disk-full, process kill at every commit/print boundary, network partition across several registers, real-size performance/load, or multi-day run. Unit/integration/browser interruption cases are bounded evidence. |
-| P1-2 | P1 | Offline rejection and register handover workflow | Rejected quarantine entries remain on the local queue; automatic deletion would discard possible money/goods evidence. Implement a clear reconciled/rejected outcome workflow. Check cashier handover against the new server-enforced shift ownership rule; sharing another cashier's drawer is rejected. |
+| P1-2 | P1 | Offline rejection and register handover workflow | Rejected quarantine entries remain on the local queue; automatic deletion would discard possible money/goods evidence. November 2: an audited manager reconciliation workflow and separate replay acknowledgement are implemented and covered by PostgreSQL/client tests; verify operator procedures in the store. Check cashier handover against the new server-enforced shift ownership rule; sharing another cashier's drawer is rejected. |
 | P1-3 | P1 | Printing/device acceptance | Windows spooler success does not prove paper output. Validate device discovery, Arabic/58/80mm receipts, unplug/paper-out, explicit reprint, drawer pulse and interrupted-job recovery with real devices. Verify persisted queue size/retention under a full trading day. |
-| P1-4 | P1 | Owner recovery/support experience | Restore and legacy authentication repair remain technician tasks. Add support diagnostics and validate the plain-language owner runbook. Backups must be copied off-device and protected. |
+| P1-4 | P1 | Owner recovery/support experience | Restore and legacy authentication repair remain technician tasks. November 2: setup checklist, backup history/creation and safe support diagnostics are implemented; validate the plain-language owner runbook on the target installation. Backups must be copied off-device and protected. |
 | P2-1 | P2 | Remaining dependency advisories | Six low-severity Jest/deepmerge-related development-tool entries remain; excluded from the staged runtime. No forced downgrade to obsolete Jest/ts-jest was made. Re-audit at release time and inspect the final artifact inventory. |
-| P2-2 | P2 | Bundle/build polish | Large client chunk and dynamic-import warnings remain. Updated Vite also warns about future native-config loading. Optimize after measuring representative workloads. |
+| P2-2 | P2 | Bundle/build polish | November 2: routes are split and ineffective shared-module dynamic imports removed; main JS reduced from 1.63 MB to about 321 kB. Target-machine startup and all-day performance acceptance remain. |
 
 ## Blockers fixed in this mission
 

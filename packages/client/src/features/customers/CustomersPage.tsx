@@ -1,3 +1,4 @@
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -38,6 +39,7 @@ function CustomerAvatar({ name }: { name: string }) {
 export function CustomersPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { confirm, confirmationDialog } = useConfirmation();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -83,8 +85,8 @@ export function CustomersPage() {
     setIsPaymentOpen(true);
   };
 
-  const handleDelete = (id: number, name: string) => {
-    if (confirm(t('customers.deleteConfirm').replace('{name}', name))) {
+  const handleDelete = async (id: number, name: string) => {
+    if (await confirm(t('customers.deleteConfirm').replace('{name}', name))) {
       deleteCustomer.mutate(id);
     }
   };
@@ -116,9 +118,9 @@ export function CustomersPage() {
     >
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md transition-shadow group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
               {t('customers.totalCustomers')}
             </CardTitle>
             <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -133,9 +135,9 @@ export function CustomersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md transition-shadow group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
               {t('customers.totalCredit')}
             </CardTitle>
             <div className="h-8 w-8 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
@@ -150,9 +152,9 @@ export function CustomersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md transition-shadow group">
+        <Card className="border border-border/60 shadow-sm rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow group">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-secondary">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wide text-secondary">
               {t('customers.totalDebt')}
             </CardTitle>
             <div className="h-8 w-8 rounded-xl bg-danger/10 flex items-center justify-center shrink-0">
@@ -389,6 +391,7 @@ export function CustomersPage() {
           currentBalance={paymentCustomer.balance}
         />
       )}
+      {confirmationDialog}
     </PageContainer>
   );
 }

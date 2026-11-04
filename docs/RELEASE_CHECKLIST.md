@@ -19,6 +19,16 @@ for every device/environment item. No checkbox implies evidence not recorded.
 - [x] Independently authorize/audit privileged hardware IPC, including bounded offline cases (code/testing; Windows acceptance remains open).
 - [ ] Re-audit dependencies immediately before signing; compare actual artifact inventory with staging.
 
+## November 4 daily-workflow evidence
+
+- [x] Run all daily cashier/manager/owner journeys through real browser/API/PostgreSQL services in Arabic and English (18 browser tests).
+- [x] Verify committed-but-lost checkout/payment/receiving responses do not duplicate stock or money.
+- [x] Verify discounted partial refunds, restock/write-off, cashier handover and rejected offline reconciliation through the UI.
+- [x] Verify setup, real backup history and safe diagnostics with external internet blocked and fonts bundled locally.
+- [x] Add migration 038 for keyed receipt retries and verify a full backup/restore with the new schema.
+
+See [DAILY_WORKFLOW_REVIEW](DAILY_WORKFLOW_REVIEW.md) for limits, reproduction and screenshots.
+
 ## Windows and installer gates
 
 - [ ] Supply PostgreSQL x64 binaries, required DLLs, extensions and licenses; record source/version/hash.

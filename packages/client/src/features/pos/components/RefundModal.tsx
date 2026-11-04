@@ -1,3 +1,5 @@
+import toast from 'react-hot-toast';
+import { apiClient } from '@/services/api-client';
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalStore } from '@/stores/modalStore';
@@ -32,7 +34,7 @@ export function RefundModal() {
 
   const items = useMemo(() => sale?.items || [], [sale]);
 
-  const refundTotal = useMemo(() => {
+  const refundBreakdown = useMemo(() => {
     const ordered = [...items].sort((a, b) => String(a.id).localeCompare(String(b.id)));
     const grossCents = ordered.reduce(
       (sum, item) => sum + Math.round(Number(item.line_total) * 100),
@@ -42,6 +44,7 @@ export function RefundModal() {
     let cumulative = 0;
     let allocated = 0;
     let refundCents = 0;
+    const lines: Record<string, number> = {};
     for (const item of ordered) {
       cumulative += Math.round(Number(item.line_total) * 100);
       const next = grossCents ? bankersRound((paidCents * cumulative) / grossCents, 0) : 0;
@@ -49,12 +52,16 @@ export function RefundModal() {
       allocated = next;
       const previous = Number(item.refunded_quantity || 0);
       const quantity = quantitiesToRefund[item.id] || 0;
-      refundCents +=
+      const lineCents =
         bankersRound((netLineCents * (previous + quantity)) / Number(item.quantity), 0) -
         bankersRound((netLineCents * previous) / Number(item.quantity), 0);
+      lines[item.id] = lineCents / 100;
+      refundCents += lineCents;
     }
-    return refundCents / 100;
+    return { total: refundCents / 100, lines };
   }, [items, quantitiesToRefund, sale?.total]);
+
+  const refundTotal = refundBreakdown.total;
 
   const handleQtyChange = (itemId: number, maxQty: number, val: string) => {
     let num = Number(val);
@@ -84,7 +91,7 @@ export function RefundModal() {
   );
 
   const handleProcessRefund = useCallback(async () => {
-    if (itemsToRefund.length === 0 || !sale) return;
+    if (isSubmitting || itemsToRefund.length === 0 || !sale) return;
     if (!pin || managerId === '') {
       void import('react-hot-toast').then(({ default: toast }) =>
         toast.error(t('pos.toasts.managerPinRequired')),
@@ -94,9 +101,6 @@ export function RefundModal() {
 
     setIsSubmitting(true);
     try {
-      const { apiClient } = await import('@/services/api-client');
-      const toast = (await import('react-hot-toast')).default;
-
       const verifyRes = await apiClient.post('/employees/verify-pin', {
         manager_id: managerId,
         pin,
@@ -110,6 +114,7 @@ export function RefundModal() {
 
       const payload = {
         manager_id: managerId,
+        manager_pin: pin,
         reason: reason || 'Customer Return',
         refund_type: 'partial',
         idempotency_key: refundKey.current,
@@ -133,10 +138,11 @@ export function RefundModal() {
             items: itemsToRefund.map((reqItem: any) => {
               const origItem = items.find((i: any) => i.id === reqItem.sale_item_id);
               return {
-                product_name: origItem ? origItem.product_name : 'Refunded Item',
+                id: reqItem.sale_item_id,
+                product_name: origItem ? origItem.product_name : t('pos.refund'),
                 quantity: reqItem.quantity,
-                unit_price: origItem ? origItem.unit_price : 0,
-                line_total: origItem ? reqItem.quantity * origItem.unit_price : 0,
+                unit_price: -(refundBreakdown.lines[reqItem.sale_item_id] || 0) / reqItem.quantity,
+                line_total: -(refundBreakdown.lines[reqItem.sale_item_id] || 0),
                 discount: 0,
               };
             }),
@@ -145,16 +151,27 @@ export function RefundModal() {
         }
       }
     } catch (error: any) {
-      const toast = (await import('react-hot-toast')).default;
       toast.error(error.response?.data?.message || t('pos.toasts.refundFailed'));
     } finally {
       setIsSubmitting(false);
       setPin('');
     }
-  }, [itemsToRefund, sale, pin, managerId, reason, items, closeModal, openModal, t]);
+  }, [
+    itemsToRefund,
+    sale,
+    pin,
+    managerId,
+    reason,
+    items,
+    closeModal,
+    openModal,
+    t,
+    isSubmitting,
+    refundBreakdown.lines,
+  ]);
 
   const handleVoidSale = async () => {
-    if (!sale) return;
+    if (isSubmitting || !sale) return;
     if (!pin || managerId === '') {
       void import('react-hot-toast').then(({ default: toast }) =>
         toast.error(t('pos.toasts.managerPinRequired')),
@@ -164,9 +181,6 @@ export function RefundModal() {
 
     setIsSubmitting(true);
     try {
-      const { apiClient } = await import('@/services/api-client');
-      const toast = (await import('react-hot-toast')).default;
-
       const verifyRes = await apiClient.post('/employees/verify-pin', {
         manager_id: managerId,
         pin,
@@ -180,6 +194,7 @@ export function RefundModal() {
 
       const response = await apiClient.post(`/pos/sales/${sale.id}/void`, {
         manager_id: managerId,
+        manager_pin: pin,
         reason: reason || 'Void Sale',
       });
 
@@ -211,7 +226,6 @@ export function RefundModal() {
         }
       }
     } catch (error: any) {
-      const toast = (await import('react-hot-toast')).default;
       toast.error(error.response?.data?.message || t('pos.toasts.voidFailed'));
     } finally {
       setIsSubmitting(false);
@@ -306,6 +320,9 @@ export function RefundModal() {
       <div className="absolute inset-0" onClick={() => closeModal('pos_refund')} />
       <div
         ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="refund-title"
         className="w-full max-w-4xl bg-card border border-border/40 rounded-3xl shadow-2xl shadow-black/20 relative z-10 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-border/40 bg-muted/20">
@@ -313,7 +330,7 @@ export function RefundModal() {
             <div className="p-2 bg-warning/10 rounded-xl border border-warning/20 text-warning shadow-sm">
               <RefreshCcw className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black tracking-tight text-foreground">
+            <h2 id="refund-title" className="text-xl font-semibold tracking-tight text-foreground">
               {t('pos.refundVoidSaleHeader').replace('{receipt}', sale.receipt_number)}
             </h2>
           </div>
@@ -326,12 +343,12 @@ export function RefundModal() {
         </div>
 
         <div className="flex-1 overflow-auto p-6 space-y-6 custom-scrollbar bg-muted/5">
-          <div className="flex justify-between items-center bg-card p-5 rounded-2xl border border-border/60 shadow-sm">
+          <div className="flex justify-between items-center bg-card p-5 rounded-lg border border-border/60 shadow-sm">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-secondary mb-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-secondary mb-1">
                 {t('pos.saleTotal')}
               </p>
-              <p className="text-2xl font-black text-foreground tabular-nums">
+              <p className="text-2xl font-semibold text-foreground tabular-nums">
                 {Number(sale.total).toFixed(2)}{' '}
                 <span className="text-sm text-secondary ml-0.5">{t('pos.currency')}</span>
               </p>
@@ -339,6 +356,7 @@ export function RefundModal() {
             {isEligibleForVoid && (
               <button
                 onClick={handleVoidSale}
+                disabled={isSubmitting}
                 className="px-5 py-2.5 bg-danger hover:bg-danger/90 text-white rounded-xl font-bold flex items-center space-x-2 transition-all shadow-md shadow-danger/20 hover:shadow-danger/30 hover:-translate-y-0.5"
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -347,10 +365,10 @@ export function RefundModal() {
             )}
           </div>
 
-          <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-sm">
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-muted/40 backdrop-blur-md">
-                <tr className="border-b border-border/60 text-[11px] font-black text-secondary uppercase tracking-widest">
+                <tr className="border-b border-border/60 text-[11px] font-semibold text-secondary uppercase tracking-wide">
                   <th className="py-4 px-5">{t('pos.productLabel')}</th>
                   <th className="py-4 px-5 text-center">{t('pos.price')}</th>
                   <th className="py-4 px-5 text-center">{t('pos.sold')}</th>
@@ -377,7 +395,7 @@ export function RefundModal() {
                         </div>
                       </td>
                       <td className="py-4 px-5 text-center font-medium tabular-nums text-foreground">
-                        {(Number(item.unit_price) - Number(item.discount || 0)).toFixed(2)}{' '}
+                        {(Number(item.line_total) / Number(item.quantity)).toFixed(2)}{' '}
                         <span className="text-[10px] text-secondary ml-0.5">
                           {t('pos.currency')}
                         </span>
@@ -408,7 +426,7 @@ export function RefundModal() {
                           <button
                             disabled={refundable <= 0}
                             onClick={() => handleRestockToggle(item.id)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all disabled:opacity-50 shadow-sm ${isRestock ? 'bg-success/10 hover:bg-success/20 text-success border-success/30' : 'bg-danger/10 hover:bg-danger/20 text-danger border-danger/30'}`}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide border transition-all disabled:opacity-50 shadow-sm ${isRestock ? 'bg-success/10 hover:bg-success/20 text-success border-success/30' : 'bg-danger/10 hover:bg-danger/20 text-danger border-danger/30'}`}
                           >
                             {isRestock ? t('pos.restock') : t('pos.writeoff')}
                           </button>
@@ -422,7 +440,7 @@ export function RefundModal() {
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase tracking-widest text-secondary mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-secondary mb-2">
               {t('pos.reasonForReversal')}
             </label>
             <input
@@ -444,7 +462,7 @@ export function RefundModal() {
             isSubmitting={isSubmitting}
             contextMetadata={
               <>
-                <div className="text-lg font-black tracking-tight">
+                <div className="text-lg font-semibold tracking-tight">
                   {itemsToRefund.length > 0
                     ? t('pos.refundValueLabel')
                         .replace('{amount}', refundTotal.toFixed(2))
@@ -453,7 +471,7 @@ export function RefundModal() {
                 </div>
                 {itemsToRefund.length > 0 && (
                   <div
-                    className={`text-[11px] font-black uppercase tracking-widest mt-1 ${itemsToRefund.some((i: any) => !i.restock_inventory) ? 'text-danger' : 'text-success'}`}
+                    className={`text-[11px] font-semibold uppercase tracking-wide mt-1 ${itemsToRefund.some((i: any) => !i.restock_inventory) ? 'text-danger' : 'text-success'}`}
                   >
                     {itemsToRefund.some((i: any) => !i.restock_inventory)
                       ? t('pos.writeOffDamage')
@@ -464,7 +482,7 @@ export function RefundModal() {
             }
           />
           <div className="mt-6 flex items-center justify-between font-bold">
-            <div className="text-[10px] font-black uppercase tracking-widest text-secondary flex space-x-3 items-center opacity-70">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-secondary flex space-x-3 items-center opacity-70">
               <span className="flex items-center gap-1.5">
                 <kbd className="px-1.5 py-0.5 bg-card rounded border border-border/60 font-mono">
                   ↑/↓
@@ -507,7 +525,7 @@ export function RefundModal() {
             <button
               onClick={handleProcessRefund}
               disabled={refundTotal <= 0 || isSubmitting}
-              className="px-8 py-3.5 bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase tracking-widest text-[11px] rounded-xl shadow-md shadow-warning/20 hover:shadow-lg hover:shadow-warning/30 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 transition-all"
+              className="px-8 py-3.5 bg-warning hover:bg-warning/90 text-warning-foreground font-semibold uppercase tracking-wide text-[11px] rounded-xl shadow-md shadow-warning/20 hover:shadow-lg hover:shadow-warning/30 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 transition-all"
             >
               {isSubmitting ? t('pos.processing') : t('pos.processRefund')}
             </button>

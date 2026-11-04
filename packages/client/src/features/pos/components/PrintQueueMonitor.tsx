@@ -1,3 +1,4 @@
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { useState, useEffect } from 'react';
 import type { PrintJob, PrinterStatus } from '@/types';
 import toast from 'react-hot-toast';
@@ -6,6 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function PrintQueueMonitor() {
   const { t } = useTranslation();
+  const { confirm, confirmationDialog } = useConfirmation();
   const [isElectron, setIsElectron] = useState(false);
   const [jobs, setJobs] = useState<PrintJob[]>([]);
   const [status, setStatus] = useState<PrinterStatus | null>(null);
@@ -80,7 +82,7 @@ export function PrintQueueMonitor() {
 
   const handleClearQueue = async () => {
     if (!window.electronAPI) return;
-    if (confirm(t('pos.confirmClearHistory'))) {
+    if (await confirm(t('pos.confirmClearHistory'))) {
       try {
         await window.electronAPI.clearPrintQueue();
         toast.success(t('pos.toasts.printHistoryCleared'));
@@ -144,14 +146,14 @@ export function PrintQueueMonitor() {
   );
 
   return (
-    <div className="bg-card/40 border border-border/60 rounded-2xl p-5 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4 font-sans select-none text-xs text-secondary transition-all">
+    <div className="bg-card/40 border border-border/60 rounded-lg p-5 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] space-y-4 font-sans select-none text-xs text-secondary transition-all">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/40 pb-3">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-sm">
             <Printer size={14} />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-foreground">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground">
             {t('pos.receiptPrinterQueue')}
           </span>
         </div>
@@ -160,7 +162,7 @@ export function PrintQueueMonitor() {
             <button
               type="button"
               onClick={handleClearQueue}
-              className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-secondary/10 text-secondary hover:bg-secondary/20 hover:text-foreground transition-all"
+              className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded bg-secondary/10 text-secondary hover:bg-secondary/20 hover:text-foreground transition-all"
               title={t('pos.clearQueueHistory')}
             >
               {t('reports.clear')}
@@ -185,7 +187,7 @@ export function PrintQueueMonitor() {
       {/* Collapsible Printer Settings & Re-routing Board */}
       {showSettings && (
         <div className="bg-card/60 p-4 rounded-xl border border-border/60 shadow-[inset_0_2px_8px_rgba(0,0,0,0.01)] space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
-          <div className="text-[10px] font-black uppercase tracking-widest text-secondary/70">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-secondary/70">
             {t('pos.deviceRoutingConfig')}
           </div>
 
@@ -291,7 +293,7 @@ export function PrintQueueMonitor() {
               className={`h-2 w-2 rounded-full shadow-sm ${status.online ? 'bg-success animate-pulse shadow-success/40' : 'bg-danger shadow-danger/40'}`}
             />
             <span
-              className={`text-[10px] font-black uppercase tracking-widest ${status.online ? 'text-success' : 'text-danger'}`}
+              className={`text-[10px] font-semibold uppercase tracking-wide ${status.online ? 'text-success' : 'text-danger'}`}
             >
               {status.online ? t('settings.online') : t('settings.offline')}
             </span>
@@ -315,7 +317,7 @@ export function PrintQueueMonitor() {
                   <RefreshCw size={14} className="mr-2 animate-spin text-success" />
                   {t('pos.spoolingJobs').replace('{count}', String(processingJobs.length))}
                 </span>
-                <span className="font-mono text-[10px] font-black tracking-widest px-1.5 py-0.5 rounded bg-success/20">
+                <span className="font-mono text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-success/20">
                   ERP
                 </span>
               </div>
@@ -329,7 +331,7 @@ export function PrintQueueMonitor() {
               >
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <span className="font-black block text-xs tracking-wide">
+                    <span className="font-semibold block text-xs tracking-wide">
                       {t('pos.printFailedLabel')}:{' '}
                       <span className="font-mono ml-0.5">{job.receipt.receiptNumber}</span>
                     </span>
@@ -343,7 +345,7 @@ export function PrintQueueMonitor() {
                   <button
                     type="button"
                     onClick={() => handleRetry(job.id)}
-                    className="rounded-lg bg-danger hover:bg-danger/90 text-white shadow-sm shadow-danger/20 border border-danger/50 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all shrink-0 hover:-translate-y-0.5 hover:shadow-md"
+                    className="rounded-lg bg-danger hover:bg-danger/90 text-white shadow-sm shadow-danger/20 border border-danger/50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide transition-all shrink-0 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     {t('pos.retryLabel')}
                   </button>
@@ -353,6 +355,7 @@ export function PrintQueueMonitor() {
           </div>
         )}
       </div>
+      {confirmationDialog}
     </div>
   );
 }

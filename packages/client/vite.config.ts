@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Vite configuration for the React client.
@@ -21,11 +21,12 @@ import path from 'path';
  * 4. Output to `dist/` — electron-builder expects the built client here.
  */
 export default defineConfig({
+  base: './',
   plugins: [react()],
 
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 

@@ -82,7 +82,10 @@ export function ProductSearchFallback() {
     enabled: isOpen && showResults,
   });
 
-  const products = useMemo(() => data?.data || [], [data]);
+  const products = useMemo(
+    () => (searchTerm === debouncedSearch ? data?.data || [] : []),
+    [data, searchTerm, debouncedSearch],
+  );
 
   // Reset selected index when products list changes
   useEffect(() => {
@@ -111,6 +114,7 @@ export function ProductSearchFallback() {
 
     toast.success(t('pos.toasts.addedToCart').replace('{name}', product.name));
     setSearchTerm('');
+    setDebouncedSearch('');
     closeModal();
     // Return focus to scanner workflow
     document.body.focus();
@@ -123,6 +127,12 @@ export function ProductSearchFallback() {
       return;
     }
 
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const selected = products[selectedIndex];
+      if (selected) onSelectProduct(selected);
+      return;
+    }
     if (products.length === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -199,7 +209,7 @@ export function ProductSearchFallback() {
             </div>
 
             <div className="h-64 overflow-y-auto border border-border rounded bg-background/50 p-2 space-y-1">
-              {isLoading ? (
+              {isLoading || searchTerm !== debouncedSearch ? (
                 <div className="p-3 text-secondary text-sm text-center mt-16 font-mono">
                   {t('pos.loadingMatchingProducts')}
                 </div>
@@ -219,10 +229,11 @@ export function ProductSearchFallback() {
                   const isInactive = !product.is_active;
 
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={product.id}
                       onClick={() => onSelectProduct(product)}
-                      className={`flex items-center justify-between p-2.5 rounded cursor-pointer transition-all border ${
+                      className={`w-full text-start flex items-center justify-between p-2.5 rounded cursor-pointer transition-all border ${
                         isSelected
                           ? 'bg-success/90/10 text-success border-success/30'
                           : 'bg-card/40 text-secondary border-transparent hover:bg-card-hover/40 hover:text-foreground'
@@ -276,7 +287,7 @@ export function ProductSearchFallback() {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })
               )}

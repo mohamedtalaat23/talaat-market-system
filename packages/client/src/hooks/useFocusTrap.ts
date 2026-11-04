@@ -50,6 +50,8 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
 
     // Focus the first appropriate element inside the modal after standard render layout cycle
     const animId = requestAnimationFrame(() => {
+      // Do not steal focus after the operator has already entered this dialog.
+      if (container.contains(document.activeElement)) return;
       const freshFocusable = getFocusableElements();
       if (freshFocusable.length > 0) {
         // Prefer focusing the first input element for form usability
@@ -63,7 +65,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(isOpen: boo
     });
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab' || document.querySelector('dialog[open]')) return;
 
       const activeFocusable = getFocusableElements();
       if (activeFocusable.length === 0) return;

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { db } from '../config/database';
 import { bankersRound } from '../utils/currency';
 
@@ -329,11 +330,39 @@ export class PurchaseRepository {
     receivedItems: ReceiveItemInput[],
     receiverId: number,
     notes?: string,
+    idempotencyKey?: string,
   ): Promise<void> {
     return await db.transaction(async (trx) => {
       // 1. Lock and verify the purchase order
       const po = await trx('purchase_orders').where({ id }).forUpdate().first();
       if (!po) throw new Error('Purchase order not found');
+      const fingerprint = createHash('sha256')
+        .update(
+          JSON.stringify({
+            receiverId,
+            notes: notes || null,
+            items: [...receivedItems]
+              .sort((a, b) => a.po_item_id - b.po_item_id)
+              .map((item) => ({
+                po_item_id: item.po_item_id,
+                product_id: item.product_id,
+                quantity_to_receive: item.quantity_to_receive,
+                shortage_quantity: item.shortage_quantity || 0,
+                shortage_reason: item.shortage_reason || null,
+              })),
+          }),
+        )
+        .digest('hex');
+      if (idempotencyKey) {
+        const existing = await trx('purchase_order_receipts')
+          .where({ idempotency_key: idempotencyKey })
+          .first();
+        if (existing) {
+          if (existing.purchase_order_id !== id || existing.request_fingerprint !== fingerprint)
+            throw new Error('Receipt key belongs to a different request.');
+          return;
+        }
+      }
       if (po.status !== 'ordered' && po.status !== 'partially_received') {
         throw new Error('Only ordered or partially received purchase orders can be received');
       }
@@ -372,6 +401,8 @@ export class PurchaseRepository {
         .insert({
           purchase_order_id: id,
           receipt_number: receiptNumber,
+          idempotency_key: idempotencyKey || null,
+          request_fingerprint: idempotencyKey ? fingerprint : null,
           status: 'posted',
           received_by: receiverId,
           notes: notes || null,

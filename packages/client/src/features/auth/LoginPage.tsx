@@ -121,12 +121,20 @@ export function LoginPage() {
 
         // Provisioned accounts must rotate their temporary password first.
         if (employee.must_change_password) {
-          toast.success(`Welcome, ${employee.full_name}! Please choose a new password.`);
+          toast.success(
+            language === 'ar'
+              ? `مرحبًا ${employee.full_name}! اختر كلمة مرور جديدة.`
+              : `Welcome, ${employee.full_name}! Please choose a new password.`,
+          );
           void navigate('/change-password', { replace: true });
           return;
         }
 
-        toast.success(`Welcome back, ${employee.full_name}!`);
+        toast.success(
+          language === 'ar'
+            ? `مرحبًا بعودتك، ${employee.full_name}!`
+            : `Welcome back, ${employee.full_name}!`,
+        );
         void navigate(from, { replace: true });
       } else {
         setError(t('login.error'));
@@ -161,14 +169,14 @@ export function LoginPage() {
         {/* Brand logo + name */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur border border-white/30 shadow-xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20 backdrop-blur border border-white/30 shadow-xl">
               <Store className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-white font-black text-xl tracking-tight leading-none">
+              <p className="text-white font-semibold text-xl tracking-tight leading-none">
                 {t('login.talaatMarket')}
               </p>
-              <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-0.5">
+              <p className="text-white/70 text-xs font-bold uppercase tracking-wide mt-0.5">
                 {t('login.managementSystem')}
               </p>
             </div>
@@ -179,11 +187,11 @@ export function LoginPage() {
         <div className="relative z-10 flex-1 flex flex-col justify-center py-12">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/20 rounded-full px-4 py-2 w-fit mb-6">
             <Zap className="h-4 w-4 text-yellow-300" />
-            <span className="text-white text-xs font-bold uppercase tracking-widest">
+            <span className="text-white text-xs font-bold uppercase tracking-wide">
               {t('login.retailPlatform')}
             </span>
           </div>
-          <h1 className="text-5xl font-black text-white tracking-tight leading-tight mb-4">
+          <h1 className="text-5xl font-semibold text-white tracking-tight leading-tight mb-4">
             {t('login.runStore')}
             <br />
             <span className="text-white/80">{t('login.smarterFaster')}</span>
@@ -197,7 +205,7 @@ export function LoginPage() {
             {FEATURE_CARDS.map(({ icon: Icon, title, description, color, delay }) => (
               <div
                 key={title}
-                className="group bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default"
+                className="group bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 rounded-lg p-4 transition-all duration-300  hover:shadow-lg cursor-default"
                 style={{ animationDelay: delay }}
               >
                 <div
@@ -260,10 +268,10 @@ export function LoginPage() {
               <Store className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-foreground font-black text-lg tracking-tight leading-none">
+              <p className="text-foreground font-semibold text-lg tracking-tight leading-none">
                 {t('login.talaatMarket')}
               </p>
-              <p className="text-secondary text-[10px] font-bold uppercase tracking-widest mt-0.5">
+              <p className="text-secondary text-[10px] font-bold uppercase tracking-wide mt-0.5">
                 {t('login.managementSystem')}
               </p>
             </div>
@@ -271,7 +279,7 @@ export function LoginPage() {
 
           {/* Heading */}
           <div className="mb-8">
-            <h2 className="text-3xl font-black text-foreground tracking-tight mb-1">
+            <h2 className="text-3xl font-semibold text-foreground tracking-tight mb-1">
               {t('login.title')}
             </h2>
             <p className="text-secondary text-sm font-medium">{t('login.enterCredentials')}</p>
@@ -342,7 +350,7 @@ export function LoginPage() {
             {/* Submit */}
             <Button
               type="submit"
-              className="w-full h-13 rounded-xl text-[15px] font-black tracking-wider uppercase bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-[0_4px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.4)] transition-all duration-300 hover:-translate-y-0.5 mt-2"
+              className="w-full h-13 rounded-xl text-[15px] font-semibold tracking-wider uppercase bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-[0_4px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.4)] transition-all duration-300 hover:-translate-y-0.5 mt-2"
               disabled={isLoading}
             >
               {isLoading ? (

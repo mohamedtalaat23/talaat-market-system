@@ -1,0 +1,5 @@
+extends: ./electron-builder.yml
+artifactName: '${productName}-${version}-internal-${arch}-Setup.${ext}'
+publish: null
+win:
+  signAndEditExecutable: false

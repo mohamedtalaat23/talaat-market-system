@@ -1,3 +1,4 @@
+import { InlineManagerApproval } from './InlineManagerApproval';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CreditCard, Banknote, CheckCircle2, Monitor } from 'lucide-react';
@@ -37,10 +38,22 @@ export function PaymentModal() {
 
   const [cashReceivedStr, setCashReceivedStr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [managerId, setManagerId] = useState<number | ''>('');
+  const [managerPin, setManagerPin] = useState('');
+  const needsApproval =
+    cart.some((item) => item.discount > item.quantity * item.unit_price * 0.2) ||
+    itemDiscounts + globalDiscount > subtotal * 0.2;
   const [cashPortionStr, setCashPortionStr] = useState('');
   const [cardPortionStr, setCardPortionStr] = useState('');
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
   const idempotencyKeyRef = useRef<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setManagerId('');
+      setManagerPin('');
+    }
+  }, [isOpen]);
 
   // Focus and reset state when opened
   useEffect(() => {
@@ -101,6 +114,7 @@ export function PaymentModal() {
     e.preventDefault();
     if (!canCheckout) return;
 
+    if (needsApproval && (!managerId || !managerPin)) return;
     setIsSubmitting(true);
     const idempotency_key = idempotencyKeyRef.current || crypto.randomUUID(); // Fallback if ref is somehow empty
     const { mode, status, addOfflineSale, setStatus } = useLANStore.getState();
@@ -231,7 +245,13 @@ export function PaymentModal() {
 
     // Resilient offline/timeout bypass
     if (mode === 'client' && status === 'offline') {
-      try { await executeOfflineCheckout(); } catch (failure) { toast.error(failure instanceof Error ? failure.message : 'Offline authorization unavailable'); }
+      try {
+        await executeOfflineCheckout();
+      } catch (failure) {
+        toast.error(
+          failure instanceof Error ? failure.message : 'Offline authorization unavailable',
+        );
+      }
       setIsSubmitting(false);
       return;
     }
@@ -247,6 +267,7 @@ export function PaymentModal() {
         cash_amount: paymentMethod === 'split' ? parseFloat(cashPortionStr) || 0 : undefined,
         card_amount: paymentMethod === 'split' ? parseFloat(cardPortionStr) || 0 : undefined,
         idempotency_key,
+        ...(needsApproval ? { manager_id: Number(managerId), manager_pin: managerPin } : {}),
         global_discount: globalDiscount,
         customer_id: selectedCustomer?.id || undefined,
         items: cart.map((item) => ({
@@ -287,18 +308,20 @@ export function PaymentModal() {
         openModalAction('pos_receipt_preview', { sale: saleData });
       }
     } catch (error: any) {
-      const isNetworkError =
-        !error.response ||
-        error.message?.includes('Network Error') ||
-        error.status === undefined ||
-        error.status >= 500;
+      const isNetworkError = error.status === undefined || error.status >= 500;
 
       if (mode === 'client' && isNetworkError) {
         toast.error(t('pos.toasts.checkoutOfflineFallback'), {
           duration: 4000,
         });
         setStatus('offline');
-        try { await executeOfflineCheckout(); } catch (failure) { toast.error(failure instanceof Error ? failure.message : 'Offline authorization unavailable'); }
+        try {
+          await executeOfflineCheckout();
+        } catch (failure) {
+          toast.error(
+            failure instanceof Error ? failure.message : 'Offline authorization unavailable',
+          );
+        }
       } else {
         toast.error(error.response?.data?.message || error.message || 'Checkout failed.');
       }
@@ -366,6 +389,21 @@ export function PaymentModal() {
 
           {/* Right Column: Payment Form */}
           <form onSubmit={handleCheckout} className="space-y-6">
+            {needsApproval && (
+              <InlineManagerApproval
+                managerId={managerId}
+                setManagerId={setManagerId}
+                pin={managerPin}
+                setPin={setManagerPin}
+                isSubmitting={isSubmitting}
+                contextMetadata={
+                  <span>
+                    {t('pos.discounts')}: {Number(itemDiscounts + globalDiscount).toFixed(2)}{' '}
+                    {t('pos.currency')} · {t('pos.total')}: {total.toFixed(2)} {t('pos.currency')}
+                  </span>
+                }
+              />
+            )}
             <div className="flex space-x-2">
               <button
                 type="button"

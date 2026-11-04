@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Barcode, Edit2, Trash2, ShieldAlert, TrendingUp, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -33,7 +34,7 @@ function getCategoryColor(name: string): string {
 
 /** Compute profit margin % */
 function getMargin(product: Product): number {
-  if (!product.cost_price || product.cost_price === 0) return 0;
+  if (!product.selling_price || product.selling_price <= 0) return 0;
   return Math.round(((product.selling_price - product.cost_price) / product.selling_price) * 100);
 }
 
@@ -52,15 +53,13 @@ export function ProductTable({
 
   return (
     <div
-      className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"
+      className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm"
       role="region"
-      aria-label="Product Catalog Table"
+      aria-label={t('products.title')}
     >
       <div className="overflow-x-auto">
         <table className="w-full text-sm" role="table">
-          <caption className="sr-only">
-            List of store products with names, prices, and stock indicators
-          </caption>
+          <caption className="sr-only">{t('products.description')}</caption>
 
           {/* ── Header ────────────────────────────────────────────── */}
           <thead>
@@ -165,16 +164,18 @@ export function ProductTable({
                         <div className="min-w-0">
                           <div
                             className="font-semibold text-foreground leading-tight truncate max-w-[200px]"
-                            title={product.name}
+                            title={
+                              language === 'ar' ? product.name_ar || product.name : product.name
+                            }
                           >
-                            {product.name}
+                            {language === 'ar' ? product.name_ar || product.name : product.name}
                           </div>
                           {product.name_ar && (
                             <div
                               className="text-xs text-secondary font-arabic mt-0.5 truncate max-w-[200px]"
-                              title={product.name_ar}
+                              title={language === 'ar' ? product.name : product.name_ar}
                             >
-                              {product.name_ar}
+                              {language === 'ar' ? product.name : product.name_ar}
                             </div>
                           )}
                           {product.description && (
@@ -291,22 +292,30 @@ export function ProductTable({
 
                     {/* Actions */}
                     <td className="py-3 px-4">
-                      <div className="flex items-center justify-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-center gap-1">
+                        <Link
+                          to={`/inventory?search=${encodeURIComponent(product.barcode || product.name)}`}
+                          className="shrink-0 p-2 text-primary"
+                          title={t('nav.inventory')}
+                          aria-label={`${t('nav.inventory')} ${product.name}`}
+                        >
+                          <Package size={16} />
+                        </Link>
                         <button
                           onClick={() => onEdit(product)}
-                          className="rounded-lg p-2 text-secondary hover:text-primary hover:bg-primary/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="shrink-0 rounded-md p-2 text-secondary hover:text-primary hover:bg-primary/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           title={t('products.editDetails')}
                           aria-label={`${t('products.editDetails')} ${product.name}`}
                         >
-                          <Edit2 size={14} />
+                          <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => onDelete(product)}
-                          className="rounded-lg p-2 text-secondary hover:text-destructive hover:bg-destructive/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="shrink-0 rounded-md p-2 text-secondary hover:text-destructive hover:bg-destructive/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           title={t('products.deleteProduct')}
                           aria-label={`${t('products.deleteProduct')} ${product.name}`}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -317,7 +326,7 @@ export function ProductTable({
               <tr>
                 <td colSpan={9} className="p-16 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
                       <Package className="h-8 w-8 text-secondary/40" aria-hidden="true" />
                     </div>
                     <p className="font-semibold text-foreground">

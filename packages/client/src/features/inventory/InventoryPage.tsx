@@ -1,3 +1,4 @@
+import { useSearchParams, Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { History, Calendar, ClipboardList, LayoutGrid } from 'lucide-react';
@@ -21,15 +22,22 @@ import { ProductBatchList } from './components/ProductBatchList';
  * Delegates list filtration, pagination, and overlays to subcomponents.
  */
 export function InventoryPage() {
+  const [params] = useSearchParams();
   const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState(params.get('search') || '');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [showLowStock, setShowLowStock] = useState(false);
+  const [showLowStock, setShowLowStock] = useState(params.get('low_stock') === 'true');
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [activeTab, setActiveTab] = useState<'stock' | 'cycle_counts' | 'batches'>('stock');
+  const [activeTab, setActiveTab] = useState<'stock' | 'cycle_counts' | 'batches'>(
+    params.get('tab') === 'batches'
+      ? 'batches'
+      : params.get('tab') === 'cycle_counts'
+        ? 'cycle_counts'
+        : 'stock',
+  );
 
   const openModal = useModalStore((state) => state.openModal);
 
@@ -94,13 +102,21 @@ export function InventoryPage() {
       error={!isLoadingInventory ? (error as Error) : null}
       refetch={refetch}
       actions={
-        <button
-          onClick={handleGlobalHistoryClick}
-          className="flex items-center gap-2 px-4 py-2 h-10 bg-white dark:bg-card border border-border/60 hover:border-primary/40 rounded-xl font-bold text-xs uppercase tracking-wider text-secondary hover:text-primary transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          <History size={16} />
-          <span>{t('inventory.globalHistory')}</span>
-        </button>
+        <>
+          <Link to="/purchases" className="text-sm text-primary underline">
+            {t('nav.purchases')}
+          </Link>
+          <Link to="/products" className="text-sm text-primary underline">
+            {t('nav.products')}
+          </Link>
+          <button
+            onClick={handleGlobalHistoryClick}
+            className="flex items-center gap-2 px-4 py-2 h-10 bg-white dark:bg-card border border-border/60 hover:border-primary/40 rounded-xl font-bold text-xs uppercase tracking-wider text-secondary hover:text-primary transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <History size={16} />
+            <span>{t('inventory.globalHistory')}</span>
+          </button>
+        </>
       }
     >
       {/* Search inputs and toggles decomposed filter bar */}

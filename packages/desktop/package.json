@@ -15,7 +15,8 @@
     "test": "jest",
     "pack": "npm run compile && npm run stage:runtime && electron-builder --dir --publish never",
     "compile": "node ../../scripts/build-desktop.cjs",
-    "stage:runtime": "node ../../scripts/stage-runtime.cjs"
+    "stage:runtime": "node ../../scripts/stage-runtime.cjs",
+    "build:pilot": "node ../../scripts/check-windows-runtime.cjs && npm run compile && npm run stage:runtime && electron-builder --win --config electron-builder.pilot.yml --publish never"
   },
   "dependencies": {
     "electron-store": "^10.0.0"
