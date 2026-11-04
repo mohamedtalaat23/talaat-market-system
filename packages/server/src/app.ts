@@ -1,4 +1,5 @@
 import express from 'express';
+import { desktopRenderer } from './desktop-renderer';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
@@ -23,7 +24,7 @@ import { apiRouter } from './routes';
  *   7. 404 handler — after routes, catches unmatched paths
  *   8. Error handler — last, handles all thrown errors
  */
-export function createApp(): express.Application {
+export function createApp(rendererDirectory?: string): express.Application {
   const app = express();
   const wsProto = 'ws' + '://';
   const httpProto = 'http' + '://';
@@ -111,6 +112,7 @@ export function createApp(): express.Application {
 
   // ── Routes ────────────────────────────────────────────────────────────────
   app.use(apiRouter);
+  if (rendererDirectory) app.use(desktopRenderer(rendererDirectory));
 
   // ── 404 Handler ───────────────────────────────────────────────────────────
   app.use(notFoundHandler);

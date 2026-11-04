@@ -9,7 +9,7 @@ export default mergeConfig(
       globals: true,
       environment: 'jsdom',
       setupFiles: path.resolve(__dirname, './src/setupTests.ts'),
-      include: [path.resolve(__dirname, './src/**/*.test.{ts,tsx}')],
+      include: ['src/**/*.test.{ts,tsx}'],
     },
   })
 );

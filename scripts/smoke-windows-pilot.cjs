@@ -143,6 +143,9 @@ async function main() {
       LOG_DIR: path.join(temp, 'logs'),
       BACKUP_DIR: path.join(temp, 'backups'),
       TALAAT_CONFIG_PATH: path.join(temp, 'config.env'),
+      TALAAT_DESKTOP_RENDERER_DIR: resources
+        ? path.join(resources, 'client/dist')
+        : path.join(root, 'packages/client/dist'),
     };
     for (const file of ['database/migrate.js', 'database/bootstrap.js'])
       run(process.execPath, [path.join(serverDirectory, file)], appEnv);
@@ -187,6 +190,11 @@ async function main() {
       body: JSON.stringify({ current_password: initialPassword, new_password: secret() }),
     });
     if (!rotate.ok) throw new Error('First-run password rotation failed.');
+    run(
+      process.execPath,
+      [path.join(__dirname, 'smoke-built-renderer.cjs'), `http://127.0.0.1:${apiPort}/`],
+      process.env,
+    );
     fs.mkdirSync(evidenceDirectory, { recursive: true });
     fs.writeFileSync(
       path.join(evidenceDirectory, 'windows-smoke.json'),

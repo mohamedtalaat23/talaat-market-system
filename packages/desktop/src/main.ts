@@ -181,7 +181,7 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
   // are how a phishing page or an injected script escapes into a privileged
   // context.
   const isAppUrl = (url: string): boolean =>
-    isDev ? url.startsWith(VITE_DEV_SERVER_URL) : url.startsWith('file://');
+    isDev ? url.startsWith(VITE_DEV_SERVER_URL) : url.startsWith(`http://localhost:${serverPort}/`);
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     logger.warn('Blocked window.open from renderer', url);
@@ -222,12 +222,8 @@ async function createWindow(serverPort: number): Promise<BrowserWindow> {
     logger.info(`Loading from Vite dev server: ${VITE_DEV_SERVER_URL}`);
     await win.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    // Production: Load from built files
-    const indexPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'client/dist/index.html')
-      : path.join(__dirname, '../../client/dist/index.html');
-    logger.info(`Loading from: ${indexPath}`);
-    await win.loadFile(indexPath);
+    // Serve the packaged UI on the API origin without weakening CORS.
+    await win.loadURL(`http://localhost:${serverPort}/`);
   }
 
   // Pass the server port to the renderer after load
@@ -322,7 +318,7 @@ app.on('ready', async () => {
       serverPort,
       assertTrustedSender: createSenderGuard({
         getWindow: () => mainWindow,
-        allowedUrlPrefixes: isDev ? [VITE_DEV_SERVER_URL] : ['file://'],
+        allowedUrlPrefixes: isDev ? [VITE_DEV_SERVER_URL] : [`http://localhost:${serverPort}/`],
       }),
     });
 

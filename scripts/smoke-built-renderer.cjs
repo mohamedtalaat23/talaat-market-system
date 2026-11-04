@@ -1,19 +1,32 @@
 const path = require('node:path');
 const fs = require('node:fs');
-const { pathToFileURL } = require('node:url');
+const express = require('express');
 const { chromium } = require('@playwright/test');
 const root = path.resolve(__dirname, '..');
-const resources = process.argv[2] ? path.resolve(process.argv[2]) : null;
+const target = process.argv[2];
+const resources = target && !target.startsWith('http:') ? path.resolve(target) : null;
 const index = resources
   ? path.join(resources, 'client/dist/index.html')
   : path.join(root, 'packages/client/dist/index.html');
 async function main() {
-  const html = fs.readFileSync(index, 'utf8');
+  let localServer;
+  let url = target?.startsWith('http:') ? target : null;
+  if (!url) {
+    const app = express();
+    const { desktopRenderer } = require('../packages/server/dist/desktop-renderer.js');
+    app.use(desktopRenderer(path.dirname(index)));
+    localServer = app.listen(0, '127.0.0.1');
+    await new Promise((resolve) => localServer.once('listening', resolve));
+    url = `http://127.0.0.1:${localServer.address().port}/`;
+  }
+  const html =
+    resources || !target?.startsWith('http:')
+      ? fs.readFileSync(index, 'utf8')
+      : await (await fetch(url)).text();
   if (/(?:src|href)=["']\/(?!\/)/.test(html))
     throw new Error('Built renderer uses root-relative file assets.');
   const browser = await chromium.launch({
     headless: true,
-    args: ['--allow-file-access-from-files'],
   });
   try {
     for (const language of ['en', 'ar']) {
@@ -25,7 +38,7 @@ async function main() {
         localStorage.setItem('talaat_lang', language);
         window.electronAPI = { getServerPort: async () => 55449 };
       }, language);
-      await page.route('http://127.0.0.1:55449/api/v1/**', async (route) => {
+      await page.route(`${url}api/v1/**`, async (route) => {
         if (route.request().method() === 'OPTIONS') {
           await route.fulfill({
             status: 204,
@@ -46,10 +59,10 @@ async function main() {
           body: JSON.stringify({ message: 'Synthetic built-renderer login rejection' }),
         });
       });
-      await page.goto(pathToFileURL(index).href);
+      await page.goto(url);
       await page.locator('#username').waitFor({ timeout: 30000 });
       if (!page.url().includes('#/login'))
-        throw new Error('File renderer did not select hash routing.');
+        throw new Error('Desktop renderer did not select hash routing.');
       if (!(await page.evaluate(async () => (await document.fonts.load('16px Cairo')).length)))
         throw new Error('Bundled Cairo font is missing.');
       if (!(await page.evaluate(() => document.fonts.check('16px Cairo'))))
@@ -58,8 +71,7 @@ async function main() {
       await page.fill('#password', 'not-a-real-password');
       const requested = page.waitForResponse(
         (response) =>
-          response.request().method() === 'POST' &&
-          response.url() === 'http://127.0.0.1:55449/api/v1/auth/login',
+          response.request().method() === 'POST' && response.url() === `${url}api/v1/auth/login`,
       );
       await page.locator('button[type=submit]').click();
       await requested;
@@ -74,24 +86,20 @@ async function main() {
       JSON.stringify(
         {
           passed: true,
-          transport: 'file',
+          transport: 'same-origin-loopback-http',
           languages: ['en', 'ar'],
-          checks: [
-            'relative assets',
-            'hash routing',
-            'local fonts',
-            'existing IPC port bridge to HTTP API',
-          ],
+          checks: ['relative assets', 'hash routing', 'local fonts', 'same-origin HTTP API'],
           limits:
-            'Chromium with a minimal port-bridge fixture; not native Electron/hardware acceptance',
+            'Chromium with a minimal desktop bridge fixture; not native Electron/hardware acceptance',
         },
         null,
         2,
       ),
     );
-    console.log('Built file renderer smoke passed in Arabic and English.');
+    console.log('Built desktop renderer smoke passed in Arabic and English.');
   } finally {
     await browser.close();
+    if (localServer) await new Promise((resolve) => localServer.close(resolve));
   }
 }
 main().catch((error) => {

@@ -53,7 +53,7 @@ async function main(): Promise<void> {
     });
 
   // Step 2: Create and start the HTTP or HTTPS server
-  const app = createApp();
+  const app = createApp(process.env['TALAAT_DESKTOP_RENDERER_DIR']);
   let server: any;
 
   if (env.SSL_ENABLED && env.SSL_KEY_PATH && env.SSL_CERT_PATH) {

@@ -70,12 +70,10 @@ jobs:
           npm run build:pilot --workspace=packages/desktop
       - name: Audit packaged resources and create checksums
         run: node scripts/audit-windows-pilot.cjs
-      - name: Exercise packaged database and API
-        run: node scripts/smoke-windows-pilot.cjs packages/desktop/release/win-unpacked/resources
       - name: Install renderer smoke browser
         run: npx playwright install chromium --only-shell
-      - name: Exercise packaged renderer file paths
-        run: node scripts/smoke-built-renderer.cjs packages/desktop/release/win-unpacked/resources
+      - name: Exercise packaged database, API and renderer
+        run: node scripts/smoke-windows-pilot.cjs packages/desktop/release/win-unpacked/resources
       - name: Write sanitized build summary
         if: always()
         run: |

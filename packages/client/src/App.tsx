@@ -141,7 +141,7 @@ const OperationsScreen = lazy(() =>
   })),
 );
 
-const ApplicationRouter = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
+const ApplicationRouter = window.electronAPI ? HashRouter : BrowserRouter;
 
 const queryClient = new QueryClient({
   defaultOptions: {

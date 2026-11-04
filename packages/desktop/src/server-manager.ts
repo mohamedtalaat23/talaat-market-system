@@ -93,6 +93,9 @@ export class ServerManager {
             NODE_ENV: 'production',
             SERVER_PORT: String(this.port),
             SERVER_HOST: 'localhost',
+            TALAAT_DESKTOP_RENDERER_DIR: app.isPackaged
+              ? path.join(process.resourcesPath, 'client/dist')
+              : path.join(__dirname, '../../client/dist'),
           },
           silent: false, // Let server logs flow to Electron's console
         });
