@@ -35,9 +35,11 @@ test('requires every executable, support files and notices', (t) => {
     'share/extension/pgcrypto.control',
     'lib/pg_trgm.dll',
     'COPYRIGHT',
+    'lib',
+    'share',
   ]) {
     const root = fixture(t);
-    fs.rmSync(path.join(root, file));
+    fs.rmSync(path.join(root, file), { recursive: true });
     assert.throws(() => validateRuntime(root, { execute: false }), /Incomplete|notice/);
   }
 });

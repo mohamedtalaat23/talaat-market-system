@@ -29,6 +29,11 @@ function validateRuntime(
   const missing = [...executables.map((name) => `bin/${name}.exe`), ...support].filter(
     (file) => !fs.existsSync(path.join(root, file)),
   );
+  for (const name of ['bin', 'lib', 'share']) {
+    const entry = path.join(root, name);
+    if (fs.existsSync(entry) && !fs.statSync(entry).isDirectory())
+      missing.push(`${name} (directory required)`);
+  }
   if (missing.length)
     throw new Error(`Incomplete Windows PostgreSQL runtime: ${missing.join(', ')}`);
   const noticeNames = fs

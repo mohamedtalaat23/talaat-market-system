@@ -8,7 +8,7 @@ The dedicated `codex/windows-pilot` branch triggers `.github/workflows/windows-p
 
 The workflow installs locked dependencies, runs lint/types and server/client/desktop unit checks, compiles the preload and exercises its sandbox surface. It acquires the exact PostgreSQL archive in `vendor/postgres/windows-runtime.json`, verifies its published SHA-256 **before extraction**, preserves its support files/notices, builds server/client and runs `npm run build:pilot --workspace=packages/desktop`.
 
-The build audits packaged resources and migrations through 038, rejects development tools and local credential/configuration files, then creates a disposable SCRAM cluster from the **packaged** runtime. It tests wrong-password refusal, extensions, dump/restore, compiled migrations, API readiness, initial login and password rotation. These checks do not execute the NSIS installer or certify an interactive Windows session.
+The build audits packaged resources and migrations through 038, rejects development tools and local credential/configuration files, then creates a disposable SCRAM cluster from the **packaged** runtime. It tests wrong-password refusal, extensions, dump/restore, compiled migrations, API readiness, initial login and password rotation. The packaged UI is served only to loopback clients on the API origin; hash routing, bundled fonts, and same-origin requests are checked in Chromium in Arabic and English. API CORS permissions are unchanged. These checks do not execute the NSIS installer or certify an interactive Windows session.
 
 A successful run uploads `windows-internal-<full commit SHA>` for 14 days, containing:
 
@@ -30,6 +30,7 @@ npm run build:server
 npm run build:client
 npm run build:pilot --workspace=packages/desktop
 node scripts/audit-windows-pilot.cjs
+npx playwright install chromium --only-shell
 node scripts/smoke-windows-pilot.cjs packages/desktop/release/win-unpacked/resources
 ```
 
@@ -58,6 +59,14 @@ Record verifier, date, Windows version, source commit, installer SHA-256 and har
 | Fiscal review | Qualified jurisdiction-specific accounting/fiscal acceptance | NOT TESTED |
 
 Do not disable antivirus or add blanket exclusions. The unsigned candidate has no verified publisher identity; signing and public distribution are separate release work.
+
+## Verification findings
+
+Windows CI exposed two portable-test defects: Unix permission bits cannot be asserted on Windows, and Windows backslashes in an absolute Vitest glob matched no tests. The permission test still checks the requested owner-only mode on all platforms and the actual mode on POSIX. Windows AppData ACL acceptance remains in the worksheet.
+
+Packaging review exposed root-relative renderer assets, missing favicon, file routing, and a file-origin API connection failure. The desktop now loads its bundled interface from the local API origin. Static assets are enabled only by the desktop child and restricted by the actual socket peer to loopback; API paths and dotfiles remain excluded. Navigation/IPC trust is restricted to the exact desktop origin. No generic opaque-origin CORS exception was added.
+
+Local checks passed: lint/typecheck, 310 server tests, 42 client tests, 49 desktop tests, 18 real bilingual browser journeys, compiled renderer smoke in both languages, PostgreSQL acquisition/preflight tests, and server/client/desktop builds. Earlier Linux integration acceptance includes 59 PostgreSQL tests; current-commit CI results are recorded below. Failed synthetic browser runs now retain traces/error contexts for 14 days.
 
 ## Build result
 
